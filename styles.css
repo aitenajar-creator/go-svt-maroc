@@ -325,10 +325,21 @@ body {
     color: var(--primary-color);
     text-decoration: none;
     font-weight: 600;
+    cursor: pointer;
 }
 
 .content-card .download-btn:hover {
     text-decoration: underline;
+}
+
+.content-card .download-btn.disabled {
+    color: #999;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.content-card .download-btn.disabled:hover {
+    text-decoration: none;
 }
 
 /* Documents Section */
