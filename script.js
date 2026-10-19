@@ -4,9 +4,11 @@ const siteData = {
         francais: {
             TC: {
                 TCS: [
-                    { title: "Chapitre 1", description: "Étude de la structure et des fonctions de la cellule animale", file: "cours/francais/TC/TCS/Chapitre 1/eleves-TCS  AIT ENAJAR U1C1.pdf" },
-                    { title: "Chapitre 2", description: "Étude de la structure et des fonctions de la cellule végétale", file: "cours/francais/TC/TCS/Chapitre 2/eleves-TCS  AIT ENAJAR U1C2.pdf" },
-                    { title: "Chapitre 3", description: "Les différents groupes d'êtres vivants et leurs caractéristiques", file: "cours/francais/TC/TCS/Chapitre 3/eleves-TCS  AIT ENAJAR U1C3.pdf" }
+                    { title: "Chapitre 1", description: "Étude de la structure et des fonctions de la cellule animale", file: "cours/francais/TC/TCS/Chapitre 1/eleves-TCS AIT ENAJAR U1C1.pdf" },
+                    { title: "Chapitre 2", description: "Étude de la structure et des fonctions de la cellule végétale", file: "cours/francais/TC/TCS/Chapitre 2/eleves-TCS AIT ENAJAR U1C2.pdf" },
+                    { title: "Chapitre 3", description: "Les différents groupes d'êtres vivants et leurs caractéristiques", file: "cours/francais/TC/TCS/Chapitre 3/eleves-TCS AIT ENAJAR U1C3.pdf" },
+                    { title: "Chapitre 4", description: "Continuation du cours sur les êtres vivants", file: "cours/francais/TC/TCS/Chapitre 4/eleves-TCS AIT ENAJAR U1C4.pdf" },
+                    { title: "Chapitre 5", description: "Compléments du cours", file: "cours/francais/TC/TCS/Chapitre 5/eleves-TCS AIT ENAJAR U1C5.pdf" }
                 ],
                 TCL: [
                     { title: "La cellule animale", description: "Étude de la structure et des fonctions de la cellule animale", file: "" },
