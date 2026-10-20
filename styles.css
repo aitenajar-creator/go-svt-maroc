@@ -342,6 +342,27 @@ body {
     text-decoration: none;
 }
 
+.content-card .no-files {
+    color: var(--light-text);
+    text-align: center;
+    padding: 2rem;
+    font-style: italic;
+}
+
+.content-card .loading {
+    color: var(--primary-color);
+    text-align: center;
+    padding: 2rem;
+    font-weight: 600;
+}
+
+.content-card .error {
+    color: #dc3545;
+    text-align: center;
+    padding: 2rem;
+    font-weight: 600;
+}
+
 /* Documents Section */
 .documents-list {
     display: grid;

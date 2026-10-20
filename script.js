@@ -1,298 +1,211 @@
-// Data structure for courses, exercises, and fiches
+// GitHub API Configuration
+const GITHUB_OWNER = 'aitenajar-creator';
+const GITHUB_REPO = 'go-svt-maroc';
+const GITHUB_API_BASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents`;
+
+// Cache for GitHub API responses
+const githubCache = {};
+
+// Fetch files from GitHub API
+async function fetchGitHubFiles(path) {
+    if (githubCache[path]) {
+        return githubCache[path];
+    }
+
+    try {
+        const response = await fetch(`${GITHUB_API_BASE}/${path}`);
+        if (!response.ok) {
+            console.error(`Failed to fetch ${path}:`, response.statusText);
+            return [];
+        }
+
+        const data = await response.json();
+        const files = data.filter(item => item.type === 'file');
+        githubCache[path] = files;
+        return files;
+    } catch (error) {
+        console.error(`Error fetching ${path}:`, error);
+        return [];
+    }
+}
+
+// Get file title from filename
+function getFileTitle(filename) {
+    // Remove extension
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+    // Replace underscores and hyphens with spaces
+    return nameWithoutExt.replace(/[_-]/g, ' ');
+}
+
+// Load content dynamically from GitHub
+async function loadContentFromGitHub(type, subject, level) {
+    const contentContainer = document.getElementById(`${type}-content`);
+    const basePath = `${type}/${subject}/${level}`;
+    
+    let html = '';
+    const downloadText = currentLang === 'ar' ? '📥 تحميل' : '📥 Télécharger';
+    const noFilesText = currentLang === 'ar' ? 'لا توجد ملفات حالياً' : 'Aucun fichier disponible pour le moment';
+
+    try {
+        // Fetch all sub-level folders
+        const response = await fetch(`${GITHUB_API_BASE}/${basePath}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch directory');
+        }
+
+        const data = await response.json();
+        const folders = data.filter(item => item.type === 'dir');
+
+        if (folders.length === 0) {
+            // No sub-level folders, look for files directly
+            const files = await fetchGitHubFiles(basePath);
+            if (files.length === 0) {
+                html = `<p class="no-files">${noFilesText}</p>`;
+            } else {
+                files.forEach(file => {
+                    const title = getFileTitle(file.name);
+                    html += `
+                        <div class="content-card">
+                            <span class="level-badge">${level}</span>
+                            <h3>${title}</h3>
+                            <p>${file.name}</p>
+                            <a href="${file.download_url}" target="_blank" class="download-btn">${downloadText}</a>
+                        </div>
+                    `;
+                });
+            }
+        } else {
+            // Files are in sub-level folders
+            for (const folder of folders) {
+                const subLevelPath = `${basePath}/${folder.name}`;
+                const files = await fetchGitHubFiles(subLevelPath);
+                
+                files.forEach(file => {
+                    const title = getFileTitle(file.name);
+                    html += `
+                        <div class="content-card">
+                            <span class="level-badge">${level} - ${folder.name}</span>
+                            <h3>${title}</h3>
+                            <p>${file.name}</p>
+                            <a href="${file.download_url}" target="_blank" class="download-btn">${downloadText}</a>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        if (html === '') {
+            html = `<p class="no-files">${noFilesText}</p>`;
+        }
+
+        contentContainer.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading content:', error);
+        contentContainer.innerHTML = `<p class="error">Error loading content. Please try again later.</p>`;
+    }
+}
+
+// Data structure for courses, exercises, and fiches (kept for reference but not used)
 const siteData = {
     cours: {
         francais: {
             TC: {
-                TCS: [
-                    { title: "Chapitre 1", description: "Étude de la structure et des fonctions de la cellule animale", file: "cours/francais/TC/TCS/Chapitre 1/eleves-TCS AIT ENAJAR U1C1.pdf" },
-                    { title: "Chapitre 2", description: "Étude de la structure et des fonctions de la cellule végétale", file: "cours/francais/TC/TCS/Chapitre 2/eleves-TCS AIT ENAJAR U1C2.pdf" },
-                    { title: "Chapitre 3", description: "Les différents groupes d'êtres vivants et leurs caractéristiques", file: "cours/francais/TC/TCS/Chapitre 3/eleves-TCS AIT ENAJAR U1C3.pdf" },
-                    { title: "Chapitre 4", description: "Continuation du cours sur les êtres vivants", file: "cours/francais/TC/TCS/Chapitre 4/eleves-TCS AIT ENAJAR U1C4.pdf" },
-                    { title: "Chapitre 5", description: "Compléments du cours", file: "cours/francais/TC/TCS/Chapitre 5/eleves-TCS AIT ENAJAR U1C5.pdf" }
-                ],
-                TCL: [
-                    { title: "La cellule animale", description: "Étude de la structure et des fonctions de la cellule animale", file: "" },
-                    { title: "La cellule végétale", description: "Étude de la structure et des fonctions de la cellule végétale", file: "" },
-                    { title: "Classification des êtres vivants", description: "Les différents groupes d'êtres vivants et leurs caractéristiques", file: "" }
-                ]
+                TCS: [],
+                TCL: []
             },
             "1BAC": {
-                "1BACSE": [
-                    { title: "Organisation de la cellule", description: "Structure et fonction des organites cellulaires", file: "" },
-                    { title: "Respiration cellulaire", description: "Les mécanismes de la respiration cellulaire", file: "" },
-                    { title: "Photosynthèse", description: "Le processus de photosynthèse chez les plantes", file: "" }
-                ],
-                "1BACSM": [
-                    { title: "Organisation de la cellule", description: "Structure et fonction des organites cellulaires", file: "" },
-                    { title: "Respiration cellulaire", description: "Les mécanismes de la respiration cellulaire", file: "" },
-                    { title: "Photosynthèse", description: "Le processus de photosynthèse chez les plantes", file: "" }
-                ],
-                "1BACL": [
-                    { title: "Organisation de la cellule", description: "Structure et fonction des organites cellulaires", file: "" },
-                    { title: "Respiration cellulaire", description: "Les mécanismes de la respiration cellulaire", file: "" },
-                    { title: "Photosynthèse", description: "Le processus de photosynthèse chez les plantes", file: "" }
-                ]
+                "1BACSE": [],
+                "1BACSM": [],
+                "1BACL": []
             },
             "2BAC": {
-                "2BACSVT": [
-                    { title: "Génétique", description: "Les lois de l'hérédité et la transmission des caractères", file: "" },
-                    { title: "Immunologie", description: "Le système immunitaire et ses mécanismes de défense", file: "" },
-                    { title: "Hormones", description: "Les hormones et leur rôle dans l'organisme", file: "" }
-                ],
-                "2BACSP": [
-                    { title: "Génétique", description: "Les lois de l'hérédité et la transmission des caractères", file: "" },
-                    { title: "Immunologie", description: "Le système immunitaire et ses mécanismes de défense", file: "" },
-                    { title: "Hormones", description: "Les hormones et leur rôle dans l'organisme", file: "" }
-                ],
-                "2BACSM": [
-                    { title: "Génétique", description: "Les lois de l'hérédité et la transmission des caractères", file: "" },
-                    { title: "Immunologie", description: "Le système immunitaire et ses mécanismes de défense", file: "" },
-                    { title: "Hormones", description: "Les hormones et leur rôle dans l'organisme", file: "" }
-                ]
+                "2BACSVT": [],
+                "2BACSP": [],
+                "2BACSM": []
             }
         },
         arabe: {
             TC: {
-                TCS: [
-                    { title: "الخلية الحيوانية", description: "دراسة بنية ووظائف الخلية الحيوانية", file: "" },
-                    { title: "الخلية النباتية", description: "دراسة بنية ووظائف الخلية النباتية", file: "" },
-                    { title: "تصنيف الكائنات الحية", description: "المجموعات المختلفة للكائنات الحية وخصائصها", file: "" }
-                ],
-                TCL: [
-                    { title: "الخلية الحيوانية", description: "دراسة بنية ووظائف الخلية الحيوانية", file: "" },
-                    { title: "الخلية النباتية", description: "دراسة بنية ووظائف الخلية النباتية", file: "" },
-                    { title: "تصنيف الكائنات الحية", description: "المجموعات المختلفة للكائنات الحية وخصائصها", file: "" }
-                ]
+                TCS: [],
+                TCL: []
             },
             "1BAC": {
-                "1BACSE": [
-                    { title: "تنظيم الخلية", description: "بنية ووظيفة العضيات الخلوية", file: "" },
-                    { title: "التنفس الخلوي", description: "آليات التنفس الخلوي", file: "" },
-                    { title: "التمثيل الضوئي", description: "عملية التمثيل الضوئي عند النباتات", file: "" }
-                ],
-                "1BACSM": [
-                    { title: "تنظيم الخلية", description: "بنية ووظيفة العضيات الخلوية", file: "" },
-                    { title: "التنفس الخلوي", description: "آليات التنفس الخلوي", file: "" },
-                    { title: "التمثيل الضوئي", description: "عملية التمثيل الضوئي عند النباتات", file: "" }
-                ],
-                "1BACL": [
-                    { title: "تنظيم الخلية", description: "بنية ووظيفة العضيات الخلوية", file: "" },
-                    { title: "التنفس الخلوي", description: "آليات التنفس الخلوي", file: "" },
-                    { title: "التمثيل الضوئي", description: "عملية التمثيل الضوئي عند النباتات", file: "" }
-                ]
+                "1BACSE": [],
+                "1BACSM": [],
+                "1BACL": []
             },
             "2BAC": {
-                "2BACSVT": [
-                    { title: "علم الوراثة", description: "قوانين الوراثة ونقل الصفات الوراثية", file: "" },
-                    { title: "علم المناعة", description: "الجهاز المناعي وآليات الدفاع", file: "" },
-                    { title: "الهرمونات", description: "الهرمونات ودورها في الكائن الحي", file: "" }
-                ],
-                "2BACSP": [
-                    { title: "علم الوراثة", description: "قوانين الوراثة ونقل الصفات الوراثية", file: "" },
-                    { title: "علم المناعة", description: "الجهاز المناعي وآليات الدفاع", file: "" },
-                    { title: "الهرمونات", description: "الهرمونات ودورها في الكائن الحي", file: "" }
-                ],
-                "2BACSM": [
-                    { title: "علم الوراثة", description: "قوانين الوراثة ونقل الصفات الوراثية", file: "" },
-                    { title: "علم المناعة", description: "الجهاز المناعي وآليات الدفاع", file: "" },
-                    { title: "الهرمونات", description: "الهرمونات ودورها في الكائن الحي", file: "" }
-                ]
+                "2BACSVT": [],
+                "2BACSP": [],
+                "2BACSM": []
             }
         }
     },
     exercices: {
         francais: {
             TC: {
-                TCS: [
-                    { title: "Exercice 1: La cellule", description: "Exercices d'application sur la cellule animale", file: "" },
-                    { title: "Exercice 2: Classification", description: "Exercices sur la classification des êtres vivants", file: "" },
-                    { title: "Exercice 3: Les organites", description: "Identification des organites cellulaires", file: "" }
-                ],
-                TCL: [
-                    { title: "Exercice 1: La cellule", description: "Exercices d'application sur la cellule animale", file: "" },
-                    { title: "Exercice 2: Classification", description: "Exercices sur la classification des êtres vivants", file: "" },
-                    { title: "Exercice 3: Les organites", description: "Identification des organites cellulaires", file: "" }
-                ]
+                TCS: [],
+                TCL: []
             },
             "1BAC": {
-                "1BACSE": [
-                    { title: "Exercice 1: Respiration", description: "Exercices sur la respiration cellulaire", file: "" },
-                    { title: "Exercice 2: Photosynthèse", description: "Exercices sur la photosynthèse", file: "" },
-                    { title: "Exercice 3: Mitose", description: "Exercices sur la division cellulaire", file: "" }
-                ],
-                "1BACSM": [
-                    { title: "Exercice 1: Respiration", description: "Exercices sur la respiration cellulaire", file: "" },
-                    { title: "Exercice 2: Photosynthèse", description: "Exercices sur la photosynthèse", file: "" },
-                    { title: "Exercice 3: Mitose", description: "Exercices sur la division cellulaire", file: "" }
-                ],
-                "1BACL": [
-                    { title: "Exercice 1: Respiration", description: "Exercices sur la respiration cellulaire", file: "" },
-                    { title: "Exercice 2: Photosynthèse", description: "Exercices sur la photosynthèse", file: "" },
-                    { title: "Exercice 3: Mitose", description: "Exercices sur la division cellulaire", file: "" }
-                ]
+                "1BACSE": [],
+                "1BACSM": [],
+                "1BACL": []
             },
             "2BAC": {
-                "2BACSVT": [
-                    { title: "Exercice 1: Génétique", description: "Exercices sur les lois de Mendel", file: "" },
-                    { title: "Exercice 2: Immunologie", description: "Exercices sur le système immunitaire", file: "" },
-                    { title: "Exercice 3: Hormones", description: "Exercices sur les hormones végétales", file: "" }
-                ],
-                "2BACSP": [
-                    { title: "Exercice 1: Génétique", description: "Exercices sur les lois de Mendel", file: "" },
-                    { title: "Exercice 2: Immunologie", description: "Exercices sur le système immunitaire", file: "" },
-                    { title: "Exercice 3: Hormones", description: "Exercices sur les hormones végétales", file: "" }
-                ],
-                "2BACSM": [
-                    { title: "Exercice 1: Génétique", description: "Exercices sur les lois de Mendel", file: "" },
-                    { title: "Exercice 2: Immunologie", description: "Exercices sur le système immunitaire", file: "" },
-                    { title: "Exercice 3: Hormones", description: "Exercices sur les hormones végétales", file: "" }
-                ]
+                "2BACSVT": [],
+                "2BACSP": [],
+                "2BACSM": []
             }
         },
         arabe: {
             TC: {
-                TCS: [
-                    { title: "تمرين 1: الخلية", description: "تمارين تطبيقية على الخلية الحيوانية", file: "" },
-                    { title: "تمرين 2: التصنيف", description: "تمارين على تصنيف الكائنات الحية", file: "" },
-                    { title: "تمرين 3: العضيات", description: "تحديد العضيات الخلوية", file: "" }
-                ],
-                TCL: [
-                    { title: "تمرين 1: الخلية", description: "تمارين تطبيقية على الخلية الحيوانية", file: "" },
-                    { title: "تمرين 2: التصنيف", description: "تمارين على تصنيف الكائنات الحية", file: "" },
-                    { title: "تمرين 3: العضيات", description: "تحديد العضيات الخلوية", file: "" }
-                ]
+                TCS: [],
+                TCL: []
             },
             "1BAC": {
-                "1BACSE": [
-                    { title: "تمرين 1: التنفس", description: "تمارين على التنفس الخلوي", file: "" },
-                    { title: "تمرين 2: التمثيل الضوئي", description: "تمارين على التمثيل الضوئي", file: "" },
-                    { title: "تمرين 3: الانقسام", description: "تمارين على الانقسام الخلوي", file: "" }
-                ],
-                "1BACSM": [
-                    { title: "تمرين 1: التنفس", description: "تمارين على التنفس الخلوي", file: "" },
-                    { title: "تمرين 2: التمثيل الضوئي", description: "تمارين على التمثيل الضوئي", file: "" },
-                    { title: "تمرين 3: الانقسام", description: "تمارين على الانقسام الخلوي", file: "" }
-                ],
-                "1BACL": [
-                    { title: "تمرين 1: التنفس", description: "تمارين على التنفس الخلوي", file: "" },
-                    { title: "تمرين 2: التمثيل الضوئي", description: "تمارين على التمثيل الضوئي", file: "" },
-                    { title: "تمرين 3: الانقسام", description: "تمارين على الانقسام الخلوي", file: "" }
-                ]
+                "1BACSE": [],
+                "1BACSM": [],
+                "1BACL": []
             },
             "2BAC": {
-                "2BACSVT": [
-                    { title: "تمرين 1: الوراثة", description: "تمارين على قوانين مندل", file: "" },
-                    { title: "تمرين 2: المناعة", description: "تمارين على الجهاز المناعي", file: "" },
-                    { title: "تمرين 3: الهرمونات", description: "تمارين على الهرمونات النباتية", file: "" }
-                ],
-                "2BACSP": [
-                    { title: "تمرين 1: الوراثة", description: "تمارين على قوانين مندل", file: "" },
-                    { title: "تمرين 2: المناعة", description: "تمارين على الجهاز المناعي", file: "" },
-                    { title: "تمرين 3: الهرمونات", description: "تمارين على الهرمونات النباتية", file: "" }
-                ],
-                "2BACSM": [
-                    { title: "تمرين 1: الوراثة", description: "تمارين على قوانين مندل", file: "" },
-                    { title: "تمرين 2: المناعة", description: "تمارين على الجهاز المناعي", file: "" },
-                    { title: "تمرين 3: الهرمونات", description: "تمارين على الهرمونات النباتية", file: "" }
-                ]
+                "2BACSVT": [],
+                "2BACSP": [],
+                "2BACSM": []
             }
         }
     },
     fiches: {
         francais: {
             TC: {
-                TCS: [
-                    { title: "Fiche: La cellule", description: "Résumé complet sur la cellule animale et végétale", file: "" },
-                    { title: "Fiche: Classification", description: "Tableau récapitulatif de la classification", file: "" },
-                    { title: "Fiche: Les organites", description: "Fiche mémo sur les organites cellulaires", file: "" }
-                ],
-                TCL: [
-                    { title: "Fiche: La cellule", description: "Résumé complet sur la cellule animale et végétale", file: "" },
-                    { title: "Fiche: Classification", description: "Tableau récapitulatif de la classification", file: "" },
-                    { title: "Fiche: Les organites", description: "Fiche mémo sur les organites cellulaires", file: "" }
-                ]
+                TCS: [],
+                TCL: []
             },
             "1BAC": {
-                "1BACSE": [
-                    { title: "Fiche: Respiration", description: "Résumé sur la respiration cellulaire", file: "" },
-                    { title: "Fiche: Photosynthèse", description: "Fiche complète sur la photosynthèse", file: "" },
-                    { title: "Fiche: Division cellulaire", description: "Mémo sur la mitose et la méiose", file: "" }
-                ],
-                "1BACSM": [
-                    { title: "Fiche: Respiration", description: "Résumé sur la respiration cellulaire", file: "" },
-                    { title: "Fiche: Photosynthèse", description: "Fiche complète sur la photosynthèse", file: "" },
-                    { title: "Fiche: Division cellulaire", description: "Mémo sur la mitose et la méiose", file: "" }
-                ],
-                "1BACL": [
-                    { title: "Fiche: Respiration", description: "Résumé sur la respiration cellulaire", file: "" },
-                    { title: "Fiche: Photosynthèse", description: "Fiche complète sur la photosynthèse", file: "" },
-                    { title: "Fiche: Division cellulaire", description: "Mémo sur la mitose et la méiose", file: "" }
-                ]
+                "1BACSE": [],
+                "1BACSM": [],
+                "1BACL": []
             },
             "2BAC": {
-                "2BACSVT": [
-                    { title: "Fiche: Génétique", description: "Résumé complet sur la génétique", file: "" },
-                    { title: "Fiche: Immunologie", description: "Fiche mémo sur le système immunitaire", file: "" },
-                    { title: "Fiche: Hormones", description: "Tableau récapitulatif des hormones", file: "" }
-                ],
-                "2BACSP": [
-                    { title: "Fiche: Génétique", description: "Résumé complet sur la génétique", file: "" },
-                    { title: "Fiche: Immunologie", description: "Fiche mémo sur le système immunitaire", file: "" },
-                    { title: "Fiche: Hormones", description: "Tableau récapitulatif des hormones", file: "" }
-                ],
-                "2BACSM": [
-                    { title: "Fiche: Génétique", description: "Résumé complet sur la génétique", file: "" },
-                    { title: "Fiche: Immunologie", description: "Fiche mémo sur le système immunitaire", file: "" },
-                    { title: "Fiche: Hormones", description: "Tableau récapitulatif des hormones", file: "" }
-                ]
+                "2BACSVT": [],
+                "2BACSP": [],
+                "2BACSM": []
             }
         },
         arabe: {
             TC: {
-                TCS: [
-                    { title: "ملخص: الخلية", description: "ملخص كامل عن الخلية الحيوانية والنباتية", file: "" },
-                    { title: "ملخص: التصنيف", description: "جدول تلخيصي للتصنيف", file: "" },
-                    { title: "ملخص: العضيات", description: "بطاقة مذكرة عن العضيات الخلوية", file: "" }
-                ],
-                TCL: [
-                    { title: "ملخص: الخلية", description: "ملخص كامل عن الخلية الحيوانية والنباتية", file: "" },
-                    { title: "ملخص: التصنيف", description: "جدول تلخيصي للتصنيف", file: "" },
-                    { title: "ملخص: العضيات", description: "بطاقة مذكرة عن العضيات الخلوية", file: "" }
-                ]
+                TCS: [],
+                TCL: []
             },
             "1BAC": {
-                "1BACSE": [
-                    { title: "ملخص: التنفس", description: "ملخص عن التنفس الخلوي", file: "" },
-                    { title: "ملخص: التمثيل الضوئي", description: "بطاقة كاملة عن التمثيل الضوئي", file: "" },
-                    { title: "ملخص: الانقسام", description: "مذكرة عن الانقسام المتساوي والاختزالي", file: "" }
-                ],
-                "1BACSM": [
-                    { title: "ملخص: التنفس", description: "ملخص عن التنفس الخلوي", file: "" },
-                    { title: "ملخص: التمثيل الضوئي", description: "بطاقة كاملة عن التمثيل الضوئي", file: "" },
-                    { title: "ملخص: الانقسام", description: "مذكرة عن الانقسام المتساوي والاختزالي", file: "" }
-                ],
-                "1BACL": [
-                    { title: "ملخص: التنفس", description: "ملخص عن التنفس الخلوي", file: "" },
-                    { title: "ملخص: التمثيل الضوئي", description: "بطاقة كاملة عن التمثيل الضوئي", file: "" },
-                    { title: "ملخص: الانقسام", description: "مذكرة عن الانقسام المتساوي والاختزالي", file: "" }
-                ]
+                "1BACSE": [],
+                "1BACSM": [],
+                "1BACL": []
             },
             "2BAC": {
-                "2BACSVT": [
-                    { title: "ملخص: الوراثة", description: "ملخص كامل عن علم الوراثة", file: "" },
-                    { title: "ملخص: المناعة", description: "بطاقة مذكرة عن الجهاز المناعي", file: "" },
-                    { title: "ملخص: الهرمونات", description: "جدول تلخيصي للهرمونات", file: "" }
-                ],
-                "2BACSP": [
-                    { title: "ملخص: الوراثة", description: "ملخص كامل عن علم الوراثة", file: "" },
-                    { title: "ملخص: المناعة", description: "بطاقة مذكرة عن الجهاز المناعي", file: "" },
-                    { title: "ملخص: الهرمونات", description: "جدول تلخيصي للهرمونات", file: "" }
-                ],
-                "2BACSM": [
-                    { title: "ملخص: الوراثة", description: "ملخص كامل عن علم الوراثة", file: "" },
-                    { title: "ملخص: المناعة", description: "بطاقة مذكرة عن الجهاز المناعي", file: "" },
-                    { title: "ملخص: الهرمونات", description: "جدول تلخيصي للهرمونات", file: "" }
-                ]
+                "2BACSVT": [],
+                "2BACSP": [],
+                "2BACSM": []
             }
         }
     }
@@ -365,52 +278,21 @@ function toggleMobileMenu() {
 }
 
 // Load content based on subject, level, and type
-function loadContent(type, subject, level) {
+async function loadContent(type, subject, level) {
     const contentContainer = document.getElementById(`${type}-content`);
-    const data = siteData[type][subject][level];
-
-    let html = '';
-
-    // Get sub-levels based on the main level
-    const subLevels = Object.keys(data);
-
-    const downloadText = currentLang === 'ar' ? '📥 تحميل' : '📥 Télécharger';
-    const noFileText = currentLang === 'ar' ? 'قريباً' : 'Bientôt disponible';
-
-    subLevels.forEach(subLevel => {
-        const items = data[subLevel];
-        items.forEach(item => {
-            // Check if file path exists
-            if (item.file && item.file !== '') {
-                html += `
-                    <div class="content-card">
-                        <span class="level-badge">${level} - ${subLevel}</span>
-                        <h3>${item.title}</h3>
-                        <p>${item.description}</p>
-                        <a href="${item.file}" target="_blank" class="download-btn">${downloadText}</a>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="content-card">
-                        <span class="level-badge">${level} - ${subLevel}</span>
-                        <h3>${item.title}</h3>
-                        <p>${item.description}</p>
-                        <span class="download-btn disabled">${noFileText}</span>
-                    </div>
-                `;
-            }
-        });
-    });
-
-    contentContainer.innerHTML = html;
+    
+    // Show loading indicator
+    contentContainer.innerHTML = '<p class="loading">جاري التحميل... / Chargement...</p>';
+    
+    // Load content from GitHub API
+    await loadContentFromGitHub(type, subject, level);
 }
 
 // Tab functionality
 function setupTabs() {
     // Subject tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             const subject = this.dataset.subject;
             const type = this.dataset.type;
             
@@ -421,13 +303,13 @@ function setupTabs() {
             currentSubject = subject;
             currentType = type;
             
-            loadContent(type, subject, currentLevel);
+            await loadContent(type, subject, currentLevel);
         });
     });
     
     // Level tabs
     document.querySelectorAll('.level-tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             const level = this.dataset.level;
             
             // Update active state
@@ -436,7 +318,7 @@ function setupTabs() {
             
             currentLevel = level;
             
-            loadContent(currentType, currentSubject, level);
+            await loadContent(currentType, currentSubject, level);
         });
     });
 }
@@ -471,11 +353,11 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 });
 
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     setupTabs();
     
     // Load initial content
-    loadContent('cours', 'francais', 'TC');
+    await loadContent('cours', 'francais', 'TC');
     
     // Setup section navigation
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
