@@ -1,0 +1,78 @@
+/* ===== Go SVT Maroc - تحسينات ===== */
+:root { --gs-green: #2d5a27; }
+
+/* بطاقات الملفات */
+.content-card { position: relative; }
+.content-card .file-icon { font-size: 2.2rem; line-height: 1; margin: .5rem 0; }
+.content-card .file-name { font-size: .8rem; opacity: .7; word-break: break-word; }
+.new-badge {
+    display: inline-block; margin-inline-start: .4rem; padding: .15rem .6rem;
+    border-radius: 999px; background: #e63946; color: #fff;
+    font-size: .75rem; font-weight: 700; animation: gs-pulse 2s infinite;
+}
+@keyframes gs-pulse { 50% { opacity: .6; } }
+.card-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .6rem; }
+.preview-btn {
+    cursor: pointer; padding: .5rem 1rem; border-radius: 8px;
+    border: 2px solid var(--gs-green); background: transparent;
+    color: var(--gs-green); font: inherit; font-weight: 600;
+}
+.preview-btn:hover { background: var(--gs-green); color: #fff; }
+.files-count { grid-column: 1 / -1; margin: 0 0 1rem; font-weight: 600; color: var(--gs-green); }
+
+/* الأزرار العائمة */
+.gs-fab-group {
+    position: fixed; bottom: 20px; left: 20px; z-index: 900;
+    display: flex; flex-direction: column; gap: 10px;
+}
+.gs-fab {
+    width: 50px; height: 50px; border-radius: 50%; border: none;
+    background: var(--gs-green); color: #fff; font-size: 1.3rem; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25); transition: transform .2s;
+}
+.gs-fab:hover { transform: scale(1.08); }
+.gs-fab[hidden] { display: none; }
+
+/* النوافذ (البحث والمعاينة) */
+.gs-modal {
+    position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.6);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.gs-modal[hidden] { display: none; }
+.gs-modal-box {
+    background: #fff; color: #222; width: 100%; max-width: 950px; max-height: 92vh;
+    border-radius: 14px; display: flex; flex-direction: column; overflow: hidden;
+}
+.gs-modal-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-bottom: 1px solid #e5e5e5;
+}
+.gs-modal-title { flex: 1; margin: 0; font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gs-close { border: none; background: #eee; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1rem; flex-shrink: 0; }
+.gs-open-tab { color: var(--gs-green); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.gs-modal-body { flex: 1; min-height: 0; }
+.gs-modal-body iframe { width: 100%; height: 80vh; border: 0; display: block; }
+.gs-modal-body img { max-width: 100%; max-height: 80vh; display: block; margin: auto; }
+#gs-search-input {
+    flex: 1; padding: 12px 14px; font: inherit; font-size: 1rem;
+    border: 2px solid var(--gs-green); border-radius: 10px; outline: none;
+}
+#gs-search-results {
+    overflow-y: auto; padding: 16px; display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.gs-search-hint { grid-column: 1 / -1; text-align: center; opacity: .7; }
+body.gs-no-scroll { overflow: hidden; }
+
+/* الوضع الليلي */
+html.gs-dark { background: #fff; filter: invert(1) hue-rotate(180deg); }
+html.gs-dark img, html.gs-dark video, html.gs-dark iframe { filter: invert(1) hue-rotate(180deg); }
+
+/* الهاتف */
+@media (max-width: 768px) {
+    .content-card h3 { font-size: 1rem; }
+    .gs-fab { width: 44px; height: 44px; font-size: 1.1rem; }
+    .gs-modal { padding: 0; }
+    .gs-modal-box { max-height: 100vh; height: 100%; border-radius: 0; }
+    .gs-modal-body iframe { height: calc(100vh - 62px); }
+}
