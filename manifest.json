@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-21T17:31:13.192766+00:00",
+  "generated": "2026-10-21T21:06:27.273716+00:00",
   "tree": {
     "cours": {
       "arabe": {
@@ -171,6 +171,17 @@
                 ]
               }
             }
+          }
+        }
+      }
+    },
+    "fiches": {
+      "francais": {
+        "TC": {
+          "TCS": {
+            "__files": [
+              "Fiche pédagogique 2027.pdf"
+            ]
           }
         }
       }
