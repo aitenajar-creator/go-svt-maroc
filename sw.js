@@ -1,6 +1,6 @@
-// Go SVT Maroc - Service Worker
-const CACHE_NAME = 'gosvt-v1';
-const CACHEABLE = /\.(html|css|js|json|webmanifest|png|svg|ico)$/i;
+// Go SVT Maroc - Service Worker v2
+const CACHE_NAME = 'gosvt-v2';
+const CACHEABLE = /\.(html|css|js|webmanifest|png|svg|ico)$/i;
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -12,14 +12,16 @@ self.addEventListener('activate', event => {
     );
 });
 
-// الشبكة أولاً، والنسخة المحفوظة فقط عند انقطاع الإنترنت
 self.addEventListener('fetch', event => {
     const request = event.request;
     const url = new URL(request.url);
     if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
+    // لا نتدخل أبداً في content.json ولا ملفات JSON
+    if (url.pathname.endsWith('.json')) return;
+
     const cacheable = url.pathname === '/' || CACHEABLE.test(url.pathname);
-    if (!cacheable) return; // ملفات PDF لا تُخزَّن
+    if (!cacheable) return;
 
     const cacheKey = url.origin + url.pathname;
     event.respondWith(
