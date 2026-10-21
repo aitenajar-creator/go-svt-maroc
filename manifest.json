@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-21T21:24:37.778043+00:00",
+  "generated": "2026-10-21T21:28:50.156369+00:00",
   "tree": {
     "cours": {
       "arabe": {
@@ -188,7 +188,8 @@
     },
     "documents": {
       "__files": [
-        "2026.2025 cahier de textes- abdelhaq.pdf"
+        "2026.2025 cahier de textes- abdelhaq.pdf",
+        "cahier des textes"
       ]
     }
   }
