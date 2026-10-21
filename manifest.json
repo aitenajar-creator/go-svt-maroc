@@ -1,7 +1,10 @@
 {
-  "generated": "2026-10-21T21:53:41.895071+00:00",
+  "generated": "2026-10-21T21:59:53.705790+00:00",
   "tree": {
     "cours": {
+      "__files": [
+        "manifest.webmanifest"
+      ],
       "arabe": {
         "1BAC": {
           "1BACSE": {
