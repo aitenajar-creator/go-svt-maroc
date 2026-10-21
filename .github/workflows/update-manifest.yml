@@ -1,0 +1,68 @@
+name: Update content manifest
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'manifest.json'
+      - '.github/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate manifest.json
+        run: |
+          python3 << 'PYEOF'
+          import os, json, datetime
+
+          CONTENT_DIRS = ["cours", "exercices", "fiches", "documents", "ressources", "divers"]
+          SKIP = {"readme.md", "thumbs.db", "desktop.ini"}
+          tree = {}
+
+          for base in CONTENT_DIRS:
+              if not os.path.isdir(base):
+                  continue
+              for root, dirs, files in os.walk(base):
+                  dirs[:] = sorted(d for d in dirs if not d.startswith("."))
+                  clean = sorted(
+                      f for f in files
+                      if not f.startswith(".") and f.lower() not in SKIP
+                  )
+                  if not clean:
+                      continue
+                  rel = root.replace(os.sep, "/")
+                  node = tree
+                  for part in rel.split("/"):
+                      node = node.setdefault(part, {})
+                  node["__files"] = clean
+
+          manifest = {
+              "generated": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "tree": tree,
+          }
+
+          with open("manifest.json", "w", encoding="utf-8") as fh:
+              json.dump(manifest, fh, ensure_ascii=False, indent=2)
+
+          print("manifest.json OK -", len(tree), "sections:", ", ".join(tree.keys()))
+          PYEOF
+
+      - name: Commit and push manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          if git diff --cached --quiet; then
+            echo "Manifest unchanged - nothing to commit"
+          else
+            git commit -m "Auto-update manifest.json"
+            git push
+          fi
