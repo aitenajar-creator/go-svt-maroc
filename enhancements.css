@@ -86,3 +86,30 @@ html.gs-dark img, html.gs-dark video, html.gs-dark iframe { filter: invert(1) hu
 .gs-latest[hidden] { display: none; }
 .section-intro { text-align: center; opacity: .8; margin: 0 0 1.5rem; }
 .contact-item a { color: inherit; }
+/* ===== إصلاح رأس الصفحة ===== */
+.header .logo h1 {
+    white-space: nowrap; line-height: 1.2; margin: 0;
+    font-size: clamp(1.3rem, 2vw, 1.8rem);
+}
+.header .logo p { margin: .2rem 0 0; font-size: .85rem; line-height: 1.4; }
+.section { scroll-margin-top: 90px; }
+
+@media (min-width: 769px) {
+    .header .container { display: flex; align-items: center; gap: .5rem 1rem; }
+    .header .logo { flex: 0 0 auto; max-width: 260px; }
+    .main-nav { flex: 1 1 auto; min-width: 0; }
+    .main-nav ul { flex-wrap: wrap; gap: .2rem; }
+    .main-nav a { padding: .45rem .75rem; font-size: .95rem; }
+    .header-actions { flex: 0 0 auto; }
+}
+
+/* ===== زر التحميل ===== */
+.card-actions .download-btn {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .5rem 1rem; border-radius: 8px; border: 2px solid var(--gs-green);
+    background: var(--gs-green); color: #fff; text-decoration: none; font-weight: 600;
+}
+.card-actions .download-btn:hover { opacity: .9; }
+
+/* حرف كبير في بداية العناوين */
+.content-card h3::first-letter { text-transform: uppercase; }
