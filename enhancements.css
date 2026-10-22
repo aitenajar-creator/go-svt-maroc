@@ -76,3 +76,13 @@ html.gs-dark img, html.gs-dark video, html.gs-dark iframe { filter: invert(1) hu
     .gs-modal-box { max-height: 100vh; height: 100%; border-radius: 0; }
     .gs-modal-body iframe { height: calc(100vh - 62px); }
 }
+/* ===== الدفعة 2 ===== */
+.gs-group-title {
+    grid-column: 1 / -1; width: 100%;
+    margin: 1.5rem 0 .5rem; padding-bottom: .4rem;
+    border-bottom: 2px solid var(--gs-green); color: var(--gs-green);
+}
+.gs-latest { padding: 2rem 0 3rem; }
+.gs-latest[hidden] { display: none; }
+.section-intro { text-align: center; opacity: .8; margin: 0 0 1.5rem; }
+.contact-item a { color: inherit; }
