@@ -4,24 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go SVT Maroc | Cours, Exercices et Examens SVT - دروس وامتحانات علوم الحياة والأرض</title>
-    <link rel="stylesheet" href="styles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Go SVT Maroc : SEO + partage + PWA -->
-<meta name="description" content="Go SVT Maroc : cours, exercices, fiches et examens nationaux de SVT (TC, 1BAC, 2BAC) en français et en arabe. دروس وتمارين وملخصات وامتحانات وطنية في علوم الحياة والأرض.">
-<meta name="theme-color" content="#2d5a27">
-<link rel="canonical" href="https://gosvtmaroc.com/">
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/manifest.webmanifest">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Go SVT Maroc">
-<meta property="og:title" content="Go SVT Maroc - Laboratoire des SVT">
-<meta property="og:description" content="Cours, exercices et examens nationaux de SVT - دروس وتمارين وامتحانات علوم الحياة والأرض">
-<meta property="og:url" content="https://gosvtmaroc.com/">
-<meta property="og:image" content="https://gosvtmaroc.com/android-chrome-512x512.png">
-<meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="enhancements.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhancements.css">
+
+    <!-- SEO + partage + PWA -->
+    <meta name="description" content="Go SVT Maroc : cours, exercices, fiches et examens nationaux de SVT (TC, 1BAC, 2BAC) en français et en arabe. دروس وتمارين وملخصات وامتحانات وطنية في علوم الحياة والأرض.">
+    <meta name="theme-color" content="#2d5a27">
+    <link rel="canonical" href="https://gosvtmaroc.com/">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Go SVT Maroc">
+    <meta property="og:title" content="Go SVT Maroc - Laboratoire des SVT">
+    <meta property="og:description" content="Cours, exercices et examens nationaux de SVT - دروس وتمارين وامتحانات علوم الحياة والأرض">
+    <meta property="og:url" content="https://gosvtmaroc.com/">
+    <meta property="og:image" content="https://gosvtmaroc.com/android-chrome-512x512.png">
+    <meta name="twitter:card" content="summary">
     <meta name="google-site-verification" content="Kxm6gLss6ofrt40EVpdYN-mNSTrIofRRDotJ0uvy-Q8" />
 </head>
 <body>
@@ -37,7 +41,8 @@
                     <li><a href="#accueil" class="active" data-lang-ar="الرئيسية" data-lang-fr="Accueil">الرئيسية</a></li>
                     <li><a href="#cours" data-lang-ar="الدروس" data-lang-fr="Cours">الدروس</a></li>
                     <li><a href="#exercices" data-lang-ar="التمارين" data-lang-fr="Exercices">التمارين</a></li>
-                    <li><a href="#fiches" data-lang-ar="الملاخصات" data-lang-fr="Fiches">الملاخصات</a></li>
+                    <li><a href="#examens" data-lang-ar="الامتحانات" data-lang-fr="Examens">الامتحانات</a></li>
+                    <li><a href="#fiches" data-lang-ar="الملخصات" data-lang-fr="Fiches">الملخصات</a></li>
                     <li><a href="#documents" data-lang-ar="الوثائق" data-lang-fr="Documents">الوثائق</a></li>
                     <li><a href="#ressources" data-lang-ar="الموارد" data-lang-fr="Ressources">الموارد</a></li>
                     <li><a href="#divers" data-lang-ar="متفرقات" data-lang-fr="Divers">متفرقات</a></li>
@@ -48,7 +53,7 @@
                 <button class="lang-switcher" onclick="switchLanguage()">
                     <span id="lang-btn-text">Français</span>
                 </button>
-                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -57,17 +62,17 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main>
-        <!-- Accueil Section -->
+        <!-- Accueil -->
         <section id="accueil" class="section active">
             <div class="hero">
                 <div class="container">
-                    <h2 data-lang-ar="مرحباً بك في Labo SVT" data-lang-fr="Bienvenue sur Labo SVT">مرحباً بك في Labo SVT</h2>
+                    <h2 data-lang-ar="مرحباً بك في Go SVT Maroc" data-lang-fr="Bienvenue sur Go SVT Maroc">مرحباً بك في Go SVT Maroc</h2>
                     <p data-lang-ar="منصة تعليمية متكاملة لعلوم الحياة والأرض لجميع المستويات" data-lang-fr="Plateforme éducative complète en SVT pour tous les niveaux">منصة تعليمية متكاملة لعلوم الحياة والأرض لجميع المستويات</p>
                     <div class="hero-buttons">
                         <a href="#cours" class="btn btn-primary" data-lang-ar="تصفح الدروس" data-lang-fr="Voir les cours">تصفح الدروس</a>
                         <a href="#exercices" class="btn btn-secondary" data-lang-ar="حل التمارين" data-lang-fr="Faire les exercices">حل التمارين</a>
+                        <a href="#examens" class="btn btn-secondary" data-lang-ar="الامتحانات الوطنية" data-lang-fr="Examens nationaux">الامتحانات الوطنية</a>
                     </div>
                 </div>
             </div>
@@ -85,9 +90,9 @@
                             <p data-lang-ar="تمارين محلولة لمساعدتك على الفهم" data-lang-fr="Exercices corrigés pour vous aider à comprendre">تمارين محلولة لمساعدتك على الفهم</p>
                         </div>
                         <div class="feature-card">
-                            <div class="feature-icon">📋</div>
-                            <h3 data-lang-ar="ملاخصات مفيدة" data-lang-fr="Fiches utiles">ملاخصات مفيدة</h3>
-                            <p data-lang-ar="ملخصات واضحة ومركزة للمذاكرة" data-lang-fr="Résumés clairs et concentrés pour la révision">ملخصات واضحة ومركزة للمذاكرة</p>
+                            <div class="feature-icon">📝</div>
+                            <h3 data-lang-ar="امتحانات وطنية" data-lang-fr="Examens nationaux">امتحانات وطنية</h3>
+                            <p data-lang-ar="امتحانات السنوات السابقة مرتبة حسب السنة" data-lang-fr="Sujets des années précédentes classés par année">امتحانات السنوات السابقة مرتبة حسب السنة</p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">🌍</div>
@@ -97,193 +102,111 @@
                     </div>
                 </div>
             </div>
+            <div class="gs-latest" id="latest" hidden>
+                <div class="container">
+                    <h2 class="section-title" data-lang-ar="🆕 آخر الإضافات" data-lang-fr="🆕 Derniers ajouts">🆕 آخر الإضافات</h2>
+                    <div class="content-grid" id="latest-content"></div>
+                </div>
+            </div>
         </section>
 
-        <!-- Cours Section -->
+        <!-- Cours -->
         <section id="cours" class="section">
             <div class="container">
                 <h2 class="section-title" data-lang-ar="📚 الدروس" data-lang-fr="📚 Cours">📚 الدروس</h2>
-                
-                <!-- Subject Tabs -->
                 <div class="subject-tabs">
                     <button class="tab-btn active" data-subject="francais" data-type="cours">Français</button>
                     <button class="tab-btn" data-subject="arabe" data-type="cours">العربية</button>
                 </div>
-
-                <!-- Level Tabs -->
                 <div class="level-tabs">
                     <button class="level-tab-btn active" data-level="TC">TC</button>
                     <button class="level-tab-btn" data-level="1BAC">1BAC</button>
                     <button class="level-tab-btn" data-level="2BAC">2BAC</button>
                 </div>
-
-                <!-- Content Grid -->
-                <div class="content-grid" id="cours-content">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
+                <div class="content-grid" id="cours-content"></div>
             </div>
         </section>
 
-        <!-- Exercices Section -->
+        <!-- Exercices -->
         <section id="exercices" class="section">
             <div class="container">
                 <h2 class="section-title" data-lang-ar="✏️ التمارين" data-lang-fr="✏️ Exercices">✏️ التمارين</h2>
-                
                 <div class="subject-tabs">
                     <button class="tab-btn active" data-subject="francais" data-type="exercices">Français</button>
                     <button class="tab-btn" data-subject="arabe" data-type="exercices">العربية</button>
                 </div>
-
                 <div class="level-tabs">
                     <button class="level-tab-btn active" data-level="TC">TC</button>
                     <button class="level-tab-btn" data-level="1BAC">1BAC</button>
                     <button class="level-tab-btn" data-level="2BAC">2BAC</button>
                 </div>
-
-                <div class="content-grid" id="exercices-content">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
+                <div class="content-grid" id="exercices-content"></div>
             </div>
         </section>
 
-        <!-- Fiches Section -->
+        <!-- Examens -->
+        <section id="examens" class="section">
+            <div class="container">
+                <h2 class="section-title" data-lang-ar="📝 الامتحانات" data-lang-fr="📝 Examens">📝 الامتحانات</h2>
+                <p class="section-intro" data-lang-ar="الامتحانات الوطنية والجهوية مرتبة حسب السنة والدورة" data-lang-fr="Examens nationaux et régionaux classés par année et par session">الامتحانات الوطنية والجهوية مرتبة حسب السنة والدورة</p>
+                <div class="subject-tabs">
+                    <button class="tab-btn active" data-subject="francais" data-type="examens">Français</button>
+                    <button class="tab-btn" data-subject="arabe" data-type="examens">العربية</button>
+                </div>
+                <div class="level-tabs">
+                    <button class="level-tab-btn" data-level="TC">TC</button>
+                    <button class="level-tab-btn" data-level="1BAC">1BAC</button>
+                    <button class="level-tab-btn active" data-level="2BAC">2BAC</button>
+                </div>
+                <div class="content-grid" id="examens-content"></div>
+            </div>
+        </section>
+
+        <!-- Fiches -->
         <section id="fiches" class="section">
             <div class="container">
-                <h2 class="section-title" data-lang-ar="📋 الملاخصات" data-lang-fr="📋 Fiches">📋 الملاخصات</h2>
-                
+                <h2 class="section-title" data-lang-ar="📋 الملخصات" data-lang-fr="📋 Fiches">📋 الملخصات</h2>
                 <div class="subject-tabs">
                     <button class="tab-btn active" data-subject="francais" data-type="fiches">Français</button>
                     <button class="tab-btn" data-subject="arabe" data-type="fiches">العربية</button>
                 </div>
-
                 <div class="level-tabs">
                     <button class="level-tab-btn active" data-level="TC">TC</button>
                     <button class="level-tab-btn" data-level="1BAC">1BAC</button>
                     <button class="level-tab-btn" data-level="2BAC">2BAC</button>
                 </div>
-
-                <div class="content-grid" id="fiches-content">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
+                <div class="content-grid" id="fiches-content"></div>
             </div>
         </section>
 
-        <!-- Documents Section -->
+        <!-- Documents -->
         <section id="documents" class="section">
             <div class="container">
                 <h2 class="section-title" data-lang-ar="📄 الوثائق التربوية" data-lang-fr="📄 Documents pédagogiques">📄 الوثائق التربوية</h2>
-                <div class="documents-list">
-                    <div class="document-card">
-                        <div class="doc-icon">📑</div>
-                        <h3 data-lang-ar="البرامج الدراسية الرسمية" data-lang-fr="Programmes officiels">البرامج الدراسية الرسمية</h3>
-                        <p data-lang-ar="جميع البرامج الدراسية لعلوم الحياة والأرض" data-lang-fr="Tous les programmes scolaires en SVT">جميع البرامج الدراسية لعلوم الحياة والأرض</p>
-                        <a href="#" class="btn btn-small" data-lang-ar="تحميل" data-lang-fr="Télécharger">تحميل</a>
-                    </div>
-                    <div class="document-card">
-                        <div class="doc-icon">📊</div>
-                        <h3 data-lang-ar="المناهج التربوية" data-lang-fr="Curriculums">المناهج التربوية</h3>
-                        <p data-lang-ar="المناهج المعتمدة من وزارة التربية الوطنية" data-lang-fr="Curriculums approuvés par le ministère">المناهج المعتمدة من وزارة التربية الوطنية</p>
-                        <a href="#" class="btn btn-small" data-lang-ar="تحميل" data-lang-fr="Télécharger">تحميل</a>
-                    </div>
-                    <div class="document-card">
-                        <div class="doc-icon">🎯</div>
-                        <h3 data-lang-ar="دليل المعلم" data-lang-fr="Guide du professeur">دليل المعلم</h3>
-                        <p data-lang-ar="أدلة التوجيهات التربوية والبيداغوجية" data-lang-fr="Guides pédagogiques et didactiques">أدلة التوجيهات التربوية والبيداغوجية</p>
-                        <a href="#" class="btn btn-small" data-lang-ar="تحميل" data-lang-fr="Télécharger">تحميل</a>
-                    </div>
-                    <div class="document-card">
-                        <div class="doc-icon">📝</div>
-                        <h3 data-lang-ar="نماذج الامتحانات" data-lang-fr="Sujets d'examens">نماذج الامتحانات</h3>
-                        <p data-lang-ar="نماذج امتحانات سابقة مع التصحيح" data-lang-fr="Sujets d'examens précédents avec corrigés">نماذج امتحانات سابقة مع التصحيح</p>
-                        <a href="#" class="btn btn-small" data-lang-ar="تحميل" data-lang-fr="Télécharger">تحميل</a>
-                    </div>
-                </div>
+                <p class="section-intro" data-lang-ar="البرامج الرسمية، التوجيهات التربوية، الأطر المرجعية..." data-lang-fr="Programmes officiels, orientations pédagogiques, cadres de référence...">البرامج الرسمية، التوجيهات التربوية، الأطر المرجعية...</p>
+                <div class="content-grid" id="documents-content"></div>
             </div>
         </section>
 
-        <!-- Ressources Section -->
+        <!-- Ressources -->
         <section id="ressources" class="section">
             <div class="container">
                 <h2 class="section-title" data-lang-ar="🌐 الموارد المدرسية" data-lang-fr="🌐 Ressources scolaires">🌐 الموارد المدرسية</h2>
-                <div class="resources-grid">
-                    <div class="resource-card">
-                        <div class="resource-icon">🔬</div>
-                        <h3 data-lang-ar="الموارد العلمية" data-lang-fr="Ressources scientifiques">الموارد العلمية</h3>
-                        <p data-lang-ar="مراجع علمية ومقالات بحثية" data-lang-fr="Références scientifiques et articles de recherche">مراجع علمية ومقالات بحثية</p>
-                        <ul>
-                            <li><a href="#" data-lang-ar="المقالات العلمية" data-lang-fr="Articles scientifiques">المقالات العلمية</a></li>
-                            <li><a href="#" data-lang-ar="الأبحاث الجامعية" data-lang-fr="Recherches universitaires">الأبحاث الجامعية</a></li>
-                            <li><a href="#" data-lang-ar="المجلات العلمية" data-lang-fr="Revues scientifiques">المجلات العلمية</a></li>
-                        </ul>
-                    </div>
-                    <div class="resource-card">
-                        <div class="resource-icon">🎥</div>
-                        <h3 data-lang-ar="الفيديوهات التعليمية" data-lang-fr="Vidéos éducatives">الفيديوهات التعليمية</h3>
-                        <p data-lang-ar="فيديوهات توضيحية للدروس" data-lang-fr="Vidéos explicatives des cours">فيديوهات توضيحية للدروس</p>
-                        <ul>
-                            <li><a href="#" data-lang-ar="شرح الدروس" data-lang-fr="Explication des cours">شرح الدروس</a></li>
-                            <li><a href="#" data-lang-ar="التجارب العملية" data-lang-fr="Expériences pratiques">التجارب العملية</a></li>
-                            <li><a href="#" data-lang-ar="الأفلام الوثائقية" data-lang-fr="Documentaires">الأفلام الوثائقية</a></li>
-                        </ul>
-                    </div>
-                    <div class="resource-card">
-                        <div class="resource-icon">🧩</div>
-                        <h3 data-lang-ar="الأدوات التفاعلية" data-lang-fr="Outils interactifs">الأدوات التفاعلية</h3>
-                        <p data-lang-ar="أدوات تفاعلية للتعلم" data-lang-fr="Outils interactifs pour l'apprentissage">أدوات تفاعلية للتعلم</p>
-                        <ul>
-                            <li><a href="#" data-lang-ar="المحاكاة العلمية" data-lang-fr="Simulations scientifiques">المحاكاة العلمية</a></li>
-                            <li><a href="#" data-lang-ar="الاختبارات التفاعلية" data-lang-fr="Quiz interactifs">الاختبارات التفاعلية</a></li>
-                            <li><a href="#" data-lang-ar="الألعاب التعليمية" data-lang-fr="Jeux éducatifs">الألعاب التعليمية</a></li>
-                        </ul>
-                    </div>
-                    <div class="resource-card">
-                        <div class="resource-icon">📚</div>
-                        <h3 data-lang-ar="المكتبة الرقمية" data-lang-fr="Bibliothèque numérique">المكتبة الرقمية</h3>
-                        <p data-lang-ar="كتب وموارد رقمية" data-lang-fr="Livres et ressources numériques">كتب وموارد رقمية</p>
-                        <ul>
-                            <li><a href="#" data-lang-ar="الكتب المدرسية" data-lang-fr="Manuels scolaires">الكتب المدرسية</a></li>
-                            <li><a href="#" data-lang-ar="الكتب المرجعية" data-lang-fr="Livres de référence">الكتب المرجعية</a></li>
-                            <li><a href="#" data-lang-ar="المقالات التربوية" data-lang-fr="Articles pédagogiques">المقالات التربوية</a></li>
-                        </ul>
-                    </div>
-                </div>
+                <p class="section-intro" data-lang-ar="كتب، مراجع، وموارد رقمية" data-lang-fr="Manuels, références et ressources numériques">كتب، مراجع، وموارد رقمية</p>
+                <div class="content-grid" id="ressources-content"></div>
             </div>
         </section>
 
-        <!-- Divers Section -->
+        <!-- Divers -->
         <section id="divers" class="section">
             <div class="container">
                 <h2 class="section-title" data-lang-ar="⭐ متفرقات" data-lang-fr="⭐ Divers">⭐ متفرقات</h2>
-                <div class="divers-grid">
-                    <div class="divers-card">
-                        <div class="divers-icon">🏆</div>
-                        <h3 data-lang-ar="المسابقات" data-lang-fr="Concours">المسابقات</h3>
-                        <p data-lang-ar="مسابقات علمية وتحديات تعليمية" data-lang-fr="Concours scientifiques et défis éducatifs">مسابقات علمية وتحديات تعليمية</p>
-                        <a href="#" class="btn btn-small" data-lang-ar="المزيد" data-lang-fr="En savoir plus">المزيد</a>
-                    </div>
-                    <div class="divers-card">
-                        <div class="divers-icon">📰</div>
-                        <h3 data-lang-ar="أخبار علمية" data-lang-fr="Actualités scientifiques">أخبار علمية</h3>
-                        <p data-lang-ar="آخر الأخبار والاكتشافات العلمية" data-lang-fr="Dernières nouvelles et découvertes scientifiques">آخر الأخبار والاكتشافات العلمية</p>
-                        <a href="#" class="btn btn-small" data-lang-ar="المزيد" data-lang-fr="En savoir plus">المزيد</a>
-                    </div>
-                    <div class="divers-card">
-                        <div class="divers-icon">💡</div>
-                        <h3 data-lang-ar="نصائح دراسية" data-lang-fr="Conseils d'étude">نصائح دراسية</h3>
-                        <p data-lang-ar="نصائح واستراتيجيات للنجاح" data-lang-fr="Conseils et stratégies pour réussir">نصائح واستراتيجيات للنجاح</p>
-                        <a href="#" class="btn btn-small" data-lang-ar="المزيد" data-lang-fr="En savoir plus">المزيد</a>
-                    </div>
-                    <div class="divers-card">
-                        <div class="divers-icon">🎓</div>
-                        <h3 data-lang-ar="التوجيه المهني" data-lang-fr="Orientation professionnelle">التوجيه المهني</h3>
-                        <p data-lang-ar="معلومات حول المسارات الجامعية" data-lang-fr="Informations sur les parcours universitaires">معلومات حول المسارات الجامعية</p>
-                        <a href="#" class="btn btn-small" data-lang-ar="المزيد" data-lang-fr="En savoir plus">المزيد</a>
-                    </div>
-                </div>
+                <p class="section-intro" data-lang-ar="نصائح دراسية، توجيه، مسابقات..." data-lang-fr="Conseils d'étude, orientation, concours...">نصائح دراسية، توجيه، مسابقات...</p>
+                <div class="content-grid" id="divers-content"></div>
             </div>
         </section>
 
-        <!-- Contact Section -->
+        <!-- Contact -->
         <section id="contact" class="section">
             <div class="container">
                 <h2 class="section-title" data-lang-ar="📞 اتصل بنا" data-lang-fr="📞 Contact">📞 اتصل بنا</h2>
@@ -292,20 +215,21 @@
                         <h3 data-lang-ar="معلومات الاتصال" data-lang-fr="Informations de contact">معلومات الاتصال</h3>
                         <div class="contact-item">
                             <span class="contact-icon">📧</span>
-                            <span>aitenajar@gmail.com</span>
+                            <a href="mailto:aitenajar@gmail.com">aitenajar@gmail.com</a>
                         </div>
                         <div class="contact-item">
-                            <span class="contact-icon">📱</span>
-                            <span>0678723739</span>
+                            <span class="contact-icon">💬</span>
+                            <a href="https://wa.me/212678723739" target="_blank" rel="noopener">WhatsApp : 0678723739</a>
                         </div>
                         <div class="contact-item">
                             <span class="contact-icon">📍</span>
                             <span data-lang-ar="المغرب" data-lang-fr="Maroc">المغرب</span>
                         </div>
                         <div class="social-links">
-                            <a href="#" class="social-link" data-lang-ar="فيسبوك" data-lang-fr="Facebook">فيسبوك</a>
-                            <a href="#" class="social-link" data-lang-ar="يوتيوب" data-lang-fr="YouTube">يوتيوب</a>
-                            <a href="#" class="social-link" data-lang-ar="انستغرام" data-lang-fr="Instagram">انستغرام</a>
+                            <!-- ضع روابط صفحاتك مكان # -->
+                            <a href="#" target="_blank" rel="noopener" class="social-link" data-lang-ar="فيسبوك" data-lang-fr="Facebook">فيسبوك</a>
+                            <a href="#" target="_blank" rel="noopener" class="social-link" data-lang-ar="يوتيوب" data-lang-fr="YouTube">يوتيوب</a>
+                            <a href="#" target="_blank" rel="noopener" class="social-link" data-lang-ar="انستغرام" data-lang-fr="Instagram">انستغرام</a>
                         </div>
                     </div>
                     <div class="contact-form">
@@ -349,24 +273,26 @@
                         <li><a href="#accueil" data-lang-ar="الرئيسية" data-lang-fr="Accueil">الرئيسية</a></li>
                         <li><a href="#cours" data-lang-ar="الدروس" data-lang-fr="Cours">الدروس</a></li>
                         <li><a href="#exercices" data-lang-ar="التمارين" data-lang-fr="Exercices">التمارين</a></li>
+                        <li><a href="#examens" data-lang-ar="الامتحانات" data-lang-fr="Examens">الامتحانات</a></li>
                         <li><a href="#contact" data-lang-ar="اتصل بنا" data-lang-fr="Contact">اتصل بنا</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h3 data-lang-ar="المستويات" data-lang-fr="Niveaux">المستويات</h3>
                     <ul>
-                        <li><a href="#">TC</a></li>
-                        <li><a href="#">1BAC</a></li>
-                        <li><a href="#">2BAC</a></li>
+                        <li><a href="#cours" data-goto-level="TC">TC</a></li>
+                        <li><a href="#cours" data-goto-level="1BAC">1BAC</a></li>
+                        <li><a href="#cours" data-goto-level="2BAC">2BAC</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p data-lang-ar="&copy; 2024 Go SVT Maroc. جميع الحقوق محفوظة." data-lang-fr="&copy; 2024 Go SVT Maroc. Tous droits réservés.">&copy; 2024 Go SVT Maroc. جميع الحقوق محفوظة.</p>
+                <p>&copy; <span id="gs-year">2025</span> Go SVT Maroc. <span data-lang-ar="جميع الحقوق محفوظة." data-lang-fr="Tous droits réservés.">جميع الحقوق محفوظة.</span></p>
             </div>
         </div>
     </footer>
 
     <script src="script.js"></script>
+    <script src="features.js"></script>
 </body>
 </html>
