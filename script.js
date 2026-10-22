@@ -167,7 +167,7 @@ async function loadContentFromManifest(type, subject, level) {
     } catch (error) {
         console.error('Error loading content:', error);
         if (container.dataset.requestId === requestId) {
-            container.innerHTML = `<p class="error">${t('حدث خطأ أثناء تحميل المحتوى. حاول لاحقاً.', 'Erreur lors du chargement du contenu. Veuillez réessayer plus tard.')}</p>`;
+            container.innerHTML = `<p class="error">${t('حدث خطأ أثناء تحميل المحتوى. حاول لاحقاً.', 'Erreur lors du chargement du contenu. Veuillez réessayer plus tard.')}<br><small style="opacity:.6">(${escapeHtml(error.message)})</small></p>`;
         }
     }
 }
