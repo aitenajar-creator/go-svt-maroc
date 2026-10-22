@@ -133,3 +133,133 @@ main { padding-bottom: 80px; }
     .header .logo { max-width: none; }
     .header .logo p { white-space: nowrap; }
 }
+/* =========================================
+   الدفعة 3: إصلاحات + الهاتف + الوضع الليلي
+   ========================================= */
+
+/* ----- إصلاحات عامة ----- */
+.content-grid { grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); }
+.content-grid > .no-files,
+.content-grid > .loading,
+.content-grid > .error { grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; }
+.content-grid > .no-files { color: var(--light-text); font-style: italic; }
+.content-grid > .loading { color: var(--primary-color); font-weight: 600; }
+.content-grid > .error { color: #dc3545; font-weight: 600; }
+
+.card-actions { align-items: center; }
+.card-actions .download-btn { margin-top: 0; }
+.card-actions .download-btn:hover { text-decoration: none; }
+.social-links { flex-wrap: wrap; }
+
+/* ----- زر القائمة يتحول إلى ✕ ----- */
+.mobile-menu-btn span { transform-origin: center; }
+.header:has(.main-nav.active) .mobile-menu-btn span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+.header:has(.main-nav.active) .mobile-menu-btn span:nth-child(2) { opacity: 0; }
+.header:has(.main-nav.active) .mobile-menu-btn span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+/* ----- الهاتف والأجهزة اللوحية ----- */
+@media (max-width: 768px) {
+    .header { padding: .6rem 0; }
+    .header .logo h1 { font-size: 1.25rem; }
+    .header .logo p { font-size: .75rem; }
+    .header-actions { gap: .5rem; }
+    .lang-switcher { padding: .4rem .9rem; font-size: .85rem; }
+
+    .main-nav {
+        max-height: calc(100vh - 70px); overflow-y: auto;
+        padding: .8rem; box-shadow: 0 10px 20px rgba(0,0,0,.25);
+    }
+    .main-nav ul { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+    .main-nav a {
+        display: block; text-align: center; padding: .7rem .5rem;
+        background: rgba(255,255,255,.1);
+    }
+    .main-nav a.active { background: rgba(255,255,255,.3); }
+
+    .section { padding: 1.5rem 0; min-height: auto; }
+    .section-title { font-size: 1.6rem; margin-bottom: 1rem; }
+    .hero { padding: 2.5rem 0; }
+    .features { padding: 2rem 0; }
+    .feature-grid { gap: 1rem; }
+    .feature-card { padding: 1.2rem; }
+    .subject-tabs, .level-tabs { gap: .5rem; margin-bottom: 1rem; }
+    .tab-btn, .level-tab-btn { padding: .55rem 1.2rem; }
+}
+
+@media (max-width: 480px) {
+    .subject-tabs, .level-tabs { flex-direction: row; flex-wrap: nowrap; }
+    .tab-btn, .level-tab-btn { width: auto; flex: 1; padding: .55rem .4rem; }
+    .hero-buttons { flex-direction: column; }
+    .hero-buttons .btn { width: 100%; }
+    .content-card { padding: 1.1rem; }
+    .card-actions > * { flex: 1; justify-content: center; text-align: center; }
+}
+
+@media (max-width: 380px) {
+    .header .logo p { display: none; }
+}
+
+/* ----- الوضع الليلي بألوان مصممة ----- */
+html.gs-dark, html.gs-dark img, html.gs-dark video, html.gs-dark iframe { filter: none; }
+html.gs-dark { color-scheme: dark; background: #0f1a12; }
+html.gs-dark body { background: #0f1a12; color: #e4ece5; }
+
+html.gs-dark .header,
+html.gs-dark .hero { background: linear-gradient(135deg, #1a3a1b, #3d5e2b); }
+html.gs-dark .features { background: #132017; }
+html.gs-dark .footer { background: #0a130c; }
+
+html.gs-dark .feature-card,
+html.gs-dark .content-card,
+html.gs-dark .contact-form,
+html.gs-dark .gs-modal-box {
+    background: #1a2a1e; color: #e4ece5; box-shadow: 0 2px 12px rgba(0,0,0,.45);
+}
+html.gs-dark .content-card { border-color: #5fa35a; }
+
+html.gs-dark .section-title,
+html.gs-dark .feature-card h3,
+html.gs-dark .content-card h3,
+html.gs-dark .contact-info h3,
+html.gs-dark .contact-form h3,
+html.gs-dark .files-count,
+html.gs-dark .gs-group-title,
+html.gs-dark .content-grid > .loading { color: #9fd89a; }
+html.gs-dark .gs-group-title { border-color: #3f7a3a; }
+
+html.gs-dark .content-card p,
+html.gs-dark .feature-card p,
+html.gs-dark .section-intro,
+html.gs-dark .content-grid > .no-files { color: #a9b8ac; }
+html.gs-dark .content-card .level-badge { background: #4d6b32; }
+
+html.gs-dark .tab-btn,
+html.gs-dark .level-tab-btn,
+html.gs-dark .preview-btn { background: transparent; color: #9fd89a; border-color: #4f8a4a; }
+html.gs-dark .tab-btn:hover,
+html.gs-dark .tab-btn.active,
+html.gs-dark .level-tab-btn:hover,
+html.gs-dark .level-tab-btn.active,
+html.gs-dark .preview-btn:hover { background: #3f7a3a; border-color: #3f7a3a; color: #fff; }
+
+html.gs-dark .card-actions .download-btn,
+html.gs-dark .gs-fab { background: #3f7a3a; border-color: #3f7a3a; }
+html.gs-dark .btn-primary { color: #1b1b1b; }
+html.gs-dark .btn-secondary { background: #1a2a1e; color: #9fd89a; }
+
+html.gs-dark .form-group label { color: #e4ece5; }
+html.gs-dark .form-group input,
+html.gs-dark .form-group textarea,
+html.gs-dark #gs-search-input { background: #0f1a12; color: #e4ece5; border-color: #2f4a35; }
+html.gs-dark .form-group input:focus,
+html.gs-dark .form-group textarea:focus,
+html.gs-dark #gs-search-input:focus { border-color: #5fa35a; }
+
+html.gs-dark .gs-modal-head { border-color: #2f4a35; }
+html.gs-dark .gs-close { background: #2f4a35; color: #e4ece5; }
+html.gs-dark .gs-open-tab,
+html.gs-dark .contact-item a { color: #9fd89a; }
+
+@media (max-width: 768px) {
+    html.gs-dark .main-nav { background: #1a3a1b; }
+}
