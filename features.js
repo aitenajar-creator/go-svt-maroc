@@ -201,3 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(true);
     }
 });
+// ===== فصل الجذاذات عن الملخصات =====
+SECTION_NAMES.fiches = { ar: 'الجذاذات', fr: 'Fiches pédagogiques' };
+SECTION_NAMES.resumes = { ar: 'الملخصات', fr: 'Résumés' };
+
+// ===== إخفاء ملفات README =====
+const baseIsContentFile = isContentFile;
+isContentFile = function (path) {
+    const name = path.split('/').pop().toLowerCase();
+    if (/^readme(\.|$)/.test(name)) return false;
+    return baseIsContentFile(path);
+};
