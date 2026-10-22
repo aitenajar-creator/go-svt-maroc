@@ -212,3 +212,25 @@ isContentFile = function (path) {
     if (/^readme(\.|$)/.test(name)) return false;
     return baseIsContentFile(path);
 };
+// ===== قائمة "المزيد" المنسدلة =====
+function closeNavMore(except) {
+    document.querySelectorAll('.nav-more.open').forEach(menu => {
+        if (menu === except) return;
+        menu.classList.remove('open');
+        const b = menu.querySelector('.nav-more-btn');
+        if (b) b.setAttribute('aria-expanded', 'false');
+    });
+}
+
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.nav-more-btn');
+    if (!btn) { closeNavMore(null); return; }   // نقرة خارج الزر أو اختيار قسم: إغلاق
+    const menu = btn.closest('.nav-more');
+    closeNavMore(menu);
+    const open = menu.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(open));
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeNavMore(null);
+});
