@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-22T11:07:57.067017+00:00",
+  "generated": "2026-10-22T11:25:49.634307+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -35,18 +35,7 @@
             "__files": [
               "eleves- cours 2bacsvt-francais- unite 1 -Chap 2-role de muscle strie.pdf",
               "eleves-ait enajar-cours 2bacsvt-francais- unite 1 -chap1-consomation d'energie.pdf"
-            ],
-            "resume pdf": {
-              "__files": [
-                "resume unite 1 chp 1.pdf",
-                "resume unite 1 chp 2.pdf",
-                "resume unite 2.pdf",
-                "resume unite 3.pdf",
-                "resume unite 4 SM.pdf",
-                "resume unite 4 pc.pdf",
-                "resume unite 5 immunologie.pdf"
-              ]
-            }
+            ]
           }
         },
         "TC": {
