@@ -68,7 +68,10 @@ function examInfo(relPath) {
     let session = '';
     if (/rattrapage|استدراك/.test(text)) session = t('استدراكية', 'Rattrapage');
     else if (/normal|عادي/.test(text)) session = t('عادية', 'Normale');
-    return { year: yearMatch ? yearMatch[1] : '', session };
+        let kind = '';
+    if (/corrig|correction|تصحيح/.test(text)) kind = t('التصحيح', 'Corrigé');
+    else if (/sujet|موضوع/.test(text)) kind = t('الموضوع', 'Sujet');
+    return { year: yearMatch ? yearMatch[1] : '', session, kind };
 }
 
 function loadExams(container, subject, level) {
@@ -83,9 +86,9 @@ function loadExams(container, subject, level) {
         const groups = {};
         exams.forEach(p => {
             const rel = p.startsWith(inExamens) ? p.slice(inExamens.length) : p.slice(inExercices.length);
-            const { year, session } = examInfo(rel);
+            const { year, session, kind } = examInfo(rel);
             const parts = rel.split('/');
-            const badge = [parts.length > 1 ? parts[0] : level, session].filter(Boolean).join(' · ');
+            const badge = [parts.length > 1 ? parts[0] : level, session, kind].filter(Boolean).join(' · ');
             (groups[year] = groups[year] || []).push({ path: p, badge });
         });
 
