@@ -170,3 +170,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const year = document.getElementById('gs-year');
     if (year) year.textContent = new Date().getFullYear();
 });
+// ===== الدفعة 3: قائمة الهاتف + الوضع الليلي =====
+
+// إغلاق قائمة الهاتف عند النقر خارجها
+document.addEventListener('click', e => {
+    const nav = document.querySelector('.main-nav');
+    if (!nav || !nav.classList.contains('active')) return;
+    if (e.target.closest('.main-nav, .mobile-menu-btn')) return;
+    nav.classList.remove('active');
+});
+
+// إغلاق قائمة الهاتف بزر Escape
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const nav = document.querySelector('.main-nav');
+    if (nav) nav.classList.remove('active');
+});
+
+// تغيير لون شريط المتصفح على الهاتف حسب الوضع
+const baseApplyTheme = applyTheme;
+applyTheme = function (dark) {
+    baseApplyTheme(dark);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#1a3a1b' : '#2d5a27');
+};
+
+// تفعيل الوضع الليلي تلقائياً إذا كان هاتف/حاسوب الزائر في الوضع الليلي
+document.addEventListener('DOMContentLoaded', () => {
+    if (!storage.get('gosvt-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        applyTheme(true);
+    }
+});
