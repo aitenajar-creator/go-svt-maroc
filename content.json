@@ -1,0 +1,5 @@
+---
+layout: null
+permalink: /content.json
+---
+{{ site.static_files | map: "path" | jsonify }}
