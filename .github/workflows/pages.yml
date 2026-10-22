@@ -1,0 +1,57 @@
+name: Déploiement Go SVT Maroc
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/configure-pages@v5
+      - name: Build Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - name: Dates des fichiers
+        run: |
+          python3 - <<'EOF'
+          import json, subprocess
+          log = subprocess.run(
+              ["git", "-c", "core.quotepath=off", "log", "--diff-filter=A", "--format=@%ct", "--name-only"],
+              capture_output=True, encoding="utf-8", check=True).stdout
+          dates, ts = {}, 0
+          for line in log.splitlines():
+              if line.startswith("@"):
+                  ts = int(line[1:])
+              elif line.strip():
+                  dates.setdefault("/" + line.strip(), ts)
+          with open("dates.json", "w", encoding="utf-8") as f:
+              json.dump(dates, f, ensure_ascii=False)
+          EOF
+          sudo cp dates.json _site/dates.json
+      - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
