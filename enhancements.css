@@ -113,3 +113,23 @@ html.gs-dark img, html.gs-dark video, html.gs-dark iframe { filter: invert(1) hu
 
 /* حرف كبير في بداية العناوين */
 .content-card h3::first-letter { text-transform: uppercase; }
+/* ===== إصلاح الأزرار العائمة ===== */
+.gs-fab-group {
+    left: auto; right: auto;
+    inset-inline-end: 16px;
+    bottom: 16px;
+}
+.gs-fab {
+    width: 46px; height: 46px; font-size: 1.15rem;
+    opacity: .85;
+}
+.gs-fab:hover, .gs-fab:focus-visible { opacity: 1; }
+
+/* مساحة في أسفل الصفحة حتى لا تغطي الأزرار آخر بطاقة */
+main { padding-bottom: 80px; }
+
+/* الوصف تحت الشعار في سطر واحد على الشاشات الكبيرة */
+@media (min-width: 1200px) {
+    .header .logo { max-width: none; }
+    .header .logo p { white-space: nowrap; }
+}
