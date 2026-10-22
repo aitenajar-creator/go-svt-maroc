@@ -263,3 +263,45 @@ html.gs-dark .contact-item a { color: #9fd89a; }
 @media (max-width: 768px) {
     html.gs-dark .main-nav { background: #1a3a1b; }
 }
+/* ===== قائمة "المزيد" المنسدلة ===== */
+.nav-more { position: relative; }
+.nav-more-btn {
+    background: none; border: none; cursor: pointer; color: var(--white);
+    font: inherit; font-weight: 600; padding: .45rem .75rem;
+    border-radius: var(--border-radius); transition: var(--transition);
+}
+.nav-more-btn:hover,
+.nav-more.open > .nav-more-btn,
+.nav-more:has(a.active) > .nav-more-btn { background: rgba(255,255,255,.2); }
+
+.main-nav .nav-submenu {
+    display: none; position: absolute; top: 100%; inset-inline-start: 0; z-index: 1001;
+    flex-direction: column; gap: .2rem; min-width: 190px; padding: .4rem;
+    background: #fff; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.2);
+}
+.nav-more.open > .nav-submenu { display: flex; }
+@media (hover: hover) and (min-width: 769px) {
+    .nav-more:hover > .nav-submenu { display: flex; }
+}
+.main-nav .nav-submenu a {
+    display: block; color: var(--primary-color); white-space: nowrap; padding: .5rem .8rem;
+}
+.main-nav .nav-submenu a:hover,
+.main-nav .nav-submenu a.active { background: #e8f2e3; }
+
+/* على الهاتف: تظهر الأقسام مباشرة داخل قائمة ☰ */
+@media (max-width: 768px) {
+    .nav-more, .main-nav .nav-submenu { display: contents; }
+    .nav-more-btn { display: none; }
+    .main-nav .nav-submenu a {
+        color: var(--white); background: rgba(255,255,255,.1);
+        text-align: center; white-space: normal;
+    }
+    .main-nav .nav-submenu a.active { background: rgba(255,255,255,.3); }
+}
+
+/* الوضع الليلي */
+html.gs-dark .main-nav .nav-submenu { background: #1a2a1e; }
+html.gs-dark .main-nav .nav-submenu a { color: #9fd89a; }
+html.gs-dark .main-nav .nav-submenu a:hover,
+html.gs-dark .main-nav .nav-submenu a.active { background: #2f4a35; }
