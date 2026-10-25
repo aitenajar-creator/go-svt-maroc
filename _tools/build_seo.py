@@ -1,0 +1,626 @@
+#!/usr/bin/env python3
+"""
+Go SVT Maroc - générateur SEO
+=============================
+Lit les dossiers cours/ exercices/ fiches/ et produit, à chaque déploiement :
+
+  * svt/...            pages HTML statiques indexables (une par type/niveau/filière)
+                       -> les titres de cours et les examens deviennent visibles
+                          pour Google (le site principal charge tout en JavaScript)
+  * sitemap.xml        toutes les pages + les PDF, avec <lastmod> et hreflang
+  * index.html         remplit le bloc entre <!-- SEO-LINKS:START --> et
+                       <!-- SEO-LINKS:END --> avec des liens HTML classiques
+                       vers ces pages (Google suit les <a href>, pas le JS)
+
+Usage :   python3 _tools/build_seo.py          (aucune dépendance, stdlib seule)
+
+Titres lisibles des cours : modifier _tools/seo-titles.json (voir README_SEO.md).
+Le script est idempotent : on peut le relancer autant de fois que l'on veut.
+"""
+import datetime
+import hashlib
+import html
+import json
+import re
+import subprocess
+import sys
+from collections import defaultdict
+from pathlib import Path
+from urllib.parse import quote
+from xml.sax.saxutils import escape as xml_escape
+
+ROOT = Path(__file__).resolve().parent.parent
+SITE = "https://gosvtmaroc.com"
+OUT = "svt"                                   # dossier des pages générées
+CONTENT_TYPES = ["cours", "exercices", "fiches"]
+DOC_EXT = {".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"}
+MIN_BYTES = 2048                              # ignore les fichiers factices (ex. "Examens Nationaux" = 1 octet)
+MIN_ITEMS = 2                                 # pas de page "maigre" sous ce nombre de fichiers
+SUBJECTS = {"francais": "fr", "arabe": "ar"}
+
+# --------------------------------------------------------------------------
+# Libellés
+# --------------------------------------------------------------------------
+LEVELS = {
+    "TC":   {"slug": "tc",   "fr": "TC",   "fr_long": "Tronc Commun",       "ar": "جذع مشترك"},
+    "1BAC": {"slug": "1bac", "fr": "1BAC", "fr_long": "1ère Bac",           "ar": "الأولى باكالوريا"},
+    "2BAC": {"slug": "2bac", "fr": "2BAC", "fr_long": "2ème Bac",           "ar": "الثانية باكالوريا"},
+}
+BRANCHES = {
+    "TCS":     {"slug": "tc-sciences", "fr": "TC Sciences",  "fr_long": "Tronc Commun Scientifique (TCS)",                        "ar": "جذع مشترك علمي"},
+    "TCL":     {"slug": "tc-lettres",  "fr": "TC Lettres",   "fr_long": "Tronc Commun Lettres (TCL)",                             "ar": "جذع مشترك آداب"},
+    "1BACSE":  {"slug": "1bac-se",     "fr": "1BAC SE",      "fr_long": "1ère Bac Sciences Expérimentales (1BAC SE)",             "ar": "الأولى باكالوريا علوم تجريبية"},
+    "1BACSM":  {"slug": "1bac-sm",     "fr": "1BAC SM",      "fr_long": "1ère Bac Sciences Mathématiques (1BAC SM)",              "ar": "الأولى باكالوريا علوم رياضية"},
+    "1BACL":   {"slug": "1bac-lettres","fr": "1BAC Lettres", "fr_long": "1ère Bac Lettres (1BAC L)",                              "ar": "الأولى باكالوريا آداب"},
+    "2BACSVT": {"slug": "2bac-svt",    "fr": "2BAC SVT",     "fr_long": "2ème Bac Sciences de la Vie et de la Terre (2BAC SVT)",  "ar": "الثانية باكالوريا علوم الحياة والأرض"},
+    "2BACSM":  {"slug": "2bac-sm",     "fr": "2BAC SM",      "fr_long": "2ème Bac Sciences Mathématiques (2BAC SM)",              "ar": "الثانية باكالوريا علوم رياضية"},
+    "2BACSP":  {"slug": "2bac-sp",     "fr": "2BAC SP",      "fr_long": "2ème Bac Sciences Physiques (2BAC SP)",                  "ar": "الثانية باكالوريا علوم فيزيائية"},
+}
+TYPE_LABEL = {
+    "fr": {"cours": "Cours de SVT", "exercices": "Exercices de SVT", "fiches": "Fiches et résumés de SVT",
+           "examens": "Examens nationaux de SVT"},
+    "ar": {"cours": "دروس علوم الحياة والأرض", "exercices": "تمارين علوم الحياة والأرض",
+           "fiches": "جذاذات وملخصات علوم الحياة والأرض", "examens": "الامتحانات الوطنية في علوم الحياة والأرض"},
+}
+TYPE_ORDER = ["cours", "exercices", "fiches", "examens"]
+EXAM_RE = re.compile(
+    r"examen-national-svt-.+?-(?P<year>20\d{2})-(?P<session>normale|rattrapage)-(?P<kind>sujet|corrige)",
+    re.I)
+BRAND = "Go SVT Maroc"
+
+
+def scope_info(scope):
+    """scope = nom de filière (2BACSVT) ou de niveau (2BAC)."""
+    if scope in BRANCHES:
+        return BRANCHES[scope]
+    if scope in LEVELS:
+        return LEVELS[scope]
+    slug = re.sub(r"[^a-z0-9]+", "-", scope.lower()).strip("-") or "autre"
+    return {"slug": slug, "fr": scope, "fr_long": scope, "ar": scope}
+
+
+# --------------------------------------------------------------------------
+# Outils
+# --------------------------------------------------------------------------
+def natural_key(s):
+    return [int(p) if p.isdigit() else p.lower() for p in re.split(r"(\d+)", s)]
+
+
+def md5(path):
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def url_path(rel_parts):
+    return "/" + "/".join(quote(p) for p in rel_parts)
+
+
+def human_size(n, lang):
+    mb = n / (1024 * 1024)
+    if mb >= 1:
+        s = f"{mb:.1f}"
+        return (s.replace(".", ",") + " Mo") if lang == "fr" else (s + " MB")
+    kb = max(1, round(n / 1024))
+    return f"{kb} Ko" if lang == "fr" else f"{kb} KB"
+
+
+def git_date(path):
+    """Date du dernier commit touchant ce fichier ; sinon date de modification."""
+    try:
+        out = subprocess.run(
+            ["git", "-c", "core.quotepath=off", "log", "-1", "--format=%cs", "--", str(path.relative_to(ROOT))],
+            cwd=ROOT, capture_output=True, text=True, encoding="utf-8", timeout=20)
+        d = out.stdout.strip()
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d):
+            return d
+    except Exception:
+        pass
+    return datetime.date.fromtimestamp(path.stat().st_mtime).isoformat()
+
+
+def clean_filename_title(name):
+    t = re.sub(r"\.[^.]+$", "", name)
+    t = re.sub(r"[_]+", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+
+def load_titles():
+    p = ROOT / "_tools" / "seo-titles.json"
+    if not p.exists():
+        return {}
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        print(f"!! seo-titles.json invalide : {e}", file=sys.stderr)
+        return {}
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
+# --------------------------------------------------------------------------
+# Scan des fichiers
+# --------------------------------------------------------------------------
+class Item:
+    def __init__(self, path, parts, size, digest):
+        self.path = path
+        self.parts = parts              # chemin relatif (liste)
+        self.name = parts[-1]
+        self.size = size
+        self.digest = digest
+        self.url = url_path(parts)
+        self.title = None
+        self.group = None
+        self.order = 999
+        self.exam = None                # (year, session, kind)
+        self.date = None
+
+
+def scan(titles):
+    groups = defaultdict(list)          # (type, lang, scope) -> [Item]
+    used_keys = set()
+    for ctype in CONTENT_TYPES:
+        base = ROOT / ctype
+        if not base.is_dir():
+            continue
+        for p in sorted(base.rglob("*")):
+            if not p.is_file() or p.name.startswith("."):
+                continue
+            if p.suffix.lower() not in DOC_EXT:
+                continue
+            rel = p.relative_to(ROOT).parts
+            if len(rel) < 4 or rel[1] not in SUBJECTS:      # type/langue/niveau/fichier minimum
+                continue
+            size = p.stat().st_size
+            if size < MIN_BYTES:
+                continue
+            lang = SUBJECTS[rel[1]]
+            level = rel[2]
+            scope = rel[3] if len(rel) >= 5 else level      # filière si sous-dossier, sinon niveau
+            it = Item(p, list(rel), size, md5(p))
+            ov = titles.get(it.name)
+            if ov is not None:
+                used_keys.add(it.name)
+                if isinstance(ov, str):
+                    it.title = ov
+                else:
+                    it.title = ov.get("title")
+                    it.group = ov.get("group")
+                    it.order = ov.get("order", 999)
+            m = EXAM_RE.search(it.name)
+            page_type = ctype
+            if ctype == "exercices" and m:
+                page_type = "examens"
+                it.exam = (int(m["year"]), m["session"].lower(), m["kind"].lower())
+            if not it.title:
+                it.title = clean_filename_title(it.name)
+            groups[(page_type, lang, scope)].append(it)
+    unknown = set(titles) - used_keys
+    for k in sorted(unknown):
+        print(f"   ! seo-titles.json : aucun fichier nommé « {k} »", file=sys.stderr)
+    return groups
+
+
+def dedupe(items):
+    """Garde un seul exemplaire des fichiers identiques (même contenu)."""
+    by_digest = defaultdict(list)
+    for it in items:
+        by_digest[it.digest].append(it)
+    kept = []
+    for dup in by_digest.values():
+        dup.sort(key=lambda i: (bool(re.search(r"\(\d+\)", i.name)), len(i.parts), i.name))
+        kept.append(dup[0])
+    return kept
+
+
+# --------------------------------------------------------------------------
+# Modèle de page
+# --------------------------------------------------------------------------
+class Page:
+    def __init__(self, ptype, lang, scope, items):
+        self.type, self.lang, self.scope = ptype, lang, scope
+        self.items = items
+        self.info = scope_info(scope)
+        self.path = f"/{OUT}/{ptype}/{lang}/{self.info['slug']}/"
+        self.url = SITE + self.path
+        self.label = self.info[lang if lang == "ar" else "fr"]
+        self.label_long = self.info["ar"] if lang == "ar" else self.info["fr_long"]
+        self.alternates = {}
+        self.lastmod = None
+        years = sorted({i.exam[0] for i in items if i.exam})
+        self.years = (years[0], years[-1]) if years else None
+        self.build_texts()
+
+    def build_texts(self):
+        L, T = self.lang, TYPE_LABEL[self.lang][self.type]
+        if L == "ar" and "علوم الحياة والأرض" in self.label_long:      # évite la répétition du nom de la matière
+            T = re.sub(r"\s*(في\s+)?علوم الحياة والأرض", "", T)
+        n = len(self.items)
+        if self.type == "examens":
+            y0, y1 = self.years
+            yr = f"{y0}-{y1}" if y0 != y1 else f"{y0}"
+            if L == "fr":
+                self.h1 = f"{T} {self.label} ({yr}) : sujets et corrigés PDF"
+                self.title = f"Examens nationaux SVT {self.label} {yr} : sujets et corrigés | {BRAND}"
+                self.desc = (f"Examens nationaux de SVT {self.label} de {y0} à {y1} : sujets et corrigés des sessions "
+                             f"normale et de rattrapage, à télécharger gratuitement en PDF.")
+                self.intro = (f"Sujets et corrigés (lorsqu'ils sont disponibles) des examens nationaux de SVT pour "
+                              f"{self.label_long}, de {y0} à {y1}, sessions normale et de rattrapage. "
+                              f"Tous les fichiers sont en PDF et gratuits.")
+            else:
+                self.h1 = f"{T} {self.label_long} ({yr}) : مواضيع وتصحيحات PDF"
+                self.title = f"{self.h1} | {BRAND}"
+                self.desc = (f"مواضيع وتصحيحات الامتحانات الوطنية في علوم الحياة والأرض {self.label_long} "
+                             f"من {y0} إلى {y1}، الدورتان العادية والاستدراكية، تحميل مجاني بصيغة PDF.")
+                self.intro = (f"مواضيع الامتحانات الوطنية في علوم الحياة والأرض لمسلك {self.label_long} من {y0} إلى {y1}، "
+                              f"مع التصحيحات حيثما توفرت، للدورتين العادية والاستدراكية. جميع الملفات بصيغة PDF ومجانية.")
+        else:
+            if L == "fr":
+                self.h1 = f"{T} {self.label} : {n} fichiers PDF"
+                self.title = f"{T} {self.label} en PDF | {BRAND}"
+                self.desc = self.fit_desc(f"{T} {self.label_long} : {n} fichiers PDF à télécharger gratuitement.",
+                                          " Au programme : ", "; ")
+                self.intro = (f"Retrouvez ici les documents « {T.lower()} » du niveau {self.label_long}, "
+                              f"au format PDF et gratuits. La liste s'enrichit à mesure que de nouveaux fichiers sont ajoutés.")
+            else:
+                self.h1 = f"{T} {self.label_long} : {n} ملفات PDF"
+                self.title = f"{T} {self.label_long} - تحميل PDF | {BRAND}"
+                self.desc = self.fit_desc(f"{T} لمسلك {self.label_long} : {n} ملفات PDF للتحميل المجاني.", " ", "؛ ")
+                self.intro = (f"ملفات «{T}» لمسلك {self.label_long} بصيغة PDF ومجانية. "
+                              f"تتزايد القائمة كلما أُضيفت ملفات جديدة.")
+        self.desc = self.desc.strip()
+        if len(self.desc) > 160:
+            self.desc = self.desc[:157].rsplit(" ", 1)[0].rstrip(" ,;:") + "…"
+
+    def fit_desc(self, base, lead, sep, limit=160):
+        """Base + titres de chapitres, tant que la description tient dans la limite (sans coupure moche)."""
+        ordered = sorted(self.items, key=lambda i: (i.order, natural_key(i.name)))
+        names = []
+        for i in ordered:
+            nm = re.sub(r"^Unité \d+ : ", "", i.group) if i.group else re.sub(r"^Chapitre \d+ : ", "", i.title)
+            if nm not in names:
+                names.append(nm)
+        out, picked = base, []
+        for nm in names:
+            trial = base + lead + sep.join(picked + [nm]) + "."
+            if len(trial) > limit:
+                break
+            picked.append(nm)
+        return base + lead + sep.join(picked) + "." if picked else base
+
+
+# --------------------------------------------------------------------------
+# HTML
+# --------------------------------------------------------------------------
+CSS = """
+:root{--c1:#2d5a27;--bg:#f8f9fa;--card:#fff;--tx:#222;--mut:#5f6b5f;--bd:#e3e8e3;--ac:#2d5a27}
+@media (prefers-color-scheme:dark){:root{--bg:#121712;--card:#1b231b;--tx:#e8ece8;--mut:#a9b5a9;--bd:#2c382c;--ac:#97bc62}}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Cairo',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.7;color:var(--tx);background:var(--bg)}
+a{color:var(--ac)}
+.w{max-width:960px;margin:0 auto;padding:0 20px}
+.hd{background:linear-gradient(135deg,#2d5a27,#4f8a3f);padding:.8rem 0}
+.hd .w{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.brand{color:#fff;font-weight:700;font-size:1.25rem;text-decoration:none}
+.nav a{color:#fff;margin-inline-start:1.1rem;text-decoration:none;font-size:.95rem}
+.nav a:hover{text-decoration:underline}
+.crumbs{font-size:.85rem;color:var(--mut);margin:1rem 0 0}
+.crumbs a{color:var(--mut)}
+h1{font-size:1.55rem;line-height:1.4;color:var(--ac);margin:.5rem 0}
+h2{font-size:1.15rem;margin:1.8rem 0 .6rem;color:var(--ac)}
+.intro{color:var(--mut);margin:.2rem 0 1.2rem}
+.list{list-style:none;padding:0;margin:0;display:grid;gap:.6rem}
+.list li{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:.7rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.list a{font-weight:600;text-decoration:none}
+.list a:hover{text-decoration:underline}
+.meta{color:var(--mut);font-size:.82rem;white-space:nowrap}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd)}
+th,td{padding:.55rem .7rem;border-bottom:1px solid var(--bd);text-align:center;white-space:nowrap}
+th{background:rgba(45,90,39,.12);font-size:.9rem}
+td:first-child{font-weight:700}
+.cta{display:inline-block;margin:1.4rem 0 .4rem;padding:.65rem 1.2rem;background:var(--c1);color:#fff;border-radius:8px;text-decoration:none;font-weight:600}
+.rel ul{padding-inline-start:1.2rem;margin:.3rem 0}
+.ft{margin-top:2.5rem;padding:1.2rem 0;border-top:1px solid var(--bd);color:var(--mut);font-size:.88rem}
+"""
+
+UI = {
+    "fr": {"home": "Accueil", "hub": "Cours et examens", "all": "Toutes les ressources", "open": "Accéder à la plateforme complète",
+           "related": "Voir aussi", "files": "fichiers", "year": "Année",
+           "n_sujet": "Normale · Sujet", "n_corr": "Normale · Corrigé", "r_sujet": "Rattrapage · Sujet", "r_corr": "Rattrapage · Corrigé",
+           "sujet": "Sujet", "corr": "Corrigé", "other_lang": "العربية", "rights": "Tous droits réservés."},
+    "ar": {"home": "الرئيسية", "hub": "الدروس والامتحانات", "all": "جميع الموارد", "open": "الانتقال إلى المنصة الكاملة",
+           "related": "روابط ذات صلة", "files": "ملفات", "year": "السنة",
+           "n_sujet": "العادية · الموضوع", "n_corr": "العادية · التصحيح", "r_sujet": "الاستدراكية · الموضوع", "r_corr": "الاستدراكية · التصحيح",
+           "sujet": "الموضوع", "corr": "التصحيح", "other_lang": "Français", "rights": "جميع الحقوق محفوظة."},
+}
+
+
+def e(s):
+    return html.escape(str(s), quote=True)
+
+
+def head(title, desc, canonical, lang, alternates=None, robots="index,follow,max-image-preview:large", jsonld=None):
+    alt = ""
+    if alternates and len(alternates) > 1:
+        for lg, u in sorted(alternates.items()):
+            alt += f'<link rel="alternate" hreflang="{lg}" href="{e(u)}">\n'
+        alt += f'<link rel="alternate" hreflang="x-default" href="{e(alternates.get("fr", canonical))}">\n'
+    ld = ""
+    if jsonld:
+        ld = '<script type="application/ld+json">' + json.dumps(jsonld, ensure_ascii=False) + "</script>\n"
+    loc = "fr_FR" if lang == "fr" else "ar_MA"
+    return f"""<!DOCTYPE html>
+<html lang="{lang}" dir="{'rtl' if lang == 'ar' else 'ltr'}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="robots" content="{robots}">
+<link rel="canonical" href="{e(canonical)}">
+{alt}<meta name="theme-color" content="#2d5a27">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{BRAND}">
+<meta property="og:locale" content="{loc}">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(desc)}">
+<meta property="og:url" content="{e(canonical)}">
+<meta property="og:image" content="{SITE}/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+{ld}<style>{CSS}</style>
+</head>
+"""
+
+
+def shell(lang, crumbs, body, other_lang_url=None):
+    u = UI[lang]
+    sw = f'<a href="{e(other_lang_url)}" hreflang="{"ar" if lang == "fr" else "fr"}">{u["other_lang"]}</a>' if other_lang_url else ""
+    cr = " › ".join(f'<a href="{e(h)}">{e(t)}</a>' if h else e(t) for t, h in crumbs)
+    return f"""<body>
+<header class="hd"><div class="w">
+<a class="brand" href="/">🔬 {BRAND}</a>
+<nav class="nav"><a href="/">{u['home']}</a><a href="/{OUT}/">{u['hub']}</a>{sw}</nav>
+</div></header>
+<main class="w">
+<nav class="crumbs" aria-label="breadcrumb">{cr}</nav>
+{body}
+<a class="cta" href="/">{u['open']}</a>
+</main>
+<footer class="w ft">© <span>{datetime.date.today().year}</span> {BRAND}. {u['rights']}</footer>
+</body>
+</html>
+"""
+
+
+def file_li(it, lang):
+    return (f'<li><a href="{e(it.url)}" type="application/pdf">{e(it.title)}</a>'
+            f'<span class="meta">{it.name.rsplit(".", 1)[-1].upper()} · {human_size(it.size, lang)}</span></li>')
+
+
+def render_list(page):
+    items = sorted(page.items, key=lambda i: (i.order, natural_key(i.name)))
+    has_groups = any(i.group for i in items)
+    if not has_groups:
+        return '<ul class="list">' + "".join(file_li(i, page.lang) for i in items) + "</ul>"
+    out, seen = [], []
+    for i in items:
+        g = i.group or ""
+        if g not in seen:
+            seen.append(g)
+    for g in seen:
+        sub = [i for i in items if (i.group or "") == g]
+        if g:
+            out.append(f"<h2>{e(g)}</h2>")
+        out.append('<ul class="list">' + "".join(file_li(i, page.lang) for i in sub) + "</ul>")
+    return "\n".join(out)
+
+
+def render_exam_table(page):
+    u = UI[page.lang]
+    cell = defaultdict(dict)       # year -> {(session, kind): Item}
+    extra = []
+    for it in sorted(page.items, key=lambda i: (bool(re.search(r"\(\d+\)", i.name)), natural_key(i.name))):
+        if not it.exam:
+            extra.append(it)
+            continue
+        y, s, k = it.exam
+        cell[y].setdefault((s, k), it)
+    rows = []
+    for y in sorted(cell, reverse=True):
+        tds = [f"<td>{y}</td>"]
+        for key, lab in ((("normale", "sujet"), "sujet"), (("normale", "corrige"), "corr"),
+                         (("rattrapage", "sujet"), "sujet"), (("rattrapage", "corrige"), "corr")):
+            it = cell[y].get(key)
+            tds.append(f'<td><a href="{e(it.url)}" type="application/pdf">{u[lab]} {y}</a></td>' if it else "<td>—</td>")
+        rows.append("<tr>" + "".join(tds) + "</tr>")
+    table = (f'<div class="tw"><table><thead><tr><th>{u["year"]}</th><th>{u["n_sujet"]}</th><th>{u["n_corr"]}</th>'
+             f'<th>{u["r_sujet"]}</th><th>{u["r_corr"]}</th></tr></thead><tbody>' + "".join(rows) + "</tbody></table></div>")
+    if extra:
+        table += '<ul class="list" style="margin-top:1rem">' + "".join(file_li(i, page.lang) for i in extra) + "</ul>"
+    return table
+
+
+def jsonld_for(page, pages_by_url):
+    crumbs = [
+        {"@type": "ListItem", "position": 1, "name": BRAND, "item": SITE + "/"},
+        {"@type": "ListItem", "position": 2, "name": UI[page.lang]["hub"], "item": f"{SITE}/{OUT}/"},
+        {"@type": "ListItem", "position": 3, "name": page.h1, "item": page.url},
+    ]
+    parts = []
+    for it in sorted(page.items, key=lambda i: (i.order, natural_key(i.name))):
+        parts.append({
+            "@type": "LearningResource",
+            "name": it.title if not it.exam else f"{TYPE_LABEL[page.lang]['examens']} {page.label} {it.exam[0]} {it.exam[1]} {it.exam[2]}",
+            "url": SITE + it.url,
+            "encodingFormat": "application/pdf" if it.name.lower().endswith(".pdf") else None,
+            "inLanguage": page.lang,
+            "learningResourceType": {"cours": "Lesson", "exercices": "Exercise", "fiches": "Study guide",
+                                     "examens": "Exam"}[page.type],
+            "isAccessibleForFree": True,
+        })
+        parts[-1] = {k: v for k, v in parts[-1].items() if v is not None}
+    return [
+        {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": crumbs},
+        {"@context": "https://schema.org", "@type": "CollectionPage", "name": page.h1, "description": page.desc,
+         "url": page.url, "inLanguage": page.lang, "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE + "/"},
+         "hasPart": parts},
+    ]
+
+
+def render_page(page, all_pages):
+    u = UI[page.lang]
+    related = [p for p in all_pages if p.lang == page.lang and p is not page]
+    # même filière d'abord
+    related.sort(key=lambda p: (p.scope != page.scope, TYPE_ORDER.index(p.type), p.scope))
+    rel_html = ""
+    if related:
+        lis = "".join(f'<li><a href="{e(p.path)}">{e(p.h1)}</a></li>' for p in related[:8])
+        rel_html = f'<section class="rel"><h2>{u["related"]}</h2><ul>{lis}</ul></section>'
+    body = f"<h1>{e(page.h1)}</h1>\n<p class=\"intro\">{e(page.intro)}</p>\n"
+    body += render_exam_table(page) if page.type == "examens" else render_list(page)
+    body += rel_html
+    other = page.alternates.get("ar" if page.lang == "fr" else "fr")
+    crumbs = [(BRAND, "/"), (u["hub"], f"/{OUT}/"), (page.label if page.lang == "fr" else page.label_long, None)]
+    return head(page.title, page.desc, page.url, page.lang, page.alternates,
+                jsonld=jsonld_for(page, None)) + shell(page.lang, crumbs, body, other)
+
+
+def render_hub(pages):
+    title = f"Cours, exercices et examens nationaux de SVT (TC, 1BAC, 2BAC) | {BRAND}"
+    desc = ("Cours, exercices et examens nationaux de SVT pour TC, 1BAC et 2BAC : PDF gratuits. "
+            "دروس وتمارين وامتحانات علوم الحياة والأرض.")
+    body = "<h1>Cours, exercices et examens nationaux de SVT</h1>\n"
+    body += ('<p class="intro">Toutes les ressources de SVT organisées par niveau, en PDF et gratuites. '
+             'دروس وتمارين وامتحانات وطنية في علوم الحياة والأرض.</p>')
+    for lang in ("fr", "ar"):
+        sub = [p for p in pages if p.lang == lang]
+        if not sub:
+            continue
+        body += f'<h2>{"Français" if lang == "fr" else "العربية"}</h2><ul class="list" style="margin-bottom:.5rem">'
+        for t in TYPE_ORDER:
+            for p in sorted([p for p in sub if p.type == t], key=lambda p: p.scope):
+                body += (f'<li><a href="{e(p.path)}" hreflang="{lang}">{e(p.h1)}</a>'
+                         f'<span class="meta">{len(p.items)} {UI[lang]["files"]}</span></li>')
+        body += "</ul>"
+    crumbs = [(BRAND, "/"), ("Cours et examens", None)]
+    ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": title, "url": f"{SITE}/{OUT}/",
+           "inLanguage": ["fr", "ar"], "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE + "/"}}]
+    return head(title, desc, f"{SITE}/{OUT}/", "fr", jsonld=ld) + shell("fr", crumbs, body)
+
+
+# --------------------------------------------------------------------------
+# sitemap + index
+# --------------------------------------------------------------------------
+def build_sitemap(pages, home_date):
+    urls = [(SITE + "/", home_date, "1.0", None), (f"{SITE}/{OUT}/", home_date, "0.9", None)]
+    for p in pages:
+        urls.append((p.url, p.lastmod, "0.8", p.alternates if len(p.alternates) > 1 else None))
+    seen = set()
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>',
+             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">']
+    for loc, mod, prio, alts in urls:
+        lines.append(f"  <url><loc>{xml_escape(loc)}</loc><lastmod>{mod}</lastmod><priority>{prio}</priority>")
+        if alts:
+            for lg, u in sorted(alts.items()):
+                lines.append(f'    <xhtml:link rel="alternate" hreflang="{lg}" href="{xml_escape(u)}"/>')
+        lines.append("  </url>")
+        seen.add(loc)
+    for p in pages:                                    # les PDF eux-mêmes
+        for it in p.items:
+            loc = SITE + it.url
+            if loc in seen:
+                continue
+            seen.add(loc)
+            lines.append(f"  <url><loc>{xml_escape(loc)}</loc><lastmod>{it.date}</lastmod><priority>0.6</priority></url>")
+    lines.append("</urlset>\n")
+    return "\n".join(lines)
+
+
+def inject_index_links(pages):
+    idx = ROOT / "index.html"
+    if not idx.exists():
+        return False
+    src = idx.read_text(encoding="utf-8")
+    start, end = "<!-- SEO-LINKS:START -->", "<!-- SEO-LINKS:END -->"
+    if start not in src or end not in src:
+        print("   ! index.html : marqueurs SEO-LINKS absents, liens non injectés", file=sys.stderr)
+        return False
+    li = []
+    for t in TYPE_ORDER:
+        for lang in ("fr", "ar"):
+            for p in sorted([p for p in pages if p.type == t and p.lang == lang], key=lambda p: p.scope):
+                label = f"{TYPE_LABEL[lang][t]} {p.label if lang == 'fr' else p.label_long}"
+                li.append(f'<li><a href="{e(p.path)}" hreflang="{lang}">{e(label)}</a></li>')
+    block = (
+        '\n<style>.gs-seo-links{margin:1.5rem 0 .5rem;text-align:center}.gs-seo-links h3{font-size:1rem;margin-bottom:.6rem}'
+        '.gs-seo-links ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem 1.2rem}'
+        '.gs-seo-links a{color:inherit;opacity:.85;font-size:.88rem;text-decoration:underline}</style>\n'
+        f'<nav class="gs-seo-links" aria-label="Cours et examens SVT"><h3>Accès direct · وصول مباشر</h3><ul>'
+        f'<li><a href="/{OUT}/">Toutes les ressources · جميع الموارد</a></li>' + "".join(li) + "</ul></nav>\n")
+    new = re.sub(re.escape(start) + r".*?" + re.escape(end), lambda m: start + block + end, src, flags=re.S)
+    if new != src:
+        idx.write_text(new, encoding="utf-8")
+    return True
+
+
+# --------------------------------------------------------------------------
+def main():
+    titles = load_titles()
+    groups = scan(titles)
+
+    pages, skipped = [], []
+    for (ptype, lang, scope), items in sorted(groups.items()):
+        items = dedupe(items)
+        if len(items) < MIN_ITEMS:
+            skipped.append((ptype, lang, scope, len(items)))
+            continue
+        pages.append(Page(ptype, lang, scope, items))
+
+    # hreflang : paire fr/ar d'un même contenu
+    by_key = defaultdict(dict)
+    for p in pages:
+        by_key[(p.type, p.scope)][p.lang] = p.url
+    for p in pages:
+        p.alternates = dict(by_key[(p.type, p.scope)])
+
+    # dates
+    for p in pages:
+        for it in p.items:
+            it.date = git_date(it.path)
+        p.lastmod = max(i.date for i in p.items)
+    home_date = max([p.lastmod for p in pages] + [datetime.date.today().isoformat()]) if pages else datetime.date.today().isoformat()
+
+    # écriture : on repart d'un dossier propre
+    out_dir = ROOT / OUT
+    if out_dir.exists():
+        for f in sorted(out_dir.rglob("*"), reverse=True):
+            f.unlink() if f.is_file() else f.rmdir()
+    out_dir.mkdir(exist_ok=True)
+    (out_dir / "index.html").write_text(render_hub(pages), encoding="utf-8")
+    for p in pages:
+        d = ROOT / p.path.strip("/")
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "index.html").write_text(render_page(p, pages), encoding="utf-8")
+
+    (ROOT / "sitemap.xml").write_text(build_sitemap(pages, home_date), encoding="utf-8")
+    linked = inject_index_links(pages)
+
+    print(f"SEO : {len(pages)} pages générées dans /{OUT}/, sitemap.xml mis à jour, liens index.html : {'oui' if linked else 'non'}")
+    for p in pages:
+        print(f"   {p.path:<42} {len(p.items):>3} fichiers   {p.lastmod}")
+    for t, lg, sc, n in skipped:
+        print(f"   (ignoré : {t}/{lg}/{sc} - {n} fichier(s), minimum {MIN_ITEMS})")
+
+
+if __name__ == "__main__":
+    main()

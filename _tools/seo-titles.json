@@ -1,0 +1,83 @@
+{
+  "_aide": "Clé = nom exact du fichier PDF. Valeur = {title, group (optionnel), order (optionnel)} ou simplement un texte. Les fichiers non listés ici gardent leur nom de fichier comme titre. Les titres ci-dessous ont été relevés dans les PDF.",
+  "eleves-TCS  AIT ENAJAR U1C1.pdf": {
+    "title": "Chapitre 1 : La sortie écologique",
+    "group": "Unité 1 : L'écologie",
+    "order": 1
+  },
+  "eleves-TCS  AIT ENAJAR U1C2.pdf": {
+    "title": "Chapitre 2 : Les facteurs édaphiques et leurs relations avec les êtres vivants",
+    "group": "Unité 1 : L'écologie",
+    "order": 2
+  },
+  "eleves-TCS  AIT ENAJAR U1C3.pdf": {
+    "title": "Chapitre 3 : Les facteurs climatiques et leurs relations avec les êtres vivants",
+    "group": "Unité 1 : L'écologie",
+    "order": 3
+  },
+  "eleves-TCS  AIT ENAJAR U1C4.pdf": {
+    "title": "Chapitre 4 : Flux de la matière et de l'énergie dans l'écosystème",
+    "group": "Unité 1 : L'écologie",
+    "order": 4
+  },
+  "eleves-TCS  AIT ENAJAR U1C5.pdf": {
+    "title": "Chapitre 5 : Les équilibres naturels",
+    "group": "Unité 1 : L'écologie",
+    "order": 5
+  },
+  "eleves-1BACS  AIT ENAJAR U1C1.pdf": {
+    "title": "Chapitre 1 : Réalisation de la carte paléogéographique d'une région",
+    "group": "Unité 1 : Phénomènes géologiques externes",
+    "order": 1
+  },
+  "eleves-1BACS  AIT ENAJAR U1C2.pdf": {
+    "title": "Chapitre 2 : Reconstitution de l'histoire géologique d'une région sédimentaire",
+    "group": "Unité 1 : Phénomènes géologiques externes",
+    "order": 2
+  },
+  "eleves-1BACS  AIT ENAJAR U1C3.pdf": {
+    "title": "Chapitre 3 : Les principes de la carte géologique et reconstitution de l'histoire géologique d'une région donnée",
+    "group": "Unité 1 : Phénomènes géologiques externes",
+    "order": 3
+  },
+  "eleves-1BACS  AIT ENAJAR U2C1.pdf": {
+    "title": "Chapitre 1 : Mécanismes d'absorption de l'eau et des sels minéraux par les plantes",
+    "group": "Unité 2 : Production de la matière organique et flux d'énergie",
+    "order": 4
+  },
+  "eleves-1BACS  AIT ENAJAR U2C2.pdf": {
+    "title": "Chapitre 2 : Les échanges gazeux chlorophylliens",
+    "group": "Unité 2 : Production de la matière organique et flux d'énergie",
+    "order": 5
+  },
+  "eleves-1BACS  AIT ENAJAR U2C3.pdf": {
+    "title": "Chapitre 3 : Conversion de l'énergie lumineuse en énergie chimique et synthèse de la matière organique",
+    "group": "Unité 2 : Production de la matière organique et flux d'énergie",
+    "order": 6
+  },
+  "eleves-1BACS  AIT ENAJAR U3C1.pdf": {
+    "title": "Chapitre 1 : Communication hormonale : glycémie, facteur biologique constant",
+    "group": "Unité 3 : Les communications hormonales et nerveuses",
+    "order": 7
+  },
+  "eleves-1BACS  AIT ENAJAR U3C2.pdf": {
+    "title": "Chapitre 2 : La communication nerveuse",
+    "group": "Unité 3 : Les communications hormonales et nerveuses",
+    "order": 8
+  },
+  "eleves-1BACS  AIT ENAJAR U4C1.pdf": {
+    "title": "Chapitre 1 : Régulation de la reproduction chez l'Homme",
+    "group": "Unité 4 : L'intégration neuro-hormonale",
+    "order": 9
+  },
+  "eleves-ait enajar-cours 2bacsvt-francais- unite 1 -chap1-consomation d'energie.pdf": {
+    "title": "Chapitre 1 : Réactions responsables de la libération de l'énergie emmagasinée dans la matière organique",
+    "group": "Unité 1 : La consommation de matière organique et le flux d'énergie",
+    "order": 1
+  },
+  "eleves- cours 2bacsvt-francais- unite 1 -Chap 2-role de muscle strie.pdf": {
+    "title": "Chapitre 2 : Le rôle du muscle squelettique dans la conversion de l'énergie",
+    "group": "Unité 1 : La consommation de matière organique et le flux d'énergie",
+    "order": 2
+  }
+}
