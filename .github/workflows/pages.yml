@@ -22,6 +22,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: actions/configure-pages@v5
+      - name: Générer les pages SEO (svt/, sitemap.xml, liens index.html)
+        run: python3 _tools/build_seo.py
       - name: Build Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
