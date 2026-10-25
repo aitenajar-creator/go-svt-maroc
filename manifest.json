@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-25T19:09:59.020196+00:00",
+  "generated": "2026-10-25T19:11:50.284586+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -173,6 +173,16 @@
           "1BACSE": {
             "__files": [
               "FICHE D'Expérience 1bacS-Exp-option français.docx"
+            ]
+          }
+        },
+        "2BAC": {
+          "2BACSVT": {
+            "__files": [
+              "Fiche pédagogique svt 2bac unite 1 2023 2024.pdf",
+              "Fiche pédagogique svt 2bac unite 1.pdf",
+              "Fiche pédagogique svt 2bac unite 2.pdf",
+              "Fiche pédagogique svt 2bac unite 4.pdf"
             ]
           }
         },
