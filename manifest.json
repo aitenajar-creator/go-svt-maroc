@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-25T19:04:07.505435+00:00",
+  "generated": "2026-10-25T19:09:59.020196+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -169,6 +169,13 @@
     },
     "fiches": {
       "francais": {
+        "1BAC": {
+          "1BACSE": {
+            "__files": [
+              "FICHE D'Expérience 1bacS-Exp-option français.docx"
+            ]
+          }
+        },
         "TC": {
           "TCS": {
             "__files": [
