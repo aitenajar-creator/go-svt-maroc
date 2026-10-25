@@ -305,3 +305,99 @@ html.gs-dark .main-nav .nav-submenu { background: #1a2a1e; }
 html.gs-dark .main-nav .nav-submenu a { color: #9fd89a; }
 html.gs-dark .main-nav .nav-submenu a:hover,
 html.gs-dark .main-nav .nav-submenu a.active { background: #2f4a35; }
+/* ===== الدفعة 4: أدوات المراجعة ===== */
+.gs-tools {
+    display: flex; gap: .4rem; flex-wrap: wrap;
+    margin-top: .8rem; padding-top: .6rem; border-top: 1px dashed #dfe7dc;
+}
+.gs-tool {
+    width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+    border: 1px solid #cfdccb; background: #f4f8f2; font-size: 1.05rem; line-height: 1;
+}
+.gs-tool:hover { background: #e3efde; }
+.gs-tool.on { background: #fff4cc; border-color: #e0b400; }
+.gs-tool:disabled { opacity: .5; cursor: wait; }
+.gs-fav { color: #c99a00; font-size: 1.25rem; }
+
+.content-card .gs-note-preview {
+    margin: .6rem 0 0; padding: .5rem .7rem; border-radius: 6px;
+    background: #fffbe6; border-inline-start: 3px solid #e0b400;
+    color: #555; font-size: .9rem; white-space: pre-wrap;
+}
+
+/* نافذة الملاحظات */
+#gs-note-modal .gs-modal-box { max-width: 600px; }
+.gs-note-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+#gs-note-text {
+    width: 100%; min-height: 180px; padding: 12px; resize: vertical;
+    font: inherit; border: 2px solid var(--gs-green); border-radius: 10px; outline: none;
+}
+.gs-note-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.gs-btn {
+    padding: .55rem 1.2rem; border-radius: 8px; cursor: pointer;
+    border: 2px solid var(--gs-green); font: inherit; font-weight: 600;
+}
+.gs-btn-main { background: var(--gs-green); color: #fff; }
+.gs-btn-ghost { background: transparent; color: var(--gs-green); }
+.gs-note-hint { margin: 0; font-size: .8rem; opacity: .7; }
+
+/* فلاتر البحث */
+.gs-search-filters {
+    display: flex; gap: .5rem; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid #e5e5e5;
+}
+.gs-search-filters select {
+    flex: 1 1 140px; padding: .5rem; font: inherit;
+    border: 1px solid #cfdccb; border-radius: 8px; background: #fff;
+}
+
+/* شريط "نفس المستوى" */
+.gs-related {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: .5rem; margin: -.5rem 0 1.5rem;
+}
+.gs-related:empty { display: none; }
+.gs-related span { opacity: .7; font-weight: 600; }
+.gs-related a {
+    padding: .3rem .8rem; border-radius: 999px; text-decoration: none;
+    background: #e8f2e3; color: var(--primary-color); font-size: .9rem; font-weight: 600;
+}
+.gs-related a:hover { background: var(--primary-color); color: #fff; }
+
+/* العد التنازلي */
+.gs-countdown {
+    display: inline-block; margin-top: 1.5rem; padding: .6rem 1.2rem;
+    border-radius: 999px; background: rgba(255,255,255,.18); font-size: 1.05rem;
+}
+.gs-countdown[hidden] { display: none; }
+.gs-countdown strong { font-size: 1.3rem; color: #ffe082; }
+
+/* زر مشاركة الموقع */
+.gs-share-site {
+    display: block; margin: 0 auto 1.5rem; padding: .7rem 1.5rem; cursor: pointer;
+    border: 2px solid #fff; border-radius: 999px; background: transparent;
+    color: #fff; font: inherit; font-weight: 600;
+}
+.gs-share-site:hover { background: #fff; color: var(--primary-color); }
+
+/* الرسائل القصيرة */
+#gs-toast {
+    position: fixed; bottom: 24px; left: 50%; z-index: 1100;
+    transform: translate(-50%, 200%); transition: transform .3s;
+    max-width: 90vw; padding: .7rem 1.2rem; border-radius: 10px; text-align: center;
+    background: #1f3a20; color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.3);
+}
+#gs-toast.show { transform: translate(-50%, 0); }
+
+/* الوضع الليلي */
+html.gs-dark .gs-tools { border-color: #2f4a35; }
+html.gs-dark .gs-tool { background: #0f1a12; border-color: #2f4a35; }
+html.gs-dark .gs-tool.on { background: #3d3410; border-color: #b8930a; }
+html.gs-dark .content-card .gs-note-preview { background: #2a2610; color: #e4ece5; }
+html.gs-dark #gs-note-text,
+html.gs-dark .gs-search-filters select { background: #0f1a12; color: #e4ece5; border-color: #2f4a35; }
+html.gs-dark .gs-search-filters { border-color: #2f4a35; }
+html.gs-dark .gs-related a { background: #1a2a1e; color: #9fd89a; }
+html.gs-dark .gs-related a:hover { background: #3f7a3a; color: #fff; }
+html.gs-dark .gs-btn-main { background: #3f7a3a; border-color: #3f7a3a; }
+html.gs-dark .gs-btn-ghost { color: #9fd89a; border-color: #4f8a4a; }
