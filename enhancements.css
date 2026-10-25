@@ -401,3 +401,76 @@ html.gs-dark .gs-related a { background: #1a2a1e; color: #9fd89a; }
 html.gs-dark .gs-related a:hover { background: #3f7a3a; color: #fff; }
 html.gs-dark .gs-btn-main { background: #3f7a3a; border-color: #3f7a3a; }
 html.gs-dark .gs-btn-ghost { color: #9fd89a; border-color: #4f8a4a; }
+/* ===== الدفعة 5: الاختبارات والفيديوهات ===== */
+.gs-quiz-badge {
+    display: inline-block; margin-inline-start: .4rem; padding: .15rem .6rem; border-radius: 999px;
+    background: #fff4cc; color: #8a6d00; font-size: .75rem; font-weight: 700;
+}
+.gs-quiz-badge.good { background: #d9f2d4; color: #1f6b1a; }
+
+#gs-quiz-modal .gs-modal-box { max-width: 720px; }
+.gs-quiz-body { padding: 18px; overflow-y: auto; flex: 1; min-height: 0; }
+.gs-quiz-progress { height: 8px; border-radius: 999px; background: #e5ece3; overflow: hidden; }
+.gs-quiz-progress span { display: block; height: 100%; background: var(--gs-green); transition: width .3s; }
+.gs-quiz-count { margin: .6rem 0 .2rem; font-size: .85rem; opacity: .7; }
+.gs-quiz-question { font-size: 1.15rem; margin: 0 0 1rem; line-height: 1.6; }
+.gs-quiz-img { display: block; max-width: 100%; max-height: 45vh; margin: 0 auto 1rem; border-radius: 8px; }
+.gs-quiz-choices { display: grid; gap: .6rem; }
+.gs-quiz-choice {
+    text-align: start; padding: .8rem 1rem; border: 2px solid #cfdccb; border-radius: 10px;
+    background: #fff; color: inherit; font: inherit; cursor: pointer; transition: background .2s, border-color .2s;
+}
+.gs-quiz-choice:hover:not(:disabled) { border-color: var(--gs-green); background: #f4f8f2; }
+.gs-quiz-choice:disabled { cursor: default; }
+.gs-quiz-choice.correct { border-color: #2e9d3a; background: #e3f6e5; }
+.gs-quiz-choice.wrong { border-color: #d93848; background: #fdeaea; }
+.gs-quiz-feedback { margin-top: 1rem; padding: .8rem 1rem; border-radius: 10px; }
+.gs-quiz-feedback.ok { background: #e3f6e5; }
+.gs-quiz-feedback.ko { background: #fdeaea; }
+.gs-quiz-feedback p { margin: .4rem 0 0; }
+.gs-quiz-nav { margin-top: 1rem; display: flex; justify-content: flex-end; }
+.gs-quiz-result { text-align: center; padding: 1rem 0; }
+.gs-quiz-score { font-size: 3rem; font-weight: 700; color: var(--gs-green); line-height: 1.2; }
+.gs-quiz-pct { font-size: 1.3rem; font-weight: 600; margin: 0 0 .5rem; }
+.gs-quiz-best { opacity: .7; font-size: .9rem; }
+.gs-quiz-end { justify-content: center; margin-top: 1rem; }
+.gs-quiz-review-title { margin: 1.5rem 0 .6rem; color: var(--gs-green); }
+.gs-quiz-review {
+    padding: .8rem 1rem; margin-bottom: .6rem; border-radius: 10px;
+    background: #f7f9f7; border-inline-start: 4px solid #d93848;
+}
+.gs-quiz-review p { margin: .25rem 0; }
+.gs-quiz-review .ko { color: #b3261e; }
+.gs-quiz-review .ok { color: #1f6b1a; }
+.gs-quiz-expl { font-size: .9rem; opacity: .85; }
+
+/* الفيديو */
+.gs-video-btn {
+    cursor: pointer; padding: .5rem 1rem; border-radius: 8px; border: 2px solid #c4302b;
+    background: transparent; color: #c4302b; font: inherit; font-weight: 600;
+}
+.gs-video-btn:hover { background: #c4302b; color: #fff; }
+.gs-modal-body .gs-video-wrap { width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.gs-modal-body .gs-video-wrap iframe { width: 100%; height: 100%; }
+.gs-video-parts { display: flex; gap: .4rem; flex-wrap: wrap; padding: 10px 16px; }
+.gs-video-part {
+    cursor: pointer; padding: .3rem .9rem; border-radius: 999px; border: none;
+    background: #e8f2e3; color: var(--primary-color); font: inherit; font-weight: 600;
+}
+.gs-video-part.active { background: var(--primary-color); color: #fff; }
+
+/* الوضع الليلي */
+html.gs-dark .gs-quiz-choice { background: #0f1a12; border-color: #2f4a35; }
+html.gs-dark .gs-quiz-choice:hover:not(:disabled) { background: #1f3324; }
+html.gs-dark .gs-quiz-choice.correct,
+html.gs-dark .gs-quiz-feedback.ok { background: #173d1c; border-color: #3fa34a; }
+html.gs-dark .gs-quiz-choice.wrong,
+html.gs-dark .gs-quiz-feedback.ko { background: #3d1719; border-color: #c0434f; }
+html.gs-dark .gs-quiz-progress { background: #2f4a35; }
+html.gs-dark .gs-quiz-review { background: #132017; }
+html.gs-dark .gs-quiz-review .ko { color: #f28b82; }
+html.gs-dark .gs-quiz-review .ok,
+html.gs-dark .gs-quiz-score,
+html.gs-dark .gs-quiz-review-title { color: #9fd89a; }
+html.gs-dark .gs-video-part { background: #1a2a1e; color: #9fd89a; }
+html.gs-dark .gs-video-part.active { background: #3f7a3a; color: #fff; }
