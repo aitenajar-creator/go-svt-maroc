@@ -1,0 +1,54 @@
+{
+  "titre": "Respiration cellulaire et fermentation",
+  "description": "Consommation de la matière organique et flux d'énergie",
+  "questions": [
+    {
+      "question": "Où se déroule la glycolyse ?",
+      "choix": ["Dans la matrice mitochondriale", "Dans le hyaloplasme (cytoplasme)", "Au niveau des crêtes mitochondriales", "Dans le noyau"],
+      "reponse": 2,
+      "explication": "La glycolyse se déroule dans le hyaloplasme, en présence comme en absence de dioxygène."
+    },
+    {
+      "question": "Quel est le bilan net de la glycolyse pour une molécule de glucose ?",
+      "choix": ["2 pyruvates + 2 ATP + 2 NADH,H⁺", "2 pyruvates + 4 ATP + 2 FADH₂", "6 CO₂ + 6 H₂O", "2 éthanols + 2 CO₂"],
+      "reponse": 1,
+      "explication": "La glycolyse produit 4 ATP mais en consomme 2 : le bilan net est de 2 ATP, 2 NADH,H⁺ et 2 molécules d'acide pyruvique."
+    },
+    {
+      "question": "Le cycle de Krebs se déroule :",
+      "choix": ["Dans le hyaloplasme", "Dans l'espace intermembranaire", "Dans la matrice mitochondriale", "Sur la membrane externe de la mitochondrie"],
+      "reponse": 3,
+      "explication": "Le cycle de Krebs a lieu dans la matrice mitochondriale ; il libère du CO₂ et produit des coenzymes réduits (NADH,H⁺ et FADH₂)."
+    },
+    {
+      "question": "Quel est l'accepteur final des électrons de la chaîne respiratoire ?",
+      "choix": ["Le NAD⁺", "Le dioxygène O₂", "Le CO₂", "L'acide pyruvique"],
+      "reponse": 2,
+      "explication": "Le dioxygène est réduit en eau à la fin de la chaîne respiratoire, au niveau de la membrane interne mitochondriale."
+    },
+    {
+      "question": "La synthèse d'ATP par l'ATP synthase est rendue possible grâce à :",
+      "choix": ["Un gradient de protons H⁺ de part et d'autre de la membrane interne", "La décarboxylation du pyruvate", "La présence de glucose dans la matrice", "La fermentation lactique"],
+      "reponse": 1,
+      "explication": "Le retour des protons H⁺ de l'espace intermembranaire vers la matrice, à travers l'ATP synthase, fournit l'énergie nécessaire à la phosphorylation de l'ADP en ATP."
+    },
+    {
+      "question": "Quels sont les produits de la fermentation alcoolique d'une molécule de glucose ?",
+      "choix": ["2 lactates + 2 ATP", "6 CO₂ + 6 H₂O", "2 éthanols + 2 CO₂ + 2 ATP", "2 pyruvates + O₂"],
+      "reponse": 3,
+      "explication": "En absence de dioxygène, la levure transforme le pyruvate en éthanol et CO₂ ; seuls les 2 ATP de la glycolyse sont produits."
+    },
+    {
+      "question": "Pourquoi le rendement énergétique de la fermentation est-il faible par rapport à celui de la respiration ?",
+      "choix": ["Parce que la fermentation consomme du dioxygène", "Parce que la dégradation du glucose est incomplète : le produit final contient encore de l'énergie", "Parce que la fermentation se déroule dans la mitochondrie", "Parce que la fermentation ne produit aucun ATP"],
+      "reponse": 2,
+      "explication": "L'éthanol ou le lactate sont des molécules organiques qui contiennent encore une grande partie de l'énergie chimique du glucose."
+    },
+    {
+      "question": "Lors d'un effort musculaire bref et intense, quelle voie régénère l'ATP le plus rapidement ?",
+      "choix": ["La respiration cellulaire", "La fermentation lactique", "La voie de la phosphocréatine", "La glycogénogenèse"],
+      "reponse": 3,
+      "explication": "La phosphocréatine transfère directement son phosphate à l'ADP : c'est la voie anaérobie alactique, la plus rapide mais de très courte durée."
+    }
+  ]
+}
