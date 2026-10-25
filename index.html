@@ -48,6 +48,7 @@
                     <li class="nav-more">
     <button type="button" class="nav-more-btn" aria-expanded="false" data-lang-ar="المزيد ▾" data-lang-fr="Plus ▾">المزيد ▾</button>
     <ul class="nav-submenu">
+        <li><a href="#revision" data-lang-ar="⭐ مراجعتي" data-lang-fr="⭐ Ma révision">⭐ مراجعتي</a></li>
         <li><a href="#documents" data-lang-ar="📄 الوثائق" data-lang-fr="📄 Documents">📄 الوثائق</a></li>
         <li><a href="#ressources" data-lang-ar="🌐 الموارد" data-lang-fr="🌐 Ressources">🌐 الموارد</a></li>
         <li><a href="#divers" data-lang-ar="⭐ متفرقات" data-lang-fr="⭐ Divers">⭐ متفرقات</a></li>
@@ -81,6 +82,7 @@
                         <a href="#exercices" class="btn btn-secondary" data-lang-ar="حل التمارين" data-lang-fr="Faire les exercices">حل التمارين</a>
                         <a href="#examens" class="btn btn-secondary" data-lang-ar="الامتحانات الوطنية" data-lang-fr="Examens nationaux">الامتحانات الوطنية</a>
                     </div>
+                    <div class="gs-countdown" id="gs-countdown" hidden></div>
                 </div>
             </div>
             <div class="features">
@@ -228,7 +230,14 @@
                 <div class="content-grid" id="divers-content"></div>
             </div>
         </section>
-
+        <!-- Ma révision -->
+        <section id="revision" class="section">
+            <div class="container">
+                <h2 class="section-title" data-lang-ar="⭐ مراجعتي" data-lang-fr="⭐ Ma révision">⭐ مراجعتي</h2>
+                <p class="section-intro" data-lang-ar="المفضلة، الملفات المحفوظة بدون إنترنت، وملاحظاتك الشخصية. تُحفظ في هذا الجهاز فقط." data-lang-fr="Vos favoris, fichiers hors ligne et notes personnelles. Enregistrés uniquement sur cet appareil.">المفضلة، الملفات المحفوظة بدون إنترنت، وملاحظاتك الشخصية. تُحفظ في هذا الجهاز فقط.</p>
+                <div class="content-grid" id="revision-content"></div>
+            </div>
+        </section>
         <!-- Contact -->
         <section id="contact" class="section">
             <div class="container">
@@ -309,6 +318,7 @@
                     </ul>
                 </div>
             </div>
+                        <button type="button" class="gs-share-site" data-lang-ar="📤 شارك الموقع مع أصدقائك" data-lang-fr="📤 Partager le site avec vos amis">📤 شارك الموقع مع أصدقائك</button>
             <div class="footer-bottom">
                 <p>&copy; <span id="gs-year">2025</span> Go SVT Maroc. <span data-lang-ar="جميع الحقوق محفوظة." data-lang-fr="Tous droits réservés.">جميع الحقوق محفوظة.</span></p>
             </div>
@@ -317,5 +327,6 @@
 
     <script src="script.js"></script>
     <script src="features.js"></script>
+    <script src="study.js"></script>
 </body>
 </html>
