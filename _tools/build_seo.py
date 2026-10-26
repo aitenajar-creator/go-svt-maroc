@@ -603,11 +603,32 @@ def patch_index_html(src, pages):
                 j = src.find("</p>", src.find("section-intro", i))
                 src = src[:j + 4] + "\n                " + cta + src[j + 4:]
 
-    # 4) pied de page : marqueurs pour les liens HTML classiques
+    # 4) pied de page : (a) lien dans « Liens rapides » ; (b) nouvelle colonne dans la grille .footer-content
+    f = src.find("<footer")
+    if f != -1 and "gs-quick-svt" not in src:
+        m = re.compile(r'<li><a href="#examens"[^>]*>[^<]*</a></li>').search(src, f)
+        if m:
+            li = ('\n                        <li class="gs-quick-svt"><a href="/svt/" data-lang-ar="📚 الدروس والامتحانات PDF" '
+                  'data-lang-fr="📚 Cours et examens PDF">📚 الدروس والامتحانات PDF</a></li>')
+            src = src[:m.end()] + li + src[m.end():]
     start, end = "<!-- SEO-LINKS:START -->", "<!-- SEO-LINKS:END -->"
-    anchor = '<button type="button" class="gs-share-site"'
-    if start not in src and anchor in src:
-        src = src.replace(anchor, start + "\n" + end + "\n                        " + anchor, 1)
+    # on retire l'ancien bloc ET les espaces qui le précèdent : le retrait redonne exactement le texte d'origine
+    src = re.sub(r"\s*" + re.escape(start) + r".*?" + re.escape(end), "", src, flags=re.S)
+    marks = "\n                " + start + "\n                " + end
+    f = src.find("<footer")
+    k = src.find('data-goto-level="2BAC"', f) if f != -1 else -1
+    pos = -1
+    if k != -1:
+        u = src.find("</ul>", k)
+        d = src.find("</div>", u) if u != -1 else -1
+        if d != -1:
+            pos = d + 6
+    if pos == -1:
+        anchor = src.find('<button type="button" class="gs-share-site"')
+        if anchor != -1:
+            pos = len(src[:anchor].rstrip())
+    if pos != -1:
+        src = src[:pos] + marks + src[pos:]
     return src
 
 
@@ -623,18 +644,18 @@ def inject_index_links(pages):
         if src != original:
             idx.write_text(src, encoding="utf-8")
         return False
-    li = []
+    short = {"ar": {"cours": "الدروس", "exercices": "التمارين", "fiches": "الجذاذات والملخصات", "examens": "الامتحانات الوطنية"},
+             "fr": {"cours": "Cours", "exercices": "Exercices", "fiches": "Fiches et résumés", "examens": "Examens nationaux"}}
+    li = [f'<li><a href="/{OUT}/" data-lang-ar="📚 كل الدروس والامتحانات" data-lang-fr="📚 Tous les cours et examens">📚 كل الدروس والامتحانات</a></li>']
     for t in TYPE_ORDER:
-        for lang in ("fr", "ar"):
-            for p in sorted([p for p in pages if p.type == t and p.lang == lang], key=lambda p: p.scope):
-                label = f"{TYPE_LABEL[lang][t]} {p.label if lang == 'fr' else p.label_long}"
-                li.append(f'<li><a href="{e(p.path)}" hreflang="{lang}">{e(label)}</a></li>')
-    block = (
-        '\n<style>.gs-seo-links{margin:1.5rem 0 .5rem;text-align:center}.gs-seo-links h3{font-size:1rem;margin-bottom:.6rem}'
-        '.gs-seo-links ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem 1.2rem}'
-        '.gs-seo-links a{color:inherit;opacity:.85;font-size:.88rem;text-decoration:underline}</style>\n'
-        f'<nav class="gs-seo-links" aria-label="Cours et examens SVT"><h3>Accès direct · وصول مباشر</h3><ul>'
-        f'<li><a href="/{OUT}/">Toutes les ressources · جميع الموارد</a></li>' + "".join(li) + "</ul></nav>\n")
+        for p in sorted([p for p in pages if p.type == t], key=lambda p: (p.lang, p.scope)):
+            sar, sfr = (" (بالعربية)", " (en arabe)") if p.lang == "ar" else ("", "")
+            ar = f'{short["ar"][t]} {p.info["fr"]}{sar}'
+            fr = f'{short["fr"][t]} {p.info["fr"]}{sfr}'
+            li.append(f'<li><a href="{e(p.path)}" data-lang-ar="{e(ar)}" data-lang-fr="{e(fr)}">{e(ar)}</a></li>')
+    block = ('\n                <nav class="footer-section gs-seo-links" aria-label="Cours et examens SVT">'
+             '<h3 data-lang-ar="📚 ملفات PDF" data-lang-fr="📚 Fichiers PDF">📚 ملفات PDF</h3>'
+             "<ul>" + "".join(li) + "</ul></nav>\n                ")
     new = re.sub(re.escape(start) + r".*?" + re.escape(end), lambda m: start + block + end, src, flags=re.S)
     if new != original:
         idx.write_text(new, encoding="utf-8")
