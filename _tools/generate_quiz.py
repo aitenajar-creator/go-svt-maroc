@@ -18,8 +18,9 @@ Variables d'environnement (toutes facultatives sauf la clé) :
   GEMINI_API_KEY     clé GRATUITE (aistudio.google.com/apikey, sans carte bancaire) - secret GitHub
   ANTHROPIC_API_KEY  clé Claude (payante), utilisée si GEMINI_API_KEY est absente
   QUIZ_PROVIDER      gemini | anthropic (défaut : gemini si sa clé existe, sinon anthropic)
-  QUIZ_MODEL         défaut gemini-flash-latest (Gemini) ou claude-sonnet-5-5 (Claude)
-  QUIZ_PACE          secondes entre deux requêtes (défaut 12 pour Gemini : limites du palier gratuit)
+  QUIZ_MODEL         un seul modèle imposé (sinon Gemini essaie plusieurs modèles, chacun avec son quota gratuit)
+  QUIZ_MODELS        liste ordonnée de modèles Gemini séparés par des virgules (remplace la liste par défaut)
+  QUIZ_PACE          secondes entre deux requêtes (défaut 14 pour Gemini : 5 requêtes/minute au palier gratuit)
   QUIZ_MAX_NEW       nombre max de cours traités par exécution (défaut 5)
   QUIZ_VERIFY        1 = 2e passe de vérification (défaut), 0 = désactivée
   QUIZ_QUESTIONS     nombre cible de questions (défaut 10)
@@ -58,8 +59,10 @@ API_VERSION = "2023-06-01"
 ANTHROPIC_KEY = env("ANTHROPIC_API_KEY")
 GEMINI_KEY = env("GEMINI_API_KEY")
 GEMINI_BASE = env("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta")
-# Les noms de modèles Gemini changent vite : alias « latest » d'abord, puis des noms connus (essayés dans l'ordre sur HTTP 404)
-GEMINI_MODELS = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.6-flash", "gemini-3-flash-preview"]
+# Chaque modèle a SON PROPRE quota gratuit (≈ 20 requêtes/jour pour 3.8 Flash d'après AI Studio) : quand l'un est épuisé,
+# on passe au suivant. Les noms changent vite : un nom inconnu (HTTP 404) est simplement ignoré.
+GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
+                 "gemini-3-flash-preview", "gemini-flash-latest"]
 
 
 def pick_provider():
@@ -73,8 +76,8 @@ PROVIDER = pick_provider()
 API_KEY = GEMINI_KEY if PROVIDER == "gemini" else ANTHROPIC_KEY
 USER_MODEL = env("QUIZ_MODEL")
 MODEL = USER_MODEL or (GEMINI_MODELS[0] if PROVIDER == "gemini" else "claude-sonnet-5-5")
-PACE = int(env("QUIZ_PACE", "12" if PROVIDER == "gemini" else "0"))
-MAX_NEW = int(env("QUIZ_MAX_NEW", "5"))
+PACE = int(env("QUIZ_PACE", "14" if PROVIDER == "gemini" else "0"))
+MAX_NEW = int(env("QUIZ_MAX_NEW", "8" if PROVIDER == "gemini" else "5"))
 VERIFY = env("QUIZ_VERIFY", "1").lower() not in ("0", "false", "non", "no")
 TARGET = int(env("QUIZ_QUESTIONS", "10"))
 FILTER = env("QUIZ_FILTER").lower()
@@ -221,6 +224,13 @@ class NotFound(Exception):
     """HTTP 404 : modèle ou adresse inconnus."""
 
 
+class QuotaExhausted(Exception):
+    """HTTP 429 : quota quotidien épuisé (ou modèle sans quota gratuit) : inutile de réessayer tout de suite."""
+
+
+DEAD_MODELS = set()          # modèles Gemini inutilisables pour cette exécution (404 ou quota épuisé)
+
+
 def post_json(url, headers, body):
     data = json.dumps(body).encode("utf-8")
     for attempt in range(1, 5):
@@ -235,20 +245,30 @@ def post_json(url, headers, body):
                 return json.loads(r.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             LAST_CALL[0] = time.time()
-            txt = e.read().decode("utf-8", "replace")[:600]
-            if e.code in (401, 403) or (e.code == 400 and "api key" in txt.lower()):
+            raw = e.read().decode("utf-8", "replace")
+            txt = raw[:600]
+            if e.code in (401, 403) or (e.code == 400 and "api key" in raw.lower()):
                 raise Fatal(f"clé API refusée (HTTP {e.code}) : {txt}")
             if e.code == 404:
                 raise NotFound(txt)
-            if e.code in (408, 409, 429, 500, 502, 503, 504, 529):
-                if attempt < 4:
-                    wait = RETRY_DELAY * attempt
-                    print(f"     ... HTTP {e.code}, nouvelle tentative dans {wait}s")
+            if e.code == 429:
+                if re.search(r"per ?day|daily|limit:\s*0", raw, re.I):
+                    raise QuotaExhausted(txt)               # quota du jour : réessayer ne sert à rien
+                m = re.search(r'"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"', raw)
+                # on n'attend que s'il y a un signe clair de limite PAR MINUTE (retryDelay, "per minute", en-tête retry-after, ou Claude) ;
+                # un refus 429 ambigu = quota épuisé : on n'insiste pas (économise les requêtes du palier gratuit)
+                transient = bool(m) or bool(re.search(r"per ?minute", raw, re.I)) or bool(e.headers.get("retry-after")) or PROVIDER == "anthropic"
+                if attempt < 4 and transient:
+                    wait = 0 if RETRY_DELAY == 0 else (min(int(float(m.group(1))) + 2, 90) if m else RETRY_DELAY * attempt)
+                    print(f"     ... HTTP 429 (limite par minute), nouvelle tentative dans {wait}s")
                     time.sleep(wait)
                     continue
-                if e.code == 429:
-                    raise Fatal("limite de débit ou quota quotidien atteint ; les cours restants seront traités "
-                                "à la prochaine exécution : " + txt[:200])
+                raise QuotaExhausted(txt)
+            if e.code in (408, 409, 500, 502, 503, 504, 529) and attempt < 4:
+                wait = RETRY_DELAY * attempt
+                print(f"     ... HTTP {e.code}, nouvelle tentative dans {wait}s")
+                time.sleep(wait)
+                continue
             raise Skip(f"erreur API HTTP {e.code} : {txt}")
         except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
             if attempt < 4:
@@ -264,30 +284,48 @@ def anthropic_call(body):
         resp = post_json(ANTHROPIC_URL, headers, body)
     except NotFound as e:
         raise Fatal(f"modèle ou adresse introuvable (HTTP 404, modèle « {MODEL} ») : {e}")
+    except QuotaExhausted as e:
+        raise Fatal("limite de débit ou quota atteint ; les cours restants seront traités à la prochaine exécution : " + str(e)[:200])
     u = resp.get("usage") or {}
     USAGE["in"] += int(u.get("input_tokens") or 0)
     USAGE["out"] += int(u.get("output_tokens") or 0)
     return resp
 
 
+def gemini_candidates():
+    if USER_MODEL:
+        names = [USER_MODEL]
+    else:
+        names = [m.strip() for m in env("QUIZ_MODELS").split(",") if m.strip()] or list(GEMINI_MODELS)
+    return [m for m in names if m not in DEAD_MODELS]
+
+
 def gemini_call(body):
-    candidates = [ACTIVE_MODEL[0]] if ACTIVE_MODEL[0] else ([USER_MODEL] if USER_MODEL else list(GEMINI_MODELS))
     headers = {"content-type": "application/json", "x-goog-api-key": API_KEY}
-    last = ""
-    for m in candidates:
+    notes = []
+    for m in gemini_candidates():
         try:
             resp = post_json(f"{GEMINI_BASE}/models/{m}:generateContent", headers, body)
-        except NotFound as e:
-            last = str(e)
+        except NotFound:
+            DEAD_MODELS.add(m)
+            notes.append(f"{m}: introuvable")
             print(f"     ... modèle « {m} » indisponible, essai du suivant")
+            continue
+        except QuotaExhausted:
+            DEAD_MODELS.add(m)
+            notes.append(f"{m}: quota épuisé")
+            print(f"     ... quota gratuit épuisé pour « {m} », passage au modèle suivant")
             continue
         ACTIVE_MODEL[0] = m
         u = resp.get("usageMetadata") or {}
         USAGE["in"] += int(u.get("promptTokenCount") or 0)
         USAGE["out"] += int(u.get("candidatesTokenCount") or 0) + int(u.get("thoughtsTokenCount") or 0)
         return resp
-    raise Fatal("aucun modèle Gemini disponible (" + ", ".join(candidates) + ") : " + last[:200] +
-                " - indiquez un modèle valide dans la variable QUIZ_MODEL")
+    if any("quota" in n for n in notes) or any("quota" in str(x) for x in DEAD_MODELS):
+        raise Fatal("quota gratuit du jour épuisé sur tous les modèles essayés (" + "; ".join(notes) + "). "
+                    "Les cours restants seront traités à la prochaine exécution, après la réinitialisation des quotas "
+                    "(minuit, heure du Pacifique).")
+    raise Fatal("aucun modèle Gemini disponible (" + "; ".join(notes) + ") - indiquez un nom valide dans la variable QUIZ_MODEL")
 
 
 def gemini_text(resp):
@@ -548,12 +586,14 @@ def mock_quiz(lesson):
 
 
 def build_quiz(lesson, info):
+    gen_model = ver_model = None
     if MOCK:
         raw, verified = mock_quiz(lesson), False
         questions = clean_questions(raw["questions"])
     else:
         pdf = load_pdf(lesson.rep)
         raw = ask_for_quiz(lesson, info, pdf)
+        gen_model = ACTIVE_MODEL[0]
         questions = clean_questions(raw.get("questions"))
         if len(questions) < MIN_PUBLISH:
             raise Skip(f"seulement {len(questions)} question(s) valide(s) (minimum {MIN_PUBLISH})")
@@ -569,17 +609,21 @@ def build_quiz(lesson, info):
                     why = (v or {}).get("raison") or "non vérifiée"
                     print(f"     - question {i} retirée ({(v or {}).get('statut', '?')}) : {why[:140]}")
             questions, verified = kept, True
+            ver_model = ACTIVE_MODEL[0]
     if len(questions) < MIN_PUBLISH:
         raise Skip(f"seulement {len(questions)} question(s) fiable(s) après vérification (minimum {MIN_PUBLISH})")
     titre = info.get("title") or nfc(raw.get("titre", "")) or re.sub(r"\.[^.]+$", "", lesson.parts[-1])
     desc = info.get("group") or nfc(raw.get("description", ""))
-    return {
+    out = {
         "titre": titre, "description": desc, "auto": True,
-        "source": lesson.rel, "source_md5": lesson.digest, "modele": "test" if MOCK else (ACTIVE_MODEL[0] or MODEL),
+        "source": lesson.rel, "source_md5": lesson.digest, "modele": "test" if MOCK else (gen_model or MODEL),
         "fournisseur": "test" if MOCK else PROVIDER,
         "verifie": verified, "genere_le": datetime.date.today().isoformat(),
         "questions": shuffle_choices(questions, lesson.digest),
     }
+    if verified and ver_model and ver_model != gen_model:
+        out["modele_verification"] = ver_model
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -639,7 +683,7 @@ def main():
             todo.append(l)
 
     print(f"Quiz : {len(lessons)} cours uniques | à jour : {uptodate} | manuels (ignorés) : {manual} | à générer : {len(todo)}"
-          f" | {PROVIDER}{' (gratuit)' if PROVIDER == 'gemini' else ''} : {MODEL}{' | MOCK' if MOCK else ''} | vérification : {'oui' if VERIFY else 'non'}")
+          f" | {PROVIDER}{' (gratuit)' if PROVIDER == 'gemini' else ''} : {(', '.join(gemini_candidates()) if PROVIDER == 'gemini' else MODEL)}{' | MOCK' if MOCK else ''} | vérification : {'oui' if VERIFY else 'non'}")
     batch = todo[:MAX_NEW]
     if len(todo) > len(batch):
         print(f"   (limite de {MAX_NEW} cours par exécution : {len(todo) - len(batch)} restant(s) pour la prochaine exécution)")
