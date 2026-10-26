@@ -2,9 +2,9 @@
 """
 Go SVT Maroc - génération automatique de quiz
 =============================================
-Pour chaque cours PDF (dossier cours/) qui n'a pas encore de quiz, envoie le PDF à
-l'API Claude, récupère des questions à choix multiples (avec explication), les fait
-relire par une 2e passe de vérification, puis écrit :
+Pour chaque cours PDF (dossier cours/) qui n'a pas encore de quiz, envoie le PDF à une IA
+(Gemini de Google : palier GRATUIT, ou Claude d'Anthropic : payant), récupère des questions à choix
+multiples (avec explication), les fait relire par une 2e passe de vérification, puis écrit :
 
   quiz/<langue>/<niveau>/<filière>/<nom-du-cours>.json   (même format que vos quiz manuels)
   quiz-map.json                                          (cours -> quiz, pour le bouton "Exercices interactifs")
@@ -15,8 +15,11 @@ Règles de propriété d'un quiz :
   * un quiz manuel qui indique "source": "cours/....pdf" empêche la génération pour ce cours
 
 Variables d'environnement (toutes facultatives sauf la clé) :
-  ANTHROPIC_API_KEY  clé API (secret GitHub). Absente -> le script ne fait rien.
-  QUIZ_MODEL         défaut claude-sonnet-5-5
+  GEMINI_API_KEY     clé GRATUITE (aistudio.google.com/apikey, sans carte bancaire) - secret GitHub
+  ANTHROPIC_API_KEY  clé Claude (payante), utilisée si GEMINI_API_KEY est absente
+  QUIZ_PROVIDER      gemini | anthropic (défaut : gemini si sa clé existe, sinon anthropic)
+  QUIZ_MODEL         défaut gemini-flash-latest (Gemini) ou claude-sonnet-5-5 (Claude)
+  QUIZ_PACE          secondes entre deux requêtes (défaut 12 pour Gemini : limites du palier gratuit)
   QUIZ_MAX_NEW       nombre max de cours traités par exécution (défaut 5)
   QUIZ_VERIFY        1 = 2e passe de vérification (défaut), 0 = désactivée
   QUIZ_QUESTIONS     nombre cible de questions (défaut 10)
@@ -50,10 +53,27 @@ def env(name, default=""):
     return v if v else default
 
 
-API_URL = env("ANTHROPIC_API_URL", "https://api.anthropic.com/v1/messages")
+ANTHROPIC_URL = env("ANTHROPIC_API_URL", "https://api.anthropic.com/v1/messages")
 API_VERSION = "2023-06-01"
-API_KEY = env("ANTHROPIC_API_KEY")
-MODEL = env("QUIZ_MODEL", "claude-sonnet-5-5")
+ANTHROPIC_KEY = env("ANTHROPIC_API_KEY")
+GEMINI_KEY = env("GEMINI_API_KEY")
+GEMINI_BASE = env("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta")
+# Les noms de modèles Gemini changent vite : alias « latest » d'abord, puis des noms connus (essayés dans l'ordre sur HTTP 404)
+GEMINI_MODELS = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.6-flash", "gemini-3-flash-preview"]
+
+
+def pick_provider():
+    forced = env("QUIZ_PROVIDER").lower()
+    if forced in ("gemini", "anthropic"):
+        return forced
+    return "gemini" if GEMINI_KEY else "anthropic"
+
+
+PROVIDER = pick_provider()
+API_KEY = GEMINI_KEY if PROVIDER == "gemini" else ANTHROPIC_KEY
+USER_MODEL = env("QUIZ_MODEL")
+MODEL = USER_MODEL or (GEMINI_MODELS[0] if PROVIDER == "gemini" else "claude-sonnet-5-5")
+PACE = int(env("QUIZ_PACE", "12" if PROVIDER == "gemini" else "0"))
 MAX_NEW = int(env("QUIZ_MAX_NEW", "5"))
 VERIFY = env("QUIZ_VERIFY", "1").lower() not in ("0", "false", "non", "no")
 TARGET = int(env("QUIZ_QUESTIONS", "10"))
@@ -66,7 +86,9 @@ TIMEOUT = 900
 MAX_TOKENS = 16000
 MIN_PUBLISH = 5          # en dessous, on ne publie pas
 MAX_QUESTIONS = 15
-MAX_PDF_BYTES = 22 * 1024 * 1024   # base64 gonfle de ~33 % ; limite API : 32 Mo par requête
+GEMINI_MAX_TOKENS = 24000
+MAX_PDF_BYTES = (14 if PROVIDER == "gemini" else 22) * 1024 * 1024   # base64 gonfle de ~33 % ; limites : 20 Mo (Gemini inline) / 32 Mo (Claude)
+MAX_PAGES = 1000 if PROVIDER == "gemini" else 100
 
 SUBJECTS = {"francais": "fr", "arabe": "ar"}
 LEVEL_NAMES = {"TC": "Tronc Commun", "1BAC": "1ère année du Baccalauréat", "2BAC": "2ème année du Baccalauréat"}
@@ -191,31 +213,42 @@ def existing_quizzes():
 # API Claude
 # --------------------------------------------------------------------------
 USAGE = {"in": 0, "out": 0}
+LAST_CALL = [0.0]
+ACTIVE_MODEL = [None]
 
 
-def api_call(body):
+class NotFound(Exception):
+    """HTTP 404 : modèle ou adresse inconnus."""
+
+
+def post_json(url, headers, body):
     data = json.dumps(body).encode("utf-8")
-    headers = {"content-type": "application/json", "x-api-key": API_KEY, "anthropic-version": API_VERSION}
     for attempt in range(1, 5):
-        req = urllib.request.Request(API_URL, data=data, headers=headers, method="POST")
+        if PACE:                                    # palier gratuit : espacer les requêtes
+            wait = PACE - (time.time() - LAST_CALL[0])
+            if wait > 0:
+                time.sleep(wait)
+        req = urllib.request.Request(url, data=data, headers=headers, method="POST")
         try:
             with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-                resp = json.loads(r.read().decode("utf-8"))
-            u = resp.get("usage") or {}
-            USAGE["in"] += int(u.get("input_tokens") or 0)
-            USAGE["out"] += int(u.get("output_tokens") or 0)
-            return resp
+                LAST_CALL[0] = time.time()
+                return json.loads(r.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
+            LAST_CALL[0] = time.time()
             txt = e.read().decode("utf-8", "replace")[:600]
-            if e.code in (401, 403):
+            if e.code in (401, 403) or (e.code == 400 and "api key" in txt.lower()):
                 raise Fatal(f"clé API refusée (HTTP {e.code}) : {txt}")
             if e.code == 404:
-                raise Fatal(f"modèle ou adresse introuvable (HTTP 404, modèle « {MODEL} ») : {txt}")
-            if e.code in (408, 409, 429, 500, 502, 503, 504, 529) and attempt < 4:
-                wait = RETRY_DELAY * attempt
-                print(f"     ... HTTP {e.code}, nouvelle tentative dans {wait}s")
-                time.sleep(wait)
-                continue
+                raise NotFound(txt)
+            if e.code in (408, 409, 429, 500, 502, 503, 504, 529):
+                if attempt < 4:
+                    wait = RETRY_DELAY * attempt
+                    print(f"     ... HTTP {e.code}, nouvelle tentative dans {wait}s")
+                    time.sleep(wait)
+                    continue
+                if e.code == 429:
+                    raise Fatal("limite de débit ou quota quotidien atteint ; les cours restants seront traités "
+                                "à la prochaine exécution : " + txt[:200])
             raise Skip(f"erreur API HTTP {e.code} : {txt}")
         except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
             if attempt < 4:
@@ -225,6 +258,71 @@ def api_call(body):
     raise Skip("échec après plusieurs tentatives")
 
 
+def anthropic_call(body):
+    headers = {"content-type": "application/json", "x-api-key": API_KEY, "anthropic-version": API_VERSION}
+    try:
+        resp = post_json(ANTHROPIC_URL, headers, body)
+    except NotFound as e:
+        raise Fatal(f"modèle ou adresse introuvable (HTTP 404, modèle « {MODEL} ») : {e}")
+    u = resp.get("usage") or {}
+    USAGE["in"] += int(u.get("input_tokens") or 0)
+    USAGE["out"] += int(u.get("output_tokens") or 0)
+    return resp
+
+
+def gemini_call(body):
+    candidates = [ACTIVE_MODEL[0]] if ACTIVE_MODEL[0] else ([USER_MODEL] if USER_MODEL else list(GEMINI_MODELS))
+    headers = {"content-type": "application/json", "x-goog-api-key": API_KEY}
+    last = ""
+    for m in candidates:
+        try:
+            resp = post_json(f"{GEMINI_BASE}/models/{m}:generateContent", headers, body)
+        except NotFound as e:
+            last = str(e)
+            print(f"     ... modèle « {m} » indisponible, essai du suivant")
+            continue
+        ACTIVE_MODEL[0] = m
+        u = resp.get("usageMetadata") or {}
+        USAGE["in"] += int(u.get("promptTokenCount") or 0)
+        USAGE["out"] += int(u.get("candidatesTokenCount") or 0) + int(u.get("thoughtsTokenCount") or 0)
+        return resp
+    raise Fatal("aucun modèle Gemini disponible (" + ", ".join(candidates) + ") : " + last[:200] +
+                " - indiquez un modèle valide dans la variable QUIZ_MODEL")
+
+
+def gemini_text(resp):
+    fb = resp.get("promptFeedback") or {}
+    if fb.get("blockReason"):
+        raise Skip(f"requête bloquée par Google ({fb['blockReason']})")
+    cands = resp.get("candidates") or []
+    if not cands:
+        raise Skip("réponse vide")
+    c = cands[0]
+    reason = c.get("finishReason", "")
+    if reason == "MAX_TOKENS":
+        raise Skip("réponse tronquée (MAX_TOKENS atteint)")
+    if reason in ("SAFETY", "RECITATION", "BLOCKLIST", "PROHIBITED_CONTENT", "SPII"):
+        raise Skip(f"réponse bloquée par Google ({reason})")
+    parts = (c.get("content") or {}).get("parts") or []
+    return "".join(p.get("text", "") for p in parts if isinstance(p, dict) and not p.get("thought"))
+
+
+def json_from_text(text):
+    text = (text or "").strip()
+    for cand in (text, re.sub(r"^```(?:json)?\s*|\s*```$", "", text)):
+        try:
+            return json.loads(cand)
+        except json.JSONDecodeError:
+            pass
+    m = re.search(r"[\[{].*[\]}]", text, re.S)
+    if m:
+        try:
+            return json.loads(m.group(0))
+        except json.JSONDecodeError:
+            pass
+    raise Skip("la réponse ne contient pas de JSON exploitable")
+
+
 def tool_input(resp, tool_name):
     if resp.get("stop_reason") == "max_tokens":
         raise Skip("réponse tronquée (max_tokens atteint)")
@@ -232,14 +330,37 @@ def tool_input(resp, tool_name):
     for b in blocks:
         if b.get("type") == "tool_use" and b.get("name") == tool_name and isinstance(b.get("input"), dict):
             return b["input"]
-    text = "".join(b.get("text", "") for b in blocks if b.get("type") == "text")
-    m = re.search(r"\{.*\}", text, re.S)
-    if m:
-        try:
-            return json.loads(m.group(0))
-        except json.JSONDecodeError:
-            pass
-    raise Skip("la réponse ne contient pas de quiz exploitable")
+    return json_from_text("".join(b.get("text", "") for b in blocks if b.get("type") == "text"))
+
+
+def llm(system, text, pdf_b64, tool, spec):
+    """Envoie le PDF + la consigne au fournisseur choisi ; renvoie toujours un dict."""
+    if PROVIDER == "gemini":
+        body = {"system_instruction": {"parts": [{"text": system}]},
+                "contents": [{"role": "user", "parts": [
+                    {"inline_data": {"mime_type": "application/pdf", "data": pdf_b64}},
+                    {"text": text + "\n\nRéponds UNIQUEMENT avec un objet JSON valide, sans aucun texte autour ni balise de code, "
+                                    "de la forme :\n" + spec}]}],
+                "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": GEMINI_MAX_TOKENS}}
+        out = json_from_text(gemini_text(gemini_call(body)))
+    else:
+        body = {"model": MODEL, "max_tokens": MAX_TOKENS, "system": system, "tools": [tool],
+                "messages": [{"role": "user", "content": [
+                    {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": pdf_b64}},
+                    {"type": "text", "text": text + f"\n\nUtilise l'outil {tool['name']} pour fournir le résultat."}]}]}
+        out = tool_input(anthropic_call(body), tool["name"])
+    if isinstance(out, list):
+        out = {("questions" if tool is QUIZ_TOOL else "verdicts"): out}
+    if not isinstance(out, dict):
+        raise Skip("réponse inattendue du modèle")
+    return out
+
+
+SPEC_QUIZ = ('{"titre": "titre du chapitre", "description": "unité / thème", "questions": [{"question": "...", '
+             '"choix": ["...", "...", "...", "..."], "reponse": 1, "explication": "..."}]}\n'
+             '(« reponse » = numéro, à partir de 1, de la bonne réponse parmi les 4 choix)')
+SPEC_VERIFY = ('{"verdicts": [{"numero": 1, "statut": "ok", "raison": "..."}]}\n'
+               '(« statut » vaut exactement ok, douteux ou faux ; une entrée par question)')
 
 
 QUIZ_TOOL = {
@@ -312,15 +433,14 @@ SYSTEM_VERIFY = """Tu es un correcteur de SVT très rigoureux. On te donne un co
 Réponds « ok » uniquement si tu en es certain ; « douteux » au moindre doute ; « faux » si la réponse indiquée est incorrecte. Précise brièvement la raison pour tout statut autre que « ok »."""
 
 
-def pdf_block(path):
+def load_pdf(path):
     data = Path(path).read_bytes()
     if len(data) > MAX_PDF_BYTES:
         raise Skip(f"PDF trop lourd ({len(data) // 1048576} Mo, maximum {MAX_PDF_BYTES // 1048576} Mo)")
     n_pages = len(re.findall(rb"/Type\s*/Page(?![s\w])", data))
-    if n_pages > 100:
-        raise Skip(f"PDF trop long ({n_pages} pages, maximum 100) : découpez-le en chapitres")
-    return {"type": "document", "source": {"type": "base64", "media_type": "application/pdf",
-                                           "data": base64.standard_b64encode(data).decode("ascii")}}
+    if n_pages > MAX_PAGES:
+        raise Skip(f"PDF trop long ({n_pages} pages, maximum {MAX_PAGES}) : découpez-le en chapitres")
+    return base64.standard_b64encode(data).decode("ascii")
 
 
 def lesson_context(lesson, info):
@@ -334,20 +454,17 @@ def lesson_context(lesson, info):
     return "\n".join(lines)
 
 
-def ask_for_quiz(lesson, info, block):
+def ask_for_quiz(lesson, info, pdf):
     lang = ("français" if lesson.lang == "fr" else
             "arabe standard (العربية الفصحى) ; garde les termes scientifiques exactement comme dans le cours")
     lo, hi = max(6, TARGET - 2), TARGET + 2
     prompt = (f"{lesson_context(lesson, info)}\nLangue de TOUT le texte du quiz (titre, questions, choix, explications) : {lang}.\n\n"
               f"Rédige entre {lo} et {hi} questions couvrant l'ensemble du cours de façon équilibrée "
-              f"(le nombre dépend de la richesse du cours). Utilise l'outil enregistrer_quiz pour fournir le résultat ; "
-              f"le champ « reponse » est le numéro, à partir de 1, de la bonne réponse.")
-    body = {"model": MODEL, "max_tokens": MAX_TOKENS, "system": SYSTEM_QUIZ, "tools": [QUIZ_TOOL],
-            "messages": [{"role": "user", "content": [block, {"type": "text", "text": prompt}]}]}
-    return tool_input(api_call(body), QUIZ_TOOL["name"])
+              f"(le nombre dépend de la richesse du cours). Le champ « reponse » est le numéro, à partir de 1, de la bonne réponse.")
+    return llm(SYSTEM_QUIZ, prompt, pdf, QUIZ_TOOL, SPEC_QUIZ)
 
 
-def ask_to_verify(lesson, questions, block):
+def ask_to_verify(lesson, questions, pdf):
     letters = "ABCDEFGH"
     lines = []
     for i, q in enumerate(questions, 1):
@@ -357,10 +474,8 @@ def ask_to_verify(lesson, questions, block):
         lines.append(f"   Réponse indiquée : {letters[q['reponse'] - 1]}")
         lines.append(f"   Explication : {q['explication']}\n")
     prompt = ("Voici le quiz à vérifier :\n\n" + "\n".join(lines) +
-              "\nUtilise l'outil verifier_quiz : un verdict par question (numero = numéro de la question).")
-    body = {"model": MODEL, "max_tokens": MAX_TOKENS, "system": SYSTEM_VERIFY, "tools": [VERIFY_TOOL],
-            "messages": [{"role": "user", "content": [block, {"type": "text", "text": prompt}]}]}
-    out = tool_input(api_call(body), VERIFY_TOOL["name"])
+              "\nDonne un verdict par question (numero = numéro de la question).")
+    out = llm(SYSTEM_VERIFY, prompt, pdf, VERIFY_TOOL, SPEC_VERIFY)
     verdicts = out.get("verdicts")
     if isinstance(verdicts, str):
         try:
@@ -437,14 +552,14 @@ def build_quiz(lesson, info):
         raw, verified = mock_quiz(lesson), False
         questions = clean_questions(raw["questions"])
     else:
-        block = pdf_block(lesson.rep)
-        raw = ask_for_quiz(lesson, info, block)
+        pdf = load_pdf(lesson.rep)
+        raw = ask_for_quiz(lesson, info, pdf)
         questions = clean_questions(raw.get("questions"))
         if len(questions) < MIN_PUBLISH:
             raise Skip(f"seulement {len(questions)} question(s) valide(s) (minimum {MIN_PUBLISH})")
         verified = False
         if VERIFY:
-            verdicts = ask_to_verify(lesson, questions, block)
+            verdicts = ask_to_verify(lesson, questions, pdf)
             kept = []
             for i, q in enumerate(questions, 1):
                 v = verdicts.get(i)
@@ -460,7 +575,8 @@ def build_quiz(lesson, info):
     desc = info.get("group") or nfc(raw.get("description", ""))
     return {
         "titre": titre, "description": desc, "auto": True,
-        "source": lesson.rel, "source_md5": lesson.digest, "modele": "test" if MOCK else MODEL,
+        "source": lesson.rel, "source_md5": lesson.digest, "modele": "test" if MOCK else (ACTIVE_MODEL[0] or MODEL),
+        "fournisseur": "test" if MOCK else PROVIDER,
         "verifie": verified, "genere_le": datetime.date.today().isoformat(),
         "questions": shuffle_choices(questions, lesson.digest),
     }
@@ -498,7 +614,7 @@ def main():
     dry = "--dry-run" in sys.argv
     strict = "--strict" in sys.argv
     if not API_KEY and not MOCK and not dry:
-        print("Quiz : ANTHROPIC_API_KEY absente - génération ignorée (voir _tools/README_QUIZ.md).")
+        print("Quiz : aucune clé API (GEMINI_API_KEY gratuite, ou ANTHROPIC_API_KEY) - génération ignorée (voir _tools/README_QUIZ.md).")
         lessons = scan_lessons()
         write_quiz_map(lessons)
         return 0
@@ -523,7 +639,7 @@ def main():
             todo.append(l)
 
     print(f"Quiz : {len(lessons)} cours uniques | à jour : {uptodate} | manuels (ignorés) : {manual} | à générer : {len(todo)}"
-          f" | modèle : {MODEL}{' | MOCK' if MOCK else ''} | vérification : {'oui' if VERIFY else 'non'}")
+          f" | {PROVIDER}{' (gratuit)' if PROVIDER == 'gemini' else ''} : {MODEL}{' | MOCK' if MOCK else ''} | vérification : {'oui' if VERIFY else 'non'}")
     batch = todo[:MAX_NEW]
     if len(todo) > len(batch):
         print(f"   (limite de {MAX_NEW} cours par exécution : {len(todo) - len(batch)} restant(s) pour la prochaine exécution)")
@@ -553,10 +669,10 @@ def main():
 
     mapped = write_quiz_map(lessons)
     p_in, p_out = PRICES.get(MODEL, (0, 0))
-    cost = USAGE["in"] / 1e6 * p_in + USAGE["out"] / 1e6 * p_out
+    cost_txt = "gratuit (palier gratuit Google)" if PROVIDER == "gemini" else f"coût estimé ≈ {USAGE['in'] / 1e6 * p_in + USAGE['out'] / 1e6 * p_out:.2f} $"
     if USAGE["in"] or USAGE["out"]:
         print(f"Quiz : {done} généré(s), {failed} échec(s) | jetons entrée {USAGE['in']:,} / sortie {USAGE['out']:,}"
-              f" | coût estimé ≈ {cost:.2f} $ | {mapped} cours reliés à un quiz")
+              f" | {cost_txt} | {mapped} cours reliés à un quiz")
     else:
         print(f"Quiz : {done} généré(s), {failed} échec(s) | {mapped} cours reliés à un quiz")
     return 1 if (strict and failed) else 0
