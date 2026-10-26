@@ -546,6 +546,13 @@ def build_sitemap(pages, home_date):
     return "\n".join(lines)
 
 
+SHORT_TYPE = {"ar": {"cours": "الدروس", "exercices": "التمارين", "fiches": "الجذاذات والملخصات", "examens": "الامتحانات الوطنية"},
+              "fr": {"cours": "Cours", "exercices": "Exercices", "fiches": "Fiches et résumés", "examens": "Examens nationaux"}}
+ICON_TYPE = {"cours": "📚", "exercices": "✏️", "fiches": "📋", "examens": "📝"}
+# section de la page d'accueil (id) -> type de pages /svt/ qui lui correspond
+SECTION_TYPES = {"cours": "cours", "exercices": "exercices", "examens": "examens", "fiches": "fiches"}
+
+
 def patch_index_html(src, pages):
     """Ajoute à index.html (dans le dépôt de travail du déploiement uniquement) : balises de partage,
     JSON-LD, entrée de menu vers /svt/ et boutons « examens ». Idempotent ; ignore ce qu'il ne trouve pas."""
@@ -574,34 +581,49 @@ def patch_index_html(src, pages):
 
     # 2) menu « المزيد » : entrée vers /svt/
     nav = '<ul class="nav-submenu">'
-    if 'href="/svt/"' not in src and nav in src:
+    n0 = src.find(nav)
+    already = n0 != -1 and 'href="/svt/"' in src[n0:src.find("</ul>", n0)]      # uniquement dans le menu « المزيد »
+    if n0 != -1 and not already:
         src = src.replace(nav, nav + '\n        <li><a href="/svt/" data-lang-ar="📚 الدروس والامتحانات PDF" '
                           'data-lang-fr="📚 Cours et examens PDF">📚 الدروس والامتحانات PDF</a></li>', 1)
 
-    # 3) section Examens : boutons vers les pages d'examens générées (bloc entre marqueurs : remplacé à chaque exécution)
-    ex_s, ex_e = "<!-- SEO-EXAM:START -->", "<!-- SEO-EXAM:END -->"
-    btns = []
-    for p in sorted([p for p in pages if p.type == "examens"], key=lambda p: (p.lang, p.scope)):
-        suffix_ar, suffix_fr = (" (بالعربية)", " (en arabe)") if p.lang == "ar" else ("", "")
-        btns.append(
-            f'<a class="btn btn-primary" href="{e(p.path)}" '
-            f'data-lang-ar="📝 الامتحانات الوطنية {e(p.info["ar"])}{suffix_ar}" '
-            f'data-lang-fr="📝 Examens nationaux {e(p.info["fr"])}{suffix_fr}">📝 الامتحانات الوطنية {e(p.info["ar"])}{suffix_ar}</a>')
-    btns.append(f'<a class="btn btn-secondary" style="border:2px solid var(--primary-color)" href="/{OUT}/" '
-                'data-lang-ar="📚 كل الدروس والامتحانات PDF" data-lang-fr="📚 Tous les cours et examens PDF">'
-                '📚 كل الدروس والامتحانات PDF</a>')
-    cta = (ex_s + '\n                <div class="seo-exam-links" style="display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin:0 0 1.2rem">\n                    '
-           + "\n                    ".join(btns) + "\n                </div>\n                " + ex_e)
-    if ex_s in src and ex_e in src:
-        src = re.sub(re.escape(ex_s) + r".*?" + re.escape(ex_e), lambda m: cta, src, flags=re.S)
-    else:
-        i = src.find('<section id="examens"')
-        if i != -1:
-            j = src.find("</p>", src.find("section-intro", i))
-            if j != -1:
-                src = re.sub(r'\s*<div class="seo-exam-links".*?</div>', "", src, count=1, flags=re.S)   # ancien bloc sans marqueurs
-                j = src.find("</p>", src.find("section-intro", i))
-                src = src[:j + 4] + "\n                " + cta + src[j + 4:]
+    # 3) liens vers les pages /svt/ placés SOUS LE TITRE de chaque section de la page d'accueil
+    #    (blocs entre marqueurs : remplacés à chaque exécution ; anciens blocs / copies manuelles nettoyés)
+    src = re.sub(r"\s*<!-- SEO-EXAM:START -->.*?<!-- SEO-EXAM:END -->", "", src, flags=re.S)
+    src = re.sub(r'\s*<div class="seo-exam-links".*?</div>', "", src, flags=re.S)
+    for sec, ptype in SECTION_TYPES.items():
+        s_m, e_m = f"<!-- SEO-SECTION:{sec}:START -->", f"<!-- SEO-SECTION:{sec}:END -->"
+        src = re.sub(r"\s*" + re.escape(s_m) + r".*?" + re.escape(e_m), "", src, flags=re.S)
+        sec_pages = sorted([p for p in pages if p.type == ptype], key=lambda p: (p.lang, p.scope))
+        i = src.find(f'<section id="{sec}"')
+        if not sec_pages or i == -1:
+            continue
+        nxt = src.find("<section", i + 10)
+        limit = nxt if nxt != -1 else len(src)
+        k = src.find("section-intro", i)
+        pos = -1
+        if k != -1 and k < limit:
+            q = src.find("</p>", k)
+            pos = q + 4 if q != -1 else -1
+        if pos == -1:
+            q = src.find("</h2>", i)
+            pos = q + 5 if q != -1 and q < limit else -1
+        if pos == -1:
+            continue
+        btns = []
+        for p in sec_pages:
+            sar, sfr = (" (بالعربية)", " (en arabe)") if p.lang == "ar" else ("", "")
+            ar = f'{ICON_TYPE[ptype]} {SHORT_TYPE["ar"][ptype]} {p.info["fr"]}{sar} PDF'
+            fr = f'{ICON_TYPE[ptype]} {SHORT_TYPE["fr"][ptype]} {p.info["fr"]}{sfr} PDF'
+            btns.append(f'<a class="btn btn-primary" href="{e(p.path)}" data-lang-ar="{e(ar)}" data-lang-fr="{e(fr)}">{e(ar)}</a>')
+        if sec == "examens":
+            btns.append(f'<a class="btn btn-secondary" style="border:2px solid var(--primary-color)" href="/{OUT}/" '
+                        'data-lang-ar="📚 كل الدروس والامتحانات PDF" data-lang-fr="📚 Tous les cours et examens PDF">'
+                        '📚 كل الدروس والامتحانات PDF</a>')
+        block = ('\n                ' + s_m + '\n                <div class="seo-section-links" style="display:flex;flex-wrap:wrap;gap:.6rem;'
+                 'justify-content:center;margin:0 0 1.2rem">\n                    ' + "\n                    ".join(btns)
+                 + "\n                </div>\n                " + e_m)
+        src = src[:pos] + block + src[pos:]
 
     # 4) pied de page : (a) lien dans « Liens rapides » ; (b) nouvelle colonne dans la grille .footer-content
     f = src.find("<footer")
@@ -644,14 +666,12 @@ def inject_index_links(pages):
         if src != original:
             idx.write_text(src, encoding="utf-8")
         return False
-    short = {"ar": {"cours": "الدروس", "exercices": "التمارين", "fiches": "الجذاذات والملخصات", "examens": "الامتحانات الوطنية"},
-             "fr": {"cours": "Cours", "exercices": "Exercices", "fiches": "Fiches et résumés", "examens": "Examens nationaux"}}
     li = [f'<li><a href="/{OUT}/" data-lang-ar="📚 كل الدروس والامتحانات" data-lang-fr="📚 Tous les cours et examens">📚 كل الدروس والامتحانات</a></li>']
     for t in TYPE_ORDER:
         for p in sorted([p for p in pages if p.type == t], key=lambda p: (p.lang, p.scope)):
             sar, sfr = (" (بالعربية)", " (en arabe)") if p.lang == "ar" else ("", "")
-            ar = f'{short["ar"][t]} {p.info["fr"]}{sar}'
-            fr = f'{short["fr"][t]} {p.info["fr"]}{sfr}'
+            ar = f'{SHORT_TYPE["ar"][t]} {p.info["fr"]}{sar}'
+            fr = f'{SHORT_TYPE["fr"][t]} {p.info["fr"]}{sfr}'
             li.append(f'<li><a href="{e(p.path)}" data-lang-ar="{e(ar)}" data-lang-fr="{e(fr)}">{e(ar)}</a></li>')
     block = ('\n                <nav class="footer-section gs-seo-links" aria-label="Cours et examens SVT">'
              '<h3 data-lang-ar="📚 ملفات PDF" data-lang-fr="📚 Fichiers PDF">📚 ملفات PDF</h3>'
