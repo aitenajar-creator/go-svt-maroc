@@ -85,6 +85,56 @@
         trackEvent('video', path);
     }
 
+
+    // =============== 🎯 تمارين مرتبطة بكل درس (quiz-map.json) ===============
+    // يُنشئه _tools/generate_quiz.py: مسار الدرس ← مسار اختباره
+    let quizMap = {};
+    let quizMapPromise = null;
+    const mapKey = p => nfc(String(p || '')).replace(/^\/+/, '');
+
+    function loadQuizMap() {
+        if (!quizMapPromise) {
+            quizMapPromise = fetch(`quiz-map.json?v=${Date.now()}`, { cache: 'no-store' })
+                .then(r => (r.ok ? r.json() : {}))
+                .catch(() => ({}))
+                .then(data => {
+                    quizMap = {};
+                    if (data && typeof data === 'object') {
+                        Object.keys(data).forEach(k => { quizMap[mapKey(k)] = '/' + mapKey(data[k]); });
+                    }
+                    return quizMap;
+                });
+        }
+        return quizMapPromise;
+    }
+
+    const prevLoadManifestQuiz = loadManifest;
+    loadManifest = function () {
+        return Promise.all([prevLoadManifestQuiz(), loadQuizMap()]).then(([files]) => files);
+    };
+
+    const prevRenderCardQuiz = renderCard;
+    renderCard = function (path, badgeText) {
+        const html = prevRenderCardQuiz(path, badgeText);
+        const quizPath = quizMap[mapKey(path)];
+        if (!quizPath) return html;
+        const btn = `<button type="button" class="gs-lesson-quiz gs-quiz-start" data-path="${escapeHtml(quizPath)}" ` +
+            `style="cursor:pointer;padding:.5rem 1rem;border-radius:8px;border:2px solid #2d5a27;background:#2d5a27;color:#fff;font:inherit;font-weight:600">` +
+            `🎯 ${t('تمارين تفاعلية', 'Exercices interactifs')}</button>`;
+        return html.replace('<div class="card-actions">', '<div class="card-actions">' + btn);
+    };
+
+    // رابط "الإبلاغ عن خطأ" (واتساب الموجود في صفحة الاتصال) للاختبارات المولّدة آلياً
+    function reportLink(quiz, q) {
+        if (!quiz || !quiz.auto) return '';
+        const wa = document.querySelector('a[href*="wa.me/"]');
+        if (!wa) return '';
+        const msg = `⚠️ ${t('تبليغ عن خطأ في اختبار', 'Erreur dans un quiz')}\n${quiz.titre || ''}\n${q.question}`;
+        const url = `${wa.href.split('?')[0]}?text=${encodeURIComponent(msg)}`;
+        return `<p style="margin-top:.5rem"><a class="gs-quiz-report" href="${escapeHtml(url)}" target="_blank" rel="noopener" ` +
+            `style="font-size:.85rem">⚠️ ${t('الإبلاغ عن خطأ في هذا السؤال', 'Signaler une erreur dans cette question')}</a></p>`;
+    }
+
     // =============== ❓ الاختبارات ===============
     let quizListPromise = null;
     const quizCache = {};
@@ -112,7 +162,7 @@
                 image: q.image ? String(q.image) : ''
             }));
         if (!questions.length) throw new Error('quiz vide ou mal formé');
-        return { titre: String(data.titre || ''), description: String(data.description || ''), questions };
+        return { titre: String(data.titre || ''), description: String(data.description || ''), auto: data.auto === true, source: data.source ? String(data.source) : '', questions };
     }
 
     function loadQuiz(path) {
@@ -165,7 +215,7 @@
                         <span class="level-badge">${escapeHtml(sub ? `${level} - ${sub}` : level)}</span>${best}
                         <div class="file-icon">❓</div>
                         <h3 dir="auto">${escapeHtml(quiz.titre || fileTitle(path))}</h3>
-                        <p class="file-name" dir="auto">${desc}${quiz.questions.length} ${t('سؤال', 'questions')}</p>
+                        <p class="file-name" dir="auto">${desc}${quiz.questions.length} ${t('سؤال', 'questions')}${quiz.auto ? ' · 🤖 ' + t('مولّد آلياً', 'généré par IA') : ''}</p>
                         <div class="card-actions">
                             <button type="button" class="gs-btn gs-btn-main gs-quiz-start" data-path="${escapeHtml(path)}">▶️ ${sc ? t('إعادة', 'Refaire') : t('ابدأ', 'Commencer')}</button>
                         </div>
@@ -223,6 +273,7 @@
         quizBody().innerHTML = `
             <div class="gs-quiz-progress"><span style="width:${Math.round(s.index / total * 100)}%"></span></div>
             <p class="gs-quiz-count">${t('السؤال', 'Question')} ${s.index + 1} / ${total}</p>
+            ${s.quiz.auto ? `<p class="gs-quiz-auto-note" style="font-size:.82rem;opacity:.75;margin:.1rem 0 .6rem">🤖 ${t('أسئلة مولّدة آلياً من الدرس. إن وجدت خطأً فبلّغنا.', 'Questions générées automatiquement à partir du cours. Signalez toute erreur.')}</p>` : ''}
             <h4 class="gs-quiz-question" dir="auto">${escapeHtml(q.question)}</h4>
             ${image}
             <div class="gs-quiz-choices">
@@ -251,7 +302,7 @@
         fb.hidden = false;
         fb.classList.add(ok ? 'ok' : 'ko');
         fb.innerHTML = `<strong>${ok ? t('✅ إجابة صحيحة!', '✅ Bonne réponse !') : t('❌ إجابة خاطئة', '❌ Mauvaise réponse')}</strong>` +
-            (q.explication ? `<p>${escapeHtml(q.explication)}</p>` : '');
+            (q.explication ? `<p>${escapeHtml(q.explication)}</p>` : '') + reportLink(s.quiz, q);
         const next = body.querySelector('.gs-quiz-next');
         next.hidden = false;
         next.textContent = s.index + 1 < s.order.length

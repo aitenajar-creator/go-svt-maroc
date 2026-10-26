@@ -546,14 +546,82 @@ def build_sitemap(pages, home_date):
     return "\n".join(lines)
 
 
+def patch_index_html(src, pages):
+    """Ajoute à index.html (dans le dépôt de travail du déploiement uniquement) : balises de partage,
+    JSON-LD, entrée de menu vers /svt/ et boutons « examens ». Idempotent ; ignore ce qu'il ne trouve pas."""
+    # 1) balises de partage (image 1200x630)
+    old_og = '<meta property="og:image" content="https://gosvtmaroc.com/android-chrome-512x512.png">'
+    if old_og in src:
+        src = src.replace(old_og, (
+            f'<meta property="og:image" content="{SITE}/og-image.png">\n'
+            '    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">\n'
+            '    <meta property="og:image:alt" content="Go SVT Maroc - Cours, exercices et examens nationaux de SVT">\n'
+            '    <meta property="og:locale" content="fr_FR">\n    <meta property="og:locale:alternate" content="ar_MA">'))
+    old_tw = '<meta name="twitter:card" content="summary">'
+    if old_tw in src:
+        src = src.replace(old_tw, (
+            '<meta name="twitter:card" content="summary_large_image">\n'
+            '    <meta name="twitter:title" content="Go SVT Maroc - Laboratoire des SVT">\n'
+            '    <meta name="twitter:description" content="Cours, exercices et examens nationaux de SVT - دروس وتمارين وامتحانات علوم الحياة والأرض">\n'
+            f'    <meta name="twitter:image" content="{SITE}/og-image.png">'))
+    if 'application/ld+json' not in src and "</head>" in src:
+        ld = {"@context": "https://schema.org", "@type": "WebSite", "name": BRAND, "alternateName": "Laboratoire des SVT",
+              "url": SITE + "/", "inLanguage": ["fr", "ar"],
+              "description": "Cours, exercices, fiches et examens nationaux de SVT (TC, 1BAC, 2BAC) en français et en arabe."}
+        src = src.replace("</head>", '    <script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + "</script>\n</head>", 1)
+    if 'name="robots"' not in src and "</head>" in src:
+        src = src.replace("</head>", '    <meta name="robots" content="index,follow,max-image-preview:large">\n</head>', 1)
+
+    # 2) menu « المزيد » : entrée vers /svt/
+    nav = '<ul class="nav-submenu">'
+    if 'href="/svt/"' not in src and nav in src:
+        src = src.replace(nav, nav + '\n        <li><a href="/svt/" data-lang-ar="📚 الدروس والامتحانات PDF" '
+                          'data-lang-fr="📚 Cours et examens PDF">📚 الدروس والامتحانات PDF</a></li>', 1)
+
+    # 3) section Examens : boutons vers les pages d'examens générées (bloc entre marqueurs : remplacé à chaque exécution)
+    ex_s, ex_e = "<!-- SEO-EXAM:START -->", "<!-- SEO-EXAM:END -->"
+    btns = []
+    for p in sorted([p for p in pages if p.type == "examens"], key=lambda p: (p.lang, p.scope)):
+        suffix_ar, suffix_fr = (" (بالعربية)", " (en arabe)") if p.lang == "ar" else ("", "")
+        btns.append(
+            f'<a class="btn btn-primary" href="{e(p.path)}" '
+            f'data-lang-ar="📝 الامتحانات الوطنية {e(p.info["ar"])}{suffix_ar}" '
+            f'data-lang-fr="📝 Examens nationaux {e(p.info["fr"])}{suffix_fr}">📝 الامتحانات الوطنية {e(p.info["ar"])}{suffix_ar}</a>')
+    btns.append(f'<a class="btn btn-secondary" style="border:2px solid var(--primary-color)" href="/{OUT}/" '
+                'data-lang-ar="📚 كل الدروس والامتحانات PDF" data-lang-fr="📚 Tous les cours et examens PDF">'
+                '📚 كل الدروس والامتحانات PDF</a>')
+    cta = (ex_s + '\n                <div class="seo-exam-links" style="display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin:0 0 1.2rem">\n                    '
+           + "\n                    ".join(btns) + "\n                </div>\n                " + ex_e)
+    if ex_s in src and ex_e in src:
+        src = re.sub(re.escape(ex_s) + r".*?" + re.escape(ex_e), lambda m: cta, src, flags=re.S)
+    else:
+        i = src.find('<section id="examens"')
+        if i != -1:
+            j = src.find("</p>", src.find("section-intro", i))
+            if j != -1:
+                src = re.sub(r'\s*<div class="seo-exam-links".*?</div>', "", src, count=1, flags=re.S)   # ancien bloc sans marqueurs
+                j = src.find("</p>", src.find("section-intro", i))
+                src = src[:j + 4] + "\n                " + cta + src[j + 4:]
+
+    # 4) pied de page : marqueurs pour les liens HTML classiques
+    start, end = "<!-- SEO-LINKS:START -->", "<!-- SEO-LINKS:END -->"
+    anchor = '<button type="button" class="gs-share-site"'
+    if start not in src and anchor in src:
+        src = src.replace(anchor, start + "\n" + end + "\n                        " + anchor, 1)
+    return src
+
+
 def inject_index_links(pages):
     idx = ROOT / "index.html"
     if not idx.exists():
         return False
-    src = idx.read_text(encoding="utf-8")
+    original = idx.read_text(encoding="utf-8")
+    src = patch_index_html(original, pages)
     start, end = "<!-- SEO-LINKS:START -->", "<!-- SEO-LINKS:END -->"
     if start not in src or end not in src:
-        print("   ! index.html : marqueurs SEO-LINKS absents, liens non injectés", file=sys.stderr)
+        print("   ! index.html : emplacement des liens de pied de page introuvable, bloc non injecté", file=sys.stderr)
+        if src != original:
+            idx.write_text(src, encoding="utf-8")
         return False
     li = []
     for t in TYPE_ORDER:
@@ -568,7 +636,7 @@ def inject_index_links(pages):
         f'<nav class="gs-seo-links" aria-label="Cours et examens SVT"><h3>Accès direct · وصول مباشر</h3><ul>'
         f'<li><a href="/{OUT}/">Toutes les ressources · جميع الموارد</a></li>' + "".join(li) + "</ul></nav>\n")
     new = re.sub(re.escape(start) + r".*?" + re.escape(end), lambda m: start + block + end, src, flags=re.S)
-    if new != src:
+    if new != original:
         idx.write_text(new, encoding="utf-8")
     return True
 
