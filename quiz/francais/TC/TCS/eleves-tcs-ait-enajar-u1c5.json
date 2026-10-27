@@ -1,0 +1,112 @@
+{
+  "titre": "Chapitre 5 : Les équilibres naturels",
+  "description": "Unité 1 : L'écologie",
+  "auto": true,
+  "source": "cours/francais/TC/TCS/eleves-TCS  AIT ENAJAR U1C5.pdf",
+  "source_md5": "be5b4160cf1aec01f3bb4cad8193b6ac",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Comment définit-on l'équilibre naturel dans le cours ?",
+      "choix": [
+        "Une augmentation continue des gaz à effet de serre dans l'atmosphère",
+        "Une exploitation intensive et rationnelle des ressources géologiques",
+        "Une transformation spontanée et définitive de l'environnement par l'Homme",
+        "Une harmonie entre ce qui est produit et ce qui est consommé"
+      ],
+      "reponse": 4,
+      "explication": "Le cours définit l'équilibre naturel comme une harmonie entre ce qui est produit et ce qui est consommé, tout en précisant qu'il est fragile et sensible."
+    },
+    {
+      "question": "Quel polluant atmosphérique mentionné dans le cours contribue directement à l'acidification des précipitations ?",
+      "choix": [
+        "Le dioxyde de carbone (CO2)",
+        "Les chlorofluorocarbures (CFC)",
+        "Le dioxyde de soufre (SO2)",
+        "La vapeur d'eau stratosphérique"
+      ],
+      "reponse": 3,
+      "explication": "D'après le document 1, le SO2 et certains oxydes d'azote contribuent à l'acidification des précipitations (les pluies acides)."
+    },
+    {
+      "question": "Quelle est la définition d'une solution basique selon le vocabulaire du cours ?",
+      "choix": [
+        "Un pH supérieur à 7",
+        "Un pH égal à 7",
+        "Un pH inférieur à 7",
+        "Un pH égal à 0"
+      ],
+      "reponse": 1,
+      "explication": "Le lexique du cours indique qu'un pH inférieur à 7 est acide, égal à 7 est neutre, et supérieur à 7 est basique."
+    },
+    {
+      "question": "En quoi consistent les ressources naturelles selon le classement du document 2 ?",
+      "choix": [
+        "Ressources atmosphériques, aquatiques et forestières",
+        "Ressources renouvelables et non polluantes",
+        "Ressources fossiles, solaires et éoliennes",
+        "Ressources hydriques, biologiques et géologiques"
+      ],
+      "reponse": 4,
+      "explication": "Le document 2 classe les ressources naturelles en ressources hydriques (eau), biologiques (êtres vivants) et géologiques (minéraux)."
+    },
+    {
+      "question": "Quelle conséquence entraîne le surpâturage basé sur les méthodes traditionnelles d'élevage ?",
+      "choix": [
+        "La réduction des émissions de dioxyde de carbone",
+        "Un pâturage trop intense qui empêche la végétation de se régénérer",
+        "Le développement rapide des réserves naturelles et parcs",
+        "L'augmentation de la biodiversité aquatique et des sols"
+      ],
+      "reponse": 2,
+      "explication": "Le document 2 montre que le surpâturage correspond à un pâturage trop intense empêchant la végétation de se régénérer, ce qui conduit à l'appauvrissement des sols et à la désertification."
+    },
+    {
+      "question": "Quelle est la différence fondamentale entre l'amincissement de la couche d'ozone et l'effet de serre renforcé ?",
+      "choix": [
+        "L'effet de serre détruit l'ozone stratosphérique tandis que les CFC réchauffent le climat",
+        "Ce sont deux phénomènes distincts, liés à des polluants et à des mécanismes différents",
+        "L'amincissement de la couche d'ozone est provoqué uniquement par le CO2",
+        "Ce sont exactement le même phénomène provoqué par les mêmes gaz"
+      ],
+      "reponse": 2,
+      "explication": "Le document 1 comporte un encadré important soulignant que l'amincissement de la couche d'ozone et l'effet de serre renforcé sont deux phénomènes distincts, liés à des polluants et à des mécanismes distincts."
+    },
+    {
+      "question": "Parmi les stratégies de préservation des équilibres naturels, que permet l'adoption de la lutte biologique en agriculture ?",
+      "choix": [
+        "Augmenter l'utilisation des engrais chimiques de synthèse",
+        "Capturer les poissons sans respecter les périodes de repos biologique",
+        "Remplacer entièrement l'énergie solaire par des combustibles fossiles",
+        "Utiliser des organismes vivants ou leurs produits pour limiter les organismes nuisibles"
+      ],
+      "reponse": 4,
+      "explication": "Le document 3 indique que la lutte biologique en agriculture consiste à utiliser des organismes vivants ou leurs produits pour limiter les organismes nuisibles et réduire le recours aux pesticides chimiques."
+    },
+    {
+      "question": "Quel est l'objectif de la création de réserves naturelles et de parcs écologiques ?",
+      "choix": [
+        "Favoriser le gaspillage de l'eau en agriculture et en industrie",
+        "Accélérer la déforestation pour répondre aux besoins croissants de la population",
+        "Permettre le développement industriel intensif et non contrôlé",
+        "Préserver les espèces menacées par la disparition grâce à des règlements juridiques"
+      ],
+      "reponse": 4,
+      "explication": "Le document 3 précise que la création de réserves naturelles, de parcs écologiques et l'application de règlements juridiques servent à préserver les espèces menacées par la disparition."
+    },
+    {
+      "question": "Quelle est l'utilité des énergies renouvelables mentionnées dans le cours pour préserver l'équilibre naturel ?",
+      "choix": [
+        "Augmenter les émissions de dioxyde de soufre (SO2) et de CFC",
+        "Limiter l'utilisation des combustibles fossiles et réduire certaines émissions polluantes",
+        "Accélérer la surpêche et l'épuisement des stocks de poissons",
+        "Encourager la déforestation intensive des zones forestières"
+      ],
+      "reponse": 2,
+      "explication": "D'après le document 3, le développement des énergies renouvelables (solaire, éolienne, hydrique) permet de limiter l'utilisation des combustibles fossiles et de réduire certaines émissions polluantes."
+    }
+  ]
+}

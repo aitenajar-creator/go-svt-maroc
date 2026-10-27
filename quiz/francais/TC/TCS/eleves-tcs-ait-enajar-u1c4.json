@@ -1,0 +1,124 @@
+{
+  "titre": "Chapitre 4 : Flux de la matière et de l'énergie dans l'écosystème",
+  "description": "Unité 1 : L'écologie",
+  "auto": true,
+  "source": "cours/francais/TC/TCS/eleves-TCS  AIT ENAJAR U1C4.pdf",
+  "source_md5": "9cac8d505acd5d86076c2ef63598da35",
+  "modele": "gemini-3.6-flash",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "D'après le cours sur le cycle de vie du ténia, quelle est la particularité anatomique et trophique de ce parasite chez l'Homme ?",
+      "choix": [
+        "Il établit une relation bénéfique non obligatoire avec l'Homme sans lui provoquer de troubles.",
+        "Il s'agit d'un décomposeur qui transforme la matière minérale en matière organique dans les muscles des bovins.",
+        "Il ne possède ni appareil digestif, ni appareil circulatoire, ni appareil respiratoire, et absorbe les nutriments par toute la surface de son corps.",
+        "Il possède un appareil digestif développé pour digérer la viande de bovin."
+      ],
+      "reponse": 3,
+      "explication": "Le cours indique que le ténia adulte est un parasite dépourvu d'appareil digestif, circulatoire et respiratoire. Il vit fixé dans l'intestin de l'Homme et absorbe les nutriments directement par toute la surface de son corps."
+    },
+    {
+      "question": "Dans l'association symbiotique constituant les lichens, quel est le rôle respectif du champignon et de l'algue ?",
+      "choix": [
+        "Le champignon réalise la photosynthèse et l'algue décompose la matière organique morte du sol.",
+        "Le champignon fournit la matière organique et l'algue fournit l'eau et les sels minéraux.",
+        "Le champignon assure le stockage d'eau et de sels minéraux, tandis que l'algue réalise la synthèse des matières organiques.",
+        "L'algue absorbe les nutriments par sa surface et le champignon détruit les cellules hôtes environnantes."
+      ],
+      "reponse": 3,
+      "explication": "D'après le tableau du cours sur les lichens, le champignon a pour rôle le stockage de l'eau et des sels minéraux, alors que l'algue effectue la synthèse des matières organiques."
+    },
+    {
+      "question": "Comment le cours définit-il la relation de coopération entre deux espèces ?",
+      "choix": [
+        "Une relation interspécifique obligatoire et permanente bénéfique pour une seule partie.",
+        "Une relation dans laquelle un organisme vit aux dépens d'un hôte en le privant de ses nutriments.",
+        "Une relation de compétition pour l'accès aux mêmes nutriments minéraux.",
+        "Une relation interspécifique, non obligatoire et non permanente, bénéfique pour les deux parties."
+      ],
+      "reponse": 4,
+      "explication": "La coopération est définie dans le cours comme une relation interspécifique, non obligatoire, et non permanente, bénéfique pour les deux parties (exemples : fourmis/pucerons, crocodile/oiseaux)."
+    },
+    {
+      "question": "Quelle est la caractéristique du commensalisme selon le document du cours ?",
+      "choix": [
+        "C'est la transformation de la matière organique morte en éléments minéraux.",
+        "C'est une relation obligatoire qui entraîne la mort de l'hôte.",
+        "C'est une relation réciproquement néfaste provoquée par le manque de ressources.",
+        "C'est une relation bénéfique pour une seule partie, sans nuire à l'autre."
+      ],
+      "reponse": 4,
+      "explication": "Le commensalisme est une relation interspécifique, non obligatoire et non permanente, qui est bénéfique pour une seule partie, sans nuire à l'autre (exemple : les annélides vivant à l'intérieur de l'étoile de mer)."
+    },
+    {
+      "question": "Quel est le rôle des organismes saprophytes (décomposeurs comme les champignons et bactéries du sol) ?",
+      "choix": [
+        "Ils consomment uniquement des animaux carnivores vivants.",
+        "Ils fabriquent de la matière organique à partir du dioxyde de carbone uniquement.",
+        "Ils transforment la matière organique morte en substances minérales utilisées par les végétaux photosynthétiques.",
+        "Ils convertissent l'énergie lumineuse en énergie chimique par la photosynthèse."
+      ],
+      "reponse": 3,
+      "explication": "Le cours précise que les décomposeurs (saprophytes) transforment la matière organique morte en substances minérales, lesquelles sont ensuite réutilisées par les végétaux photosynthétiques."
+    },
+    {
+      "question": "Qu'est-ce qu'un réseau trophique au sein d'un écosystème ?",
+      "choix": [
+        "Un ensemble de chaînes alimentaires interférées qui partagent des maillons.",
+        "Une chaîne alimentaire simple constituée uniquement de producteurs.",
+        "Une succession de perturbations écologiques brusques au cours du temps.",
+        "Une représentation graphique exclusive du nombre d'individus par hectare."
+      ],
+      "reponse": 1,
+      "explication": "Le cours définit le réseau trophique comme un ensemble de chaînes alimentaires interférées, c'est-à-dire un ensemble de chaînes alimentaires qui partagent des maillons."
+    },
+    {
+      "question": "Quelle est la distinction entre la productivité primaire et la productivité secondaire ?",
+      "choix": [
+        "La productivité primaire concerne les carnivores tertiaires, la secondaire concerne les producteurs.",
+        "La productivité primaire augmente au cours du temps, la secondaire diminue toujours jusqu'à zéro.",
+        "La productivité primaire est réalisée par les décomposeurs, la secondaire par les herbivores.",
+        "La productivité primaire correspond à la conversion de l'énergie lumineuse en énergie chimique par les autotrophes, tandis que la productivité secondaire est la production de matière organique par les hétérotrophes."
+      ],
+      "reponse": 4,
+      "explication": "Dans l'écosystème, la productivité primaire est la conversion de l'énergie lumineuse en énergie chimique par les autotrophes (végétaux chlorophylliens). La productivité secondaire correspond à la matière organique produite par les hétérotrophes en consommant de la matière organique."
+    },
+    {
+      "question": "Lorsqu'on passe d'un niveau trophique à l'autre le long d'une chaîne alimentaire, comment évoluent le nombre d'individus, la biomasse et l'énergie ?",
+      "choix": [
+        "La biomasse et l'énergie restent strictement constantes.",
+        "Le nombre d'individus, la biomasse et l'énergie diminuent.",
+        "Seule l'énergie diminue, le nombre d'individus et la biomasse augmentent systématiquement.",
+        "Ils augmentent de manière continue du producteur vers les consommateurs tertiaires."
+      ],
+      "reponse": 2,
+      "explication": "Le cours indique qu'en étudiant une chaîne alimentaire d'un point de vue quantitatif, le nombre d'individus, la biomasse et l'énergie diminuent lorsqu'on passe d'un niveau trophique à l'autre."
+    },
+    {
+      "question": "Dans le cadre de la succession écologique progressive, qu'appelle-t-on le « climax » ?",
+      "choix": [
+        "Le stade final caractérisé par un équilibre total entre toutes les composantes, généralement représenté par la forêt.",
+        "Le stade intermédiaire dominé uniquement par les herbes pionnières.",
+        "La phase de destruction totale de la végétation suite à une éruption volcanique.",
+        "Le milieu initial constitué d'un sol nu sans aucune végétation."
+      ],
+      "reponse": 1,
+      "explication": "Le climax désigne le stade final de l'évolution progressive d'un écosystème, caractérisé par une communauté mature, stable et un équilibre total entre toutes ses composantes (généralement la forêt)."
+    },
+    {
+      "question": "Selon le cours, quelles sont les deux voies par lesquelles un écosystème peut se transformer au cours du temps ?",
+      "choix": [
+        "Uniquement par des cycles climatiques annuels sans modification de la structure de la végétation.",
+        "Soit par l'influence de processus écologiques (évolution lente par succession écologique), soit par l'influence de perturbations sporadiques et brusques (incendies, éruptions volcaniques).",
+        "Soit par la disparition des autotrophes, soit par la prolifération incontrôlée des parasites.",
+        "Soit par l'augmentation constante de la biomasse, soit par le remplacement des minéraux par de la matière organique."
+      ],
+      "reponse": 2,
+      "explication": "L'écosystème est dynamique et se transforme soit lentement par des processus écologiques (succession écologique vers le climax), soit rapidement sous l'effet de perturbations sporadiques et brusques (éruptions volcaniques, incendies)."
+    }
+  ],
+  "modele_verification": "gemini-3.5-flash-lite"
+}
