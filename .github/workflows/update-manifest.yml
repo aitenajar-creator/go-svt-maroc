@@ -23,7 +23,7 @@ jobs:
           python3 << 'PYEOF'
           import os, json, datetime
 
-          CONTENT_DIRS = ["cours", "exercices", "fiches", "documents", "ressources", "divers"]
+          CONTENT_DIRS = ["cours", "exercices", "examens", "fiches", "documents", "ressources", "divers"]
           SKIP = {"readme.md", "thumbs.db", "desktop.ini"}
           tree = {}
 
