@@ -1,0 +1,101 @@
+{
+  "titre": "Chapitre 2 : La communication nerveuse",
+  "description": "Unité 3 : Les communications hormonales et nerveuses",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U3C2.pdf",
+  "source_md5": "037dab157af882a6ed7f20dae7c61680",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Quelle est la valeur de la différence de potentiel mesurée par une microélectrode enfoncée dans le cytoplasme d'un neurone au repos (potentiel de repos) ?",
+      "choix": [
+        "Environ 0 mV",
+        "Environ +60 mV",
+        "Environ -70 mV et reste constant",
+        "Environ +30 mV et reste constant"
+      ],
+      "reponse": 3,
+      "explication": "D'après les données expérimentales du document 11, lorsque l'électrode est enfoncée dans le cytoplasme de la cellule nerveuse, le signal dévie brutalement jusqu'à environ -70 mV et reste constant."
+    },
+    {
+      "question": "Comment appelle-t-on l'intensité minimale au-dessous de laquelle un nerf ne s'excite pas quel que soit le temps de la stimulation ?",
+      "choix": [
+        "La rhéobase",
+        "Le potentiel global",
+        "La chronaxie",
+        "Le seuil d'excitation"
+      ],
+      "reponse": 1,
+      "explication": "Le cours définit explicitement la rhéobase comme étant l'intensité minimale au-dessous de laquelle un nerf ne s'excite pas quel que soit le temps de la stimulation."
+    },
+    {
+      "question": "Quelle est la définition de la chronaxie d'après le cours ?",
+      "choix": [
+        "Le temps minimum nécessaire pour qu'un courant d'intensité double de la rhéobase soit efficace",
+        "Le temps de propagation de l'influx nerveux le long du nerf",
+        "La durée de la période réfractaire absolue",
+        "L'intensité minimale pour obtenir une réponse du nerf"
+      ],
+      "reponse": 1,
+      "explication": "D'après le document 5, la chronaxie est le temps minimum nécessaire pour qu'un courant d'intensité double de la rhéobase soit efficace."
+    },
+    {
+      "question": "Quelle est la concentration en ions sodium (Na+) dans le cytoplasme (LIC) comparée au milieu extracellulaire (LEC) d'un axone de calmar selon le tableau des Données 1 du document 13 ?",
+      "choix": [
+        "400 mmol/L dans le LIC et 20 mmol/L dans le LEC",
+        "440 mmol/L dans le LIC et 50 mmol/L dans le LEC",
+        "50 mmol/L dans le LIC et 440 mmol/L dans le LEC",
+        "20 mmol/L dans le LIC et 400 mmol/L dans le LEC"
+      ],
+      "reponse": 3,
+      "explication": "Le tableau des données 1 indique que la concentration en Na+ est de 50 mmol/L dans le cytoplasme de l'axone (LIC) et de 440 mmol/L dans le milieu extracellulaire (LEC)."
+    },
+    {
+      "question": "Quel est l'effet de l'abaissement de la température (inférieure à 2°C) sur la vitesse de conductibilité du message nerveux sur le nerf sciatique d'après le document 10 ?",
+      "choix": [
+        "Elle reste à 30 m/s",
+        "Elle s'annule (0 m/s)",
+        "Elle diminue de moitié",
+        "Elle augmente à 80 m/s"
+      ],
+      "reponse": 2,
+      "explication": "Le tableau du document 10 montre que pour une température inférieure à 2°C, la vitesse de conductibilité est de 0 m/s."
+    },
+    {
+      "question": "Quel neurotransmetteur est impliqué dans l'inhibition de certaines hormones et le contrôle du mouvement, et dont le déficit est lié à la maladie de Parkinson (excès) d'après le document 24 ?",
+      "choix": [
+        "La sérotonine",
+        "L'acétylcholine",
+        "La dopamine",
+        "Le GABA"
+      ],
+      "reponse": 1,
+      "explication": "D'après le document 24, la sérotonine a pour effet l'inhibition de certaines hormones et le contrôle du mouvement, et son désordre indique une maladie de Parkinson en cas d'excès (+)."
+    },
+    {
+      "question": "Quel est le rôle du GABA au niveau d'une synapse inhibitrice d'après le document 25 ?",
+      "choix": [
+        "Il augmente la vitesse de propagation du potentiel d'action",
+        "Il bloque l'exocytose des vésicules synaptiques",
+        "Il provoque une hyperpolarisation par entrée d'ions Cl-",
+        "Il provoque une dépolarisation par entrée d'ions Na+"
+      ],
+      "reponse": 3,
+      "explication": "Le schéma du document 25 montre que le GABA, au niveau d'une synapse inhibitrice, entraîne une hyperpolarisation associée à l'entrée d'ions Cl-."
+    },
+    {
+      "question": "Comment qualifie-t-on la période pendant laquelle toute stimulation, même supraliminaire, est inefficace (document 8) ?",
+      "choix": [
+        "La période de latence",
+        "Le seuil d'excitabilité",
+        "La période réfractaire absolue",
+        "La période réfractaire relative"
+      ],
+      "reponse": 3,
+      "explication": "Le cours définit la période réfractaire absolue comme celle pendant laquelle toute stimulation même supraliminaire est inefficace."
+    }
+  ]
+}

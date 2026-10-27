@@ -1,0 +1,101 @@
+{
+  "titre": "Chapitre 3 : Les facteurs climatiques et leurs relations avec les êtres vivants",
+  "description": "Unité 1 : L'écologie",
+  "auto": true,
+  "source": "cours/francais/TC/TCS/eleves-TCS  AIT ENAJAR U1C3.pdf",
+  "source_md5": "010ae9a6c31273bf967714e64e5948f8",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Quel instrument de mesure permet de déterminer l'intensité lumineuse ?",
+      "choix": [
+        "L'anémomètre",
+        "Le luxmètre",
+        "Le thermomètre",
+        "Le pluviomètre"
+      ],
+      "reponse": 2,
+      "explication": "Le document 1 indique que le luxmètre (numéro 1) est l'instrument utilisé pour mesurer la lumière, tandis que l'anémomètre mesure le vent, le pluviomètre les précipitations et le thermomètre la température."
+    },
+    {
+      "question": "Quelle est la règle de graduation à respecter entre les deux axes verticaux lors du traçage d'un diagramme ombro-thermique ?",
+      "choix": [
+        "L'axe des températures doit avoir une échelle double de l'axe des précipitations.",
+        "L'axe des précipitations doit être gradué en degrés Celsius.",
+        "La graduation de l'axe des températures doit être égale à celle de l'axe des précipitations.",
+        "La graduation de l'axe des précipitations doit être le double de celle de l'axe des températures (P = 2T)."
+      ],
+      "reponse": 4,
+      "explication": "D'après le document 2, les deux axes verticaux doivent être gradués de telle sorte que P = 2T, c'est-à-dire que la graduation de l'axe des précipitations est le double de celle de l'axe des températures."
+    },
+    {
+      "question": "Que représente le quotient pluviométrique Q dans le diagramme bioclimatique d'Emberger ?",
+      "choix": [
+        "L'amplitude des températures",
+        "Le rapport exprimant les précipitations annuelles en fonction des températures extrêmes",
+        "La moyenne des températures annuelles",
+        "La quantité d'eau évapotranspirée par les végétaux"
+      ],
+      "reponse": 2,
+      "explication": "Le document 3 montre que le quotient pluviométrique d'Emberger s'exprime par la formule Q = 1000 Pa / [((M + m) / 2) * (M - m)], reliant les précipitations annuelles (Pa) aux températures maximales (M) et minimales (m)."
+    },
+    {
+      "question": "Combien d'étages bioclimatiques distingue-t-on dans le diagramme bioclimatique présenté dans le cours ?",
+      "choix": [
+        "Quatre étages",
+        "Cinq étages",
+        "Trois étages",
+        "Six étages"
+      ],
+      "reponse": 2,
+      "explication": "Le cours (page 4) indique que le diagramme est formé de cinq étages climatiques : étage humide, étage sub-humide, étage semi-aride, étage aride et étage saharien."
+    },
+    {
+      "question": "D'après l'étude comparative des données climatiques des stations de Kétama, d'Ifrane, d'Azrou et de Tanger, quel facteur écologique principal explique la présence du cèdre dans certaines stations et son absence dans d'autres ?",
+      "choix": [
+        "La quantité des précipitations annuelles et la température",
+        "L'ensoleillement et l'humidité relative de l'air",
+        "L'éloignement de la mer et l'altitude",
+        "La nature du socle rocheux du sol"
+      ],
+      "reponse": 1,
+      "explication": "Le document 5 montre que le cèdre est présent dans les stations ayant des précipitations élevées et des températures adéquates (comme Kétama et Ifrane), et absent là où les conditions pluviométriques et thermiques ne lui correspondent pas."
+    },
+    {
+      "question": "D'après le document 7 comparant les deux versants de la vallée de Bouiblane, comment varie la température entre le versant nord et le versant sud ?",
+      "choix": [
+        "La température est de 9 °C au versant nord et de 17 °C au versant sud.",
+        "La température est identique (55 °C) sur les deux versants.",
+        "La température est de 17 °C au versant nord et de 9 °C au versant sud.",
+        "La température est de 60 °C au versant nord et de 80 °C au versant sud."
+      ],
+      "reponse": 3,
+      "explication": "Le tableau du document 7 indique clairement une température de 17 °C au versant nord et de 9 °C au versant sud."
+    },
+    {
+      "question": "Comment qualifie-t-on les animaux, comme la souris kangourou, qui peuvent vivre dans des zones moins humides ?",
+      "choix": [
+        "Des animaux xénophiles",
+        "Des animaux sciaphiles",
+        "Des animaux thermophiles",
+        "Des animaux hygrophiles"
+      ],
+      "reponse": 1,
+      "explication": "Le document 9 précise que certains animaux sont xénophiles, ce qui leur permet de vivre dans des zones moins humides grâce à des adaptations physiologiques."
+    },
+    {
+      "question": "Quel est le rôle principal d'une serre normale ou climatisée dans le domaine agricole selon le document 12 ?",
+      "choix": [
+        "Empêcher la sortie d'une grande partie du rayonnement infrarouge grâce à l'effet de serre, améliorant ainsi les rendements des cultures",
+        "Diminuer la quantité d'eau absorbée par les plantes",
+        "Réduire l'ensoleillement direct sur les cultures de légumes",
+        "Favoriser la circulation des vents forts à l'intérieur des cultures"
+      ],
+      "reponse": 1,
+      "explication": "Le document 12 explique que le film d'eau produit par condensation sous le plastique empêche la sortie d'une partie importante du rayonnement infrarouge (effet de serre), ce qui optimise les conditions et augmente nettement le rendement des cultures."
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "titre": "Chapitre 2 : Le rôle du muscle squelettique dans la conversion de l'énergie",
+  "description": "Unité 1 : La consommation de matière organique et le flux d'énergie",
+  "auto": true,
+  "source": "cours/francais/2BAC/2BACSVT/eleves- cours 2bacsvt-francais- unite 1 -Chap 2-role de muscle strie.pdf",
+  "source_md5": "9cf5e86d75859be00285b64e55fa5e79",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Quel type de contraction se caractérise par un raccourcissement du muscle tout en maintenant sa tension constante ?",
+      "choix": [
+        "Le tétanos parfait",
+        "La contraction isotonique",
+        "La contraction isométrique",
+        "La secousse de fatigue"
+      ],
+      "reponse": 2,
+      "explication": "D'après le cours, la contraction isotonique (à tension constante) se caractérise par le raccourcissement et le durcissement du muscle sans augmentation de sa tension."
+    },
+    {
+      "question": "Quelles sont les trois phases qui composent une secousse musculaire consécutive à une seule excitation efficace ?",
+      "choix": [
+        "Phase initiale, phase retardée, phase de récupération",
+        "Phase isométrique, phase isotonique, phase de fatigue",
+        "Phase de repos, phase d'excitation, phase de tétanos",
+        "Phase de latence, phase de contraction, phase de relâchement"
+      ],
+      "reponse": 4,
+      "explication": "Le cours indique qu'une secousse musculaire est une réponse à une seule excitation efficace et est composée de trois phases : la phase de latence, la phase de contraction et la phase de relâchement."
+    },
+    {
+      "question": "Comment obtient-on un tétanos parfait lors d'enregistrements de contractions musculaires par stimulations successives ?",
+      "choix": [
+        "Lorsque la deuxième excitation est appliquée après l'achèvement complet de la première secousse",
+        "Lorsque la deuxième excitation est appliquée pendant la phase de contraction de la secousse précédente",
+        "Lorsque le muscle est soumis à une seule excitation d'intensité maximale",
+        "Lorsque la deuxième excitation arrive pendant la phase de relâchement de la secousse précédente"
+      ],
+      "reponse": 2,
+      "explication": "Selon le lexique et le bilan du cours, le tétanos parfait est le résultat de la fusion de plusieurs secousses lorsque l'excitation suivante est appliquée pendant la phase de contraction de la précédente."
+    },
+    {
+      "question": "Quelle est la définition exacte de la Rhéobase selon le lexique du cours ?",
+      "choix": [
+        "La quantité totale de chaleur dégagée au cours de la contraction",
+        "Le temps qui sépare le moment de l'excitation et le moment de la réponse",
+        "L'intensité maximale supportée par le muscle squelettique",
+        "L'intensité minimale nécessaire pour déclencher une contraction musculaire"
+      ],
+      "reponse": 4,
+      "explication": "D'après le lexique, la rhéobase correspond à l'intensité minimale nécessaire pour déclencher une contraction musculaire."
+    },
+    {
+      "question": "Comment se manifeste le dégagement de chaleur au cours de l'activité musculaire d'après les phénomènes thermiques ?",
+      "choix": [
+        "En deux étapes : une chaleur initiale au cours de la contraction et une chaleur retardée après la contraction",
+        "De façon continue et uniforme sans lien avec les phases de la secousse",
+        "Uniquement sous forme de chaleur retardée après la relaxation",
+        "Uniquement sous forme de chaleur initiale pendant la phase de latence"
+      ],
+      "reponse": 1,
+      "explication": "Le bilan du cours précise que l'activité musculaire est accompagnée d'un dégagement de chaleur en deux étapes : la chaleur initiale au cours de la contraction et la chaleur retardée après la contraction."
+    },
+    {
+      "question": "Que montre la comparaison des échanges sanguins d'un muscle au repos et en activité (Document 8) ?",
+      "choix": [
+        "Le muscle en activité consomme moins de dioxygène et rejette moins de dioxyde de carbone",
+        "Le muscle en activité utilise massivement des lipides et des protides",
+        "Les besoins du muscle restent rigoureusement identiques entre le repos et l'activité",
+        "Le muscle en activité consomme davantage de dioxygène et de glucose et rejette plus de dioxyde de carbone"
+      ],
+      "reponse": 4,
+      "explication": "D'après le tableau du document 8, le volume de sang traversant, l'O2 utilisé, le CO2 rejeté et le glucose utilisé augmentent fortement chez le muscle en activité par rapport au muscle au repos."
+    },
+    {
+      "question": "Qu'appelle-t-on la plus petite unité structurelle et fonctionnelle du muscle comprise entre deux stries Z successives ?",
+      "choix": [
+        "La fibre musculaire",
+        "Le myofilament d'actine",
+        "La myofibrille",
+        "Le sarcomère"
+      ],
+      "reponse": 4,
+      "explication": "Le lexique définit le sarcomère comme étant la zone comprise entre deux stries Z successives, représentant la plus petite unité structurelle et fonctionnelle du muscle."
+    },
+    {
+      "question": "Quelles sont les conditions nécessaires pour observer la formation de l'acto-myosine et la contraction musculaire in-vitro (Document 14) ?",
+      "choix": [
+        "Actine + Myosine + Troponine + Tropomyosine sans ATP",
+        "Actine + Myosine + ATP + ions Ca2+",
+        "Actine + Myosine + Troponine + Tropomyosine sans ions Ca2+",
+        "Actine + Myosine seules"
+      ],
+      "reponse": 2,
+      "explication": "D'après le tableau du document 14, la formation de l'acto-myosine et la contraction musculaire nécessitent la présence conjointe d'actine, de myosine, d'ATP et d'ions Ca2+."
+    },
+    {
+      "question": "Quel est le rôle précis des ions Ca2+ dans le mécanisme de la contraction musculaire d'après le cours ?",
+      "choix": [
+        "Ils remplacent complètement la phosphocréatine dans la régénération de l'ATP",
+        "Ils se fixent sur l'actine et permettent aux têtes de myosine activées de former des ponts d'union avec l'actine",
+        "Ils assurent la liaison directe entre deux stries Z sans intervention d'ATP",
+        "Ils bloquent l'hydrolyse de l'ATP par les têtes de myosine"
+      ],
+      "reponse": 2,
+      "explication": "Le document 15 indique que les têtes de myosine activées forment des ponts d'union avec l'actine en présence de Ca2+."
+    },
+    {
+      "question": "Quelles sont les différentes voies mentionnées dans le cours permettant le renouvellement de l'ATP dans la cellule musculaire ?",
+      "choix": [
+        "Uniquement l'oxydation des lipides membranaires",
+        "La respiration, la fermentation ou la voie de la créatine phosphate",
+        "Uniquement la voie de la glycolyse anaérobie",
+        "La photosynthèse et la respiration cellulaire"
+      ],
+      "reponse": 2,
+      "explication": "Le lexique du document 17 définit le renouvellement d'ATP comme une opération se faisant soit par respiration, par fermentation ou par la voie de la créatine phosphate."
+    }
+  ]
+}

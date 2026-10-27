@@ -1,0 +1,112 @@
+{
+  "titre": "Chapitre 2 : Les facteurs édaphiques et leurs relations avec les êtres vivants",
+  "description": "Unité 1 : L'écologie",
+  "auto": true,
+  "source": "cours/francais/TC/TCS/eleves-TCS  AIT ENAJAR U1C2.pdf",
+  "source_md5": "4b947e62abd22e37f73f1bcf2749acb5",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Quelle est la définition du sol selon le cours ?",
+      "choix": [
+        "Une couche uniquement composée de détritus organiques et d'eau",
+        "La partie superficielle de la croûte terrestre constituant un milieu de vie",
+        "La partie inférieure et stérile de la croûte terrestre",
+        "La roche mère inaltérée située en profondeur dans la lithosphère"
+      ],
+      "reponse": 2,
+      "explication": "Le cours indique que le sol est la partie superficielle de la croûte terrestre qui constitue un milieu de vie pour de nombreux êtres vivants."
+    },
+    {
+      "question": "Quel appareil utilise-t-on pour extraire la faune du sol ?",
+      "choix": [
+        "Une colonne de tamis",
+        "L'appareil de Berlèse",
+        "Une éprouvette graduée",
+        "Un pH-mètre"
+      ],
+      "reponse": 2,
+      "explication": "Le document 2 précise que le Berlèse est un appareil formé d'un entonnoir surmonté d'une lampe pour extraire la faune du sol."
+    },
+    {
+      "question": "Quel est le diamètre des particules minérales classées comme limons selon le document 7 ?",
+      "choix": [
+        "Inférieur à 0,002 mm",
+        "De 0,002 à 0,02 mm",
+        "De 0,2 à 2 mm",
+        "De 20 à 200 mm"
+      ],
+      "reponse": 2,
+      "explication": "Le tableau du document 7 indique clairement que le diamètre des limons est compris entre 0,002 et 0,02 mm."
+    },
+    {
+      "question": "Quelle structure du sol est décrite comme perméable à l'eau et à l'air, assurant une bonne aération aux racines et aux microbes aérobies ?",
+      "choix": [
+        "La structure compacte",
+        "La structure particulaire",
+        "La structure grumeleuse",
+        "La structure battante"
+      ],
+      "reponse": 3,
+      "explication": "Le document 9 associe ces caractéristiques (laisser écouler l'excès d'eau, bonne aération) à la structure grumeleuse."
+    },
+    {
+      "question": "Comment est définie l'eau de capillarité dans le sol ?",
+      "choix": [
+        "L'eau contenue dans les espaces lacunaires qui s'écoule par la gravité",
+        "L'eau retenue sous forme de films assez épais autour des particules, facilement utilisable par la plante",
+        "L'eau totalement évacuée du sol par la gravité",
+        "L'eau retenue sous forme de films très minces non absorbable par les racines"
+      ],
+      "reponse": 2,
+      "explication": "Selon le document 13, l'eau de capillarité est retenue sous forme de films assez épais autour des particules et constitue la réserve utile pour la plante."
+    },
+    {
+      "question": "Qu'est-ce que le point de flétrissement ?",
+      "choix": [
+        "Le taux d'humidité optimal pour la germination des graines",
+        "Le volume maximal d'eau que le sol peut retenir après écoulement de l'eau de gravité",
+        "L'humidité du sol à partir de laquelle la plante ne peut plus prélever d'eau car la réserve utile est épuisée",
+        "La quantité d'eau hygroscopique absorbée par les racines"
+      ],
+      "reponse": 3,
+      "explication": "Le document 14 définit le point de flétrissement comme l'humidité du sol à partir de laquelle la plante ne peut plus prélever d'eau du sol."
+    },
+    {
+      "question": "Quel impact chimique les vers de terre ont-ils sur le sol d'après l'analyse de leurs déjections (Document 5) ?",
+      "choix": [
+        "Ils augmentent la concentration en éléments minéraux tels que le calcium, le phosphore, l'azote et le potassium",
+        "Ils diminuent la quantité de calcium, de phosphore et d'azote",
+        "Ils neutralisent totalement l'acidité du sol en éliminant les ions hydrogène",
+        "Ils n'ont aucun effet mesurable sur la composition chimique du sol"
+      ],
+      "reponse": 1,
+      "explication": "Le tableau du document 5 montre que les teneurs en calcium, phosphore, azote et potassium sont plus élevées dans les déjections que dans le sol."
+    },
+    {
+      "question": "Quelle est la conséquence du surpâturage sur le sol et la végétation selon le cours ?",
+      "choix": [
+        "Il augmente la capacité de rétention en eau et la fertilité du sol",
+        "Il cause la dégradation de la couverture végétale, provoquant l'érosion et le lessivage",
+        "Il favorise l'augmentation de la diversité biologique et la formation de terrasses",
+        "Il protège le sol contre la désertification et l'ensablement"
+      ],
+      "reponse": 2,
+      "explication": "Le texte du document 16 indique que le surpâturage cause une dégradation de la couverture végétale par consommation des bourgeons, ce qui provoque l'érosion et le lessivage."
+    },
+    {
+      "question": "Quelle méthode de préservation du sol consiste à alterner les cultures de graminées avec celles des légumes ?",
+      "choix": [
+        "Le labourage du sol",
+        "L'alternance agricole",
+        "La plantation des terrasses",
+        "L'irrigation moderne"
+      ],
+      "reponse": 2,
+      "explication": "Le cours précise sous la rubrique 'L'alternance agricole' qu'elle consiste à alterner les cultures des graminées avec celles des légumes pour augmenter la fertilité."
+    }
+  ]
+}

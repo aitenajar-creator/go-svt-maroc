@@ -1,0 +1,112 @@
+{
+  "titre": "Chapitre 1 : Régulation de la reproduction chez l'Homme",
+  "description": "Unité 4 : L'intégration neuro-hormonale",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U4C1.pdf",
+  "source_md5": "6ece60e1548e7d739ca326ecc1e5b2b3",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Quelle est la conséquence de l'ablation des testicules (castration) chez un enfant avant la puberté ?",
+      "choix": [
+        "Un maintien des caractères sexuels secondaires sans production de spermatozoïdes",
+        "Une accélération du développement des caractères sexuels secondaires",
+        "Un arrêt de la croissance osseuse uniquement",
+        "La stérilité, l'absence des caractères sexuels secondaires et l'arrêt du développement des organes reproducteurs"
+      ],
+      "reponse": 4,
+      "explication": "D'après le cours, l'ablation des testicules avant la puberté provoque la stérilité, l'absence des caractères sexuels secondaires masculins et l'arrêt du développement des organes reproducteurs."
+    },
+    {
+      "question": "Quel est le rôle précis de la prostate selon le document 5 ?",
+      "choix": [
+        "Elle sécrète le liquide spermatique qui contribue à la mobilité des spermatozoïdes",
+        "Elle stocke les spermatozoïdes avant l'éjaculation",
+        "Elle assure le rôle nutritif exclusif des spermatozoïdes dans l'ampoule référentielle",
+        "Elle sécrète une substance alcaline qui protège les spermatozoïdes en neutralisant le milieu acide de l'urètre"
+      ],
+      "reponse": 1,
+      "explication": "Le cours indique que la prostate sécrète le liquide spermatique qui contribue à la mobilité des spermatozoïdes."
+    },
+    {
+      "question": "Quelles structures du testicule sont responsables de la sécrétion de la testostérone d'après les expériences aux rayons X ?",
+      "choix": [
+        "Les tubes séminifères",
+        "Les cellules de Sertoli",
+        "Les spermatozoïdes mûrs",
+        "Les cellules de Leydig (cellules interstitielles)"
+      ],
+      "reponse": 4,
+      "explication": "La destruction des cellules de Leydig entraîne la stérilité et la régression des caractères sexuels secondaires, qui reprennent lors d'injections d'extraits de ces cellules ou de testostérone."
+    },
+    {
+      "question": "Quelle est la durée moyenne d'un cycle ovarien chez la femme selon le document 10 ?",
+      "choix": [
+        "28 jours",
+        "30 jours",
+        "21 jours",
+        "14 jours"
+      ],
+      "reponse": 1,
+      "explication": "Le cours précise que la durée du cycle ovarien est de 28 jours environ, commençant par la menstruation."
+    },
+    {
+      "question": "Quel est l'impact de l'injection d'œstradiol suivi de progestérone sur l'utérus d'une lapine impubère (document 12) ?",
+      "choix": [
+        "Une absence de modification de la muqueuse utérine",
+        "Une atrophie totale de la couche myomètre",
+        "Une destruction des glandes tubulaires",
+        "Un développement de la muqueuse utérine semblable à la phase sécrétérice"
+      ],
+      "reponse": 4,
+      "explication": "L'association d'œstradiol et de progestérone (lot 2) provoque un développement important et dentelé de la muqueuse utérine, caractéristique de la phase sécrétérice."
+    },
+    {
+      "question": "Comment l'hypothalamus est-il relié anatomiquement à l'hypophyse selon le document 15 ?",
+      "choix": [
+        "Par le myomètre",
+        "Par le canal déférent",
+        "Par le tube séminifère",
+        "Par la tige pituitaire"
+      ],
+      "reponse": 4,
+      "explication": "Le cours indique que l'hypophyse est reliée à l'hypothalamus par la tige pituitaire."
+    },
+    {
+      "question": "Quel est le rôle spécifique de la FSH chez les animaux hypophysectomisés (document 16) ?",
+      "choix": [
+        "Le développement des tubes séminifères sans rétablissement de la spermatogenèse",
+        "Le développement des cellules interstitielles",
+        "Le rétablissement complet immédiat de la production de testostérone",
+        "La régression totale du tissu interstitiel"
+      ],
+      "reponse": 1,
+      "explication": "L'injection de FSH seule permet le développement des tubes séminifères sans rétablissement de la spermatogenèse."
+    },
+    {
+      "question": "Quelles sont les conditions d'efficacité des sécrétions hypothalamiques de GnRH d'après le tableau du document 17 ?",
+      "choix": [
+        "Une perfusion continue sans interruption",
+        "Des injections de 6 µg toutes les 3 heures",
+        "Des injections de 0,6 µg toutes les heures",
+        "Des injections de 6 µg toutes les heures"
+      ],
+      "reponse": 4,
+      "explication": "Le tableau montre que l'injection de 6 µg de GnRH toutes les heures donne un taux sanguin de gonadotrophines normal, contrairement à la perfusion continue ou aux autres intervalles."
+    },
+    {
+      "question": "Quelle est la structure ovarienne qui se forme après l'ovulation et qui sécrète la progestérone ?",
+      "choix": [
+        "Le follicule primordial",
+        "L'endomètre",
+        "Le follicule mûr de De Graaf",
+        "Le corps jaune"
+      ],
+      "reponse": 4,
+      "explication": "D'après le texte du document 10, après la libération de l’ovocyte (ovulation), le follicule mûr se transforme en corps jaune qui sécrète des hormones dont la progestérone."
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "titre": "Chapitre 1 : Réactions responsables de la libération de l'énergie emmagasinée dans la matière organique",
+  "description": "Unité 1 : La consommation de matière organique et le flux d'énergie",
+  "auto": true,
+  "source": "cours/francais/2BAC/2BACSVT/eleves-ait enajar-cours 2bacsvt-francais- unite 1 -chap1-consomation d'energie.pdf",
+  "source_md5": "c97c095ddf26492d335f1ad10ae8d37e",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Quel est le rôle de la molécule d'ATP (adénosine triphosphate) au niveau de la cellule ?",
+      "choix": [
+        "Elle sert de constituant permanent pour structurer la membrane plasmique.",
+        "Elle constitue une forme de stockage temporaire de l'énergie indispensable à l'activité cellulaire.",
+        "Elle permet de stocker durablement et définitivement le glucose dans le hyaloplasme.",
+        "Elle joue le rôle d'un élément minéral indispensable à la photosynthèse."
+      ],
+      "reponse": 2,
+      "explication": "La molécule d'ATP est une forme de stockage temporaire de l'énergie dans la cellule, et l'énergie cellulaire ne peut être utilisée que sous cette forme."
+    },
+    {
+      "question": "Où se déroule la première étape de la dégradation du glucose, appelée la glycolyse ?",
+      "choix": [
+        "Dans le hyaloplasme",
+        "Dans la matrice mitochondriale",
+        "Dans l'espace intermembranaire de la mitochondrie",
+        "Au niveau des sphères pédonculées"
+      ],
+      "reponse": 1,
+      "explication": "D'après le cours, la glycolyse est l'étape commune à la respiration et à la fermentation qui se déroule dans l'hyaloplasme."
+    },
+    {
+      "question": "Quelle est la définition de la respiration cellulaire selon le cours ?",
+      "choix": [
+        "Une réaction chimique convertissant l'énergie lumineuse en énergie chimique sans production d'ATP.",
+        "Une voie métabolique de dégradation partielle du glucose en l'absence d'oxygène produisant de l'éthanol.",
+        "Une suite de réactions anaérobies se déroulant exclusivement dans le hyaloplasme des cellules musculaires.",
+        "Une voie métabolique permettant la dégradation complète du glucose dans un milieu aérobie donnant des éléments minéraux et de l'énergie."
+      ],
+      "reponse": 4,
+      "explication": "La respiration cellulaire est une voie métabolique qui permet la dégradation complète du glucose dans un milieu aérobie et qui donne comme déchets des éléments minéraux (H2O et CO2), dépourvus de toute énergie."
+    },
+    {
+      "question": "Quelle est la structure de la mitochondrie qui délimite la matrice et présente des replis augmentant sa surface ?",
+      "choix": [
+        "La membrane plasmique",
+        "La paroi pecto-cellulosique",
+        "La membrane externe",
+        "La membrane interne formant les crêtes"
+      ],
+      "reponse": 4,
+      "explication": "La membrane interne de la mitochondrie délimite un espace dit matrice et présente des plis dits crêtes qui en augmentent la surface."
+    },
+    {
+      "question": "Quel est le devenir de l'acide pyruvique lorsqu'il entre dans la matrice mitochondriale en présence d'oxygène ?",
+      "choix": [
+        "Il s'associe au coenzyme A pour former l'acétyl-CoA, subissant une décarboxylation et une déshydrogénation.",
+        "Il subit une fermentation alcoolique pour donner de l'éthanol et du CO2.",
+        "Il est directement transformé en lactate au niveau du hyaloplasme.",
+        "Il traverse la membrane externe pour être stocké sous forme de glucose."
+      ],
+      "reponse": 1,
+      "explication": "L'acide pyruvique issu de la glycolyse entre dans la matrice mitochondriale, s'associe au coenzyme A pour former l'acétyl-CoA et subit une décarboxylation et une déshydrogénation."
+    },
+    {
+      "question": "Quel est le rôle des sphères pédonculées situées sur la membrane interne de la mitochondrie ?",
+      "choix": [
+        "Elles assurent la réduction du dioxygène en molécules d'eau.",
+        "Elles réalisent la décarboxylation oxydative du glucose dans le hyaloplasme.",
+        "Elles transportent directement le glucose à travers les deux membranes mitochondriales.",
+        "Elles catalysent la synthèse de l'ATP grâce à l'enzyme ATP synthase lors de la phosphorylation de l'ADP."
+      ],
+      "reponse": 4,
+      "explication": "Les sphères pédonculées contiennent l'enzyme ATP synthase, responsable de la synthèse de l'ATP à partir de la phosphorylation de l'ADP."
+    },
+    {
+      "question": "Quelle est l'importance de la dernière phase de la fermentation (comme la réduction du pyruvate en lactate ou en éthanol) ?",
+      "choix": [
+        "Elle transforme l'acide pyruvique en glucose pour le stocker.",
+        "Elle permet d'éliminer définitivement le dioxygène accumulé dans la cellule.",
+        "Elle permet de produire une grande quantité supplémentaire d'ATP pour la cellule.",
+        "Elle assure la réoxydation des transporteurs réduits (NADH,H+) en NAD+, indispensables à la continuité de la glycolyse."
+      ],
+      "reponse": 4,
+      "explication": "L'importance de cette phase réside dans la réoxydation de la NADH,H+ pour assurer la présence en permanence de NAD+, indispensable à l'ininterruption de la glycolyse et donc à la synthèse d'ATP."
+    },
+    {
+      "question": "Selon le cours, que produit théoriquement l'oxydation complète d'une mole de glucose au cours de la respiration cellulaire ?",
+      "choix": [
+        "15 ATP",
+        "36 ou 38 ATP",
+        "1360 kJ d'énergie thermique uniquement",
+        "2 ATP"
+      ],
+      "reponse": 2,
+      "explication": "L'équation bilan et le bilan énergétique de la respiration indiquent la production de 36 ou 38 ATP pour une mole de glucose oxydée."
+    },
+    {
+      "question": "Quelle est la définition d'une voie métabolique d'après le lexique du cours ?",
+      "choix": [
+        "Un organite cellulaire composé de deux membranes interne et externe.",
+        "Une enzyme qui catalyse la synthèse de l'ATP par phosphorylation.",
+        "Un milieu où il n'y a pas présence d'oxygène sous forme de dioxygène.",
+        "Une succession de réactions chimiques au cours desquelles un substrat initial est transformé pour donner naissance à des produits finis."
+      ],
+      "reponse": 4,
+      "explication": "Une voie métabolique est définie dans le cours comme une succession de réactions chimiques au cours desquelles un substrat (métabolite) initial est transformé et donne naissance à des produits finis."
+    }
+  ]
+}

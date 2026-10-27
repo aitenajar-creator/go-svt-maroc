@@ -1,0 +1,101 @@
+{
+  "titre": "Chapitre 1 : La sortie écologique",
+  "description": "Unité 1 : L'écologie",
+  "auto": true,
+  "source": "cours/francais/TC/TCS/eleves-TCS  AIT ENAJAR U1C1.pdf",
+  "source_md5": "3dfecb9ed178fe06f02791e4a87fd530",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Que permet d'étudier principalement l'écologie ?",
+      "choix": [
+        "Les mouvements tectoniques de la lithosphère",
+        "Les relations entre les êtres vivants et leur milieu de vie",
+        "La composition chimique des roches sédimentaires",
+        "Uniquement la structure interne des cellules végétales"
+      ],
+      "reponse": 2,
+      "explication": "L'écologie est définie dans le cours comme une branche des sciences de la vie et de la Terre qui étudie les relations entre les êtres vivants et leur milieu de vie."
+    },
+    {
+      "question": "Parmi les éléments suivants, lequel correspond à un facteur abiotique étudié lors d'une sortie écologique ?",
+      "choix": [
+        "La température et l'humidité du milieu",
+        "La quantité de bactéries dans le sol",
+        "La présence de mammifères carnivores",
+        "Le taux de prédation entre les insectes"
+      ],
+      "reponse": 1,
+      "explication": "Le cours indique que la sortie écologique consiste à observer les êtres vivants et les facteurs abiotiques tels que la température, la lumière, l'humidité et le sol."
+    },
+    {
+      "question": "Comment appelle-t-on les étages superposés formés par les végétaux de tailles différentes dans une forêt ?",
+      "choix": [
+        "Une stratification horizontale",
+        "Une stratification verticale",
+        "Une aire minimale de relevé",
+        "Une strate d'inventaire"
+      ],
+      "reponse": 2,
+      "explication": "Dans une forêt, les végétaux diffèrent par leurs tailles et forment sur le plan vertical des étages superposés nommés strates, formant ainsi une stratification verticale."
+    },
+    {
+      "question": "Que représente la dominance d'une espèce végétale dans un milieu ?",
+      "choix": [
+        "Le rapport du nombre d'individus de cette espèce sur l'effectif total",
+        "Le recouvrement de l'ensemble des individus de cette espèce, comme la projection verticale de leur appareil végétatif aérien sur le sol",
+        "Le nombre total d'individus de cette espèce par unité de surface",
+        "Le nombre de relevés où l'espèce est présente par rapport au total des relevés"
+      ],
+      "reponse": 2,
+      "explication": "Selon le cours, la dominance représente le recouvrement de l'ensemble des individus d'une espèce donnée, comme la projection verticale de leur appareil végétatif aérien sur le sol."
+    },
+    {
+      "question": "Comment qualifie-t-on une station étudiée dont l'histogramme et la courbe de fréquence sont unimodaux ?",
+      "choix": [
+        "Une station hétérogène",
+        "Une station subdominante",
+        "Une station accidentelle",
+        "Une station homogène"
+      ],
+      "reponse": 4,
+      "explication": "Le cours précise que la courbe unimodale indique que la station étudiée est homogène (contrairement au cas de la courbe bi ou multimodale où la station est hétérogène)."
+    },
+    {
+      "question": "Quel coefficient a été créé par Braun-Blanquet pour étudier la végétation en associant abondance et dominance ?",
+      "choix": [
+        "La densité relative",
+        "L'abondance-dominance",
+        "L'indice de fréquence de DuRietz",
+        "L'aire minimale"
+      ],
+      "reponse": 2,
+      "explication": "Le cours indique que l'abondance-dominance est un coefficient créé par Braun-Blanquet pour étudier la végétation en associant les concepts d'abondance et de dominance."
+    },
+    {
+      "question": "Quel outil parmi les suivants est utilisé sur le terrain pour mesurer l'humidité ?",
+      "choix": [
+        "Un pH-mètre",
+        "Un hygromètre",
+        "Une corde graduée",
+        "Un altimètre"
+      ],
+      "reponse": 2,
+      "explication": "Le document 6 du cours présentant les appareils et outils utilisés sur le terrain montre l'hygromètre."
+    },
+    {
+      "question": "Quelle technique de conservation utilise-t-on pour réaliser un herbier avec des échantillons de végétaux ?",
+      "choix": [
+        "Mettre l'échantillon entre des feuilles de papier sous un poids, puis le coller après séchage sur une feuille blanche cartonnée",
+        "Fixer les végétaux sur papier cartonné avec de la phénolphtaléine",
+        "Mettre les échantillons dans des bocaux remplis d'eau et d'alcool",
+        "Conserver les tiges fraîches dans un piège à fosse avec bocal"
+      ],
+      "reponse": 1,
+      "explication": "Le cours décrit la réalisation de l'herbier en plaçant l'échantillon entre des feuilles de papier sous un poids, puis après séchage (3 à 4 semaines), en le collant sur une feuille blanche cartonnée en indiquant les informations nécessaires."
+    }
+  ]
+}
