@@ -1,0 +1,112 @@
+{
+  "titre": "Chapitre 2 : Les échanges gazeux chlorophylliens",
+  "description": "Unité 2 : Production de la matière organique et flux d'énergie",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U2C2.pdf",
+  "source_md5": "7fbce9418eb83f34cb895a229ceb5a7d",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Quel est le rôle du bleu de bromothymol utilisé dans les expériences de biologie avec l'élodée ?",
+      "choix": [
+        "Il détruit la chlorophylle pour décolorer la feuille.",
+        "Il change de couleur selon la présence ou l'absence de dioxygène.",
+        "Il colore l'amidon en bleu-noir.",
+        "Il est jaune en présence de CO2 dissout et bleu quand le milieu manque de CO2."
+      ],
+      "reponse": 4,
+      "explication": "Le bleu de bromothymol est un indicateur coloré qui est jaune en présence de CO2 dissout et bleu quand le milieu manque de CO2."
+    },
+    {
+      "question": "Comment agissent l'intensité de l'éclairement et la température sur l'activité chlorophyllienne mesurée par le volume d'O2 dégagé ?",
+      "choix": [
+        "Ils n'ont aucun effet sur les échanges gazeux.",
+        "Ils influencent l'intensité des échanges gazeux chlorophylliens selon des courbes présentant des optima ou des seuils de saturation.",
+        "Ils provoquent uniquement la fermeture totale des stomates.",
+        "Ils augmentent indéfiniment la production d'O2 sans limite."
+      ],
+      "reponse": 2,
+      "explication": "L'analyse des graphiques montre que l'intensité de l'éclairement, la concentration en CO2 et la température influencent le volume d'O2 dégagé (avec des points de saturation et de compensation)."
+    },
+    {
+      "question": "Quel réactif utilise-t-on pour mettre en évidence la transpiration (vapeur d'eau) au niveau des feuilles lors de l'évapotranspiration ?",
+      "choix": [
+        "Le chlorure de Cobalt",
+        "Le lugol",
+        "Le bleu de bromothymol",
+        "L'éthanol bouillant"
+      ],
+      "reponse": 1,
+      "explication": "Le chlorure de Cobalt est bleu dans un milieu sec et rose dans un milieu humide, ce qui permet de mettre en évidence la transpiration des feuilles."
+    },
+    {
+      "question": "Quelle est la structure cellulaire responsable des échanges gazeux et de l'évapotranspiration au niveau de l'épiderme des feuilles ?",
+      "choix": [
+        "La cuticule",
+        "Les chloroplastes",
+        "Les stomates",
+        "Les vacuoles"
+      ],
+      "reponse": 3,
+      "explication": "Les stomates sont composés d'une paire de cellules stomatiques (cellules de garde) séparées par une ouverture centrale, l'ostiole, et interviennent dans les échanges gazeux."
+    },
+    {
+      "question": "Quel est le mécanisme cellulaire responsable de l'ouverture des stomates d'après les mesures des ions potassium (K+) ?",
+      "choix": [
+        "Une forte concentration d'ions K+ dans les cellules avoisinantes entraînant la rétractation des cellules stomatiques.",
+        "La destruction des chloroplastes par la lumière.",
+        "Une forte concentration d'ions K+ dans les cellules stomatiques provoque leur turgescence et l'ouverture de l'ostiole.",
+        "Une absence totale d'ions K+ dans toutes les cellules de la feuille."
+      ],
+      "reponse": 3,
+      "explication": "Lorsque les cellules stomatiques présentent une forte concentration d'ions K+ (+++) par rapport aux cellules avoisinantes, les cellules sont bien turgescentes et le stomate s'ouvre."
+    },
+    {
+      "question": "Quelle étape est indispensable avant de recouvrir une feuille de lugol pour tester la présence d'amidon ?",
+      "choix": [
+        "Ajouter directement du bleu de bromothymol sur la feuille fraîche.",
+        "Placer la feuille dans de l'eau glacée pendant 24 heures.",
+        "Mettre la feuille dans l'éthanol bouillant pendant 5 minutes pour détruire les cellules et enlever la chlorophylle.",
+        "Couper la feuille en fines lamelles avec un scalpel sans aucun traitement."
+      ],
+      "reponse": 3,
+      "explication": "Le cours indique qu'il faut détacher les feuilles et les décolorer par de l'éthanol bouillant pendant 5 minutes pour enlever la couleur verte (la chlorophylle) avant d'appliquer le lugol."
+    },
+    {
+      "question": "Quelle est la nature chimique des oses et des osides mentionnée dans le cours ?",
+      "choix": [
+        "Des acides aminés liés par des liaisons peptidiques",
+        "Des acides nucléiques porteurs de l'information génétique",
+        "Des glucides (composés ternaires formés de C, H et O avec des fonctions alcools)",
+        "Des lipides complexes insaturés"
+      ],
+      "reponse": 3,
+      "explication": "Les glucides sont des composés ternaires (C, H, O) porteurs de fonctions alcools, incluant les oses (monosaccharides) et les osides (disaccharides et polysaccharides comme l'amidon)."
+    },
+    {
+      "question": "Comment sont caractérisées chimiquement les molécules de lipides selon le document 12 ?",
+      "choix": [
+        "Par la présence exclusive de carbone et d'hydrogène sous forme d'oses simples",
+        "Par la présence de liaisons peptidiques entre acides aminés",
+        "Par la présence de groupes fonctionnels phosphates uniquement",
+        "Par la présence dans la molécule d'au moins un acide gras ou chaîne grasse, étant insolubles dans l'eau"
+      ],
+      "reponse": 4,
+      "explication": "Les lipides sont des molécules organiques insolubles dans l'eau et solubles dans les solvants organiques, caractérisées par la présence d'au moins un acide gras ou chaîne grasse."
+    },
+    {
+      "question": "Qu'est-ce qu'une protéine du point de vue de sa structure moléculaire d'après le cours ?",
+      "choix": [
+        "Un triglycéride formé de glycérol et de trois acides gras",
+        "Un polysaccharide constitué par l'enchaînement de plusieurs oses",
+        "Une macromolécule biologique constituée de l'enchaînement de résidus d'acides aminés liés entre eux par des liaisons peptidiques",
+        "Un polyalcool formé uniquement de carbone, d'hydrogène et d'oxygène"
+      ],
+      "reponse": 3,
+      "explication": "Les protéines sont des macromolécules biologiques constituées de l'enchaînement de résidus d'acides aminés liés entre eux par des liaisons peptidiques."
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "titre": "Chapitre 2 : Reconstitution de l'histoire géologique d'une région sédimentaire",
+  "description": "Unité 1 : Phénomènes géologiques externes",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U1C2.pdf",
+  "source_md5": "86f69bb151aaed84c04f2af0321960cf",
+  "modele": "gemini-3.6-flash",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "D'après l'introduction du cours, comment est définie la stratigraphie ?",
+      "choix": [
+        "L'étude exclusive des mécanismes de déformation tectonique responsables des failles et des plis.",
+        "Une discipline des sciences de la Terre qui étudie la succession des différentes couches géologiques ou strates.",
+        "Une branche de la paléontologie dédiée uniquement à la classification des espèces animales éteintes.",
+        "Une méthode de datation absolue permettant de calculer l'âge exact des minéraux radioactifs."
+      ],
+      "reponse": 2,
+      "explication": "Le cours indique explicitement dans l'introduction que la stratigraphie est une discipline des sciences de la Terre qui étudie la succession des différentes couches géologiques ou strates."
+    },
+    {
+      "question": "Dans quelles conditions le principe de superposition s'applique-t-il valablement pour dater relativement des strates sédimentaires ?",
+      "choix": [
+        "Uniquement lorsque les couches sédimentaires sont complètement verticales.",
+        "Dans les terrasses fluviatiles graduelles où les strates anciennes sont au sommet.",
+        "Dans une région stable tectoniquement où les couches ont gardé leurs positions de dépôt d'origine.",
+        "Dans les terrains affectés par des plis complexes ou des failles inverses majeures."
+      ],
+      "reponse": 3,
+      "explication": "Selon le document 1, le principe de superposition s'applique dans une région stable tectoniquement où les couches ont gardé leurs positions de dépôt d'origines sous forme de strates horizontales."
+    },
+    {
+      "question": "Que stipule le principe d'inclusion énoncé dans le cours ?",
+      "choix": [
+        "Toute faille est plus récente que les couches sédimentaires qu'elle traverse.",
+        "La roche ou les débris d'une roche inclus dans une couche sont toujours plus anciens que leur contenant.",
+        "Deux strates contenant les mêmes fossiles ont le même âge sur toute leur étendue.",
+        "Les couches sédimentaires superficielles sont toujours plus anciennes que les roches en profondeur."
+      ],
+      "reponse": 2,
+      "explication": "Le principe d'inclusion (document 4) énonce que la roche ou les débris d'une roche inclus dans une couche sont toujours plus anciens que leur contenant (le contenu est plus ancien que le contenant)."
+    },
+    {
+      "question": "Quelles sont les caractéristiques d'un fossile stratigraphique d'après le cours ?",
+      "choix": [
+        "Une durée de vie illimitée liée exclusivement aux milieux marins très profonds.",
+        "Une grande extension à l'échelle géologique et une existence géographique très courte.",
+        "Une existence courte à l'échelle géologique et une grande extension géographique.",
+        "Une absence totale de fossiles marins associée à une répartition locale."
+      ],
+      "reponse": 3,
+      "explication": "Le cours définit le fossile stratigraphique (document 5) comme une espèce ayant une grande extension géographique et une existence courte à l'échelle géologique, ce qui permet de comparer l'âge de terrains distants."
+    },
+    {
+      "question": "Quel exemple de fossile de faciès est donné dans le cours et quelle est sa fonction géologique ?",
+      "choix": [
+        "Les trilobites, qui permettent de définir les limites d'un étage sédimentaire continental.",
+        "Les ammonites, qui servent à dater précisément la limite de l'ère primaire.",
+        "Les mammifères actuels, qui indiquent une sédimentation en eau marine très profonde et froide.",
+        "Les récifs coralliens, qui permettent de déterminer les conditions et le milieu de sédimentation."
+      ],
+      "reponse": 4,
+      "explication": "Dans le document 5, les récifs coralliens sont cités comme exemple de fossiles de faciès (animaux marins peu profonds, chauds et clairs), permettant de distinguer les conditions du milieu de sédimentation."
+    },
+    {
+      "question": "Comment le cours définit-il une discordance géologique angulaire ?",
+      "choix": [
+        "Une sédimentation continue de couches marines sans aucune interruption ni déformation.",
+        "Un dépôt de couches transgressives sur des couches continentales anciennes qui ont été préalablement plissées.",
+        "Une superposition de couches continentales identiques séparées par une faille normale.",
+        "Un dépôt horizontal de couches transgressives sur des couches continentales non déformées."
+      ],
+      "reponse": 2,
+      "explication": "Le document 8 précise que la discordance géologique angulaire se produit lorsque, avant la sédimentation des couches transgressives, les couches anciennes continentales ont été plissées par des mouvements tectoniques."
+    },
+    {
+      "question": "Quelles sont les trois phases qui composent un cycle sédimentaire ?",
+      "choix": [
+        "Une transgression, une sédimentation et une régression.",
+        "Un plissement, une faille et une érosion.",
+        "Une lacune, une biozone et une incinération.",
+        "Une orogenèse, un métamorphisme et une incrustation."
+      ],
+      "reponse": 1,
+      "explication": "Le cours définit le cycle sédimentaire (chapitre II, section 2-1) comme la période comprenant trois phases : la transgression marine, la sédimentation et la régression marine qui la suit."
+    },
+    {
+      "question": "D'après le document 10, qu'est-ce qu'une biozone ?",
+      "choix": [
+        "Une division de base biostratigraphique fondée sur l'apparition ou la disparition d'espèces.",
+        "Une division géochronologique équivalente à un Eon.",
+        "Une structure tectonique provoquée par une discordance majeure.",
+        "Une couche continentale caractérisée par une absence totale de restes fossiles."
+      ],
+      "reponse": 1,
+      "explication": "La biozone (ou couche biostratigraphique) est définie dans le document 10 comme une division de base biostratigraphique fondée sur l'apparition ou la disparition d'espèces."
+    },
+    {
+      "question": "Dans le tableau des divisions stratigraphiques (document 11), quelle unité géochronologique correspond à l'unité chronostratigraphique appelée « Système » ?",
+      "choix": [
+        "L'Epoque.",
+        "L'Ere.",
+        "L'Eon.",
+        "La Période."
+      ],
+      "reponse": 4,
+      "explication": "Le tableau du document 11 associe directement l'unité chronostratigraphique « Système » à l'unité géochronologique « Période » (exemple : le Jurassique)."
+    },
+    {
+      "question": "Quelle est la caractéristique principale qui distingue le Cryptozoïque du Phanérozoïque à la limite de -570 Ma ?",
+      "choix": [
+        "Le Cryptozoïque se définit par la dominance des ammonites, et le Phanérozoïque par la présence exclusive de coraux.",
+        "Le Cryptozoïque correspond à l'apparition de l'Homme, tandis que le Phanérozoïque correspond aux trilobites.",
+        "Le Cryptozoïque se caractérise par l'absence totale de fossiles, tandis que le Phanérozoïque présente des fossiles (vie apparente).",
+        "Le Cryptozoïque correspond au Cénozoïque, tandis que le Phanérozoïque correspond au Précambrien."
+      ],
+      "reponse": 3,
+      "explication": "Le document 12 indique que le Cryptozoïque (-4500 à -570 MA) se caractérise par l'absence totale de fossiles (vie cachée), tandis que le Phanérozoïque (-570 MA à nos jours) correspond aux terrains qui contiennent des fossiles (vie apparente)."
+    },
+    {
+      "question": "D'après le cours, quel cycle orogénique caractérise une partie du Paléozoïque du Dévonien à la fin du Permien ?",
+      "choix": [
+        "Le cycle calédonien.",
+        "Le cycle hercynien.",
+        "Le cycle alpin.",
+        "Le cycle cadomien."
+      ],
+      "reponse": 2,
+      "explication": "Le document 13 précise que le cycle hercynien caractérise une partie du Paléozoïque en s'étendant du Dévonien à la fin du Permien."
+    }
+  ]
+}

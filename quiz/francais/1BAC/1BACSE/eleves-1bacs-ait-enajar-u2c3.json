@@ -1,0 +1,112 @@
+{
+  "titre": "Chapitre 3 : Conversion de l'énergie lumineuse en énergie chimique et synthèse de la matière organique",
+  "description": "Unité 2 : Production de la matière organique et flux d'énergie",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U2C3.pdf",
+  "source_md5": "a007dd40e13f9ce82681fbc05f1aaf4b",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Quel est l'organite cellulaire où se déroulent les réactions de la photosynthèse dans le cytoplasme des cellules des plantes chlorophylliennes ?",
+      "choix": [
+        "La mitochondrie",
+        "Le vacuole",
+        "Le ribosome",
+        "Le chloroplaste"
+      ],
+      "reponse": 4,
+      "explication": "Le chloroplaste est l'organite cellulaire où se déroulent les réactions de la photosynthèse."
+    },
+    {
+      "question": "Comment appelle-t-on les empilements de vésicules closes de différentes formes (les thylakoïdes) à l'intérieur du stroma du chloroplaste ?",
+      "choix": [
+        "Des granas (granum)",
+        "Des plastoribosomes",
+        "Des plastoglobules",
+        "Des espaces intermembranaires"
+      ],
+      "reponse": 1,
+      "explication": "Des empilements de thylakoïde forment ce qu'on appelle des granas (granum)."
+    },
+    {
+      "question": "Quelle est l'origine du dioxygène (O2) rejeté au cours de la photosynthèse, mise en évidence par l'expérience de Ruben et Kamen ?",
+      "choix": [
+        "La chlorophylle",
+        "Le dioxyde de carbone (CO2)",
+        "Le stroma",
+        "L'eau (H2O)"
+      ],
+      "reponse": 4,
+      "explication": "L'expérience de Ruben et Kamen montre que le dioxygène rejeté provient de l'oxydation des molécules d'eau (H2O)."
+    },
+    {
+      "question": "Quel réactif artificiel d'électrons Hill a-t-il utilisé lors de son expérience sur la photolyse de l'eau en suspension de chloroplastes ?",
+      "choix": [
+        "Le ribulose biphosphate",
+        "Le glucose",
+        "L'acide phosphoglycérique",
+        "Le ferricyanure de potassium"
+      ],
+      "reponse": 4,
+      "explication": "Hill a ajouté un accepteur artificiel d'électrons, le ferricyanure de potassium (réactif de Hill)."
+    },
+    {
+      "question": "Quel phénomène physique se produit lorsqu'une solution de chlorophylle brute est éclairée, caractérisé par l'émission de radiations rouges ?",
+      "choix": [
+        "L'évapotranspiration",
+        "La fluorescence",
+        "La chromatographie",
+        "La photolyse"
+      ],
+      "reponse": 2,
+      "explication": "La chlorophylle excitée retourne à son état fondamental en émettant de la lumière, ce qui correspond à la fluorescence."
+    },
+    {
+      "question": "Comment nomme-t-on les antennes collectrices présentes dans la membrane du thylakoïde qui piègent les molécules de chlorophylle (P700 et P680) ?",
+      "choix": [
+        "Les plastoglobules",
+        "Les photosystèmes I et II",
+        "Les sphères pédonculées",
+        "Les stomates"
+      ],
+      "reponse": 2,
+      "explication": "Il existe dans la membrane du thylakoïde deux centres réactionnels avec des antennes collectrices appelées photosystèmes I et PS II."
+    },
+    {
+      "question": "Quel est l'effet du pompage des protons H+ à travers la membrane thylakoïde par les transporteurs d'électrons de la chaîne photosynthétique ?",
+      "choix": [
+        "La destruction des chloroplastes",
+        "Une acidification du stroma",
+        "Une alcalinisation du lumen",
+        "Une acidification de l'espace intra-thylakoïdal (lumen)"
+      ],
+      "reponse": 4,
+      "explication": "Le pompage des protons génère une différence de concentration créant un gradient électrochimique favorisant l'acidification du lumen."
+    },
+    {
+      "question": "Selon l'expérience de Calvin et Benson, quel est le premier composé en C3 issu de l'incorporation du CO2 qui apparaît rapidement ?",
+      "choix": [
+        "Le glucose",
+        "Le ribulose biphosphate (RuBP)",
+        "L'acide phosphoglycérique (APG ou PGA)",
+        "L'acide malique"
+      ],
+      "reponse": 3,
+      "explication": "L'APG (acide phosphoglycérique, composé en C3) fait partie des premières molécules organiques formées après l'incorporation du CO2."
+    },
+    {
+      "question": "Quelle structure membranaire externe et interne du chloroplaste possède une structure globale comparable à celle de la membrane plasmique ?",
+      "choix": [
+        "Une bicouche lipidique avec des protéines enchâssées",
+        "Une simple couche de protéines",
+        "Une paroi cellulosique rigide",
+        "Un assemblage d'ADN chloroplastique"
+      ],
+      "reponse": 1,
+      "explication": "Toute membrane est formée d'une bicouche lipidique, dans laquelle sont enchâssées des protéines qui ont diverses fonctions."
+    }
+  ]
+}

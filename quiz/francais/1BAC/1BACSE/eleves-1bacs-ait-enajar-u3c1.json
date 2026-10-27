@@ -1,0 +1,101 @@
+{
+  "titre": "Chapitre 1 : Communication hormonale : glycémie, facteur biologique constant",
+  "description": "Unité 3 : Les communications hormonales et nerveuses",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U3C1.pdf",
+  "source_md5": "ed6762c9e474e7c138fa3785c53c71c7",
+  "modele": "gemini-3.5-flash-lite",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Selon les critères de l'OMS, à partir de quelle valeur de la glycémie à jeun (mesurée à au moins deux reprises) parle-t-on de diabète ?",
+      "choix": [
+        "1,80 g/l",
+        "0,65 g/l",
+        "1,10 g/l",
+        "1,26 g/l"
+      ],
+      "reponse": 4,
+      "explication": "Selon les critères de l'Organisation mondiale de la santé (OMS), il y a diabète quand la glycémie à jeun est supérieure ou égale à au moins deux reprises à 1,26 g/l."
+    },
+    {
+      "question": "Quel appareil numérique est utilisé pour mesurer habituellement la glycémie ?",
+      "choix": [
+        "Un glucomètre",
+        "Un thermomètre",
+        "Un tensiomètre",
+        "Un oxymètre"
+      ],
+      "reponse": 1,
+      "explication": "Le cours indique que la glycémie est mesurée par un appareil numérique nommé le glucomètre."
+    },
+    {
+      "question": "Quelle est la nature chimique de la molécule d'insuline selon le cours ?",
+      "choix": [
+        "Un polypeptide de 51 acides aminés formé de deux chaînes liées par des ponts disulfure",
+        "Un polypeptide de 29 acides aminés formé d'une seule chaîne",
+        "Un glucide complexe formé de résidus de glucose",
+        "Un lipide simple inséré dans les membranes plasmiques"
+      ],
+      "reponse": 1,
+      "explication": "Le document 13 précise que la molécule d'insuline est un polypeptide de 51 acides aminés, association de deux chaînes polypeptidiques liées par des ponts disulfure."
+    },
+    {
+      "question": "Quelles structures microscopiques du pancréas contiennent les cellules sécrétrices des hormones pancréatiques ?",
+      "choix": [
+        "Les îlots de Langerhans",
+        "Les acini",
+        "Les veines sus-hépatiques",
+        "Le canal pancréatique"
+      ],
+      "reponse": 1,
+      "explication": "Le document 12 indique que les îlots de Langerhans contiennent les cellules sécrétrices, tandis que les acini forment de petites sphères pourvues d'un canal se jetant dans le canal pancréatique."
+    },
+    {
+      "question": "Quelle est la substance mise en évidence par Claude Bernard dans le foie frais qu'il a appelé « glycogène » ?",
+      "choix": [
+        "Une matière assez peu soluble dans l'eau qui se change peu à peu en sucre dans le foie abandonné à lui-même",
+        "Une matière très soluble dans l'eau éliminée immédiatement par lavage",
+        "Un acide aminé constitutif des chaînes polypeptidiques de l'insuline",
+        "Une enzyme digestive sécrétée par les acini pancréatiques"
+      ],
+      "reponse": 1,
+      "explication": "Dans l'expérience historique du 'foie lavé', Claude Bernard montre qu'après lavage, le foie abandonné à lui-même s'enrichit en sucre à partir d'une matière assez peu soluble qu'il nomme le glycogène."
+    },
+    {
+      "question": "Quel est l'effet de l'injection d'extraits pancréatiques ou d'insuline sur la glycémie d'un animal diabétique ?",
+      "choix": [
+        "Une absence totale de modification de la glycémie",
+        "Une destruction immédiate des récepteurs hépatiques",
+        "Une augmentation rapide de la glycémie menant au coma",
+        "Une chute rapide de la glycémie (effet hypoglycémiant)"
+      ],
+      "reponse": 4,
+      "explication": "Le document 11 montre que l'injection d'extraits pancréatiques ou d'insuline fait rapidement chuter la glycémie, ce qui correspond à un effet hypoglycémiant."
+    },
+    {
+      "question": "En analysant la coloration par immunofluorescence (document 14), quelles cellules du pancréas sécrètent l'insuline ?",
+      "choix": [
+        "Les cellules exocrines",
+        "Les acini pancréatiques",
+        "Les cellules Alpha",
+        "Les cellules Bêta"
+      ],
+      "reponse": 4,
+      "explication": "L'utilisation d'anticorps anti-insuline liés à un pigment vert (et anti-glucagon liés à un rouge) permet d'identifier les cellules Bêta comme sécrétrices d'insuline."
+    },
+    {
+      "question": "Où sont situés les récepteurs spécifiques de l'insuline et du glucagon au niveau de la cellule hépatique ?",
+      "choix": [
+        "Dans la lumière du canal pancréatique",
+        "Au niveau de la membrane plasmique",
+        "À l'intérieur du noyau cellulaire",
+        "Au niveau des ponts disulfure intra-cytoplasmiques"
+      ],
+      "reponse": 2,
+      "explication": "Le document 16 et le document 18 montrent que la fixation des hormones (premiers messagers) se fait sur des récepteurs spécifiques situés sur la membrane de la cellule hépatique."
+    }
+  ]
+}

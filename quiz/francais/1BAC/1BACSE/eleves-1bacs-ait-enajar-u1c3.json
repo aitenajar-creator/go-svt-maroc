@@ -1,0 +1,123 @@
+{
+  "titre": "Chapitre 3 : Les principes de la carte géologique et reconstitution de l'histoire géologique d'une région donnée",
+  "description": "Unité 1 : Phénomènes géologiques externes",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U1C3.pdf",
+  "source_md5": "316380772da5b9d4491fa20547ba5418",
+  "modele": "gemini-3.6-flash",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Qu'est-ce qu'une carte géologique selon le cours ?",
+      "choix": [
+        "Une carte représentant uniquement les aménagements humains et le réseau hydrographique d'un territoire.",
+        "Un profil vertical montrant uniquement le relief et la hauteur d'une région donnée.",
+        "La représentation, sur un fond topographique, des terrains qui affleurent à la surface du sol ou cachés par une faible épaisseur de formations superficielles récentes.",
+        "Une représentation graphique schématique des données météorologiques et pluviométriques."
+      ],
+      "reponse": 3,
+      "explication": "D'après le cours, la carte géologique est la représentation, sur un fond topographique, des terrains affleurant à la surface ou sous une faible épaisseur de formations récentes."
+    },
+    {
+      "question": "Sur une carte géologique, que contient la légende ?",
+      "choix": [
+        "Uniquement les coordonnées géographiques et l'échelle numérique.",
+        "L'ensemble de couleurs et de symboles représentant les données stratigraphiques, pétrographiques et tectoniques.",
+        "Une description des aménagements humains et des routes de la région.",
+        "La liste des noms de lieux (toponymie) où passe la coupe géologique."
+      ],
+      "reponse": 2,
+      "explication": "La légende regroupe l'ensemble des couleurs et symboles qui représentent les données stratigraphiques, pétrographiques et tectoniques de la région."
+    },
+    {
+      "question": "Dans la légende d'une carte géologique, comment sont classées les couches sédimentaires de bas en haut ?",
+      "choix": [
+        "De la couche la plus âgée à la couche la plus jeune.",
+        "De la couche la plus récente à la couche la plus âgée.",
+        "Selon l'ordre alphabétique des symboles des roches.",
+        "De la couche la plus mince à la couche la plus épaisse."
+      ],
+      "reponse": 1,
+      "explication": "Le cours indique que dans la légende stratigraphique, de bas en haut, les couches sont classées de la plus âgée à la plus jeune."
+    },
+    {
+      "question": "Quel symbole ou lettre grecque est utilisé pour représenter le granite dans les cartes et coupes géologiques ?",
+      "choix": [
+        "La lettre latine C.",
+        "La lettre grecque γ (gamma).",
+        "La lettre latine G.",
+        "La lettre grecque β (bêta)."
+      ],
+      "reponse": 2,
+      "explication": "Selon le document, les roches magmatiques et métamorphiques utilisent des lettres grecques, notamment γ (gamma) pour le granite et β (bêta) pour le basalte."
+    },
+    {
+      "question": "Comment est défini le pendage d'une couche sédimentaire ?",
+      "choix": [
+        "C'est la distance séparant deux courbes de niveau successives.",
+        "C'est l'angle d'inclinaison de cette couche par rapport au plan horizontal.",
+        "C'est la hauteur du relief au-dessus du niveau de la mer.",
+        "C'est l'épaisseur totale mesurée entre le toit et le mur de la couche."
+      ],
+      "reponse": 2,
+      "explication": "Le pendage d'une couche sédimentaire (ou d'une faille) est l'angle d'inclinaison de cette couche par rapport au plan horizontal."
+    },
+    {
+      "question": "Quelle est la caractéristique principale d'un pli anticlinal ?",
+      "choix": [
+        "La courbure des couches est dirigée vers le bas et son cœur contient la couche la plus ancienne.",
+        "La courbure des couches est dirigée vers le haut et son cœur contient la couche la plus récente.",
+        "La courbure des couches est dirigée vers le bas et son cœur contient la couche la plus récente.",
+        "La courbure des couches est dirigée vers le haut et son cœur contient la couche la plus ancienne."
+      ],
+      "reponse": 4,
+      "explication": "Dans un pli anticlinal, la courbure des couches est dirigée vers le haut et le cœur du pli contient la couche la plus ancienne."
+    },
+    {
+      "question": "Sur une carte géologique, comment les failles sont-elles représentées ?",
+      "choix": [
+        "Par un trait plus fort que celui des limites de couches.",
+        "Par des lignes en pointillés fins de couleur bleue.",
+        "Par des bandes colorées en beige foncé.",
+        "Par des flèches indiquant la direction du nord."
+      ],
+      "reponse": 1,
+      "explication": "Le cours précise que sur une carte géologique, les failles sont représentées par un trait plus fort que celui des limites de couches."
+    },
+    {
+      "question": "Par quelle couche commence-t-on le tracé des couches lors de la réalisation d'une coupe géologique ?",
+      "choix": [
+        "Par la couche qui présente le plus fort pendage.",
+        "Par la couche la plus récente dont on connaît le toit et le mur partout où elle affleure.",
+        "Par la couche la plus ancienne située à la base de la série.",
+        "Par la couche contenant uniquement du granite."
+      ],
+      "reponse": 2,
+      "explication": "Lors de la réalisation d'une coupe géologique, on commence par la couche la plus récente dont on connaît le toit et le mur partout où elle affleure, puis on poursuit avec les couches sous-jacentes."
+    },
+    {
+      "question": "Comment se comportent les limites des couches sédimentaires horizontales sur une carte géologique ?",
+      "choix": [
+        "Elles présentent un tracé rectiligne indépendant du relief.",
+        "Elles présentent toujours des tracés parallèles aux courbes de niveau.",
+        "Elles coupent perpendiculairement les courbes de niveau.",
+        "Elles forment des V pointant systématiquement vers le Nord."
+      ],
+      "reponse": 2,
+      "explication": "Le cours indique que les couches horizontales présentent toujours des tracés parallèles aux courbes de niveau (aussi bien en colline qu'en vallée)."
+    },
+    {
+      "question": "Dans le cas d'une topographie en vallée, dans quel sens est dirigée une couche inclinée par rapport au V formé avec les courbes de niveau ?",
+      "choix": [
+        "La couche forme une ligne droite sans créer de V.",
+        "La couche est dirigée vers le sens de la pointe du V.",
+        "La couche est dirigée vers le sens inverse de la pointe du V.",
+        "La couche est dirigée parallèlement aux berges de la vallée."
+      ],
+      "reponse": 2,
+      "explication": "D'après le cours, dans le cas d'une vallée, l'intersection des couches inclinées avec les courbes de niveau forme un V, et la couche est dirigée vers le sens de la pointe du V."
+    }
+  ]
+}

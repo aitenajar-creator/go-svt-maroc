@@ -1,0 +1,123 @@
+{
+  "titre": "Chapitre 1 : Réalisation de la carte paléogéographique d'une région",
+  "description": "Unité 1 : Phénomènes géologiques externes",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U1C1.pdf",
+  "source_md5": "3b76ccec186bb47564ffa0d3ec7601ab",
+  "modele": "gemini-3.6-flash",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Selon la classification des sédiments détritiques d'A. Cailleux, à quelle classe de taille appartiennent les sables grossiers ?",
+      "choix": [
+        "Diamètre compris entre 20 µm et 2 µm",
+        "Diamètre compris entre 2 mm et 200 µm",
+        "Diamètre compris entre 200 µm et 20 µm",
+        "Diamètre compris entre 20 mm et 2 mm"
+      ],
+      "reponse": 2,
+      "explication": "Selon la classification d'A. Cailleux présentée dans le document 3, les sables grossiers ont un diamètre particulaire compris entre 2 mm et 200 µm (0,2 mm)."
+    },
+    {
+      "question": "Lors du protocole de préparation d'un échantillon de sable pour l'analyse granulométrique, quel est le rôle de l'eau oxygénée et de l'acide chlorhydrique (HCl) ?",
+      "choix": [
+        "L'eau oxygénée dissout les grains de quartz et HCl élimine les coquilles.",
+        "L'eau oxygénée élimine la matière organique et HCl élimine le calcaire.",
+        "L'eau oxygénée élimine les limons et HCl élimine l'argile.",
+        "L'eau oxygénée élimine le calcaire et HCl élimine la matière organique."
+      ],
+      "reponse": 2,
+      "explication": "D'après le protocole expérimental (document 4), l'échantillon de sable est traité à l'eau oxygénée pour détruire la matière organique, puis à l'acide chlorhydrique (HCl) pour dissoudre le calcaire."
+    },
+    {
+      "question": "Dans l'étude granulométrique d'un sable, que traduit une courbe de fréquence unimodale ?",
+      "choix": [
+        "Un sable transporté sur une très courte distance par un glacier.",
+        "Un sable homogène et bien classé d'origine unique éolienne ou côtière.",
+        "Un sable hétérogène et mal classé d'origine fluviatile.",
+        "Un sable constitué d'un mélange de plusieurs types de sédiments."
+      ],
+      "reponse": 2,
+      "explication": "Le document 5 indique que si la courbe de fréquence est unimodale, le sable étudié est homogène et bien classé, ayant une origine unique éolienne ou côtière."
+    },
+    {
+      "question": "D'après le tableau de classification basé sur l'indice de Trask (So), un sable dont l'indice So est inférieur à 1,23 est caractérisé par :",
+      "choix": [
+        "Un classement mauvais, caractéristique d'un milieu fluviatile.",
+        "Un très bon classement, caractéristique d'un milieu éolien.",
+        "Un classement modéré, caractéristique d'un milieu marin profond.",
+        "Un très mauvais classement, caractéristique d'un milieu glaciaire."
+      ],
+      "reponse": 2,
+      "explication": "Selon le document 6, un indice de Trask So inférieur à 1,23 indique un très bon classement granulométrique, correspondant à un milieu de sédimentation éolien."
+    },
+    {
+      "question": "En morphoscopie des grains de quartz, quelles caractéristiques définissent les grains de type « Rond mat » (RM) ?",
+      "choix": [
+        "Translucides, de surface mate avec traces de chocs, transportés par le vent.",
+        "Opaques et très aplatis, façonnés par les vagues de la mer.",
+        "Transparents et luisants, avec des arêtes arrondies.",
+        "Transparents ou colorés, avec des arêtes anguleuses et tranchantes."
+      ],
+      "reponse": 1,
+      "explication": "D'après le document 7, les grains Ronds mats (RM) sont translucides, de forme sphérique avec une surface mate et des traces de chocs, véhiculés par le vent (transport éolien)."
+    },
+    {
+      "question": "Quels caractères morphologiques permettent d'identifier des galets façonnés par un transport éolien ?",
+      "choix": [
+        "Une forme circulaire bien arrondie avec une surface grumeleuse.",
+        "Une forme aplatie portant des traces de choc dues aux vagues.",
+        "Une forme anguleuse présentant des stries glaciaires.",
+        "Une forme anguleuse présentant plusieurs facettes et des arêtes émoussées."
+      ],
+      "reponse": 4,
+      "explication": "Le document 8 précise que les galets éoliens se caractérisent par la présence de plusieurs facettes, une forme anguleuse et des arêtes émoussées."
+    },
+    {
+      "question": "Dans le cours d'un torrent de montagne, quelle partie constitue le lieu de dépôt des sédiments ?",
+      "choix": [
+        "Le chenal d'écoulement",
+        "Le méandre d'érosion",
+        "Le cône de déjection",
+        "Le bassin de réception"
+      ],
+      "reponse": 3,
+      "explication": "D'après le document 12, un torrent comporte le bassin de réception et le chenal d'écoulement (sièges de l'érosion et du transport), tandis que le cône de déjection est le lieu de dépôt."
+    },
+    {
+      "question": "Dans un milieu de sédimentation lagunaire, quel est l'ordre de précipitation des minéraux lors de la précipitation évaporitique ?",
+      "choix": [
+        "Halite (sel) -> Gypse -> Calcaire",
+        "Calcaire -> Halite (sel) -> Gypse",
+        "Gypse -> Calcaire -> Halite (sel)",
+        "Calcaire -> Gypse -> Sel (halite et sylvite)"
+      ],
+      "reponse": 4,
+      "explication": "Selon le document 15, lors du processus de concentration dans la lagune, les sédiments précipitent dans l'ordre suivant : le calcaire, puis le gypse (CaSO4), et enfin le sel (NaCl / KCl)."
+    },
+    {
+      "question": "En milieu marin, quelles sont les caractéristiques spatiales de la zone néritique ?",
+      "choix": [
+        "Elle englobe la plaine abyssale et les grands fonds océaniques.",
+        "Elle s'étend de 200 m à plus de 5000 m de profondeur.",
+        "Elle s'étend du littoral jusqu'à une profondeur de 200 m, englobant la zone littorale et le plateau continental.",
+        "Elle correspond uniquement aux zones situées sous 4000 m de profondeur."
+      ],
+      "reponse": 3,
+      "explication": "Le document 17 définit la zone néritique comme s'étendant du littoral jusqu'à une profondeur de 200 m, englobant la zone littorale et le plateau continental."
+    },
+    {
+      "question": "Selon la théorie des courants ascendants (Upwelling) de Kazakov, où s'effectue la sédimentation des phosphates ?",
+      "choix": [
+        "Dans la plaine abyssale à plus de 4000 m de profondeur.",
+        "Dans le chenal d'écoulement des torrents.",
+        "Au niveau du plateau continental.",
+        "Dans les bassins lacustres continentaux."
+      ],
+      "reponse": 3,
+      "explication": "D'après la théorie de Kazakov présentée dans le document 20, le phosphore apporté par les courants d'upwelling intègre le cycle biologique, mais la sédimentation du phosphate a lieu au niveau du plateau continental."
+    }
+  ]
+}

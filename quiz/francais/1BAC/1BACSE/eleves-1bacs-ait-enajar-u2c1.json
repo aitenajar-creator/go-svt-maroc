@@ -1,0 +1,123 @@
+{
+  "titre": "Chapitre 1 : Mécanismes d'absorption de l'eau et des sels minéraux par les plantes",
+  "description": "Unité 2 : Production de la matière organique et flux d'énergie",
+  "auto": true,
+  "source": "cours/francais/1BAC/1BACSE/eleves-1BACS  AIT ENAJAR U2C1.pdf",
+  "source_md5": "45672fd47472a99578258c6cd92df581",
+  "modele": "gemini-3.6-flash",
+  "fournisseur": "gemini",
+  "verifie": true,
+  "genere_le": "2026-10-27",
+  "questions": [
+    {
+      "question": "Selon l'introduction du cours, comment définit-on un organisme autotrophe ?",
+      "choix": [
+        "Un organisme qui doit consommer de la matière organique issue d'autres êtres vivants.",
+        "Un organisme capable de se développer uniquement en l'absence totale d'eau et de lumière.",
+        "Un organisme capable de produire sa propre matière organique à partir d'éléments minéraux.",
+        "Un organisme qui produit uniquement des sels minéraux à partir de la matière organique."
+      ],
+      "reponse": 3,
+      "explication": "Les végétaux sont qualifiés d'autotrophes car ils sont capables de fabriquer leur propre matière organique uniquement à partir d'éléments minéraux puisés dans leur milieu de vie."
+    },
+    {
+      "question": "Lors d'une observation macroscopique des échanges hydriques (expériences sur des frites de pomme de terre de 30 mm), qu'observe-t-on lorsque la frite est placée dans une solution de saccharose très concentrée (1 mol/L) pendant une heure ?",
+      "choix": [
+        "Sa longueur reste parfaitement inchangée à 30 mm.",
+        "Sa longueur diminue à 27,1 mm car l'eau est sortie des cellules.",
+        "La frite se dissout complètement dans la solution de saccharose.",
+        "Sa longueur augmente à 33,8 mm car l'eau est entrée dans les cellules."
+      ],
+      "reponse": 2,
+      "explication": "Dans une solution hypertonique de saccharose (1 mol/L), les cellules perdent de l'eau par osmose, ce qui réduit la longueur de la frite de 30 mm à 27,1 mm (différence de -2,9 mm)."
+    },
+    {
+      "question": "Quelle formule théorique est présentée dans le cours pour calculer la pression osmotique (π) d'une solution ?",
+      "choix": [
+        "π = R * C * T",
+        "π = R + C + T",
+        "π = (R * C) / T",
+        "π = R * C * T^2"
+      ],
+      "reponse": 1,
+      "explication": "Selon le document 5 du cours, la pression osmotique se calcule théoriquement par la formule π = R * C * T, où R est la constante des gaz parfaits, C la concentration molaire et T la température absolue en Kelvin."
+    },
+    {
+      "question": "Quel est l'effet du cyanure sur le transport des ions entre l'eau de mer et les vacuoles des cellules végétales ?",
+      "choix": [
+        "Il annule les différences de concentration ionique en bloquant la respiration cellulaire.",
+        "Il augmente la différence de concentration en stimulant le transport actif des ions.",
+        "Il détruit la paroi pectocellulosique tout en maintenant le gradient de potassium.",
+        "Il accélère la diffusion facilitée du sodium vers le milieu extérieur."
+      ],
+      "reponse": 1,
+      "explication": "Le cyanure est un poison qui bloque la respiration cellulaire (source d'énergie). En présence de cyanure, les différences de concentration des ions (Na+ et K+) entre l'eau de mer et les vacuoles s'annulent, ce qui montre que le maintien de ces gradients nécessite un transport actif consommateur d'énergie."
+    },
+    {
+      "question": "D'après les données du cours sur le transport actif des ions, quelle est la concentration du potassium (K+) dans les vacuoles cellulaires comparée à celle de l'eau de mer ?",
+      "choix": [
+        "2,1 g/L dans les vacuoles contre 10,9 g/L dans l'eau de mer.",
+        "0,5 g/L dans les vacuoles contre 20 g/L dans l'eau de mer.",
+        "10,9 g/L dans les vacuoles contre 2,1 g/L dans l'eau de mer.",
+        "20 g/L dans les vacuoles contre 0,5 g/L dans l'eau de mer."
+      ],
+      "reponse": 4,
+      "explication": "Le tableau du document 7 indique que la concentration du potassium K+ est de 20 g/L dans les vacuoles alors qu'elle n'est que de 0,5 g/L dans l'eau de mer, illustrant une accumulation contre le gradient de concentration."
+    },
+    {
+      "question": "Quelle est la caractéristique principale de la diffusion facilitée du glucose par rapport à la diffusion simple d'un soluté comme le NaCl ?",
+      "choix": [
+        "La vitesse de transport augmente de manière strictement linéaire sans jamais atteindre de valeur maximale.",
+        "La vitesse de transport plafonne à une valeur maximale (Vmax) en raison de la saturation des transporteurs.",
+        "La vitesse de transport est totalement nulle si la concentration extracellulaire est faible.",
+        "La vitesse de transport diminue au fur et à mesure que la concentration du soluté augmente."
+      ],
+      "reponse": 2,
+      "explication": "Le document 8 montre que la courbe de la diffusion facilitée du glucose atteint un plateau (vitesse maximale Vmax = 200 μmol/min), contrairement à la diffusion simple qui croît de façon linéaire avec la concentration."
+    },
+    {
+      "question": "Comment la paroi pectocellulosique des cellules végétales est-elle décrite dans le cours concernant son rôle dans le contrôle des échanges ?",
+      "choix": [
+        "Elle est totalement imperméable à l'eau et contrôle de manière stricte le passage des ions minéraux.",
+        "Elle ne contient aucun pore et assure un transport actif exclusif des substances dissoutes.",
+        "Elle est constituée d'une seule couche de phospholipides qui bloque la diffusion du glucose.",
+        "Elle est constituée de deux couches et de pores (plasmodesmes), ce qui la rend perméable à l'eau et aux ions sans contrôler les échanges."
+      ],
+      "reponse": 4,
+      "explication": "Le document 9 précise que la paroi pectocellulosique contient des pores appelés plasmodesmes et qu'elle est perméable à l'eau et aux ions, ce qui signifie qu'elle ne contrôle pas les échanges cellulaires."
+    },
+    {
+      "question": "Selon le modèle de la mosaïque fluide de Singer et Nicolson (1971), de quoi est constituée la membrane plasmique ?",
+      "choix": [
+        "D'une couche unique de pectine traversée par des canaux plasmodesmes.",
+        "Uniquement de molécules de glucose et de filaments de cellulose.",
+        "De deux couches de phospholipides associées à des protéines intégrales et périphériques.",
+        "De molécules de cyanure fixées sur des stéroïdes neutres."
+      ],
+      "reponse": 3,
+      "explication": "Le document 10 décrit la membrane plasmique comme deux couches de phospholipides (feuillets clairs et sombres) avec des protéines intégrales et périphériques (modèle de la mosaïque fluide de Singer et Nicolson, 1971)."
+    },
+    {
+      "question": "Quelle structure de la racine est spécifiquement responsable de l'absorption de l'eau par la plantule d'après les expériences présentées ?",
+      "choix": [
+        "La zone pilifère comportant les poils absorbants.",
+        "L'extrémité terminale de la racine dépourvue de poils.",
+        "La zone des premières feuilles situées hors de l'eau.",
+        "Le cylindre conducteur au centre du parenchyme."
+      ],
+      "reponse": 1,
+      "explication": "Les expériences du document 11 et 12 montrent que l'absorption de l'eau se fait au niveau de la zone pilifère, localisée dans la zone sub-terminale des jeunes racines et recouverte de poils absorbants."
+    },
+    {
+      "question": "D'après la mesure des pressions osmotiques au niveau de la zone pilifère (Document 13), quelle est l'évolution de la pression osmotique du milieu extérieur vers le parenchyme cortical de la racine ?",
+      "choix": [
+        "Elle diminue progressivement de 2,8 (milieu extérieur) à 0,7 (parenchyme cortical).",
+        "Elle s'annule complètement au niveau de l'assise pilifère.",
+        "Elle augmente progressivement de 0,7 (milieu extérieur) à 2,8 (parenchyme cortical).",
+        "Elle reste strictement constante à 1,4 dans toutes les couches cellulaires."
+      ],
+      "reponse": 3,
+      "explication": "Le document 13 indique une pression osmotique de 0,7 dans le milieu extérieur, 1,4 au niveau de l'assise pilifère, puis une augmentation continue à travers le parenchyme cortical (1,5 ; 2,1 ; 2,8), permettant l'entrée continue de l'eau par osmose."
+    }
+  ]
+}
