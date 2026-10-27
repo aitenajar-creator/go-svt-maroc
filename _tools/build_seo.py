@@ -32,7 +32,7 @@ from xml.sax.saxutils import escape as xml_escape
 ROOT = Path(__file__).resolve().parent.parent
 SITE = "https://gosvtmaroc.com"
 OUT = "svt"                                   # dossier des pages générées
-CONTENT_TYPES = ["cours", "exercices", "fiches"]
+CONTENT_TYPES = ["cours", "exercices", "fiches", "resumes", "examens"]
 DOC_EXT = {".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"}
 MIN_BYTES = 2048                              # ignore les fichiers factices (ex. "Examens Nationaux" = 1 octet)
 MIN_ITEMS = 2                                 # pas de page "maigre" sous ce nombre de fichiers
@@ -58,15 +58,32 @@ BRANCHES = {
 }
 TYPE_LABEL = {
     "fr": {"cours": "Cours de SVT", "exercices": "Exercices de SVT", "fiches": "Fiches et résumés de SVT",
-           "examens": "Examens nationaux de SVT"},
+           "resumes": "Résumés de SVT", "examens": "Examens nationaux de SVT"},
     "ar": {"cours": "دروس علوم الحياة والأرض", "exercices": "تمارين علوم الحياة والأرض",
-           "fiches": "جذاذات وملخصات علوم الحياة والأرض", "examens": "الامتحانات الوطنية في علوم الحياة والأرض"},
+           "fiches": "جذاذات وملخصات علوم الحياة والأرض", "resumes": "ملخصات علوم الحياة والأرض",
+           "examens": "الامتحانات الوطنية في علوم الحياة والأرض"},
 }
-TYPE_ORDER = ["cours", "exercices", "fiches", "examens"]
+TYPE_ORDER = ["cours", "exercices", "fiches", "resumes", "examens"]
 EXAM_RE = re.compile(
     r"examen-national-svt-.+?-(?P<year>20\d{2})-(?P<session>normale|rattrapage)-(?P<kind>sujet|corrige)",
     re.I)
 BRAND = "Go SVT Maroc"
+
+
+def branch_code(folders, filename):
+    """Filière d'un examen : d'abord un dossier du chemin (« 2BAC SP » -> 2BACSP), sinon le nom du fichier."""
+    for c in folders:
+        key = re.sub(r"[\s_\-]+", "", c).upper()
+        if key in BRANCHES:
+            return key
+    low = filename.lower()
+    if "physiques" in low:
+        return "2BACSP"
+    if "maths" in low:
+        return "2BACSM"
+    if "2eme-bac-svt" in low or "2bac-svt" in low:
+        return "2BACSVT"
+    return None
 
 
 def scope_info(scope):
@@ -178,8 +195,16 @@ def scan(titles):
                 continue
             lang = SUBJECTS[rel[1]]
             level = rel[2]
-            scope = rel[3] if len(rel) >= 5 else level      # filière si sous-dossier, sinon niveau
+            m = EXAM_RE.search(p.name)
+            if ctype == "examens" or (ctype == "exercices" and m):
+                page_type = "examens"
+                scope = branch_code(rel[3:-1], p.name) or level
+            else:
+                page_type = ctype
+                scope = rel[3] if len(rel) >= 5 else level          # filière si sous-dossier, sinon niveau
             it = Item(p, list(rel), size, md5(p))
+            if m:
+                it.exam = (int(m["year"]), m["session"].lower(), m["kind"].lower())
             ov = titles.get(it.name)
             if ov is not None:
                 used_keys.add(it.name)
@@ -189,11 +214,6 @@ def scan(titles):
                     it.title = ov.get("title")
                     it.group = ov.get("group")
                     it.order = ov.get("order", 999)
-            m = EXAM_RE.search(it.name)
-            page_type = ctype
-            if ctype == "exercices" and m:
-                page_type = "examens"
-                it.exam = (int(m["year"]), m["session"].lower(), m["kind"].lower())
             if not it.title:
                 it.title = clean_filename_title(it.name)
             groups[(page_type, lang, scope)].append(it)
@@ -238,7 +258,7 @@ class Page:
         if L == "ar" and "علوم الحياة والأرض" in self.label_long:      # évite la répétition du nom de la matière
             T = re.sub(r"\s*(في\s+)?علوم الحياة والأرض", "", T)
         n = len(self.items)
-        if self.type == "examens":
+        if self.type == "examens" and self.years:
             y0, y1 = self.years
             yr = f"{y0}-{y1}" if y0 != y1 else f"{y0}"
             if L == "fr":
@@ -465,7 +485,7 @@ def jsonld_for(page, pages_by_url):
             "encodingFormat": "application/pdf" if it.name.lower().endswith(".pdf") else None,
             "inLanguage": page.lang,
             "learningResourceType": {"cours": "Lesson", "exercices": "Exercise", "fiches": "Study guide",
-                                     "examens": "Exam"}[page.type],
+                                     "examens": "Exam", "resumes": "Study guide"}[page.type],
             "isAccessibleForFree": True,
         })
         parts[-1] = {k: v for k, v in parts[-1].items() if v is not None}
@@ -546,11 +566,11 @@ def build_sitemap(pages, home_date):
     return "\n".join(lines)
 
 
-SHORT_TYPE = {"ar": {"cours": "الدروس", "exercices": "التمارين", "fiches": "الجذاذات والملخصات", "examens": "الامتحانات الوطنية"},
-              "fr": {"cours": "Cours", "exercices": "Exercices", "fiches": "Fiches et résumés", "examens": "Examens nationaux"}}
-ICON_TYPE = {"cours": "📚", "exercices": "✏️", "fiches": "📋", "examens": "📝"}
+SHORT_TYPE = {"ar": {"cours": "الدروس", "exercices": "التمارين", "fiches": "الجذاذات", "resumes": "الملخصات", "examens": "الامتحانات الوطنية"},
+              "fr": {"cours": "Cours", "exercices": "Exercices", "fiches": "Fiches", "resumes": "Résumés", "examens": "Examens nationaux"}}
+ICON_TYPE = {"cours": "📚", "exercices": "✏️", "fiches": "📋", "resumes": "🗒️", "examens": "📝"}
 # section de la page d'accueil (id) -> type de pages /svt/ qui lui correspond
-SECTION_TYPES = {"cours": "cours", "exercices": "exercices", "examens": "examens", "fiches": "fiches"}
+SECTION_TYPES = {"cours": "cours", "exercices": "exercices", "examens": "examens", "fiches": "fiches", "resumes": "resumes"}
 
 
 def patch_index_html(src, pages):

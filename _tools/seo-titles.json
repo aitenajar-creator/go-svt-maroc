@@ -79,5 +79,33 @@
     "title": "Chapitre 2 : Le rôle du muscle squelettique dans la conversion de l'énergie",
     "group": "Unité 1 : La consommation de matière organique et le flux d'énergie",
     "order": 2
+  },
+  "resume unite 1 chp 1.pdf": {
+    "title": "Résumé Unité 1 : La consommation de matière organique et le flux d'énergie (chapitre 1)",
+    "order": 1
+  },
+  "resume unite 1 chp 2.pdf": {
+    "title": "Résumé Unité 1 : La consommation de matière organique et le flux d'énergie (chapitre 2)",
+    "order": 2
+  },
+  "resume unite 2.pdf": {
+    "title": "Résumé Unité 2 : Nature et mécanisme de l'expression du matériel génétique",
+    "order": 3
+  },
+  "resume unite 3.pdf": {
+    "title": "Résumé Unité 3 : Transfert de l'information génétique au cours de la reproduction sexuée - Les lois statistiques de la transmission des caractères héréditaires chez les diploïdes",
+    "order": 4
+  },
+  "resume unite 4 SM.pdf": {
+    "title": "Résumé Unité 4 (SM)",
+    "order": 5
+  },
+  "resume unite 4 pc.pdf": {
+    "title": "Résumé Unité 4 (PC)",
+    "order": 6
+  },
+  "resume unite 5 immunologie.pdf": {
+    "title": "Résumé Unité 5 : Immunologie",
+    "order": 7
   }
 }
