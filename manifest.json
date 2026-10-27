@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-27T16:25:23.225162+00:00",
+  "generated": "2026-10-27T22:00:48.631969+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -70,6 +70,28 @@
             "Chapitre 5": {
               "__files": [
                 "eleves-TCS  AIT ENAJAR U1C5.pdf"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "exercices": {
+      "francais": {
+        "2BAC": {
+          "2BACSM": {
+            "2BAC SM": {
+              "__files": [
+                "examen-national-svt-sciences-maths-a-2019-rattrapage-sujet.pdf",
+                "examen-national-svt-sciences-maths-a-2020-normale-sujet.pdf"
+              ]
+            }
+          },
+          "2BACSVT": {
+            "2BAC SVT": {
+              "__files": [
+                "examen-national-svt-2eme-bac-svt-2018-rattrapage-sujet.pdf",
+                "examen-national-svt-2eme-bac-svt-2019-normale-sujet (1).pdf"
               ]
             }
           }
