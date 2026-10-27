@@ -12,6 +12,7 @@ const CONFIG = {
 const SECTION_NAMES = {
     cours: { ar: 'الدروس', fr: 'Cours' },
     exercices: { ar: 'التمارين', fr: 'Exercices' },
+    examens: { ar: 'الامتحانات', fr: 'Examens' },
     fiches: { ar: 'الملخصات', fr: 'Fiches' },
     documents: { ar: 'الوثائق', fr: 'Documents' },
     ressources: { ar: 'الموارد', fr: 'Ressources' },
