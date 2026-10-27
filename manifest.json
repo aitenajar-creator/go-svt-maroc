@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-27T14:44:23.677656+00:00",
+  "generated": "2026-10-27T14:48:28.528637+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -81,48 +81,7 @@
         "2BAC": {
           "__files": [
             "Examens nationaux 2ème Bac"
-          ],
-          "2BACSVT": {
-            "2BAC SVT": {
-              "__files": [
-                "examen-national-svt-2eme-bac-svt-2016-normale-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2016-rattrapage-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2017-normale-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2017-rattrapage-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2018-normale-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2018-rattrapage-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2019-normale-sujet (1).pdf",
-                "examen-national-svt-2eme-bac-svt-2019-normale-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2019-rattrapage-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2020-normale-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2020-rattrapage-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2021-normale-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2021-rattrapage-sujet-2.pdf",
-                "examen-national-svt-2eme-bac-svt-2022-normale-sujet.pdf",
-                "examen-national-svt-2eme-bac-svt-2022-rattrapage-sujet (1).pdf",
-                "examen-national-svt-2eme-bac-svt-2022-rattrapage-sujet.pdf"
-              ],
-              "CORECTION": {
-                "__files": [
-                  "examen-national-svt-2eme-bac-svt-2016-normale-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2017-normale-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2017-rattrapage-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2018-normale-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2018-rattrapage-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2019-normale-corrige (1).pdf",
-                  "examen-national-svt-2eme-bac-svt-2019-normale-corrige (2).pdf",
-                  "examen-national-svt-2eme-bac-svt-2019-normale-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2019-rattrapage-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2020-normale-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2020-rattrapage-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2021-normale-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2021-rattrapage-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2022-normale-corrige.pdf",
-                  "examen-national-svt-2eme-bac-svt-2022-rattrapage-corrige.pdf"
-                ]
-              }
-            }
-          }
+          ]
         }
       }
     },
