@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-27T22:00:48.631969+00:00",
+  "generated": "2026-10-27T22:07:06.216087+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -118,25 +118,7 @@
                 "examen-national-svt-sciences-maths-a-2021-rattrapage-sujet-1.pdf",
                 "examen-national-svt-sciences-maths-a-2022-normale-sujet.pdf",
                 "examen-national-svt-sciences-maths-a-2022-rattrapage-sujet.pdf"
-              ],
-              "Correction": {
-                "__files": [
-                  "examen-national-svt-sciences-maths-a-2016-normale-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2016-rattrapage-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2017-normale-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2017-rattrapage-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2018-normale-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2018-rattrapage-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2019-normale-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2019-rattrapage-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2020-normale-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2020-rattrapage-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2021-normale-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2021-rattrapage-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2022-normale-corrige.pdf",
-                  "examen-national-svt-sciences-maths-a-2022-rattrapage-corrige.pdf"
-                ]
-              }
+              ]
             },
             "2BAC SP": {
               "__files": [
