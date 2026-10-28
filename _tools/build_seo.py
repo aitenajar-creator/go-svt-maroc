@@ -571,6 +571,10 @@ SHORT_TYPE = {"ar": {"cours": "الدروس", "exercices": "التمارين", "
 ICON_TYPE = {"cours": "📚", "exercices": "✏️", "fiches": "📋", "resumes": "🗒️", "examens": "📝"}
 # section de la page d'accueil (id) -> type de pages /svt/ qui lui correspond
 SECTION_TYPES = {"cours": "cours", "exercices": "exercices", "examens": "examens", "fiches": "fiches", "resumes": "resumes"}
+# types de pages ajoutés en plus dans une section (les examens sont la meilleure matière d'entraînement : ils s'affichent aussi sous « Exercices »)
+SECTION_EXTRA = {"exercices": ["examens"]}
+# sections qui reçoivent aussi le bouton vers le sommaire /svt/
+SECTION_HUB = ("examens", "exercices")
 
 
 def patch_index_html(src, pages):
@@ -615,6 +619,8 @@ def patch_index_html(src, pages):
         s_m, e_m = f"<!-- SEO-SECTION:{sec}:START -->", f"<!-- SEO-SECTION:{sec}:END -->"
         src = re.sub(r"\s*" + re.escape(s_m) + r".*?" + re.escape(e_m), "", src, flags=re.S)
         sec_pages = sorted([p for p in pages if p.type == ptype], key=lambda p: (p.lang, p.scope))
+        for extra in SECTION_EXTRA.get(sec, []):
+            sec_pages += sorted([p for p in pages if p.type == extra], key=lambda p: (p.lang, p.scope))
         i = src.find(f'<section id="{sec}"')
         if not sec_pages or i == -1:
             continue
@@ -633,10 +639,10 @@ def patch_index_html(src, pages):
         btns = []
         for p in sec_pages:
             sar, sfr = (" (بالعربية)", " (en arabe)") if p.lang == "ar" else ("", "")
-            ar = f'{ICON_TYPE[ptype]} {SHORT_TYPE["ar"][ptype]} {p.info["fr"]}{sar} PDF'
-            fr = f'{ICON_TYPE[ptype]} {SHORT_TYPE["fr"][ptype]} {p.info["fr"]}{sfr} PDF'
+            ar = f'{ICON_TYPE[p.type]} {SHORT_TYPE["ar"][p.type]} {p.info["fr"]}{sar} PDF'
+            fr = f'{ICON_TYPE[p.type]} {SHORT_TYPE["fr"][p.type]} {p.info["fr"]}{sfr} PDF'
             btns.append(f'<a class="btn btn-primary" href="{e(p.path)}" data-lang-ar="{e(ar)}" data-lang-fr="{e(fr)}">{e(ar)}</a>')
-        if sec == "examens":
+        if sec in SECTION_HUB:
             btns.append(f'<a class="btn btn-secondary" style="border:2px solid var(--primary-color)" href="/{OUT}/" '
                         'data-lang-ar="📚 كل الدروس والامتحانات PDF" data-lang-fr="📚 Tous les cours et examens PDF">'
                         '📚 كل الدروس والامتحانات PDF</a>')
