@@ -571,10 +571,10 @@ SHORT_TYPE = {"ar": {"cours": "الدروس", "exercices": "التمارين", "
 ICON_TYPE = {"cours": "📚", "exercices": "✏️", "fiches": "📋", "resumes": "🗒️", "examens": "📝"}
 # section de la page d'accueil (id) -> type de pages /svt/ qui lui correspond
 SECTION_TYPES = {"cours": "cours", "exercices": "exercices", "examens": "examens", "fiches": "fiches", "resumes": "resumes"}
-# types de pages ajoutés en plus dans une section (les examens sont la meilleure matière d'entraînement : ils s'affichent aussi sous « Exercices »)
-SECTION_EXTRA = {"exercices": ["examens"]}
+# types de pages ajoutés EN PLUS dans une section (vide : chaque section n'affiche que ses propres pages)
+SECTION_EXTRA = {}
 # sections qui reçoivent aussi le bouton vers le sommaire /svt/
-SECTION_HUB = ("examens", "exercices")
+SECTION_HUB = ("examens",)
 
 
 def patch_index_html(src, pages):
