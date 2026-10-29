@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-29T01:22:00.200400+00:00",
+  "generated": "2026-10-29T01:56:15.254128+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -79,6 +79,18 @@
     "exercices": {
       "francais": {
         "2BAC": {
+          "2BACSP": {
+            "__files": [
+              "POLLUTION.pdf",
+              "SERIE POLLUTION.pdf",
+              "Serie 2.pdf",
+              "serie  lois statistiques 1.pdf",
+              "serie 1.pdf",
+              "serie 3.pdf",
+              "serie 4.pdf",
+              "serie 5.pdf"
+            ]
+          },
           "2BACSVT": {
             "__files": [
               "Serie 2.pdf",
