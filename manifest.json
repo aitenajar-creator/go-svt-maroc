@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-28T20:09:58.790776+00:00",
+  "generated": "2026-10-29T01:22:00.200400+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -72,6 +72,24 @@
                 "eleves-TCS  AIT ENAJAR U1C5.pdf"
               ]
             }
+          }
+        }
+      }
+    },
+    "exercices": {
+      "francais": {
+        "2BAC": {
+          "2BACSVT": {
+            "__files": [
+              "Serie 2.pdf",
+              "serie 1.pdf",
+              "serie 3.pdf",
+              "serie 4.pdf",
+              "serie 5.pdf",
+              "serie 6.pdf",
+              "serie 7.pdf",
+              "serie 8.pdf"
+            ]
           }
         }
       }
