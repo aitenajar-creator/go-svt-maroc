@@ -239,14 +239,18 @@ def dedupe(items):
 # Modèle de page
 # --------------------------------------------------------------------------
 class Page:
-    def __init__(self, ptype, lang, scope, items):
+    def __init__(self, ptype, lang, scope, items, ui=None):
+        # lang = langue des FICHIERS ; ui = langue du TEXTE de la page (jumelle arabe d'une page française : ui="ar")
         self.type, self.lang, self.scope = ptype, lang, scope
+        self.ui = ui or lang
+        self.is_twin = self.ui != self.lang
         self.items = items
         self.info = scope_info(scope)
-        self.path = f"/{OUT}/{ptype}/{lang}/{self.info['slug']}/"
+        self.path = (f"/{OUT}/{self.ui}/{ptype}/{self.info['slug']}/" if self.is_twin
+                     else f"/{OUT}/{ptype}/{lang}/{self.info['slug']}/")
         self.url = SITE + self.path
-        self.label = self.info[lang if lang == "ar" else "fr"]
-        self.label_long = self.info["ar"] if lang == "ar" else self.info["fr_long"]
+        self.label = self.info["ar"] if self.ui == "ar" else self.info["fr"]
+        self.label_long = self.info["ar"] if self.ui == "ar" else self.info["fr_long"]
         self.alternates = {}
         self.lastmod = None
         years = sorted({i.exam[0] for i in items if i.exam})
@@ -254,7 +258,8 @@ class Page:
         self.build_texts()
 
     def build_texts(self):
-        L, T = self.lang, TYPE_LABEL[self.lang][self.type]
+        L, T = self.ui, TYPE_LABEL[self.ui][self.type]
+        note = " وهي مكتوبة باللغة الفرنسية" if self.is_twin else ""        # page arabe pour des fichiers en français : on le dit
         if L == "ar" and "علوم الحياة والأرض" in self.label_long:      # évite la répétition du nom de la matière
             T = re.sub(r"\s*(في\s+)?علوم الحياة والأرض", "", T)
         n = len(self.items)
@@ -275,7 +280,7 @@ class Page:
                 self.desc = (f"مواضيع وتصحيحات الامتحانات الوطنية في علوم الحياة والأرض {self.label_long} "
                              f"من {y0} إلى {y1}، الدورتان العادية والاستدراكية، تحميل مجاني بصيغة PDF.")
                 self.intro = (f"مواضيع الامتحانات الوطنية في علوم الحياة والأرض لمسلك {self.label_long} من {y0} إلى {y1}، "
-                              f"مع التصحيحات حيثما توفرت، للدورتين العادية والاستدراكية. جميع الملفات بصيغة PDF ومجانية.")
+                              f"مع التصحيحات حيثما توفرت، للدورتين العادية والاستدراكية. جميع الملفات بصيغة PDF ومجانية" + (("، " + note.strip() + ".") if note else "."))
         else:
             if L == "fr":
                 self.h1 = f"{T} {self.label} : {n} fichiers PDF"
@@ -287,9 +292,10 @@ class Page:
             else:
                 self.h1 = f"{T} {self.label_long} : {n} ملفات PDF"
                 self.title = f"{T} {self.label_long} - تحميل PDF | {BRAND}"
-                self.desc = self.fit_desc(f"{T} لمسلك {self.label_long} : {n} ملفات PDF للتحميل المجاني.", " ", "؛ ")
-                self.intro = (f"ملفات «{T}» لمسلك {self.label_long} بصيغة PDF ومجانية. "
-                              f"تتزايد القائمة كلما أُضيفت ملفات جديدة.")
+                base = f"{T} لمسلك {self.label_long} : {n} ملفات PDF للتحميل المجاني."
+                self.desc = base + (" الملفات بالفرنسية." if self.is_twin else "") if self.is_twin else self.fit_desc(base, " ", "؛ ")
+                self.intro = (f"ملفات «{T}» لمسلك {self.label_long} بصيغة PDF ومجانية،{note or ''}. " if note else
+                              f"ملفات «{T}» لمسلك {self.label_long} بصيغة PDF ومجانية. ") + "تتزايد القائمة كلما أُضيفت ملفات جديدة."
         self.desc = self.desc.strip()
         if len(self.desc) > 160:
             self.desc = self.desc[:157].rsplit(" ", 1)[0].rstrip(" ,;:") + "…"
@@ -422,8 +428,9 @@ def shell(lang, crumbs, body, other_lang_url=None):
 """
 
 
-def file_li(it, lang):
-    return (f'<li><a href="{e(it.url)}" type="application/pdf">{e(it.title)}</a>'
+def file_li(it, lang, content=None):
+    attr = f' lang="{content}" dir="{"rtl" if content == "ar" else "ltr"}"' if content and content != lang else ""
+    return (f'<li><a href="{e(it.url)}" type="application/pdf"{attr}>{e(it.title)}</a>'
             f'<span class="meta">{it.name.rsplit(".", 1)[-1].upper()} · {human_size(it.size, lang)}</span></li>')
 
 
@@ -431,7 +438,7 @@ def render_list(page):
     items = sorted(page.items, key=lambda i: (i.order, natural_key(i.name)))
     has_groups = any(i.group for i in items)
     if not has_groups:
-        return '<ul class="list">' + "".join(file_li(i, page.lang) for i in items) + "</ul>"
+        return '<ul class="list">' + "".join(file_li(i, page.ui, page.lang) for i in items) + "</ul>"
     out, seen = [], []
     for i in items:
         g = i.group or ""
@@ -441,12 +448,12 @@ def render_list(page):
         sub = [i for i in items if (i.group or "") == g]
         if g:
             out.append(f"<h2>{e(g)}</h2>")
-        out.append('<ul class="list">' + "".join(file_li(i, page.lang) for i in sub) + "</ul>")
+        out.append('<ul class="list">' + "".join(file_li(i, page.ui, page.lang) for i in sub) + "</ul>")
     return "\n".join(out)
 
 
 def render_exam_table(page):
-    u = UI[page.lang]
+    u = UI[page.ui]
     cell = defaultdict(dict)       # year -> {(session, kind): Item}
     extra = []
     for it in sorted(page.items, key=lambda i: (bool(re.search(r"\(\d+\)", i.name)), natural_key(i.name))):
@@ -466,21 +473,21 @@ def render_exam_table(page):
     table = (f'<div class="tw"><table><thead><tr><th>{u["year"]}</th><th>{u["n_sujet"]}</th><th>{u["n_corr"]}</th>'
              f'<th>{u["r_sujet"]}</th><th>{u["r_corr"]}</th></tr></thead><tbody>' + "".join(rows) + "</tbody></table></div>")
     if extra:
-        table += '<ul class="list" style="margin-top:1rem">' + "".join(file_li(i, page.lang) for i in extra) + "</ul>"
+        table += '<ul class="list" style="margin-top:1rem">' + "".join(file_li(i, page.ui, page.lang) for i in extra) + "</ul>"
     return table
 
 
 def jsonld_for(page, pages_by_url):
     crumbs = [
         {"@type": "ListItem", "position": 1, "name": BRAND, "item": SITE + "/"},
-        {"@type": "ListItem", "position": 2, "name": UI[page.lang]["hub"], "item": f"{SITE}/{OUT}/"},
+        {"@type": "ListItem", "position": 2, "name": UI[page.ui]["hub"], "item": f"{SITE}/{OUT}/"},
         {"@type": "ListItem", "position": 3, "name": page.h1, "item": page.url},
     ]
     parts = []
     for it in sorted(page.items, key=lambda i: (i.order, natural_key(i.name))):
         parts.append({
             "@type": "LearningResource",
-            "name": it.title if not it.exam else f"{TYPE_LABEL[page.lang]['examens']} {page.label} {it.exam[0]} {it.exam[1]} {it.exam[2]}",
+            "name": it.title if not it.exam else f"{TYPE_LABEL[page.ui]['examens']} {page.label} {it.exam[0]} {it.exam[1]} {it.exam[2]}",
             "url": SITE + it.url,
             "encodingFormat": "application/pdf" if it.name.lower().endswith(".pdf") else None,
             "inLanguage": page.lang,
@@ -492,14 +499,14 @@ def jsonld_for(page, pages_by_url):
     return [
         {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": crumbs},
         {"@context": "https://schema.org", "@type": "CollectionPage", "name": page.h1, "description": page.desc,
-         "url": page.url, "inLanguage": page.lang, "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE + "/"},
+         "url": page.url, "inLanguage": page.ui, "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE + "/"},
          "hasPart": parts},
     ]
 
 
 def render_page(page, all_pages):
-    u = UI[page.lang]
-    related = [p for p in all_pages if p.lang == page.lang and p is not page]
+    u = UI[page.ui]
+    related = [p for p in all_pages if p.ui == page.ui and p is not page]
     # même filière d'abord
     related.sort(key=lambda p: (p.scope != page.scope, TYPE_ORDER.index(p.type), p.scope))
     rel_html = ""
@@ -509,10 +516,10 @@ def render_page(page, all_pages):
     body = f"<h1>{e(page.h1)}</h1>\n<p class=\"intro\">{e(page.intro)}</p>\n"
     body += render_exam_table(page) if page.type == "examens" else render_list(page)
     body += rel_html
-    other = page.alternates.get("ar" if page.lang == "fr" else "fr")
-    crumbs = [(BRAND, "/"), (u["hub"], f"/{OUT}/"), (page.label if page.lang == "fr" else page.label_long, None)]
-    return head(page.title, page.desc, page.url, page.lang, page.alternates,
-                jsonld=jsonld_for(page, None)) + shell(page.lang, crumbs, body, other)
+    other = page.alternates.get("ar" if page.ui == "fr" else "fr")
+    crumbs = [(BRAND, "/"), (u["hub"], f"/{OUT}/"), (page.label if page.ui == "fr" else page.label_long, None)]
+    return head(page.title, page.desc, page.url, page.ui, page.alternates,
+                jsonld=jsonld_for(page, None)) + shell(page.ui, crumbs, body, other)
 
 
 def render_hub(pages):
@@ -523,7 +530,7 @@ def render_hub(pages):
     body += ('<p class="intro">Toutes les ressources de SVT organisées par niveau, en PDF et gratuites. '
              'دروس وتمارين وامتحانات وطنية في علوم الحياة والأرض.</p>')
     for lang in ("fr", "ar"):
-        sub = [p for p in pages if p.lang == lang]
+        sub = [p for p in pages if p.ui == lang]
         if not sub:
             continue
         body += f'<h2>{"Français" if lang == "fr" else "العربية"}</h2><ul class="list" style="margin-bottom:.5rem">'
@@ -580,6 +587,7 @@ SECTION_HUB = ("examens",)
 def patch_index_html(src, pages):
     """Ajoute à index.html (dans le dépôt de travail du déploiement uniquement) : balises de partage,
     JSON-LD, entrée de menu vers /svt/ et boutons « examens ». Idempotent ; ignore ce qu'il ne trouve pas."""
+    pages = [p for p in pages if not p.is_twin]
     # 1) balises de partage (image 1200x630)
     old_og = '<meta property="og:image" content="https://gosvtmaroc.com/android-chrome-512x512.png">'
     if old_og in src:
@@ -681,6 +689,7 @@ def patch_index_html(src, pages):
 
 
 def inject_index_links(pages):
+    pages = [p for p in pages if not p.is_twin]
     idx = ROOT / "index.html"
     if not idx.exists():
         return False
@@ -721,19 +730,26 @@ def main():
             continue
         pages.append(Page(ptype, lang, scope, items))
 
-    # hreflang : paire fr/ar d'un même contenu
+    # jumelle arabe de chaque page française : mêmes fichiers, texte (titre, description, intro) en arabe
+    for p in list(pages):
+        if p.lang == "fr":
+            pages.append(Page(p.type, "fr", p.scope, p.items, ui="ar"))
+
+    # hreflang : variantes d'un même contenu (même type, même filière, mêmes fichiers) -> {langue de la page : URL}
     by_key = defaultdict(dict)
     for p in pages:
-        by_key[(p.type, p.scope)][p.lang] = p.url
+        by_key[(p.type, p.scope, p.lang)][p.ui] = p.url
     for p in pages:
-        p.alternates = dict(by_key[(p.type, p.scope)])
+        p.alternates = dict(by_key[(p.type, p.scope, p.lang)])
 
     # dates
     for p in pages:
         for it in p.items:
             it.date = git_date(it.path)
         p.lastmod = max(i.date for i in p.items)
-    home_date = max([p.lastmod for p in pages] + [datetime.date.today().isoformat()]) if pages else datetime.date.today().isoformat()
+    # date de modification de l'accueil = dernier vrai changement (jamais « aujourd'hui » par défaut : une date qui change à chaque
+    # déploiement sans changement réel fait perdre sa crédibilité au sitemap)
+    home_date = max([p.lastmod for p in pages] + [git_date(ROOT / "index.html")]) if pages else git_date(ROOT / "index.html")
 
     # écriture : on repart d'un dossier propre
     out_dir = ROOT / OUT
