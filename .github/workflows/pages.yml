@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "30 3 * * *"      # chaque nuit : termine les quiz restants (utile avec le quota gratuit). Supprimez ces 2 lignes si inutile.
+    - cron: "30 9 * * *"      # 09:30 UTC = après la réinitialisation quotidienne des quotas Google (minuit, heure du Pacifique) : termine les quiz restants. Supprimez ces 2 lignes si inutile.
   workflow_dispatch:
     inputs:
       quiz_filter:
@@ -44,6 +44,7 @@ jobs:
           QUIZ_PROVIDER: ${{ vars.QUIZ_PROVIDER }}
           QUIZ_PACE: ${{ vars.QUIZ_PACE }}
           QUIZ_MODEL: ${{ vars.QUIZ_MODEL }}
+          QUIZ_MODELS: ${{ vars.QUIZ_MODELS }}
           QUIZ_MAX_NEW: ${{ vars.QUIZ_MAX_NEW }}
           QUIZ_VERIFY: ${{ vars.QUIZ_VERIFY }}
           QUIZ_FILTER: ${{ inputs.quiz_filter }}
@@ -66,6 +67,8 @@ jobs:
 
       # 2) Pages SEO, sitemap, liens dans index.html
       - name: Générer les pages SEO (svt/, sitemap.xml, liens index.html)
+        env:
+          QUIZ_PAGES_NOINDEX_AUTO: ${{ vars.QUIZ_PAGES_NOINDEX_AUTO }}
         run: python3 _tools/build_seo.py
       - name: Build Jekyll
         uses: actions/jekyll-build-pages@v1
