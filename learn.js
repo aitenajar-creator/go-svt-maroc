@@ -394,8 +394,22 @@
         if (btn && !btn.disabled) btn.click();
     });
 
+    // =============== 🔗 فتح اختبار مباشرة من رابط: /?quiz=quiz/francais/1BAC/…/x.json#quiz ===============
+    // (يستعمله زر «Passer ce quiz» في صفحات /svt/quiz/…). المسار يجب أن يكون ملف .json داخل مجلد quiz/ فقط.
+    function openQuizFromUrl() {
+        try {
+            const raw = new URLSearchParams(location.search).get('quiz');
+            if (!raw) return;
+            const path = raw.replace(/^\/+/, '');
+            if (!/^quiz\/[^?#\\]+\.json$/i.test(path) || path.split('/').includes('..')) return;
+            history.replaceState(null, '', location.pathname + location.hash);   // لا يُعاد فتحه عند تحديث الصفحة
+            openQuiz('/' + path);
+        } catch (e) { /* رابط غير صالح: نتجاهله */ }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         buildQuizModal();
         hideQuizFilter();
+        openQuizFromUrl();
     });
 })();
