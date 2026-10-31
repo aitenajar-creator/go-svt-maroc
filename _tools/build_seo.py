@@ -21,9 +21,11 @@ import datetime
 import hashlib
 import html
 import json
+import os
 import re
 import subprocess
 import sys
+import unicodedata
 from collections import defaultdict
 from pathlib import Path
 from urllib.parse import quote
@@ -58,12 +60,12 @@ BRANCHES = {
 }
 TYPE_LABEL = {
     "fr": {"cours": "Cours de SVT", "exercices": "Exercices de SVT", "fiches": "Fiches et résumés de SVT",
-           "resumes": "Résumés de SVT", "examens": "Examens nationaux de SVT"},
+           "resumes": "Résumés de SVT", "quiz": "Quiz de SVT", "examens": "Examens nationaux de SVT"},
     "ar": {"cours": "دروس علوم الحياة والأرض", "exercices": "تمارين علوم الحياة والأرض",
            "fiches": "جذاذات وملخصات علوم الحياة والأرض", "resumes": "ملخصات علوم الحياة والأرض",
-           "examens": "الامتحانات الوطنية في علوم الحياة والأرض"},
+           "quiz": "اختبارات علوم الحياة والأرض", "examens": "الامتحانات الوطنية في علوم الحياة والأرض"},
 }
-TYPE_ORDER = ["cours", "exercices", "fiches", "resumes", "examens"]
+TYPE_ORDER = ["cours", "exercices", "fiches", "resumes", "quiz", "examens"]
 EXAM_RE = re.compile(
     r"examen-national-svt-.+?-(?P<year>20\d{2})-(?P<session>normale|rattrapage)-(?P<kind>sujet|corrige)",
     re.I)
@@ -173,6 +175,9 @@ class Item:
         self.order = 999
         self.exam = None                # (year, session, kind)
         self.date = None
+        self.meta = None                # texte à droite dans les listes (défaut : « PDF · taille »)
+        self.mime = "application/pdf"   # None pour une page HTML (quiz)
+        self.indexable = True           # False : absent du sitemap
 
 
 def scan(titles):
@@ -263,7 +268,23 @@ class Page:
         if L == "ar" and "علوم الحياة والأرض" in self.label_long:      # évite la répétition du nom de la matière
             T = re.sub(r"\s*(في\s+)?علوم الحياة والأرض", "", T)
         n = len(self.items)
-        if self.type == "examens" and self.years:
+        if self.type == "quiz":
+            n = len(self.items)
+            if L == "fr":
+                self.h1 = f"Quiz de SVT {self.label} : {n} QCM corrigés"
+                self.title = f"QCM SVT {self.label} corrigés avec explications | {BRAND}"
+                self.desc = (f"{n} quiz de SVT pour {self.label_long} : QCM avec la bonne réponse et l'explication de chaque question, "
+                             f"gratuits, à lire en ligne ou à faire en mode interactif.")
+                self.intro = (f"Quiz de SVT du niveau {self.label_long} : chaque page présente les questions, les choix, la bonne réponse "
+                              f"et son explication. Vous pouvez aussi les faire en mode interactif sur la plateforme.")
+            else:
+                self.h1 = f"{T} {self.label_long} : {n} اختباراً مصححاً"
+                self.title = f"{T} {self.label_long} مصححة مع الشرح | {BRAND}"
+                self.desc = (f"{n} اختباراً في علوم الحياة والأرض لمسلك {self.label_long} : أسئلة من متعدد مع الإجابة الصحيحة والشرح"
+                             + (" (الأسئلة بالفرنسية)." if self.is_twin else "."))
+                self.intro = (f"اختبارات علوم الحياة والأرض لمسلك {self.label_long} : تعرض كل صفحة الأسئلة والاختيارات والإجابة الصحيحة وشرحها"
+                              + ((note + ".") if note else ".") + " ويمكنك أيضاً إجراؤها بشكل تفاعلي على المنصة.")
+        elif self.type == "examens" and self.years:
             y0, y1 = self.years
             yr = f"{y0}-{y1}" if y0 != y1 else f"{y0}"
             if L == "fr":
@@ -350,17 +371,33 @@ td:first-child{font-weight:700}
 .cta{display:inline-block;margin:1.4rem 0 .4rem;padding:.65rem 1.2rem;background:var(--c1);color:#fff;border-radius:8px;text-decoration:none;font-weight:600}
 .rel ul{padding-inline-start:1.2rem;margin:.3rem 0}
 .ft{margin-top:2.5rem;padding:1.2rem 0;border-top:1px solid var(--bd);color:var(--mut);font-size:.88rem}
+.qs{list-style:none;padding:0;margin:1rem 0}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:.9rem 1.1rem;margin:0 0 .9rem}
+.q .qt{font-weight:700;margin:0 0 .5rem}
+.ch{list-style:none;padding:0;margin:.3rem 0 .6rem}
+.ch li{padding:.15rem 0}
+.q summary{cursor:pointer;color:var(--ac);font-weight:600}
+.q details p{margin:.4rem 0}
+.note{background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.55);border-radius:8px;padding:.5rem .9rem;font-size:.88rem;margin:.8rem 0}
+.acts a{margin-inline-end:.8rem}
+.ql{margin-inline-start:.6rem;font-size:.85rem;font-weight:600;white-space:nowrap}
 """
 
 UI = {
     "fr": {"home": "Accueil", "hub": "Cours et examens", "all": "Toutes les ressources", "open": "Accéder à la plateforme complète",
            "related": "Voir aussi", "files": "fichiers", "year": "Année",
            "n_sujet": "Normale · Sujet", "n_corr": "Normale · Corrigé", "r_sujet": "Rattrapage · Sujet", "r_corr": "Rattrapage · Corrigé",
-           "sujet": "Sujet", "corr": "Corrigé", "other_lang": "العربية", "rights": "Tous droits réservés."},
+           "sujet": "Sujet", "corr": "Corrigé", "other_lang": "العربية", "rights": "Tous droits réservés.",
+           "q_cta": "Passer ce quiz en mode interactif", "q_answer": "Voir la réponse", "q_correct": "Bonne réponse", "q_explain": "Explication",
+           "q_lesson": "Télécharger le cours (PDF)", "q_other": "Autres quiz", "q_contact": "Signaler une erreur", "qlink": "🎯 Quiz",
+           "q_auto": "Quiz généré automatiquement à partir du cours, puis relu par une seconde vérification. Si vous repérez une erreur, merci de nous la signaler."},
     "ar": {"home": "الرئيسية", "hub": "الدروس والامتحانات", "all": "جميع الموارد", "open": "الانتقال إلى المنصة الكاملة",
            "related": "روابط ذات صلة", "files": "ملفات", "year": "السنة",
            "n_sujet": "العادية · الموضوع", "n_corr": "العادية · التصحيح", "r_sujet": "الاستدراكية · الموضوع", "r_corr": "الاستدراكية · التصحيح",
-           "sujet": "الموضوع", "corr": "التصحيح", "other_lang": "Français", "rights": "جميع الحقوق محفوظة."},
+           "sujet": "الموضوع", "corr": "التصحيح", "other_lang": "Français", "rights": "جميع الحقوق محفوظة.",
+           "q_cta": "أجرِ هذا الاختبار بشكل تفاعلي", "q_answer": "عرض الإجابة", "q_correct": "الإجابة الصحيحة", "q_explain": "الشرح",
+           "q_lesson": "تحميل الدرس (PDF)", "q_other": "اختبارات أخرى", "q_contact": "الإبلاغ عن خطأ", "qlink": "🎯 اختبار",
+           "q_auto": "اختبار مولَّد آلياً من الدرس ومراجَع بتمريرة تحقق ثانية. إن وجدت خطأً فيرجى إبلاغنا."},
 }
 
 
@@ -428,10 +465,17 @@ def shell(lang, crumbs, body, other_lang_url=None):
 """
 
 
+QUIZ_LINK = {}          # empreinte (md5) du cours -> URL de sa page de quiz
+
+
 def file_li(it, lang, content=None):
     attr = f' lang="{content}" dir="{"rtl" if content == "ar" else "ltr"}"' if content and content != lang else ""
-    return (f'<li><a href="{e(it.url)}" type="application/pdf"{attr}>{e(it.title)}</a>'
-            f'<span class="meta">{it.name.rsplit(".", 1)[-1].upper()} · {human_size(it.size, lang)}</span></li>')
+    mime = getattr(it, "mime", "application/pdf")
+    tattr = f' type="{mime}"' if mime else ""
+    meta = getattr(it, "meta", None) or f'{it.name.rsplit(".", 1)[-1].upper()} · {human_size(it.size, lang)}'
+    q = QUIZ_LINK.get(getattr(it, "digest", None))
+    ql = f'<a class="ql" href="{e(q)}">{UI[lang]["qlink"]}</a>' if q else ""
+    return f'<li><a href="{e(it.url)}"{tattr}{attr}>{e(it.title)}</a>{ql}<span class="meta">{meta}</span></li>'
 
 
 def render_list(page):
@@ -492,7 +536,7 @@ def jsonld_for(page, pages_by_url):
             "encodingFormat": "application/pdf" if it.name.lower().endswith(".pdf") else None,
             "inLanguage": page.lang,
             "learningResourceType": {"cours": "Lesson", "exercices": "Exercise", "fiches": "Study guide",
-                                     "examens": "Exam", "resumes": "Study guide"}[page.type],
+                                     "examens": "Exam", "resumes": "Study guide", "quiz": "Quiz"}[page.type],
             "isAccessibleForFree": True,
         })
         parts[-1] = {k: v for k, v in parts[-1].items() if v is not None}
@@ -565,7 +609,7 @@ def build_sitemap(pages, home_date):
     for p in pages:                                    # les PDF eux-mêmes
         for it in p.items:
             loc = SITE + it.url
-            if loc in seen:
+            if loc in seen or not getattr(it, "indexable", True):
                 continue
             seen.add(loc)
             lines.append(f"  <url><loc>{xml_escape(loc)}</loc><lastmod>{it.date}</lastmod><priority>0.6</priority></url>")
@@ -573,11 +617,12 @@ def build_sitemap(pages, home_date):
     return "\n".join(lines)
 
 
-SHORT_TYPE = {"ar": {"cours": "الدروس", "exercices": "التمارين", "fiches": "الجذاذات", "resumes": "الملخصات", "examens": "الامتحانات الوطنية"},
-              "fr": {"cours": "Cours", "exercices": "Exercices", "fiches": "Fiches", "resumes": "Résumés", "examens": "Examens nationaux"}}
-ICON_TYPE = {"cours": "📚", "exercices": "✏️", "fiches": "📋", "resumes": "🗒️", "examens": "📝"}
+SHORT_TYPE = {"ar": {"cours": "الدروس", "exercices": "التمارين", "fiches": "الجذاذات", "resumes": "الملخصات", "quiz": "اختبارات", "examens": "الامتحانات الوطنية"},
+              "fr": {"cours": "Cours", "exercices": "Exercices", "fiches": "Fiches", "resumes": "Résumés", "quiz": "Quiz", "examens": "Examens nationaux"}}
+ICON_TYPE = {"cours": "📚", "exercices": "✏️", "fiches": "📋", "resumes": "🗒️", "quiz": "🎯", "examens": "📝"}
+TYPE_SUFFIX = {"quiz": ""}          # les autres boutons se terminent par « PDF »
 # section de la page d'accueil (id) -> type de pages /svt/ qui lui correspond
-SECTION_TYPES = {"cours": "cours", "exercices": "exercices", "examens": "examens", "fiches": "fiches", "resumes": "resumes"}
+SECTION_TYPES = {"cours": "cours", "exercices": "exercices", "examens": "examens", "fiches": "fiches", "resumes": "resumes", "quiz": "quiz"}
 # types de pages ajoutés EN PLUS dans une section (vide : chaque section n'affiche que ses propres pages)
 SECTION_EXTRA = {}
 # sections qui reçoivent aussi le bouton vers le sommaire /svt/
@@ -647,8 +692,8 @@ def patch_index_html(src, pages):
         btns = []
         for p in sec_pages:
             sar, sfr = (" (بالعربية)", " (en arabe)") if p.lang == "ar" else ("", "")
-            ar = f'{ICON_TYPE[p.type]} {SHORT_TYPE["ar"][p.type]} {p.info["fr"]}{sar} PDF'
-            fr = f'{ICON_TYPE[p.type]} {SHORT_TYPE["fr"][p.type]} {p.info["fr"]}{sfr} PDF'
+            ar = f'{ICON_TYPE[p.type]} {SHORT_TYPE["ar"][p.type]} {p.info["fr"]}{sar}{TYPE_SUFFIX.get(p.type, " PDF")}'
+            fr = f'{ICON_TYPE[p.type]} {SHORT_TYPE["fr"][p.type]} {p.info["fr"]}{sfr}{TYPE_SUFFIX.get(p.type, " PDF")}'
             btns.append(f'<a class="btn btn-primary" href="{e(p.path)}" data-lang-ar="{e(ar)}" data-lang-fr="{e(fr)}">{e(ar)}</a>')
         if sec in SECTION_HUB:
             btns.append(f'<a class="btn btn-secondary" style="border:2px solid var(--primary-color)" href="/{OUT}/" '
@@ -718,14 +763,149 @@ def inject_index_links(pages):
 
 
 # --------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------------------------------------------
+# Pages de quiz : une page HTML par fichier quiz/**/*.json (questions, choix, bonne réponse et explication en TEXTE,
+# donc lisibles et indexables). Les quiz « auto » (générés par IA) peuvent être mis en noindex tant qu'ils ne sont pas relus :
+# variable QUIZ_PAGES_NOINDEX_AUTO=1.
+# ------------------------------------------------------------------------------------------------------------------
+NOINDEX_AUTO_QUIZ = os.environ.get("QUIZ_PAGES_NOINDEX_AUTO", "").strip().lower() in ("1", "true", "oui", "yes")
+
+
+class QuizEntry:
+    pass
+
+
+def nfc(x):
+    return unicodedata.normalize("NFC", str(x)).strip()
+
+
+def scan_quizzes(titles):
+    entries, groups = [], defaultdict(list)
+    qdir = ROOT / "quiz"
+    if not qdir.is_dir():
+        return entries, groups
+    for p in sorted(qdir.rglob("*.json")):
+        rel = p.relative_to(ROOT).parts
+        if len(rel) < 4 or rel[1] not in SUBJECTS:
+            continue
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(data, dict):
+            continue
+        qs = []
+        for q in data.get("questions") or []:
+            if not isinstance(q, dict):
+                continue
+            choix, rep = q.get("choix"), q.get("reponse")
+            if (isinstance(q.get("question"), str) and q["question"].strip() and isinstance(choix, list) and 2 <= len(choix) <= 8
+                    and all(isinstance(c, str) and c.strip() for c in choix) and isinstance(rep, int) and 1 <= rep <= len(choix)):
+                qs.append({"question": q["question"].strip(), "choix": [c.strip() for c in choix], "reponse": rep,
+                           "explication": str(q.get("explication") or "").strip()})
+        if not qs:
+            continue
+        qe = QuizEntry()
+        qe.lang = SUBJECTS[rel[1]]
+        qe.scope = rel[3] if len(rel) >= 5 else rel[2]
+        qe.info = scope_info(qe.scope)
+        qe.slug = re.sub(r"[^\w\-]+", "-", p.stem.lower(), flags=re.UNICODE).strip("-") or "quiz"
+        qe.url = f"/{OUT}/quiz/{qe.lang}/{qe.info['slug']}/{qe.slug}/"
+        qe.title = str(data.get("titre") or p.stem).strip()
+        qe.group = str(data.get("description") or "").strip()
+        qe.questions = qs
+        qe.auto = data.get("auto") is True
+        qe.noindex = qe.auto and NOINDEX_AUTO_QUIZ
+        qe.source, qe.source_md5 = data.get("source"), data.get("source_md5")
+        qe.lesson = None
+        item = Item(p, list(rel), 0, md5(p))
+        item.url, item.name, item.title = qe.url, qe.slug, qe.title
+        item.meta, item.mime, item.indexable = f"{len(qs)} QCM", None, not qe.noindex
+        ov = titles.get(Path(str(qe.source)).name) if qe.source else None
+        if isinstance(ov, dict):
+            item.group, item.order = ov.get("group"), ov.get("order", 999)
+        qe.item = item
+        entries.append(qe)
+        groups[("quiz", qe.lang, qe.scope)].append(item)
+    return entries, groups
+
+
+def trim(text, n=158):
+    text = re.sub(r"\s+", " ", text).strip()
+    return text if len(text) <= n else text[: n - 1].rsplit(" ", 1)[0].rstrip(" ,;:") + "…"
+
+
+def render_quiz_page(q, siblings):
+    L, u = q.lang, UI[q.lang]
+    label = q.info["ar"] if L == "ar" else q.info["fr"]
+    label_long = q.info["ar"] if L == "ar" else q.info["fr_long"]
+    n = len(q.questions)
+    letters = "ABCDEFGH" if L == "fr" else "أبجدهوزح"
+    if L == "fr":
+        h1 = f"QCM de SVT {label} : {q.title}"
+        title = f"QCM SVT {label} : {q.title} - {n} questions corrigées | {BRAND}"
+        desc = trim(f"{n} QCM de SVT ({label_long}) sur « {q.title} », avec la bonne réponse et l'explication de chaque question. Gratuit.")
+        intro = (f"{n} questions à choix multiples sur « {q.title} »" + (f" ({q.group})" if q.group else "")
+                 + ". Cliquez sur « Voir la réponse » pour vérifier votre réponse et lire l'explication.")
+    else:
+        h1 = f"اختبار علوم الحياة والأرض {label_long} : {q.title}"
+        title = f"{h1} - {n} أسئلة مصححة | {BRAND}"
+        desc = trim(f"{n} أسئلة من متعدد حول «{q.title}» ({label_long}) مع الإجابة الصحيحة وشرح كل سؤال. مجاني.")
+        intro = (f"{n} أسئلة من متعدد حول «{q.title}»" + (f" ({q.group})" if q.group else "")
+                 + ". انقر على «عرض الإجابة» للتحقق من إجابتك وقراءة الشرح.")
+    lis = []
+    for i, qq in enumerate(q.questions, 1):
+        ch = "".join(f"<li><b>{letters[min(j, len(letters) - 1)]})</b> {e(c)}</li>" for j, c in enumerate(qq["choix"]))
+        k = qq["reponse"] - 1
+        expl = f'<p>{u["q_explain"]} : {e(qq["explication"])}</p>' if qq["explication"] else ""
+        lis.append(f'<li class="q" id="q{i}"><p class="qt">{i}. {e(qq["question"])}</p><ul class="ch">{ch}</ul>'
+                   f'<details><summary>{u["q_answer"]}</summary>'
+                   f'<p><strong>{u["q_correct"]} : {letters[min(k, len(letters) - 1)]}) {e(qq["choix"][k])}</strong></p>{expl}</details></li>')
+    acts = f'<a class="cta" href="/#quiz">🎯 {u["q_cta"]}</a>'
+    if q.lesson is not None:
+        acts += f' <a href="{e(q.lesson.url)}" type="application/pdf">📄 {u["q_lesson"]}</a>'
+    note = f'<p class="note">🤖 {u["q_auto"]} <a href="/#contact">{u["q_contact"]}</a></p>' if q.auto else ""
+    related = ""
+    if siblings:
+        rl = "".join(f'<li><a href="{e(x.url)}">{e(x.title)}</a></li>' for x in siblings[:8])
+        related = f'<section class="rel"><h2>{u["q_other"]}</h2><ul>{rl}</ul></section>'
+    body = (f"<h1>{e(h1)}</h1>\n<p class=\"intro\">{e(intro)}</p>\n<p class=\"acts\">{acts}</p>\n{note}"
+            f"<ol class=\"qs\">{''.join(lis)}</ol>\n{related}")
+    list_url = f"/{OUT}/quiz/{q.lang}/{q.info['slug']}/"
+    crumbs = [(BRAND, "/"), (u["hub"], f"/{OUT}/"), (label_long if L == "ar" else label, list_url), (q.title, None)]
+    questions_ld = []
+    for qq in q.questions:
+        k = qq["reponse"] - 1
+        d = {"@type": "Question", "eduQuestionType": "Multiple choice", "text": qq["question"],
+             "suggestedAnswer": [{"@type": "Answer", "text": c} for j, c in enumerate(qq["choix"]) if j != k],
+             "acceptedAnswer": {"@type": "Answer", "text": qq["choix"][k]}}
+        if qq["explication"]:
+            d["answerExplanation"] = {"@type": "Comment", "text": qq["explication"]}
+        questions_ld.append(d)
+    ld = [
+        {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": BRAND, "item": SITE + "/"},
+            {"@type": "ListItem", "position": 2, "name": u["hub"], "item": f"{SITE}/{OUT}/"},
+            {"@type": "ListItem", "position": 3, "name": q.title, "item": SITE + q.url}]},
+        {"@context": "https://schema.org", "@type": "Quiz", "name": q.title, "url": SITE + q.url, "inLanguage": L,
+         "educationalLevel": label, "about": {"@type": "Thing", "name": "SVT"}, "isAccessibleForFree": True, "hasPart": questions_ld},
+    ]
+    robots = "noindex,follow" if q.noindex else "index,follow,max-image-preview:large"
+    return head(title, desc, SITE + q.url, L, None, robots=robots, jsonld=ld) + shell(L, crumbs, body, None)
+
+
 def main():
     titles = load_titles()
     groups = scan(titles)
+    qentries, qgroups = scan_quizzes(titles)
+    for k, v in qgroups.items():
+        groups[k].extend(v)
 
     pages, skipped = [], []
     for (ptype, lang, scope), items in sorted(groups.items()):
         items = dedupe(items)
-        if len(items) < MIN_ITEMS:
+        if len(items) < (1 if ptype == "quiz" else MIN_ITEMS):
             skipped.append((ptype, lang, scope, len(items)))
             continue
         pages.append(Page(ptype, lang, scope, items))
@@ -741,6 +921,16 @@ def main():
         by_key[(p.type, p.scope, p.lang)][p.ui] = p.url
     for p in pages:
         p.alternates = dict(by_key[(p.type, p.scope, p.lang)])
+
+    # lien cours <-> quiz (par empreinte du fichier ; sinon par chemin indiqué dans le quiz)
+    file_items = [it for p in pages if p.type != "quiz" for it in p.items]
+    by_digest = {it.digest: it for it in file_items}
+    by_rel = {nfc("/".join(it.parts)): it for it in file_items}
+    for qe in qentries:
+        digest = qe.source_md5 or (by_rel[nfc(qe.source)].digest if qe.source and nfc(qe.source) in by_rel else None)
+        qe.lesson = by_digest.get(digest) if digest else None
+        if digest:
+            QUIZ_LINK[digest] = qe.url
 
     # dates
     for p in pages:
@@ -763,10 +953,19 @@ def main():
         d.mkdir(parents=True, exist_ok=True)
         (d / "index.html").write_text(render_page(p, pages), encoding="utf-8")
 
+    by_group = defaultdict(list)
+    for qe in qentries:
+        by_group[(qe.lang, qe.scope)].append(qe)
+    for qe in qentries:
+        d = ROOT / qe.url.strip("/")
+        d.mkdir(parents=True, exist_ok=True)
+        sib = sorted([x for x in by_group[(qe.lang, qe.scope)] if x is not qe], key=lambda x: (x.item.order, natural_key(x.slug)))
+        (d / "index.html").write_text(render_quiz_page(qe, sib), encoding="utf-8")
+
     (ROOT / "sitemap.xml").write_text(build_sitemap(pages, home_date), encoding="utf-8")
     linked = inject_index_links(pages)
 
-    print(f"SEO : {len(pages)} pages générées dans /{OUT}/, sitemap.xml mis à jour, liens index.html : {'oui' if linked else 'non'}")
+    print(f"SEO : {len(pages)} pages générées dans /{OUT}/ (+ {len(qentries)} pages de quiz), sitemap.xml mis à jour, liens index.html : {'oui' if linked else 'non'}")
     for p in pages:
         print(f"   {p.path:<42} {len(p.items):>3} fichiers   {p.lastmod}")
     for t, lg, sc, n in skipped:
