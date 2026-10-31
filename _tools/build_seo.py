@@ -819,6 +819,7 @@ def scan_quizzes(titles):
         qe.noindex = qe.auto and NOINDEX_AUTO_QUIZ
         qe.source, qe.source_md5 = data.get("source"), data.get("source_md5")
         qe.lesson = None
+        qe.rel = "/".join(rel)
         item = Item(p, list(rel), 0, md5(p))
         item.url, item.name, item.title = qe.url, qe.slug, qe.title
         item.meta, item.mime, item.indexable = f"{len(qs)} QCM", None, not qe.noindex
@@ -862,7 +863,7 @@ def render_quiz_page(q, siblings):
         lis.append(f'<li class="q" id="q{i}"><p class="qt">{i}. {e(qq["question"])}</p><ul class="ch">{ch}</ul>'
                    f'<details><summary>{u["q_answer"]}</summary>'
                    f'<p><strong>{u["q_correct"]} : {letters[min(k, len(letters) - 1)]}) {e(qq["choix"][k])}</strong></p>{expl}</details></li>')
-    acts = f'<a class="cta" href="/#quiz">🎯 {u["q_cta"]}</a>'
+    acts = f'<a class="cta" href="/?quiz={quote(q.rel, safe="/")}#quiz" rel="nofollow">🎯 {u["q_cta"]}</a>'
     if q.lesson is not None:
         acts += f' <a href="{e(q.lesson.url)}" type="application/pdf">📄 {u["q_lesson"]}</a>'
     note = f'<p class="note">🤖 {u["q_auto"]} <a href="/#contact">{u["q_contact"]}</a></p>' if q.auto else ""
