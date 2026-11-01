@@ -645,7 +645,7 @@
                 <div class="mistake-quiz-group">
                     <div class="mistake-quiz-header">
                         <span>Quiz: ${quizId}</span>
-                        <button class="btn-retry-mistakes" onclick="window.StudentSpace.retryMistakes('${quizId}')">${t('retryMistakes')}</button>
+                        <button class="btn-retry-mistakes" data-quiz-id="${quizId}">${t('retryMistakes')}</button>
                     </div>
                     ${quizMistakes.map(mistake => `
                         <div class="mistake-item">
@@ -668,7 +668,7 @@
         return html;
     }
 
-    window.StudentSpace.retryMistakes = function(quizId) {
+    function retryMistakes(quizId) {
         const profileData = getProfileData(currentProfileId);
         const quizMistakes = profileData.mistakes.filter(m => m.quizId === quizId);
         
@@ -682,7 +682,7 @@
         
         // Show alert to user
         alert(t('mistakesLoaded'));
-    };
+    }
 
     // ============================================
     // 10. FAVORITES INTEGRATION (تكامل المفضلة)
@@ -820,6 +820,14 @@
                 const lessonId = this.dataset.lesson;
                 markLessonComplete(lessonId);
                 renderStudentSpace(); // Re-render
+            });
+        });
+
+        // Retry mistakes
+        container.querySelectorAll('.btn-retry-mistakes').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const quizId = this.dataset.quizId;
+                retryMistakes(quizId);
             });
         });
     }
