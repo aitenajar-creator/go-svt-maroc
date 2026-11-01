@@ -1069,6 +1069,41 @@
         // Update streak on page load
         updateStreak();
 
+        // Listen for hash changes to render student space when navigated to
+        window.addEventListener('hashchange', function() {
+            const hash = window.location.hash.substring(1);
+            if (hash === 'student-space') {
+                setTimeout(function() {
+                    renderStudentSpace();
+                }, 100);
+            }
+        });
+
+        // Check hash on initial load
+        const initialHash = window.location.hash.substring(1);
+        if (initialHash === 'student-space') {
+            setTimeout(function() {
+                renderStudentSpace();
+            }, 100);
+        }
+
+        // Observe the student-space section for class changes (when it becomes active)
+        const sectionObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.target.id === 'student-space' && 
+                    mutation.target.classList.contains('active')) {
+                    setTimeout(function() {
+                        renderStudentSpace();
+                    }, 50);
+                }
+            });
+        });
+
+        const studentSpaceSection = document.getElementById('student-space');
+        if (studentSpaceSection) {
+            sectionObserver.observe(studentSpaceSection, { attributes: true, attributeFilter: ['class'] });
+        }
+
         // Listen for language changes via lang button click
         const langBtn = document.querySelector('.lang-switcher');
         if (langBtn) {
