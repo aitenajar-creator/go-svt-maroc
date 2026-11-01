@@ -6,6 +6,8 @@
     // 1. STORAGE SYSTEM (نظام التخزين)
     // ============================================
     const STORAGE_KEYS = {
+        PROFILES: 'gosvt_profiles',
+        CURRENT_PROFILE: 'gosvt_current_profile',
         PROGRESS: 'gosvt_progress',
         QUIZ_RESULTS: 'gosvt_quiz_results',
         MISTAKES: 'gosvt_mistakes',
@@ -32,6 +34,101 @@
     };
 
     // ============================================
+    // 1.1 PROFILE MANAGEMENT (إدارة الملفات الشخصية)
+    // ============================================
+    let currentProfileId = storage.get(STORAGE_KEYS.CURRENT_PROFILE) || 'default';
+
+    function getProfiles() {
+        return storage.get(STORAGE_KEYS.PROFILES) || {
+            default: {
+                id: 'default',
+                name: 'Élève par défaut',
+                createdAt: Date.now(),
+                lastActive: Date.now()
+            }
+        };
+    }
+
+    function saveProfiles(profiles) {
+        storage.set(STORAGE_KEYS.PROFILES, profiles);
+    }
+
+    function getCurrentProfile() {
+        const profiles = getProfiles();
+        if (!profiles[currentProfileId]) {
+            currentProfileId = 'default';
+            storage.set(STORAGE_KEYS.CURRENT_PROFILE, currentProfileId);
+        }
+        return profiles[currentProfileId];
+    }
+
+    function createProfile(name) {
+        const profiles = getProfiles();
+        const newId = 'profile_' + Date.now();
+        
+        profiles[newId] = {
+            id: newId,
+            name: name,
+            createdAt: Date.now(),
+            lastActive: Date.now()
+        };
+        
+        saveProfiles(profiles);
+        return newId;
+    }
+
+    function switchProfile(profileId) {
+        const profiles = getProfiles();
+        if (profiles[profileId]) {
+            currentProfileId = profileId;
+            profiles[profileId].lastActive = Date.now();
+            saveProfiles(profiles);
+            storage.set(STORAGE_KEYS.CURRENT_PROFILE, currentProfileId);
+            return true;
+        }
+        return false;
+    }
+
+    function deleteProfile(profileId) {
+        if (profileId === 'default') {
+            return false; // Cannot delete default profile
+        }
+        
+        const profiles = getProfiles();
+        if (profiles[profileId]) {
+            delete profiles[profileId];
+            saveProfiles(profiles);
+            
+            // Switch to default if current profile was deleted
+            if (currentProfileId === profileId) {
+                switchProfile('default');
+            }
+            return true;
+        }
+        return false;
+    }
+
+    function getProfileData(profileId) {
+        const prefix = profileId + '_';
+        return {
+            progress: storage.get(prefix + STORAGE_KEYS.PROGRESS) || { lessons: {}, exercises: {}, tests: {} },
+            quizResults: storage.get(prefix + STORAGE_KEYS.QUIZ_RESULTS) || [],
+            mistakes: storage.get(prefix + STORAGE_KEYS.MISTAKES) || [],
+            streak: storage.get(prefix + STORAGE_KEYS.STREAK) || { current: 0, best: 0, lastVisit: null },
+            goals: storage.get(prefix + STORAGE_KEYS.GOALS) || []
+        };
+    }
+
+    function saveProfileData(profileId, data) {
+        const prefix = profileId + '_';
+        storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
+        storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
+        storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
+        storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
+        storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
+    }
+
+    // ============================================
     // 2. LANGUAGE SYSTEM (نظام اللغة)
     // ============================================
     function lang() {
@@ -47,6 +144,8 @@
             mistakes: 'أخطائي',
             favorites: 'مفضلتي',
             motivation: 'التحفيز',
+            profiles: 'الملفات الشخصية',
+            settings: 'الإعدادات',
             lessonsViewed: 'الدروس المشاهدة',
             exercisesDone: 'التمارين المنجزة',
             testsTaken: 'الاختبارات المجراة',
@@ -65,7 +164,21 @@
             review: 'مراجعة',
             retry: 'إعادة المحاولة',
             addToFavorites: 'إضافة للمفضلة',
-            removeFromFavorites: 'حذف من المفضلة'
+            removeFromFavorites: 'حذف من المفضلة',
+            createProfile: 'إنشاء ملف شخصي',
+            switchProfile: 'تغيير الملف',
+            deleteProfile: 'حذف الملف',
+            profileName: 'اسم الملف',
+            currentProfile: 'الملف الحالي',
+            exportData: 'تصدير البيانات',
+            importData: 'استيراد البيانات',
+            confirmDelete: 'هل أنت متأكد من حذف هذا الملف؟',
+            profileCreated: 'تم إنشاء الملف بنجاح',
+            profileDeleted: 'تم حذف الملف',
+            profileSwitched: 'تم التبديل إلى الملف',
+            invalidFile: 'ملف JSON غير صالح',
+            confirmReplace: 'هذا الملف موجود بالفعل. هل تريد استبداله؟',
+            retryMistakes: 'إعادة الأسئلة الخاطئة فقط'
         },
         fr: {
             title: 'Mon espace',
@@ -75,6 +188,8 @@
             mistakes: 'Mes erreurs',
             favorites: 'Mes favoris',
             motivation: 'Motivation',
+            profiles: 'Profils',
+            settings: 'Paramètres',
             lessonsViewed: 'Leçons consultées',
             exercisesDone: 'Exercices terminés',
             testsTaken: 'Tests effectués',
@@ -93,7 +208,21 @@
             review: 'Revoir',
             retry: 'Réessayer',
             addToFavorites: 'Ajouter aux favoris',
-            removeFromFavorites: 'Retirer des favoris'
+            removeFromFavorites: 'Retirer des favoris',
+            createProfile: 'Créer un profil',
+            switchProfile: 'Changer de profil',
+            deleteProfile: 'Supprimer le profil',
+            profileName: 'Nom du profil',
+            currentProfile: 'Profil actuel',
+            exportData: 'Exporter les données',
+            importData: 'Importer les données',
+            confirmDelete: 'Êtes-vous sûr de vouloir supprimer ce profil ?',
+            profileCreated: 'Profil créé avec succès',
+            profileDeleted: 'Profil supprimé',
+            profileSwitched: 'Changement de profil effectué',
+            invalidFile: 'Fichier JSON invalide',
+            confirmReplace: 'Ce profil existe déjà. Voulez-vous le remplacer ?',
+            retryMistakes: 'Réessayer uniquement les erreurs'
         }
     };
 
@@ -103,14 +232,10 @@
     // 3. PROGRESS TRACKING (تتبع التقدم)
     // ============================================
     function updateProgress(type, item) {
-        const progress = storage.get(STORAGE_KEYS.PROGRESS) || {
-            lessons: {},
-            exercises: {},
-            tests: {}
-        };
-
-        if (!progress[type][item]) {
-            progress[type][item] = {
+        const profileData = getProfileData(currentProfileId);
+        
+        if (!profileData.progress[type][item]) {
+            profileData.progress[type][item] = {
                 completed: false,
                 viewed: false,
                 attempts: 0,
@@ -118,71 +243,71 @@
             };
         }
 
-        progress[type][item].lastViewed = Date.now();
-        progress[type][item].attempts++;
+        profileData.progress[type][item].lastViewed = Date.now();
+        profileData.progress[type][item].attempts++;
 
-        storage.set(STORAGE_KEYS.PROGRESS, progress);
-        return progress;
+        saveProfileData(currentProfileId, profileData);
+        return profileData.progress;
     }
 
     function markLessonComplete(lessonId) {
-        const progress = storage.get(STORAGE_KEYS.PROGRESS) || { lessons: {} };
-        if (progress.lessons[lessonId]) {
-            progress.lessons[lessonId].completed = true;
-            progress.lessons[lessonId].completedAt = Date.now();
+        const profileData = getProfileData(currentProfileId);
+        if (profileData.progress.lessons[lessonId]) {
+            profileData.progress.lessons[lessonId].completed = true;
+            profileData.progress.lessons[lessonId].completedAt = Date.now();
         }
-        storage.set(STORAGE_KEYS.PROGRESS, progress);
+        saveProfileData(currentProfileId, profileData);
     }
 
     // ============================================
     // 4. QUIZ RESULTS (نتائج الاختبارات)
     // ============================================
     function saveQuizResult(quizId, score, totalQuestions, mistakes) {
-        const results = storage.get(STORAGE_KEYS.QUIZ_RESULTS) || [];
+        const profileData = getProfileData(currentProfileId);
         
-        results.push({
-            quizId: quizId,
-            score: score,
-            total: totalQuestions,
-            percentage: Math.round((score / totalQuestions) * 100),
-            date: Date.now(),
-            mistakes: mistakes || []
-        });
-
-        storage.set(STORAGE_KEYS.QUIZ_RESULTS, results);
-
-        // Save mistakes separately
-        if (mistakes && mistakes.length > 0) {
-            const allMistakes = storage.get(STORAGE_KEYS.MISTAKES) || [];
-            mistakes.forEach(mistake => {
-                allMistakes.push({
-                    ...mistake,
-                    quizId: quizId,
-                    date: Date.now()
-                });
+        // Check if this quiz result already exists for this session
+        const existingIndex = profileData.quizResults.findIndex(r => r.quizId === quizId && r.date && (Date.now() - r.date) < 60000);
+        
+        if (existingIndex === -1) {
+            // Only save if not saved in the last minute (avoid duplicates)
+            profileData.quizResults.push({
+                quizId: quizId,
+                score: score,
+                total: totalQuestions,
+                percentage: Math.round((score / totalQuestions) * 100),
+                date: Date.now(),
+                mistakes: mistakes || []
             });
-            storage.set(STORAGE_KEYS.MISTAKES, allMistakes);
+
+            // Save mistakes separately
+            if (mistakes && mistakes.length > 0) {
+                mistakes.forEach(mistake => {
+                    profileData.mistakes.push({
+                        ...mistake,
+                        quizId: quizId,
+                        date: Date.now()
+                    });
+                });
+            }
+
+            saveProfileData(currentProfileId, profileData);
         }
 
-        return results;
+        return profileData.quizResults;
     }
 
     // ============================================
     // 5. STREAK TRACKING (تتبع الأيام المتتالية)
     // ============================================
     function updateStreak() {
-        const streakData = storage.get(STORAGE_KEYS.STREAK) || {
-            current: 0,
-            best: 0,
-            lastVisit: null
-        };
-
+        const profileData = getProfileData(currentProfileId);
+        
         const today = new Date().toDateString();
-        const lastVisit = streakData.lastVisit ? new Date(streakData.lastVisit).toDateString() : null;
+        const lastVisit = profileData.streak.lastVisit ? new Date(profileData.streak.lastVisit).toDateString() : null;
 
         if (lastVisit === today) {
-            // Already visited today
-            return streakData;
+            // Already visited today - count only once
+            return profileData.streak;
         }
 
         const yesterday = new Date();
@@ -191,36 +316,34 @@
 
         if (lastVisit === yesterdayStr) {
             // Consecutive day
-            streakData.current++;
+            profileData.streak.current++;
         } else if (lastVisit !== today) {
             // Streak broken
-            streakData.current = 1;
+            profileData.streak.current = 1;
         }
 
-        if (streakData.current > streakData.best) {
-            streakData.best = streakData.current;
+        if (profileData.streak.current > profileData.streak.best) {
+            profileData.streak.best = profileData.streak.current;
         }
 
-        streakData.lastVisit = Date.now();
-        storage.set(STORAGE_KEYS.STREAK, streakData);
+        profileData.streak.lastVisit = Date.now();
+        saveProfileData(currentProfileId, profileData);
 
-        return streakData;
+        return profileData.streak;
     }
 
     // ============================================
     // 6. DASHBOARD (لوحة القيادة)
     // ============================================
     function getDashboardStats() {
-        const progress = storage.get(STORAGE_KEYS.PROGRESS) || { lessons: {}, exercises: {}, tests: {} };
-        const quizResults = storage.get(STORAGE_KEYS.QUIZ_RESULTS) || [];
-        const streak = storage.get(STORAGE_KEYS.STREAK) || { current: 0, best: 0 };
-
-        const lessonsViewed = Object.keys(progress.lessons).length;
-        const completedLessons = Object.values(progress.lessons).filter(l => l.completed).length;
-        const exercisesDone = Object.keys(progress.exercises).length;
-        const testsTaken = quizResults.length;
+        const profileData = getProfileData(currentProfileId);
         
-        const totalScore = quizResults.reduce((sum, r) => sum + r.percentage, 0);
+        const lessonsViewed = Object.keys(profileData.progress.lessons).length;
+        const completedLessons = Object.values(profileData.progress.lessons).filter(l => l.completed).length;
+        const exercisesDone = Object.keys(profileData.progress.exercises).length;
+        const testsTaken = profileData.quizResults.length;
+        
+        const totalScore = profileData.quizResults.reduce((sum, r) => sum + r.percentage, 0);
         const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
         
         const globalProgress = lessonsViewed > 0 ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
@@ -232,14 +355,97 @@
             testsTaken,
             averageScore,
             globalProgress,
-            streak: streak.current,
-            bestStreak: streak.best
+            streak: profileData.streak.current,
+            bestStreak: profileData.streak.best
         };
+    }
+
+    // ============================================
+    // 7. EXPORT/IMPORT (تصدير واستيراد)
+    // ============================================
+    function exportProfileData(profileId) {
+        const profile = getProfiles()[profileId];
+        const profileData = getProfileData(profileId);
+        
+        const exportData = {
+            profile: profile,
+            data: profileData,
+            exportDate: Date.now(),
+            version: '1.0'
+        };
+        
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gosvt_profile_${profile.name}_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importProfileData(jsonString) {
+        try {
+            const importData = JSON.parse(jsonString);
+            
+            // Validate structure
+            if (!importData.profile || !importData.data) {
+                throw new Error('Format de fichier invalide');
+            }
+            
+            // Check for version compatibility
+            if (importData.version && importData.version !== '1.0') {
+                if (!confirm('Attention: Ce fichier provient d\'une version différente. Continuer quand même?')) {
+                    return false;
+                }
+            }
+            
+            // Confirm replacement if profile exists
+            const profiles = getProfiles();
+            if (profiles[importData.profile.id]) {
+                if (!confirm(`Le profil "${importData.profile.name}" existe déjà. Voulez-vous le remplacer?`)) {
+                    return false;
+                }
+            }
+            
+            // Import data
+            profiles[importData.profile.id] = importData.profile;
+            saveProfileData(importData.profile.id, importData.data);
+            
+            return true;
+        } catch (e) {
+            console.error('Import error:', e);
+            alert(t('Erreur lors de l\'import: fichier JSON invalide', 'Error during import: Invalid JSON file'));
+            return false;
+        }
     }
 
     function renderDashboard() {
         const stats = getDashboardStats();
+        const profiles = getProfiles();
+        const currentProfile = getCurrentProfile();
+        
+        let profilesOptions = '';
+        Object.entries(profiles).forEach(([id, profile]) => {
+            const isActive = id === currentProfileId;
+            profilesOptions += `<option value="${id}" ${isActive ? 'selected' : ''}>${profile.name}</option>`;
+        });
+
         const html = `
+            <div class="dashboard-header">
+                <div class="profile-selector">
+                    <label>${t('currentProfile')}:</label>
+                    <select id="profile-select">${profilesOptions}</select>
+                    <button class="btn-create-profile" onclick="promptCreateProfile()">+ ${t('createProfile')}</button>
+                </div>
+                <div class="data-actions">
+                    <button class="btn-export" onclick="handleExport()">${t('exportData')}</button>
+                    <button class="btn-import" onclick="handleImport()">${t('importData')}</button>
+                    <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImportFile(this)">
+                </div>
+            </div>
             <div class="dashboard-grid">
                 <div class="stat-card">
                     <div class="stat-icon">📚</div>
@@ -276,12 +482,53 @@
         return html;
     }
 
+    // Profile management functions exposed globally
+    window.promptCreateProfile = function() {
+        const name = prompt(t('Entrez le nom du nouveau profil:', 'Entrez le nom du nouveau profil:'));
+        if (name && name.trim()) {
+            const newId = createProfile(name.trim());
+            switchProfile(newId);
+            renderStudentSpace();
+            alert(t('profileCreated'));
+        }
+    };
+
+    window.handleExport = function() {
+        exportProfileData(currentProfileId);
+    };
+
+    window.handleImport = function() {
+        document.getElementById('import-file').click();
+    };
+
+    window.handleImportFile = function(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (importProfileData(e.target.result)) {
+                alert(t('Données importées avec succès'));
+                renderStudentSpace();
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    // Profile selector change handler
+    document.addEventListener('change', function(e) {
+        if (e.target.id === 'profile-select') {
+            switchProfile(e.target.value);
+            renderStudentSpace();
+        }
+    });
+
     // ============================================
     // 7. PEDAGOGICAL FOLLOW-UP (المتابعة التربوية)
     // ============================================
     function renderProgress() {
-        const progress = storage.get(STORAGE_KEYS.PROGRESS) || { lessons: {} };
-        const lessons = Object.entries(progress.lessons);
+        const profileData = getProfileData(currentProfileId);
+        const lessons = Object.entries(profileData.progress.lessons || {});
 
         if (lessons.length === 0) {
             return `<p class="no-data">${t('noData')}</p>`;
@@ -324,7 +571,8 @@
     // 8. QUIZ HISTORY (سجل التقييمات)
     // ============================================
     function renderHistory() {
-        const results = storage.get(STORAGE_KEYS.QUIZ_RESULTS) || [];
+        const profileData = getProfileData(currentProfileId);
+        const results = profileData.quizResults || [];
 
         if (results.length === 0) {
             return `<p class="no-data">${t('noData')}</p>`;
@@ -364,25 +612,43 @@
     // 9. MISTAKES (أخطائي)
     // ============================================
     function renderMistakes() {
-        const mistakes = storage.get(STORAGE_KEYS.MISTAKES) || [];
+        const profileData = getProfileData(currentProfileId);
+        const mistakes = profileData.mistakes || [];
 
         if (mistakes.length === 0) {
             return `<p class="no-data">${t('noData')}</p>`;
         }
 
+        // Group mistakes by quiz ID
+        const mistakesByQuiz = {};
+        mistakes.forEach(mistake => {
+            if (!mistakesByQuiz[mistake.quizId]) {
+                mistakesByQuiz[mistake.quizId] = [];
+            }
+            mistakesByQuiz[mistake.quizId].push(mistake);
+        });
+
         let html = '<div class="mistakes-list">';
-        mistakes.slice(0, 10).forEach(m => {
+        Object.entries(mistakesByQuiz).forEach(([quizId, quizMistakes]) => {
             html += `
-                <div class="mistake-item">
-                    <div class="mistake-question">${m.question || 'Question'}</div>
-                    <div class="mistake-details">
-                        <span class="mistake-quiz">${m.quizId}</span>
-                        <span class="mistake-date">${new Date(m.date).toLocaleDateString()}</span>
+                <div class="mistake-quiz-group">
+                    <div class="mistake-quiz-header">
+                        <span>Quiz: ${quizId}</span>
+                        <button class="btn-retry-mistakes" onclick="window.StudentSpace.retryMistakes('${quizId}')">${t('retryMistakes')}</button>
                     </div>
-                    <div class="mistake-actions">
-                        <button class="btn-review" data-id="${m.id}">${t('review')}</button>
-                        <button class="btn-retry" data-id="${m.id}">${t('retry')}</button>
-                    </div>
+                    ${quizMistakes.map(mistake => `
+                        <div class="mistake-item">
+                            <div class="mistake-question">${mistake.question || 'Question'}</div>
+                            <div class="mistake-details">
+                                <span class="mistake-quiz">${mistake.quizId}</span>
+                                <span class="mistake-date">${new Date(mistake.date).toLocaleDateString()}</span>
+                            </div>
+                            <div class="mistake-answers">
+                                <div class="mistake-wrong">❌ ${t('Réponse choisie:')} ${mistake.selected}</div>
+                                <div class="mistake-correct">✅ ${t('Bonne réponse:')} ${mistake.correct}</div>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
             `;
         });
@@ -390,6 +656,22 @@
 
         return html;
     }
+
+    window.StudentSpace.retryMistakes = function(quizId) {
+        const profileData = getProfileData(currentProfileId);
+        const quizMistakes = profileData.mistakes.filter(m => m.quizId === quizId);
+        
+        if (quizMistakes.length === 0) return;
+
+        // Store mistakes for retry in sessionStorage
+        sessionStorage.setItem('gosvt_retry_mistakes', JSON.stringify(quizMistakes));
+        
+        // Navigate to quiz section (this assumes quiz is accessible via hash)
+        window.location.hash = 'quiz';
+        
+        // Show alert to user
+        alert(t('Questions incorrectes chargées. Répondez uniquement aux questions que vous aviez mal.', 'Incorrect questions loaded. Answer only the questions you got wrong.'));
+    };
 
     // ============================================
     // 10. FAVORITES INTEGRATION (تكامل المفضلة)
@@ -420,8 +702,9 @@
     // 11. MOTIVATION (التحفيز)
     // ============================================
     function renderMotivation() {
-        const streak = storage.get(STORAGE_KEYS.STREAK) || { current: 0, best: 0 };
-        const goals = storage.get(STORAGE_KEYS.GOALS) || [];
+        const profileData = getProfileData(currentProfileId);
+        const streak = profileData.streak || { current: 0, best: 0 };
+        const goals = profileData.goals || [];
 
         const messages = {
             ar: [
@@ -831,7 +1114,16 @@
         saveQuizResult,
         updateStreak,
         getDashboardStats,
-        renderStudentSpace // Expose render function for re-rendering
+        renderStudentSpace,
+        createProfile,
+        deleteProfile,
+        switchProfile,
+        getCurrentProfile,
+        getProfiles,
+        getProfileData,
+        exportProfileData,
+        importProfileData,
+        retryMistakes
     };
 
 })();

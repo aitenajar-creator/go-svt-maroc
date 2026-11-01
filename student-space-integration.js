@@ -42,6 +42,19 @@
         if (!quizContainer._quizIntegrated) {
             quizContainer._quizIntegrated = true;
             
+            // Generate stable quiz ID based on content
+            function getQuizId() {
+                const questions = quizContainer.querySelectorAll('.quiz-q');
+                let quizHash = '';
+                questions.forEach((q, index) => {
+                    const questionText = q.querySelector('h3')?.textContent || '';
+                    quizHash += questionText.substring(0, 20) + index;
+                });
+                return 'quiz_' + quizHash.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+            }
+
+            let quizSaved = false;
+            
             quizContainer.addEventListener('click', function(e) {
                 const opt = e.target.closest('.quiz-opt');
                 if (!opt) return;
@@ -59,7 +72,9 @@
                         
                         // Si c'est la dernière question, sauvegarder le résultat complet
                         const quizResult = quizContainer.closest('#quizResult');
-                        if (quizResult) {
+                        if (quizResult && !quizSaved) {
+                            quizSaved = true; // Prevent duplicate saves
+                            
                             setTimeout(function() {
                                 const scoreText = quizResult.querySelector('h3')?.textContent || '0 / 0';
                                 const match = scoreText.match(/(\d+)\s*\/\s*(\d+)/);
@@ -67,17 +82,25 @@
                                     const score = parseInt(match[1]);
                                     const total = parseInt(match[2]);
                                     
-                                    // Générer un ID unique pour ce quiz
-                                    const quizId = 'quiz_' + Date.now();
+                                    // Use stable quiz ID
+                                    const quizId = getQuizId();
                                     
-                                    // Sauvegarder les erreurs
+                                    // Sauvegarder les erreurs avec tous les détails
                                     const mistakes = [];
-                                    quizContainer.querySelectorAll('.quiz-opt.wrong').forEach(function(wrongOpt) {
-                                        mistakes.push({
-                                            question: questionText,
-                                            answer: wrongOpt.textContent,
-                                            correct: quizContainer.querySelector('.quiz-opt.correct')?.textContent || ''
-                                        });
+                                    quizContainer.querySelectorAll('.quiz-q').forEach(function(questionDiv) {
+                                        const wrongOpt = questionDiv.querySelector('.quiz-opt.wrong');
+                                        const correctOpt = questionDiv.querySelector('.quiz-opt.correct');
+                                        const qText = questionDiv.querySelector('h3')?.textContent || '';
+                                        
+                                        if (wrongOpt) {
+                                            mistakes.push({
+                                                question: qText,
+                                                selected: wrongOpt.textContent,
+                                                correct: correctOpt?.textContent || '',
+                                                date: Date.now(),
+                                                quizId: quizId
+                                            });
+                                        }
                                     });
                                     
                                     window.StudentSpace.saveQuizResult(quizId, score, total, mistakes);
@@ -178,10 +201,9 @@
     // 5. DÉTECTION DE SESSION - Séparation entre élèves
     // ============================================
     function setupSessionDetection() {
-        // localStorage est déjà séparé par navigateur
-        // Chaque navigateur/utilisateur a son propre localStorage
-        // Pas besoin de séparation supplémentaire
-        console.log('Session: Using localStorage (per-browser separation)');
+        // Le système de profils gère maintenant la séparation
+        // Chaque profil a ses propres données
+        console.log('Session: Using profile system (per-profile separation)');
     }
 
     // ============================================
