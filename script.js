@@ -409,6 +409,13 @@ function navigateTo(sectionId) {
 
     history.replaceState(null, '', '#' + sectionId);
     window.scrollTo(0, 0);
+
+    // Render student space content if navigating to student-space section
+    if (sectionId === 'student-space' && window.renderStudentSpaceContent) {
+        setTimeout(function() {
+            window.renderStudentSpaceContent();
+        }, 50);
+    }
 }
 
 function toggleMobileMenu() {

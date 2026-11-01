@@ -135,6 +135,15 @@
         return document.documentElement.getAttribute('lang') === 'fr' ? 'fr' : 'ar';
     }
 
+    function t(key) {
+        const currentLang = lang();
+        const texts = TEXTS[currentLang];
+        if (texts && texts[key]) {
+            return texts[key];
+        }
+        return key;
+    }
+
     const TEXTS = {
         ar: {
             title: 'مساحتي',
@@ -178,7 +187,9 @@
             profileSwitched: 'تم التبديل إلى الملف',
             invalidFile: 'ملف JSON غير صالح',
             confirmReplace: 'هذا الملف موجود بالفعل. هل تريد استبداله؟',
-            retryMistakes: 'إعادة الأسئلة الخاطئة فقط'
+            retryMistakes: 'إعادة الأسئلة الخاطئة فقط',
+            enterProfileName: 'أدخل اسم الملف الشخصي الجديد:',
+            mistakesLoaded: 'تم تحميل الأسئلة الخاطئة. أجب فقط على الأسئلة التي أخطأت فيها.'
         },
         fr: {
             title: 'Mon espace',
@@ -222,7 +233,9 @@
             profileSwitched: 'Changement de profil effectué',
             invalidFile: 'Fichier JSON invalide',
             confirmReplace: 'Ce profil existe déjà. Voulez-vous le remplacer ?',
-            retryMistakes: 'Réessayer uniquement les erreurs'
+            retryMistakes: 'Réessayer uniquement les erreurs',
+            enterProfileName: 'Entrez le nom du nouveau profil:',
+            mistakesLoaded: 'Questions incorrectes chargées. Répondez uniquement aux questions que vous aviez mal.'
         }
     };
 
@@ -417,7 +430,7 @@
             return true;
         } catch (e) {
             console.error('Import error:', e);
-            alert(t('Erreur lors de l\'import: fichier JSON invalide', 'Error during import: Invalid JSON file'));
+            alert(t('invalidFile'));
             return false;
         }
     }
@@ -484,7 +497,7 @@
 
     // Profile management functions exposed globally
     window.promptCreateProfile = function() {
-        const name = prompt(t('Entrez le nom du nouveau profil:', 'Entrez le nom du nouveau profil:'));
+        const name = prompt(t('enterProfileName'));
         if (name && name.trim()) {
             const newId = createProfile(name.trim());
             switchProfile(newId);
@@ -670,7 +683,7 @@
         window.location.hash = 'quiz';
         
         // Show alert to user
-        alert(t('Questions incorrectes chargées. Répondez uniquement aux questions que vous aviez mal.', 'Incorrect questions loaded. Answer only the questions you got wrong.'));
+        alert(t('mistakesLoaded'));
     };
 
     // ============================================
@@ -746,7 +759,7 @@
     // 12. MAIN RENDER (العرض الرئيسي)
     // ============================================
     window.renderStudentSpaceContent = function() {
-        return renderStudentSpace();
+        renderStudentSpace();
     };
 
     function renderStudentSpace() {
@@ -1055,16 +1068,6 @@
     function init() {
         // Update streak on page load
         updateStreak();
-
-        // Render when student space section is visible
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.target.id === 'student-space-content' && 
-                    mutation.target.children.length === 0) {
-                    renderStudentSpace();
-                }
-            });
-        });
 
         // Listen for language changes via lang button click
         const langBtn = document.querySelector('.lang-switcher');
