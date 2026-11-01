@@ -783,7 +783,20 @@
             });
         });
 
-        // Listen for language changes
+        // Listen for language changes via lang button click
+        const langBtn = document.querySelector('.lang-switcher');
+        if (langBtn) {
+            langBtn.addEventListener('click', function() {
+                setTimeout(function() {
+                    const container = document.getElementById('student-space-content');
+                    if (container && container.children.length > 0) {
+                        renderStudentSpace();
+                    }
+                }, 100);
+            });
+        }
+
+        // Also observe document for lang attribute changes
         const langObserver = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'lang') {
@@ -795,7 +808,6 @@
             });
         });
 
-        // Observe document.documentElement for lang attribute changes
         langObserver.observe(document.documentElement, { attributes: true });
 
         // Render immediately if section exists
