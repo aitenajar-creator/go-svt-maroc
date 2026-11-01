@@ -783,6 +783,21 @@
             });
         });
 
+        // Listen for language changes
+        const langObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'lang') {
+                    const container = document.getElementById('student-space-content');
+                    if (container && container.children.length > 0) {
+                        renderStudentSpace();
+                    }
+                }
+            });
+        });
+
+        // Observe document.documentElement for lang attribute changes
+        langObserver.observe(document.documentElement, { attributes: true });
+
         // Render immediately if section exists
         const container = document.getElementById('student-space-content');
         if (container) {
