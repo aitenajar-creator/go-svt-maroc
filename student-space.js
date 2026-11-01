@@ -462,6 +462,10 @@
     // ============================================
     // 12. MAIN RENDER (العرض الرئيسي)
     // ============================================
+    window.renderStudentSpaceContent = function() {
+        return renderStudentSpace();
+    };
+
     function renderStudentSpace() {
         const container = document.getElementById('student-space-content');
         if (!container) return;
@@ -799,7 +803,8 @@
         markLessonComplete,
         saveQuizResult,
         updateStreak,
-        getDashboardStats
+        getDashboardStats,
+        renderStudentSpace // Expose render function for re-rendering
     };
 
 })();
