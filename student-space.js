@@ -763,67 +763,80 @@
     };
 
     function renderStudentSpace() {
+        console.log('[StudentSpace] renderStudentSpace called');
         const container = document.getElementById('student-space-content');
-        if (!container) return;
+        if (!container) {
+            console.error('[StudentSpace] Container not found!');
+            return;
+        }
+        console.log('[StudentSpace] Container found:', container);
 
-        let html = `
-            <div class="student-space">
-                <div class="space-nav">
-                    <button class="space-tab active" data-tab="dashboard">${t('dashboard')}</button>
-                    <button class="space-tab" data-tab="progress">${t('progress')}</button>
-                    <button class="space-tab" data-tab="history">${t('history')}</button>
-                    <button class="space-tab" data-tab="mistakes">${t('mistakes')}</button>
-                    <button class="space-tab" data-tab="favorites">${t('favorites')}</button>
-                    <button class="space-tab" data-tab="motivation">${t('motivation')}</button>
+        try {
+            let html = `
+                <div class="student-space">
+                    <div class="space-nav">
+                        <button class="space-tab active" data-tab="dashboard">${t('dashboard')}</button>
+                        <button class="space-tab" data-tab="progress">${t('progress')}</button>
+                        <button class="space-tab" data-tab="history">${t('history')}</button>
+                        <button class="space-tab" data-tab="mistakes">${t('mistakes')}</button>
+                        <button class="space-tab" data-tab="favorites">${t('favorites')}</button>
+                        <button class="space-tab" data-tab="motivation">${t('motivation')}</button>
+                    </div>
+                    <div class="space-content">
+                        <div class="space-panel active" id="panel-dashboard">
+                            ${renderDashboard()}
+                        </div>
+                        <div class="space-panel" id="panel-progress">
+                            ${renderProgress()}
+                        </div>
+                        <div class="space-panel" id="panel-history">
+                            ${renderHistory()}
+                        </div>
+                        <div class="space-panel" id="panel-mistakes">
+                            ${renderMistakes()}
+                        </div>
+                        <div class="space-panel" id="panel-favorites">
+                            ${renderFavorites()}
+                        </div>
+                        <div class="space-panel" id="panel-motivation">
+                            ${renderMotivation()}
+                        </div>
+                    </div>
                 </div>
-                <div class="space-content">
-                    <div class="space-panel active" id="panel-dashboard">
-                        ${renderDashboard()}
-                    </div>
-                    <div class="space-panel" id="panel-progress">
-                        ${renderProgress()}
-                    </div>
-                    <div class="space-panel" id="panel-history">
-                        ${renderHistory()}
-                    </div>
-                    <div class="space-panel" id="panel-mistakes">
-                        ${renderMistakes()}
-                    </div>
-                    <div class="space-panel" id="panel-favorites">
-                        ${renderFavorites()}
-                    </div>
-                    <div class="space-panel" id="panel-motivation">
-                        ${renderMotivation()}
-                    </div>
-                </div>
-            </div>
-        `;
+            `;
 
-        container.innerHTML = html;
+            container.innerHTML = html;
+            console.log('[StudentSpace] HTML set successfully');
 
-        // Add event listeners
-        container.querySelectorAll('.space-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabName = this.dataset.tab;
-                
-                // Update tabs
-                container.querySelectorAll('.space-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Update panels
-                container.querySelectorAll('.space-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById(`panel-${tabName}`).classList.add('active');
+            // Add event listeners
+            container.querySelectorAll('.space-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    
+                    // Update tabs
+                    container.querySelectorAll('.space-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update panels
+                    container.querySelectorAll('.space-panel').forEach(p => p.classList.remove('active'));
+                    document.getElementById(`panel-${tabName}`).classList.add('active');
+                });
             });
-        });
 
-        // Mark lesson as complete
-        container.querySelectorAll('.btn-complete').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const lessonId = this.dataset.lesson;
-                markLessonComplete(lessonId);
-                renderStudentSpace(); // Re-render
+            // Mark lesson as complete
+            container.querySelectorAll('.btn-complete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lessonId = this.dataset.lesson;
+                    markLessonComplete(lessonId);
+                    renderStudentSpace(); // Re-render
+                });
             });
-        });
+
+            console.log('[StudentSpace] Render completed successfully');
+        } catch (e) {
+            console.error('[StudentSpace] Error during render:', e);
+            container.innerHTML = `<p style="color: red;">Erreur: ${e.message}</p>`;
+        }
     }
 
     // ============================================
@@ -1066,13 +1079,17 @@
     // 14. INITIALIZATION (التهيئة)
     // ============================================
     function init() {
+        console.log('[StudentSpace] init() called');
+        
         // Update streak on page load
         updateStreak();
 
         // Listen for hash changes to render student space when navigated to
         window.addEventListener('hashchange', function() {
             const hash = window.location.hash.substring(1);
+            console.log('[StudentSpace] Hash changed to:', hash);
             if (hash === 'student-space') {
+                console.log('[StudentSpace] Triggering render due to hash change');
                 setTimeout(function() {
                     renderStudentSpace();
                 }, 100);
@@ -1081,7 +1098,9 @@
 
         // Check hash on initial load
         const initialHash = window.location.hash.substring(1);
+        console.log('[StudentSpace] Initial hash:', initialHash);
         if (initialHash === 'student-space') {
+            console.log('[StudentSpace] Triggering render due to initial hash');
             setTimeout(function() {
                 renderStudentSpace();
             }, 100);
@@ -1092,6 +1111,7 @@
             mutations.forEach(function(mutation) {
                 if (mutation.target.id === 'student-space' && 
                     mutation.target.classList.contains('active')) {
+                    console.log('[StudentSpace] Section became active, triggering render');
                     setTimeout(function() {
                         renderStudentSpace();
                     }, 50);
@@ -1102,6 +1122,9 @@
         const studentSpaceSection = document.getElementById('student-space');
         if (studentSpaceSection) {
             sectionObserver.observe(studentSpaceSection, { attributes: true, attributeFilter: ['class'] });
+            console.log('[StudentSpace] Section observer attached');
+        } else {
+            console.error('[StudentSpace] Section not found!');
         }
 
         // Listen for language changes via lang button click
@@ -1134,7 +1157,10 @@
         // Render immediately if section exists
         const container = document.getElementById('student-space-content');
         if (container) {
+            console.log('[StudentSpace] Container found on init, rendering...');
             renderStudentSpace();
+        } else {
+            console.error('[StudentSpace] Container not found on init!');
         }
     }
 
