@@ -38,6 +38,15 @@
     // ============================================
     let currentProfileId = storage.get(STORAGE_KEYS.CURRENT_PROFILE) || 'default';
 
+    // Relit le profil actif depuis le localStorage (changement fait dans un autre onglet)
+    function syncCurrentProfile() {
+        const stored = storage.get(STORAGE_KEYS.CURRENT_PROFILE);
+        if (stored && stored !== currentProfileId && getProfiles()[stored]) {
+            currentProfileId = stored;
+        }
+        return currentProfileId;
+    }
+
     function getProfiles() {
         return storage.get(STORAGE_KEYS.PROFILES) || {
             default: {
@@ -110,8 +119,13 @@
 
     function getProfileData(profileId) {
         const prefix = profileId + '_';
+        const progress = storage.get(prefix + STORAGE_KEYS.PROGRESS) || {};
+        // Garantit les 3 catégories (anciennes données / profils importés incomplets)
+        ['lessons', 'exercises', 'tests'].forEach(function (k) {
+            if (!progress[k] || typeof progress[k] !== 'object') progress[k] = {};
+        });
         return {
-            progress: storage.get(prefix + STORAGE_KEYS.PROGRESS) || { lessons: {}, exercises: {}, tests: {} },
+            progress: progress,
             quizResults: storage.get(prefix + STORAGE_KEYS.QUIZ_RESULTS) || [],
             mistakes: storage.get(prefix + STORAGE_KEYS.MISTAKES) || [],
             streak: storage.get(prefix + STORAGE_KEYS.STREAK) || { current: 0, best: 0, lastVisit: null },
@@ -242,32 +256,94 @@
     // ============================================
     // 3. PROGRESS TRACKING (تتبع التقدم)
     // ============================================
-    function updateProgress(type, item) {
+    // Les anciens appelants utilisaient le singulier ('lesson'...) alors que le
+    // stockage utilise 'lessons' / 'exercises' / 'tests'.
+    const PROGRESS_TYPE_ALIASES = {
+        lesson: 'lessons', lessons: 'lessons',
+        exercise: 'exercises', exercises: 'exercises',
+        exam: 'tests', exams: 'tests', test: 'tests', tests: 'tests'
+    };
+
+    // Clé stable d'un document : chemin décodé, NFC, sans "/" initial
+    function normalizeItemKey(item) {
+        let key = String(item == null ? '' : item);
+        key = key.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]+/i, '').replace(/^([^?#]*)[?#].*$/, function (m, path) {
+            return /%/.test(path) ? path : m; // ?/# ignorés seulement pour une URL encodée
+        });
+        try { key = decodeURIComponent(key); } catch (e) { /* déjà décodé */ }
+        return key.normalize('NFC').replace(/^\/+/, '');
+    }
+
+    // Enregistre la CONSULTATION (viewed) d'un contenu. Ne marque jamais "terminé".
+    // meta (optionnel) : { title, path }
+    function updateProgress(type, item, meta) {
+        const category = PROGRESS_TYPE_ALIASES[type];
+        const key = normalizeItemKey(item);
+        if (!category || !key) return null;
+
+        syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
-        
-        if (!profileData.progress[type][item]) {
-            profileData.progress[type][item] = {
+        const bucket = profileData.progress[category];
+        const now = Date.now();
+        meta = meta || {};
+
+        let entry = bucket[key];
+        const isNew = !entry;
+        if (isNew) {
+            entry = bucket[key] = {
+                id: key,
                 completed: false,
-                viewed: false,
+                firstViewed: now,
                 attempts: 0,
-                lastViewed: Date.now()
+                viewCount: 0
             };
         }
-
-        profileData.progress[type][item].lastViewed = Date.now();
-        profileData.progress[type][item].attempts++;
+        // Une entrée existante garde son état "terminé" ; on complète les métadonnées
+        entry.id = entry.id || key;
+        entry.title = meta.title || entry.title || key.split('/').pop().replace(/\.[^/.]+$/, '');
+        entry.path = meta.path ? normalizeItemKey(meta.path) : (entry.path || key);
+        entry.viewed = true;
+        entry.firstViewed = entry.firstViewed || entry.lastViewed || now;
+        entry.lastViewed = now;
+        entry.viewCount = (entry.viewCount || 0) + 1;
+        entry.attempts = (entry.attempts || 0) + 1;
 
         saveProfileData(currentProfileId, profileData);
+
+        try {
+            document.dispatchEvent(new CustomEvent('gosvt:progress-updated', {
+                detail: { profileId: currentProfileId, type: category, key: key, isNew: isNew }
+            }));
+        } catch (e) { /* ancien navigateur */ }
+        refreshStudentSpaceView();
         return profileData.progress;
     }
 
     function markLessonComplete(lessonId) {
+        syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
         if (profileData.progress.lessons[lessonId]) {
             profileData.progress.lessons[lessonId].completed = true;
             profileData.progress.lessons[lessonId].completedAt = Date.now();
         }
         saveProfileData(currentProfileId, profileData);
+    }
+
+    // Réaffiche l'espace élève (sans recharger la page) en conservant l'onglet interne actif
+    function refreshStudentSpaceView() {
+        const container = document.getElementById('student-space-content');
+        if (!container || !container.children.length) return; // sera rendu à l'ouverture de la section
+        const active = container.querySelector('.space-tab.active');
+        const tabName = active ? active.dataset.tab : 'dashboard';
+        renderStudentSpace();
+        if (tabName && tabName !== 'dashboard') {
+            container.querySelectorAll('.space-tab').forEach(function (b) {
+                b.classList.toggle('active', b.dataset.tab === tabName);
+            });
+            container.querySelectorAll('.space-panel').forEach(function (p) {
+                p.classList.toggle('active', p.id === 'panel-' + tabName);
+            });
+        }
     }
 
     // ============================================
@@ -347,6 +423,7 @@
     // 6. DASHBOARD (لوحة القيادة)
     // ============================================
     function getDashboardStats() {
+        syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
         
         const lessonsViewed = Object.keys(profileData.progress.lessons).length;
@@ -545,6 +622,7 @@
             return `<p class="no-data">${t('noData')}</p>`;
         }
 
+        const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
         const completed = lessons.filter(([id, data]) => data.completed);
         const pending = lessons.filter(([id, data]) => !data.completed);
 
@@ -555,7 +633,7 @@
         completed.forEach(([id, data]) => {
             html += `
                 <div class="lesson-item completed">
-                    <span>${id}</span>
+                    <span title="${esc(id)}">${esc(data.title || id)}</span>
                     <span class="lesson-date">${new Date(data.completedAt).toLocaleDateString()}</span>
                 </div>
             `;
@@ -567,8 +645,8 @@
         pending.forEach(([id, data]) => {
             html += `
                 <div class="lesson-item pending">
-                    <span>${id}</span>
-                    <button class="btn-complete" data-lesson="${id}">${t('markAsComplete')}</button>
+                    <span title="${esc(id)}">${esc(data.title || id)}</span>
+                    <button class="btn-complete" data-lesson="${esc(id)}">${t('markAsComplete')}</button>
                 </div>
             `;
         });
@@ -763,6 +841,7 @@
     function renderStudentSpace() {
         const container = document.getElementById('student-space-content');
         if (!container) return;
+        syncCurrentProfile();
 
         let html = `
             <div class="student-space">
@@ -1075,6 +1154,14 @@
         // Update streak on page load
         updateStreak();
 
+        // Profil / progression modifiés depuis un autre onglet -> resynchroniser et réafficher
+        window.addEventListener('storage', function (e) {
+            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE || e.key.endsWith('_' + STORAGE_KEYS.PROGRESS)) {
+                syncCurrentProfile();
+                refreshStudentSpaceView();
+            }
+        });
+
         // Listen for hash changes to render student space when navigated to
         window.addEventListener('hashchange', function() {
             const hash = window.location.hash.substring(1);
@@ -1159,6 +1246,7 @@
         updateStreak,
         getDashboardStats,
         renderStudentSpace,
+        refresh: refreshStudentSpaceView,
         createProfile,
         deleteProfile,
         switchProfile,
