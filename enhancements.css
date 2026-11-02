@@ -474,3 +474,18 @@ html.gs-dark .gs-quiz-score,
 html.gs-dark .gs-quiz-review-title { color: #9fd89a; }
 html.gs-dark .gs-video-part { background: #1a2a1e; color: #9fd89a; }
 html.gs-dark .gs-video-part.active { background: #3f7a3a; color: #fff; }
+
+
+/* ===== المرحلة 2: أزرار الشعبة (pathways.js) — نفس ألوان أزرار المستوى ===== */
+.gs-track-tabs { display: flex; gap: .5rem; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.gs-track-label { font-weight: 700; color: var(--primary-color); font-size: .95rem; }
+.gs-track-btn { padding: .45rem 1.1rem; border: 2px solid var(--primary-color); background-color: var(--white); color: var(--primary-color); border-radius: var(--border-radius); cursor: pointer; font-weight: 600; font-family: 'Cairo', sans-serif; font-size: .9rem; transition: var(--transition); }
+.gs-track-btn:hover, .gs-track-btn.active { background-color: var(--primary-color); color: var(--white); }
+.gs-track-btn.is-empty:not(.active) { opacity: .6; border-style: dashed; }
+.gs-track-n { font-weight: 400; opacity: .85; }
+.gs-doc-tag { display: inline-block; margin-bottom: .4rem; padding: .1rem .6rem; border-radius: 999px; font-size: .8rem; font-weight: 700; background: #e8f5e9; color: var(--primary-color); }
+@media (max-width: 480px) { .gs-track-btn { padding: .4rem .8rem; font-size: .85rem; } }
+html.gs-dark .gs-track-label { color: #9fd89a; }
+html.gs-dark .gs-track-btn { background: transparent; color: #9fd89a; border-color: #4f8a4a; }
+html.gs-dark .gs-track-btn:hover, html.gs-dark .gs-track-btn.active { background: #3f7a3a; border-color: #3f7a3a; color: #fff; }
+html.gs-dark .gs-doc-tag { background: #24402a; color: #9fd89a; }

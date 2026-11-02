@@ -117,24 +117,73 @@
     // 2. INTEGRATION DOWNLOAD - Suivi des leçons consultées
     // ============================================
     function integrateDownloadTracking() {
-        document.addEventListener('click', function(e) {
-            const downloadBtn = e.target.closest('.download-btn, a[target="_blank"]');
-            if (!downloadBtn) return;
+        // Dossier du site -> catégorie de suivi. Les fiches, résumés, documents... ne sont
+        // pas des "leçons" : ils ne sont pas comptés dans « Leçons consultées ».
+        var FOLDER_TO_TYPE = { cours: 'lesson', exercices: 'exercise', examens: 'exam' };
 
-            const href = downloadBtn.getAttribute('href');
-            if (!href) return;
-
-            // Identifier le type de contenu
-            let contentType = 'lesson';
-            if (href.includes('/exercices/')) contentType = 'exercise';
-            if (href.includes('/examens/')) contentType = 'exam';
-            if (href.includes('/resumes/')) contentType = 'resume';
-
-            // Mettre à jour la progression
-            if (window.StudentSpace) {
-                window.StudentSpace.updateProgress(contentType, href);
+        // Chemin canonique (sans domaine, sans "/" initial, décodé, NFC) à partir
+        // d'un data-path ("/cours/francais/TC/x.pdf") ou d'un href encodé/absolu.
+        function toPath(raw) {
+            if (!raw) return '';
+            var p = String(raw);
+            if (/^[a-z][a-z0-9+.-]*:/i.test(p) || p.indexOf('%') !== -1) {
+                try { p = new URL(p, location.href).pathname; } catch (e) { /* garder tel quel */ }
             }
-        });
+            try { p = decodeURIComponent(p); } catch (e) { /* déjà décodé */ }
+            return p.normalize('NFC').replace(/^\/+/, '');
+        }
+
+        function titleFor(path) {
+            var name = path.split('/').pop();
+            return (typeof window.getFileTitle === 'function')
+                ? window.getFileTitle(name)
+                : name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+        }
+
+        // Anti double comptage si deux mécanismes signalent la même ouverture
+        var lastSeen = {};
+        function trackOpen(rawPath) {
+            if (!window.StudentSpace) return;
+            var path = toPath(rawPath);
+            var type = FOLDER_TO_TYPE[path.split('/')[0]];
+            if (!type) return;
+            var now = Date.now();
+            if (lastSeen[path] && now - lastSeen[path] < 1000) return;
+            lastSeen[path] = now;
+            try {
+                window.StudentSpace.updateProgress(type, path, { title: titleFor(path), path: path });
+            } catch (err) {
+                console.error('Student Space: suivi impossible', err);
+            }
+        }
+
+        // (a) Aperçu / visionneuse PDF : toutes les ouvertures passent par openPreview()
+        //     (bouton « Aperçu », résultats de recherche, ouverture programmatique).
+        if (typeof window.openPreview === 'function' && !window.openPreview._gosvtTracked) {
+            var originalOpenPreview = window.openPreview;
+            var wrapped = function (path) {
+                trackOpen(path);
+                return originalOpenPreview.apply(this, arguments);
+            };
+            wrapped._gosvtTracked = true;
+            window.openPreview = wrapped;
+            try { openPreview = wrapped; } catch (e) { /* variable globale non modifiable */ }
+        }
+
+        // (b) Clics : phase de capture pour ne pas dépendre des stopPropagation d'autres scripts.
+        document.addEventListener('click', function (e) {
+            var el = e.target && e.target.closest ? e.target : null;
+            if (!el) return;
+
+            // Bouton « Télécharger » de chaque carte : <a download class="download-btn" data-path>
+            // Bouton « Vidéo » d'un cours : <button class="gs-video-btn" data-path>
+            var withPath = el.closest('.download-btn[data-path], .gs-video-btn[data-path]');
+            if (withPath) { trackOpen(withPath.getAttribute('data-path')); return; }
+
+            // « Mes favoris » : <a class="download-btn" target="_blank" href=...> (sans data-path)
+            var link = el.closest('a.download-btn[href], a[target="_blank"][href]');
+            if (link && !link.closest('.gs-modal')) trackOpen(link.getAttribute('href'));
+        }, true);
     }
 
     // ============================================
@@ -182,8 +231,8 @@
                                     if (window.StudentSpace) {
                                         window.StudentSpace.markLessonComplete(lessonId);
                                         // Re-render
-                                        if (window.StudentSpace.getDashboardStats) {
-                                            container.innerHTML = window.renderStudentSpaceContent();
+                                        if (window.StudentSpace.refresh) {
+                                            window.StudentSpace.refresh();
                                         }
                                     }
                                 };
