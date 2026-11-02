@@ -175,6 +175,7 @@
             averageScore: 'المعدل',
             globalProgress: 'التقدم العام',
             completedLessons: 'الدروس المكتملة',
+            byTrack: 'حسب المستوى والشعبة',
             pendingLessons: 'الدروس المتبقية',
             markAsComplete: 'تحديد كمكتمل',
             noData: 'لا توجد بيانات بعد',
@@ -221,6 +222,7 @@
             averageScore: 'Score moyen',
             globalProgress: 'Progression globale',
             completedLessons: 'Leçons terminées',
+            byTrack: 'Par niveau et filière',
             pendingLessons: 'Leçons en attente',
             markAsComplete: 'Marquer comme terminé',
             noData: 'Aucune donnée disponible',
@@ -274,6 +276,20 @@
         return key.normalize('NFC').replace(/^\/+/, '');
     }
 
+    // Déduit catégorie / langue / niveau / filière d'un chemin "cours/francais/1BAC/1BACSE/x.pdf"
+    // (les dossiers d'examens "2BAC SM" sont reconnus après suppression des espaces)
+    const TRACK_CODE = /^(TC[SL]|1BAC(SE|SM|L)|2BAC(SVT|SP|SM))$/;
+    function parseContentPath(key) {
+        const segs = String(key || '').split('/').filter(Boolean);
+        const info = { category: segs[0] || '', lang: segs[1] || '', level: segs[2] || '', track: '' };
+        segs.slice(3, -1).some(function (d) {
+            const code = d.replace(/\s+/g, '').toUpperCase();
+            if (TRACK_CODE.test(code) && code.indexOf(info.level) === 0) { info.track = code; return true; }
+            return false;
+        });
+        return info;
+    }
+
     // Enregistre la CONSULTATION (viewed) d'un contenu. Ne marque jamais "terminé".
     // meta (optionnel) : { title, path }
     function updateProgress(type, item, meta) {
@@ -303,6 +319,9 @@
         entry.title = meta.title || entry.title || key.split('/').pop().replace(/\.[^/.]+$/, '');
         entry.path = meta.path ? normalizeItemKey(meta.path) : (entry.path || key);
         entry.viewed = true;
+        const where = parseContentPath(entry.path);
+        entry.category = where.category; entry.lang = where.lang;
+        entry.level = where.level; entry.track = where.track;
         entry.firstViewed = entry.firstViewed || entry.lastViewed || now;
         entry.lastViewed = now;
         entry.viewCount = (entry.viewCount || 0) + 1;
@@ -651,6 +670,24 @@
             `;
         });
         html += '</div>';
+
+        // Répartition des leçons consultées par niveau / filière / langue (affichage seulement)
+        const groups = {};
+        lessons.forEach(([id, data]) => {
+            const w = parseContentPath(data.path || id);
+            if (!w.level) return;
+            const langName = w.lang === 'arabe' ? 'العربية' : (w.lang === 'francais' ? 'Français' : w.lang);
+            const label = [w.level, w.track, langName].filter(Boolean).join(' · ');
+            groups[label] = (groups[label] || 0) + 1;
+        });
+        const labels = Object.keys(groups).sort();
+        if (labels.length) {
+            html += '<h3>🧭 ' + t('byTrack') + '</h3><div class="lesson-list">';
+            labels.forEach(label => {
+                html += `<div class="lesson-item"><span dir="auto">${esc(label)}</span><span class="lesson-date">${groups[label]}</span></div>`;
+            });
+            html += '</div>';
+        }
 
         html += '</div>';
         return html;
