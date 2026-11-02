@@ -38,6 +38,22 @@
     // ============================================
     let currentProfileId = storage.get(STORAGE_KEYS.CURRENT_PROFILE) || 'default';
 
+    // Relit le profil actif depuis le localStorage (changement fait dans un autre onglet)
+    function syncCurrentProfile() {
+        // Comptes (student-account.js) : le profil de la session fait foi, même si un autre
+        // onglet a changé le profil "courant" stocké.
+        const acc = window.StudentAccount ? window.StudentAccount.activeProfileId() : null;
+        if (acc) {
+            if (acc !== currentProfileId && getProfiles()[acc]) currentProfileId = acc;
+            return currentProfileId;
+        }
+        const stored = storage.get(STORAGE_KEYS.CURRENT_PROFILE);
+        if (stored && stored !== currentProfileId && getProfiles()[stored]) {
+            currentProfileId = stored;
+        }
+        return currentProfileId;
+    }
+
     function getProfiles() {
         return storage.get(STORAGE_KEYS.PROFILES) || {
             default: {
@@ -110,8 +126,13 @@
 
     function getProfileData(profileId) {
         const prefix = profileId + '_';
+        const progress = storage.get(prefix + STORAGE_KEYS.PROGRESS) || {};
+        // Garantit les 3 catégories (anciennes données / profils importés incomplets)
+        ['lessons', 'exercises', 'tests'].forEach(function (k) {
+            if (!progress[k] || typeof progress[k] !== 'object') progress[k] = {};
+        });
         return {
-            progress: storage.get(prefix + STORAGE_KEYS.PROGRESS) || { lessons: {}, exercises: {}, tests: {} },
+            progress: progress,
             quizResults: storage.get(prefix + STORAGE_KEYS.QUIZ_RESULTS) || [],
             mistakes: storage.get(prefix + STORAGE_KEYS.MISTAKES) || [],
             streak: storage.get(prefix + STORAGE_KEYS.STREAK) || { current: 0, best: 0, lastVisit: null },
@@ -161,6 +182,7 @@
             averageScore: 'المعدل',
             globalProgress: 'التقدم العام',
             completedLessons: 'الدروس المكتملة',
+            byTrack: 'حسب المستوى والشعبة',
             pendingLessons: 'الدروس المتبقية',
             markAsComplete: 'تحديد كمكتمل',
             noData: 'لا توجد بيانات بعد',
@@ -207,6 +229,7 @@
             averageScore: 'Score moyen',
             globalProgress: 'Progression globale',
             completedLessons: 'Leçons terminées',
+            byTrack: 'Par niveau et filière',
             pendingLessons: 'Leçons en attente',
             markAsComplete: 'Marquer comme terminé',
             noData: 'Aucune donnée disponible',
@@ -242,26 +265,96 @@
     // ============================================
     // 3. PROGRESS TRACKING (تتبع التقدم)
     // ============================================
-    function updateProgress(type, item) {
+    // Les anciens appelants utilisaient le singulier ('lesson'...) alors que le
+    // stockage utilise 'lessons' / 'exercises' / 'tests'.
+    const PROGRESS_TYPE_ALIASES = {
+        lesson: 'lessons', lessons: 'lessons',
+        exercise: 'exercises', exercises: 'exercises',
+        exam: 'tests', exams: 'tests', test: 'tests', tests: 'tests'
+    };
+
+    // Clé stable d'un document : chemin décodé, NFC, sans "/" initial
+    function normalizeItemKey(item) {
+        let key = String(item == null ? '' : item);
+        key = key.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]+/i, '').replace(/^([^?#]*)[?#].*$/, function (m, path) {
+            return /%/.test(path) ? path : m; // ?/# ignorés seulement pour une URL encodée
+        });
+        try { key = decodeURIComponent(key); } catch (e) { /* déjà décodé */ }
+        return key.normalize('NFC').replace(/^\/+/, '');
+    }
+
+    // Sans compte connecté (quand student-account.js est présent) rien n'est enregistré.
+    function canTrack() {
+        if (window.StudentAccount && !window.StudentAccount.isLoggedIn()) return false;
+        syncCurrentProfile();
+        return true;
+    }
+
+    // Déduit catégorie / langue / niveau / filière d'un chemin "cours/francais/1BAC/1BACSE/x.pdf"
+    // (les dossiers d'examens "2BAC SM" sont reconnus après suppression des espaces)
+    const TRACK_CODE = /^(TC[SL]|1BAC(SE|SM|L)|2BAC(SVT|SP|SM))$/;
+    function parseContentPath(key) {
+        const segs = String(key || '').split('/').filter(Boolean);
+        const info = { category: segs[0] || '', lang: segs[1] || '', level: segs[2] || '', track: '' };
+        segs.slice(3, -1).some(function (d) {
+            const code = d.replace(/\s+/g, '').toUpperCase();
+            if (TRACK_CODE.test(code) && code.indexOf(info.level) === 0) { info.track = code; return true; }
+            return false;
+        });
+        return info;
+    }
+
+    // Enregistre la CONSULTATION (viewed) d'un contenu. Ne marque jamais "terminé".
+    // meta (optionnel) : { title, path }
+    function updateProgress(type, item, meta) {
+        if (!canTrack()) return null;
+        const category = PROGRESS_TYPE_ALIASES[type];
+        const key = normalizeItemKey(item);
+        if (!category || !key) return null;
+
+        syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
-        
-        if (!profileData.progress[type][item]) {
-            profileData.progress[type][item] = {
+        const bucket = profileData.progress[category];
+        const now = Date.now();
+        meta = meta || {};
+
+        let entry = bucket[key];
+        const isNew = !entry;
+        if (isNew) {
+            entry = bucket[key] = {
+                id: key,
                 completed: false,
-                viewed: false,
+                firstViewed: now,
                 attempts: 0,
-                lastViewed: Date.now()
+                viewCount: 0
             };
         }
-
-        profileData.progress[type][item].lastViewed = Date.now();
-        profileData.progress[type][item].attempts++;
+        // Une entrée existante garde son état "terminé" ; on complète les métadonnées
+        entry.id = entry.id || key;
+        entry.title = meta.title || entry.title || key.split('/').pop().replace(/\.[^/.]+$/, '');
+        entry.path = meta.path ? normalizeItemKey(meta.path) : (entry.path || key);
+        entry.viewed = true;
+        const where = parseContentPath(entry.path);
+        entry.category = where.category; entry.lang = where.lang;
+        entry.level = where.level; entry.track = where.track;
+        entry.firstViewed = entry.firstViewed || entry.lastViewed || now;
+        entry.lastViewed = now;
+        entry.viewCount = (entry.viewCount || 0) + 1;
+        entry.attempts = (entry.attempts || 0) + 1;
 
         saveProfileData(currentProfileId, profileData);
+
+        try {
+            document.dispatchEvent(new CustomEvent('gosvt:progress-updated', {
+                detail: { profileId: currentProfileId, type: category, key: key, isNew: isNew }
+            }));
+        } catch (e) { /* ancien navigateur */ }
+        refreshStudentSpaceView();
         return profileData.progress;
     }
 
     function markLessonComplete(lessonId) {
+        if (!canTrack()) return;
         const profileData = getProfileData(currentProfileId);
         if (profileData.progress.lessons[lessonId]) {
             profileData.progress.lessons[lessonId].completed = true;
@@ -270,10 +363,29 @@
         saveProfileData(currentProfileId, profileData);
     }
 
+    // Réaffiche l'espace élève (sans recharger la page) en conservant l'onglet interne actif
+    function refreshStudentSpaceView() {
+        const container = document.getElementById('student-space-content');
+        if (!container || !container.children.length) return; // sera rendu à l'ouverture de la section
+        if (container.querySelector('.gs-auth')) return;      // écran de connexion : ne pas effacer la saisie
+        const active = container.querySelector('.space-tab.active');
+        const tabName = active ? active.dataset.tab : 'dashboard';
+        renderStudentSpace();
+        if (tabName && tabName !== 'dashboard') {
+            container.querySelectorAll('.space-tab').forEach(function (b) {
+                b.classList.toggle('active', b.dataset.tab === tabName);
+            });
+            container.querySelectorAll('.space-panel').forEach(function (p) {
+                p.classList.toggle('active', p.id === 'panel-' + tabName);
+            });
+        }
+    }
+
     // ============================================
     // 4. QUIZ RESULTS (نتائج الاختبارات)
     // ============================================
     function saveQuizResult(quizId, score, totalQuestions, mistakes) {
+        if (!canTrack()) return;
         const profileData = getProfileData(currentProfileId);
         
         // Check if this quiz result already exists for this session
@@ -311,6 +423,7 @@
     // 5. STREAK TRACKING (تتبع الأيام المتتالية)
     // ============================================
     function updateStreak() {
+        if (!canTrack()) return;
         const profileData = getProfileData(currentProfileId);
         
         const today = new Date().toDateString();
@@ -347,6 +460,7 @@
     // 6. DASHBOARD (لوحة القيادة)
     // ============================================
     function getDashboardStats() {
+        syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
         
         const lessonsViewed = Object.keys(profileData.progress.lessons).length;
@@ -444,13 +558,14 @@
             profilesOptions += `<option value="${id}" ${isActive ? 'selected' : ''}>${profile.name}</option>`;
         });
 
+        const accountBar = window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
         const html = `
             <div class="dashboard-header">
-                <div class="profile-selector">
+                ${accountBar || `<div class="profile-selector">
                     <label>${t('currentProfile')}:</label>
                     <select id="profile-select">${profilesOptions}</select>
                     <button class="btn-create-profile" onclick="promptCreateProfile()">+ ${t('createProfile')}</button>
-                </div>
+                </div>`}
                 <div class="data-actions">
                     <button class="btn-export" onclick="handleExport()">${t('exportData')}</button>
                     <button class="btn-import" onclick="handleImport()">${t('importData')}</button>
@@ -545,6 +660,7 @@
             return `<p class="no-data">${t('noData')}</p>`;
         }
 
+        const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
         const completed = lessons.filter(([id, data]) => data.completed);
         const pending = lessons.filter(([id, data]) => !data.completed);
 
@@ -555,7 +671,7 @@
         completed.forEach(([id, data]) => {
             html += `
                 <div class="lesson-item completed">
-                    <span>${id}</span>
+                    <span title="${esc(id)}">${esc(data.title || id)}</span>
                     <span class="lesson-date">${new Date(data.completedAt).toLocaleDateString()}</span>
                 </div>
             `;
@@ -567,12 +683,30 @@
         pending.forEach(([id, data]) => {
             html += `
                 <div class="lesson-item pending">
-                    <span>${id}</span>
-                    <button class="btn-complete" data-lesson="${id}">${t('markAsComplete')}</button>
+                    <span title="${esc(id)}">${esc(data.title || id)}</span>
+                    <button class="btn-complete" data-lesson="${esc(id)}">${t('markAsComplete')}</button>
                 </div>
             `;
         });
         html += '</div>';
+
+        // Répartition des leçons consultées par niveau / filière / langue (affichage seulement)
+        const groups = {};
+        lessons.forEach(([id, data]) => {
+            const w = parseContentPath(data.path || id);
+            if (!w.level) return;
+            const langName = w.lang === 'arabe' ? 'العربية' : (w.lang === 'francais' ? 'Français' : w.lang);
+            const label = [w.level, w.track, langName].filter(Boolean).join(' · ');
+            groups[label] = (groups[label] || 0) + 1;
+        });
+        const labels = Object.keys(groups).sort();
+        if (labels.length) {
+            html += '<h3>🧭 ' + t('byTrack') + '</h3><div class="lesson-list">';
+            labels.forEach(label => {
+                html += `<div class="lesson-item"><span dir="auto">${esc(label)}</span><span class="lesson-date">${groups[label]}</span></div>`;
+            });
+            html += '</div>';
+        }
 
         html += '</div>';
         return html;
@@ -761,88 +895,80 @@
     };
 
     function renderStudentSpace() {
-        console.log('[StudentSpace] renderStudentSpace called');
         const container = document.getElementById('student-space-content');
-        if (!container) {
-            console.error('[StudentSpace] Container not found!');
+        if (!container) return;
+        if (window.StudentAccount && !window.StudentAccount.isLoggedIn()) {
+            window.StudentAccount.renderGate(container);
             return;
         }
-        console.log('[StudentSpace] Container found:', container);
+        syncCurrentProfile();
 
-        try {
-            let html = `
-                <div class="student-space">
-                    <div class="space-nav">
-                        <button class="space-tab active" data-tab="dashboard">${t('dashboard')}</button>
-                        <button class="space-tab" data-tab="progress">${t('progress')}</button>
-                        <button class="space-tab" data-tab="history">${t('history')}</button>
-                        <button class="space-tab" data-tab="mistakes">${t('mistakes')}</button>
-                        <button class="space-tab" data-tab="favorites">${t('favorites')}</button>
-                        <button class="space-tab" data-tab="motivation">${t('motivation')}</button>
+        let html = `
+            <div class="student-space">
+                <div class="space-nav">
+                    <button class="space-tab active" data-tab="dashboard">${t('dashboard')}</button>
+                    <button class="space-tab" data-tab="progress">${t('progress')}</button>
+                    <button class="space-tab" data-tab="history">${t('history')}</button>
+                    <button class="space-tab" data-tab="mistakes">${t('mistakes')}</button>
+                    <button class="space-tab" data-tab="favorites">${t('favorites')}</button>
+                    <button class="space-tab" data-tab="motivation">${t('motivation')}</button>
+                </div>
+                <div class="space-content">
+                    <div class="space-panel active" id="panel-dashboard">
+                        ${renderDashboard()}
                     </div>
-                    <div class="space-content">
-                        <div class="space-panel active" id="panel-dashboard">
-                            ${renderDashboard()}
-                        </div>
-                        <div class="space-panel" id="panel-progress">
-                            ${renderProgress()}
-                        </div>
-                        <div class="space-panel" id="panel-history">
-                            ${renderHistory()}
-                        </div>
-                        <div class="space-panel" id="panel-mistakes">
-                            ${renderMistakes()}
-                        </div>
-                        <div class="space-panel" id="panel-favorites">
-                            ${renderFavorites()}
-                        </div>
-                        <div class="space-panel" id="panel-motivation">
-                            ${renderMotivation()}
-                        </div>
+                    <div class="space-panel" id="panel-progress">
+                        ${renderProgress()}
+                    </div>
+                    <div class="space-panel" id="panel-history">
+                        ${renderHistory()}
+                    </div>
+                    <div class="space-panel" id="panel-mistakes">
+                        ${renderMistakes()}
+                    </div>
+                    <div class="space-panel" id="panel-favorites">
+                        ${renderFavorites()}
+                    </div>
+                    <div class="space-panel" id="panel-motivation">
+                        ${renderMotivation()}
                     </div>
                 </div>
-            `;
+            </div>
+        `;
 
-            container.innerHTML = html;
-            console.log('[StudentSpace] HTML set successfully');
+        container.innerHTML = html;
 
-            // Add event listeners
-            container.querySelectorAll('.space-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.dataset.tab;
-                    
-                    // Update tabs
-                    container.querySelectorAll('.space-tab').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Update panels
-                    container.querySelectorAll('.space-panel').forEach(p => p.classList.remove('active'));
-                    document.getElementById(`panel-${tabName}`).classList.add('active');
-                });
+        // Add event listeners
+        container.querySelectorAll('.space-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                
+                // Update tabs
+                container.querySelectorAll('.space-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update panels
+                container.querySelectorAll('.space-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`panel-${tabName}`).classList.add('active');
             });
+        });
 
-            // Mark lesson as complete
-            container.querySelectorAll('.btn-complete').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const lessonId = this.dataset.lesson;
-                    markLessonComplete(lessonId);
-                    renderStudentSpace(); // Re-render
-                });
+        // Mark lesson as complete
+        container.querySelectorAll('.btn-complete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lessonId = this.dataset.lesson;
+                markLessonComplete(lessonId);
+                renderStudentSpace(); // Re-render
             });
+        });
 
-            // Retry mistakes
-            container.querySelectorAll('.btn-retry-mistakes').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const quizId = this.dataset.quizId;
-                    retryMistakes(quizId);
-                });
+        // Retry mistakes
+        container.querySelectorAll('.btn-retry-mistakes').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const quizId = this.dataset.quizId;
+                retryMistakes(quizId);
             });
-
-            console.log('[StudentSpace] Render completed successfully');
-        } catch (e) {
-            console.error('[StudentSpace] Error during render:', e);
-            container.innerHTML = `<p style="color: red;">Erreur: ${e.message}</p>`;
-        }
+        });
     }
 
     // ============================================
@@ -854,10 +980,6 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-            display: block !important;
-        }
-        .space-content {
-            display: block !important;
         }
         .space-nav {
             display: flex;
@@ -886,7 +1008,7 @@
             display: none;
         }
         .space-panel.active {
-            display: block !important;
+            display: block;
         }
         .dashboard-grid {
             display: grid;
@@ -1089,17 +1211,21 @@
     // 14. INITIALIZATION (التهيئة)
     // ============================================
     function init() {
-        console.log('[StudentSpace] init() called');
-        
         // Update streak on page load
         updateStreak();
+
+        // Profil / progression modifiés depuis un autre onglet -> resynchroniser et réafficher
+        window.addEventListener('storage', function (e) {
+            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE || e.key.endsWith('_' + STORAGE_KEYS.PROGRESS)) {
+                syncCurrentProfile();
+                refreshStudentSpaceView();
+            }
+        });
 
         // Listen for hash changes to render student space when navigated to
         window.addEventListener('hashchange', function() {
             const hash = window.location.hash.substring(1);
-            console.log('[StudentSpace] Hash changed to:', hash);
             if (hash === 'student-space') {
-                console.log('[StudentSpace] Triggering render due to hash change');
                 setTimeout(function() {
                     renderStudentSpace();
                 }, 100);
@@ -1108,9 +1234,7 @@
 
         // Check hash on initial load
         const initialHash = window.location.hash.substring(1);
-        console.log('[StudentSpace] Initial hash:', initialHash);
         if (initialHash === 'student-space') {
-            console.log('[StudentSpace] Triggering render due to initial hash');
             setTimeout(function() {
                 renderStudentSpace();
             }, 100);
@@ -1121,7 +1245,6 @@
             mutations.forEach(function(mutation) {
                 if (mutation.target.id === 'student-space' && 
                     mutation.target.classList.contains('active')) {
-                    console.log('[StudentSpace] Section became active, triggering render');
                     setTimeout(function() {
                         renderStudentSpace();
                     }, 50);
@@ -1132,9 +1255,6 @@
         const studentSpaceSection = document.getElementById('student-space');
         if (studentSpaceSection) {
             sectionObserver.observe(studentSpaceSection, { attributes: true, attributeFilter: ['class'] });
-            console.log('[StudentSpace] Section observer attached');
-        } else {
-            console.error('[StudentSpace] Section not found!');
         }
 
         // Listen for language changes via lang button click
@@ -1167,10 +1287,7 @@
         // Render immediately if section exists
         const container = document.getElementById('student-space-content');
         if (container) {
-            console.log('[StudentSpace] Container found on init, rendering...');
             renderStudentSpace();
-        } else {
-            console.error('[StudentSpace] Container not found on init!');
         }
     }
 
@@ -1189,6 +1306,7 @@
         updateStreak,
         getDashboardStats,
         renderStudentSpace,
+        refresh: refreshStudentSpaceView,
         createProfile,
         deleteProfile,
         switchProfile,
