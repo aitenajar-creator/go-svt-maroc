@@ -854,6 +854,10 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+            display: block !important;
+        }
+        .space-content {
+            display: block !important;
         }
         .space-nav {
             display: flex;
@@ -882,7 +886,7 @@
             display: none;
         }
         .space-panel.active {
-            display: block;
+            display: block !important;
         }
         .dashboard-grid {
             display: grid;
