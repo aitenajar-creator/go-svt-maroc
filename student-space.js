@@ -184,7 +184,76 @@
         };
     }
 
-    function saveProfileData(profileId, data) {
+    function saveProfileData(profileId, data, options) {
+        // Merge cloud progress into the local profile without losing local metadata.
+function mergeCloudProgress(profileId, cloudProgress) {
+    if (!cloudProgress || typeof cloudProgress !== 'object') return;
+
+    const data = getProfileData(profileId);
+    const buckets = ['lessons', 'exercises', 'tests'];
+
+    buckets.forEach(bucket => {
+        const cloudEntries = cloudProgress[bucket] || {};
+        const localEntries = data.progress[bucket];
+
+        Object.keys(cloudEntries).forEach(key => {
+            const cloudItem = cloudEntries[key] || {};
+            const localItem = localEntries[key];
+
+            if (!localItem) {
+                localEntries[key] = {
+                    id: key,
+                    completed: cloudItem.completed === true,
+                    cloudUpdatedAt: cloudItem.cloudUpdatedAt || null
+                };
+
+                if (cloudItem.completed && cloudItem.cloudUpdatedAt) {
+                    const date = Date.parse(cloudItem.cloudUpdatedAt);
+                    if (Number.isFinite(date)) {
+                        localEntries[key].completedAt = date;
+                    }
+                }
+            } else {
+                // Preserve local metadata and never downgrade completion.
+                localItem.completed =
+                    localItem.completed === true ||
+                    cloudItem.completed === true;
+
+                localItem.id = localItem.id || key;
+                localItem.cloudUpdatedAt =
+                    cloudItem.cloudUpdatedAt || localItem.cloudUpdatedAt;
+
+                if (localItem.completed && !localItem.completedAt &&
+                    cloudItem.cloudUpdatedAt) {
+                    const date = Date.parse(cloudItem.cloudUpdatedAt);
+                    if (Number.isFinite(date)) {
+                        localItem.completedAt = date;
+                    }
+                }
+            }
+        });
+    });
+
+    saveProfileData(profileId, data, { skipCloudSync: true });
+}
+    const prefix = profileId + '_';
+
+    storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
+    storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
+    storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
+    storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
+    storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
+
+    // Allow saving restored cloud data without immediately syncing it.
+    if (!(options && options.skipCloudSync) &&
+        window.GoSVTCloud &&
+        typeof window.GoSVTCloud.syncProgress === 'function') {
+
+        window.GoSVTCloud.syncProgress(data.progress).catch(function (err) {
+            console.warn('[GoSVT] Cloud progress sync deferred:', err.message);
+        });
+    }
+}
         const prefix = profileId + '_';
         storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
         storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
@@ -1378,22 +1447,24 @@
 
     // Expose functions globally for integration with other systems
     window.StudentSpace = {
-        updateProgress,
-        markLessonComplete,
-        saveQuizResult,
-        updateStreak,
-        getDashboardStats,
-        renderStudentSpace,
-        refresh: refreshStudentSpaceView,
-        createProfile,
-        deleteProfile,
-        switchProfile,
-        getCurrentProfile,
-        getProfiles,
-        getProfileData,
-        exportProfileData,
-        importProfileData,
-        retryMistakes
+        window.StudentSpace = {
+    updateProgress,
+    markLessonComplete,
+    saveQuizResult,
+    updateStreak,
+    getDashboardStats,
+    renderStudentSpace,
+    refresh: refreshStudentSpaceView,
+    createProfile,
+    deleteProfile,
+    switchProfile,
+    getCurrentProfile,
+    getProfiles,
+    getProfileData,
+    mergeCloudProgress,
+    exportProfileData,
+    importProfileData,
+    retryMistakes
     };
 
 })();
