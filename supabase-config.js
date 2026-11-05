@@ -15,7 +15,103 @@
   });
 })();
 
-/* Narrow client-side sync to the existing owner-protected student_progress table. */
+/* Go SVT Cloud Progress: sync and restore */
+(function () {
+  'use strict';
+
+  const client = window.supabaseClient;
+  if (!client) return;
+
+  window.GoSVTCloud = {
+    async loadProgress() {
+      const { data: authData, error: authError } =
+        await client.auth.getUser();
+
+      if (authError) throw authError;
+      if (!authData.user) return null;
+
+      const { data, error } = await client
+        .from('student_progress')
+        .select('content_key, content_type, completed, updated_at')
+        .eq('student_id', authData.user.id);
+
+      if (error) throw error;
+
+      const progress = {
+        lessons: {},
+        exercises: {},
+        tests: {}
+      };
+
+      const types = {
+        lesson: 'lessons',
+        exercise: 'exercises',
+        unit: 'tests'
+      };
+
+      (data || []).forEach(row => {
+        const bucket = types[row.content_type];
+        if (!bucket || !row.content_key) return;
+
+        progress[bucket][row.content_key] = {
+          id: row.content_key,
+          completed: row.completed === true,
+          cloudUpdatedAt: row.updated_at || null
+        };
+      });
+
+      return progress;
+    },
+
+    async syncProgress(progress) {
+      if (!progress || typeof progress !== 'object') return;
+
+      const { data: authData, error: authError } =
+        await client.auth.getUser();
+
+      if (authError) throw authError;
+      if (!authData.user) return;
+
+      const studentId = authData.user.id;
+      const rows = [];
+
+      const types = {
+        lessons: 'lesson',
+        exercises: 'exercise',
+        tests: 'unit'
+      };
+
+      Object.keys(types).forEach(bucket => {
+        const entries = progress[bucket] &&
+          typeof progress[bucket] === 'object'
+          ? progress[bucket]
+          : {};
+
+        Object.keys(entries).forEach(key => {
+          const item = entries[key] || {};
+
+          rows.push({
+            student_id: studentId,
+            content_key: String(key).slice(0, 500),
+            content_type: types[bucket],
+            completed: item.completed === true,
+            updated_at: new Date().toISOString()
+          });
+        });
+      });
+
+      if (!rows.length) return;
+
+      const { error } = await client
+        .from('student_progress')
+        .upsert(rows, {
+          onConflict: 'student_id,content_key,content_type'
+        });
+
+      if (error) throw error;
+    }
+  };
+})();
 (function () {
   const client = window.supabaseClient;
   if (!client) return;
