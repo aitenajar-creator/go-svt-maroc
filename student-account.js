@@ -37,9 +37,33 @@
         }
         window.StudentSpace.switchProfile(localProfileId);
         // Migrate the locally cached learning progress into this authenticated account.
-        if (window.GoSVTCloud && typeof window.GoSVTCloud.syncProgress === 'function') {
-          const cached = window.StudentSpace.getProfileData(localProfileId);
-          window.GoSVTCloud.syncProgress(cached.progress).catch(err => console.warn('[GoSVT] Initial progress sync:', err));
+        // Restore cloud progress before rendering the student space.
+if (window.GoSVTCloud &&
+    window.StudentSpace &&
+    typeof window.GoSVTCloud.loadProgress === 'function') {
+
+  try {
+    const cloudProgress = await window.GoSVTCloud.loadProgress();
+
+    if (cloudProgress) {
+      // Merge cloud data with local data without losing local metadata.
+      window.StudentSpace.mergeCloudProgress(
+        localProfileId,
+        cloudProgress
+      );
+
+      // Synchronize the merged result after a successful cloud read.
+      const cached = window.StudentSpace.getProfileData(localProfileId);
+
+      await window.GoSVTCloud.syncProgress(cached.progress);
+
+      console.log('[GoSVT] Cloud progress restored successfully.');
+    }
+  } catch (err) {
+    // Do not overwrite cloud data if restoration failed.
+    console.warn('[GoSVT] Cloud progress restoration failed:', err.message);
+  }
+}
         }
       }
     }
