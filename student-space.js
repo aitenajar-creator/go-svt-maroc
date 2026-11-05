@@ -2,6 +2,22 @@
 (function () {
     'use strict';
 
+    // Escape all values inserted into HTML. Stored data and imported JSON are untrusted.
+    const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[ch]));
+    const safeLink = value => {
+        const raw = String(value == null ? '' : value).trim();
+        try {
+            const url = new URL(raw, window.location.href);
+            return ['http:', 'https:'].includes(url.protocol) ? url.href : '#';
+        } catch (e) { return '#'; }
+    };
+    const makeId = () => {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') return 'profile_' + window.crypto.randomUUID();
+        return 'profile_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 12);
+    };
+
     // ============================================
     // 1. STORAGE SYSTEM (نظام التخزين)
     // ============================================
@@ -55,7 +71,17 @@
     }
 
     function getProfiles() {
-        return storage.get(STORAGE_KEYS.PROFILES) || {
+        const stored = storage.get(STORAGE_KEYS.PROFILES);
+        if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
+            if (!stored.default) stored.default = {
+                id: 'default',
+                name: 'Élève par défaut',
+                createdAt: Date.now(),
+                lastActive: Date.now()
+            };
+            return stored;
+        }
+        return {
             default: {
                 id: 'default',
                 name: 'Élève par défaut',
@@ -79,12 +105,17 @@
     }
 
     function createProfile(name) {
+        const cleanName = String(name == null ? '' : name).normalize('NFC').trim().replace(/\s+/g, ' ');
+        if (cleanName.length < 2 || cleanName.length > 40) {
+            throw new Error('Le nom du profil doit contenir entre 2 et 40 caractères.');
+        }
         const profiles = getProfiles();
-        const newId = 'profile_' + Date.now();
-        
+        let newId;
+        do { newId = makeId(); } while (profiles[newId]);
+
         profiles[newId] = {
             id: newId,
-            name: name,
+            name: cleanName,
             createdAt: Date.now(),
             lastActive: Date.now()
         };
@@ -114,6 +145,12 @@
         if (profiles[profileId]) {
             delete profiles[profileId];
             saveProfiles(profiles);
+            const prefix = profileId + '_';
+            Object.values(STORAGE_KEYS).forEach(key => {
+                if (key !== STORAGE_KEYS.PROFILES && key !== STORAGE_KEYS.CURRENT_PROFILE) {
+                    try { localStorage.removeItem(prefix + key); } catch (e) { /* storage unavailable */ }
+                }
+            });
             
             // Switch to default if current profile was deleted
             if (currentProfileId === profileId) {
@@ -125,18 +162,25 @@
     }
 
     function getProfileData(profileId) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId]) {
+            throw new Error('Profil introuvable.');
+        }
         const prefix = profileId + '_';
-        const progress = storage.get(prefix + STORAGE_KEYS.PROGRESS) || {};
-        // Garantit les 3 catégories (anciennes données / profils importés incomplets)
+        const rawProgress = storage.get(prefix + STORAGE_KEYS.PROGRESS);
+        const progress = rawProgress && typeof rawProgress === 'object' && !Array.isArray(rawProgress) ? rawProgress : {};
         ['lessons', 'exercises', 'tests'].forEach(function (k) {
-            if (!progress[k] || typeof progress[k] !== 'object') progress[k] = {};
+            if (!progress[k] || typeof progress[k] !== 'object' || Array.isArray(progress[k])) progress[k] = {};
         });
+        const results = storage.get(prefix + STORAGE_KEYS.QUIZ_RESULTS);
+        const mistakes = storage.get(prefix + STORAGE_KEYS.MISTAKES);
+        const streak = storage.get(prefix + STORAGE_KEYS.STREAK);
+        const goals = storage.get(prefix + STORAGE_KEYS.GOALS);
         return {
             progress: progress,
-            quizResults: storage.get(prefix + STORAGE_KEYS.QUIZ_RESULTS) || [],
-            mistakes: storage.get(prefix + STORAGE_KEYS.MISTAKES) || [],
-            streak: storage.get(prefix + STORAGE_KEYS.STREAK) || { current: 0, best: 0, lastVisit: null },
-            goals: storage.get(prefix + STORAGE_KEYS.GOALS) || []
+            quizResults: Array.isArray(results) ? results : [],
+            mistakes: Array.isArray(mistakes) ? mistakes : [],
+            streak: streak && typeof streak === 'object' ? streak : { current: 0, best: 0, lastVisit: null },
+            goals: Array.isArray(goals) ? goals : []
         };
     }
 
@@ -147,6 +191,12 @@
         storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
         storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
         storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
+        // Keep the browser cache for offline use and synchronize learning progress to Supabase.
+        if (window.GoSVTCloud && typeof window.GoSVTCloud.syncProgress === 'function') {
+            window.GoSVTCloud.syncProgress(data.progress).catch(function (err) {
+                console.warn('[GoSVT] Cloud progress sync deferred:', err && err.message);
+            });
+        }
     }
 
     // ============================================
@@ -177,7 +227,7 @@
             profiles: 'الملفات الشخصية',
             settings: 'الإعدادات',
             lessonsViewed: 'الدروس المشاهدة',
-            exercisesDone: 'التمارين المنجزة',
+            exercisesDone: 'التمارين التي تمت مشاهدتها',
             testsTaken: 'الاختبارات المجراة',
             averageScore: 'المعدل',
             globalProgress: 'التقدم العام',
@@ -224,7 +274,7 @@
             profiles: 'Profils',
             settings: 'Paramètres',
             lessonsViewed: 'Leçons consultées',
-            exercisesDone: 'Exercices terminés',
+            exercisesDone: 'Exercices consultés',
             testsTaken: 'Tests effectués',
             averageScore: 'Score moyen',
             globalProgress: 'Progression globale',
@@ -343,6 +393,7 @@
         entry.attempts = (entry.attempts || 0) + 1;
 
         saveProfileData(currentProfileId, profileData);
+        updateStreak();
 
         try {
             document.dispatchEvent(new CustomEvent('gosvt:progress-updated', {
@@ -359,8 +410,9 @@
         if (profileData.progress.lessons[lessonId]) {
             profileData.progress.lessons[lessonId].completed = true;
             profileData.progress.lessons[lessonId].completedAt = Date.now();
+            saveProfileData(currentProfileId, profileData);
+            updateStreak();
         }
-        saveProfileData(currentProfileId, profileData);
     }
 
     // Réaffiche l'espace élève (sans recharger la page) en conservant l'onglet interne actif
@@ -384,38 +436,40 @@
     // ============================================
     // 4. QUIZ RESULTS (نتائج الاختبارات)
     // ============================================
-    function saveQuizResult(quizId, score, totalQuestions, mistakes) {
-        if (!canTrack()) return;
-        const profileData = getProfileData(currentProfileId);
-        
-        // Check if this quiz result already exists for this session
-        const existingIndex = profileData.quizResults.findIndex(r => r.quizId === quizId && r.date && (Date.now() - r.date) < 60000);
-        
-        if (existingIndex === -1) {
-            // Only save if not saved in the last minute (avoid duplicates)
-            profileData.quizResults.push({
-                quizId: quizId,
-                score: score,
-                total: totalQuestions,
-                percentage: Math.round((score / totalQuestions) * 100),
-                date: Date.now(),
-                mistakes: mistakes || []
-            });
-
-            // Save mistakes separately
-            if (mistakes && mistakes.length > 0) {
-                mistakes.forEach(mistake => {
-                    profileData.mistakes.push({
-                        ...mistake,
-                        quizId: quizId,
-                        date: Date.now()
-                    });
-                });
-            }
-
-            saveProfileData(currentProfileId, profileData);
+    function saveQuizResult(quizId, score, totalQuestions, mistakes, attemptId) {
+        if (!canTrack()) return null;
+        const id = String(quizId == null ? '' : quizId).trim();
+        const total = Number(totalQuestions);
+        const points = Number(score);
+        if (!id || id.length > 200 || !Number.isInteger(total) || total <= 0 ||
+            !Number.isInteger(points) || points < 0 || points > total) {
+            throw new Error('Résultat de quiz invalide.');
         }
-
+        const profileData = getProfileData(currentProfileId);
+        const token = String(attemptId || makeId());
+        if (profileData.quizResults.some(r => r && r.attemptId === token)) {
+            return profileData.quizResults;
+        }
+        const safeMistakes = Array.isArray(mistakes) ? mistakes.slice(0, total).map(m => ({
+            question: String(m && m.question || '').slice(0, 2000),
+            selected: String(m && m.selected || '').slice(0, 1000),
+            correct: String(m && m.correct || '').slice(0, 1000),
+            quizId: id,
+            date: Date.now()
+        })) : [];
+        profileData.quizResults.push({
+            quizId: id,
+            attemptId: token,
+            score: points,
+            total: total,
+            percentage: Math.round((points / total) * 100),
+            date: Date.now(),
+            mistakes: safeMistakes
+        });
+        safeMistakes.forEach(mistake => profileData.mistakes.push(mistake));
+        saveProfileData(currentProfileId, profileData);
+        updateStreak();
+        refreshStudentSpaceView();
         return profileData.quizResults;
     }
 
@@ -490,6 +544,7 @@
     // ============================================
     function exportProfileData(profileId) {
         const profile = getProfiles()[profileId];
+        if (!profile) throw new Error('Profil introuvable.');
         const profileData = getProfileData(profileId);
         
         const exportData = {
@@ -504,7 +559,8 @@
         
         const a = document.createElement('a');
         a.href = url;
-        a.download = `gosvt_profile_${profile.name}_${new Date().toISOString().split('T')[0]}.json`;
+        const safeFileName = String(profile.name).replace(/[^\p{L}\p{N}_-]+/gu, '_').slice(0, 40);
+        a.download = `gosvt_profile_${safeFileName}_${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -513,32 +569,50 @@
 
     function importProfileData(jsonString) {
         try {
-            const importData = JSON.parse(jsonString);
-            
-            // Validate structure
-            if (!importData.profile || !importData.data) {
-                throw new Error('Format de fichier invalide');
+            if (typeof jsonString !== 'string' || jsonString.length > 5 * 1024 * 1024) {
+                throw new Error('Fichier trop volumineux ou invalide.');
             }
-            
-            // Check for version compatibility
-            if (importData.version && importData.version !== '1.0') {
-                if (!confirm('Attention: Ce fichier provient d\'une version différente. Continuer quand même?')) {
-                    return false;
-                }
+            const payload = JSON.parse(jsonString);
+            const p = payload && payload.profile;
+            const d = payload && payload.data;
+            if (!p || typeof p !== 'object' || typeof p.id !== 'string' ||
+                !/^profile_[a-zA-Z0-9_-]{1,100}$/.test(p.id) ||
+                typeof p.name !== 'string' || p.name.trim().length < 2 || p.name.length > 40 ||
+                !d || typeof d !== 'object' || !d.progress || typeof d.progress !== 'object' ||
+                !Array.isArray(d.quizResults) || !Array.isArray(d.mistakes) ||
+                !d.streak || typeof d.streak !== 'object' || !Array.isArray(d.goals)) {
+                throw new Error('Structure de sauvegarde invalide.');
             }
-            
-            // Confirm replacement if profile exists
+            if (payload.version !== '1.0') {
+                throw new Error('Version de sauvegarde non prise en charge.');
+            }
+            const normalized = {
+                progress: {
+                    lessons: d.progress.lessons && typeof d.progress.lessons === 'object' && !Array.isArray(d.progress.lessons) ? d.progress.lessons : {},
+                    exercises: d.progress.exercises && typeof d.progress.exercises === 'object' && !Array.isArray(d.progress.exercises) ? d.progress.exercises : {},
+                    tests: d.progress.tests && typeof d.progress.tests === 'object' && !Array.isArray(d.progress.tests) ? d.progress.tests : {}
+                },
+                quizResults: d.quizResults,
+                mistakes: d.mistakes,
+                streak: {
+                    current: Number.isInteger(d.streak.current) && d.streak.current >= 0 ? d.streak.current : 0,
+                    best: Number.isInteger(d.streak.best) && d.streak.best >= 0 ? d.streak.best : 0,
+                    lastVisit: Number.isFinite(d.streak.lastVisit) ? d.streak.lastVisit : null
+                },
+                goals: d.goals
+            };
             const profiles = getProfiles();
-            if (profiles[importData.profile.id]) {
-                if (!confirm(`Le profil "${importData.profile.name}" existe déjà. Voulez-vous le remplacer?`)) {
-                    return false;
-                }
-            }
-            
-            // Import data
-            profiles[importData.profile.id] = importData.profile;
-            saveProfileData(importData.profile.id, importData.data);
-            
+            const existing = profiles[p.id];
+            if (existing && !confirm('Ce profil existe déjà. Voulez-vous remplacer ses données ?')) return false;
+            const safeProfile = {
+                id: p.id,
+                name: p.name.normalize('NFC').trim(),
+                createdAt: Number.isFinite(p.createdAt) ? p.createdAt : Date.now(),
+                lastActive: Date.now()
+            };
+            profiles[p.id] = safeProfile;
+            saveProfiles(profiles);
+            saveProfileData(p.id, normalized);
             return true;
         } catch (e) {
             console.error('Import error:', e);
@@ -555,7 +629,7 @@
         let profilesOptions = '';
         Object.entries(profiles).forEach(([id, profile]) => {
             const isActive = id === currentProfileId;
-            profilesOptions += `<option value="${id}" ${isActive ? 'selected' : ''}>${profile.name}</option>`;
+            profilesOptions += `<option value="${escapeHtml(id)}" ${isActive ? 'selected' : ''}>${escapeHtml(profile.name)}</option>`;
         });
 
         const accountBar = window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
@@ -738,7 +812,7 @@
             html += `
                 <div class="history-item ${isBest ? 'best' : ''}">
                     <div class="history-info">
-                        <span class="history-quiz">${r.quizId}</span>
+                        <span class="history-quiz">${escapeHtml(r.quizId)}</span>
                         <span class="history-date">${new Date(r.date).toLocaleDateString()}</span>
                     </div>
                     <div class="history-score">
@@ -765,7 +839,7 @@
         }
 
         // Group mistakes by quiz ID
-        const mistakesByQuiz = {};
+        const mistakesByQuiz = Object.create(null);
         mistakes.forEach(mistake => {
             if (!mistakesByQuiz[mistake.quizId]) {
                 mistakesByQuiz[mistake.quizId] = [];
@@ -778,19 +852,19 @@
             html += `
                 <div class="mistake-quiz-group">
                     <div class="mistake-quiz-header">
-                        <span>Quiz: ${quizId}</span>
-                        <button class="btn-retry-mistakes" data-quiz-id="${quizId}">${t('retryMistakes')}</button>
+                        <span>Quiz: ${escapeHtml(quizId)}</span>
+                        <button class="btn-retry-mistakes" data-quiz-id="${escapeHtml(quizId)}">${t('retryMistakes')}</button>
                     </div>
                     ${quizMistakes.map(mistake => `
                         <div class="mistake-item">
-                            <div class="mistake-question">${mistake.question || 'Question'}</div>
+                            <div class="mistake-question">${escapeHtml(mistake.question || 'Question')}</div>
                             <div class="mistake-details">
-                                <span class="mistake-quiz">${mistake.quizId}</span>
+                                <span class="mistake-quiz">${escapeHtml(mistake.quizId)}</span>
                                 <span class="mistake-date">${new Date(mistake.date).toLocaleDateString()}</span>
                             </div>
                             <div class="mistake-answers">
-                                <div class="mistake-wrong">❌ ${t('Réponse choisie:')} ${mistake.selected}</div>
-                                <div class="mistake-correct">✅ ${t('Bonne réponse:')} ${mistake.correct}</div>
+                                <div class="mistake-wrong">❌ ${t('Réponse choisie:')} ${escapeHtml(mistake.selected)}</div>
+                                <div class="mistake-correct">✅ ${t('Bonne réponse:')} ${escapeHtml(mistake.correct)}</div>
                             </div>
                         </div>
                     `).join('')}
@@ -809,7 +883,13 @@
         if (quizMistakes.length === 0) return;
 
         // Store mistakes for retry in sessionStorage
-        sessionStorage.setItem('gosvt_retry_mistakes', JSON.stringify(quizMistakes));
+        try {
+            sessionStorage.setItem('gosvt_retry_mistakes', JSON.stringify(quizMistakes));
+        } catch (e) {
+            console.error('Impossible de préparer la reprise des erreurs:', e);
+            alert(t('invalidFile'));
+            return;
+        }
         
         // Navigate to quiz section (this assumes quiz is accessible via hash)
         window.location.hash = 'quiz';
@@ -823,7 +903,8 @@
     // ============================================
     function renderFavorites() {
         // Integrate with existing favorites.js
-        const favs = storage.get('gosvt_favs') || [];
+        const storedFavorites = storage.get('gosvt_favs');
+        const favs = Array.isArray(storedFavorites) ? storedFavorites.filter(f => f && typeof f === 'object') : [];
 
         if (favs.length === 0) {
             return `<p class="no-data">${t('noData')}</p>`;
@@ -833,8 +914,8 @@
         favs.forEach(fav => {
             html += `
                 <div class="favorite-item">
-                    <a href="${fav.url}" target="_blank">${fav.title}</a>
-                    <button class="btn-remove-fav" data-url="${fav.url}">${t('removeFromFavorites')}</button>
+                    <a href="${escapeHtml(safeLink(fav.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(fav.title)}</a>
+                    <button class="btn-remove-fav" data-url="${escapeHtml(fav.url)}">${t('removeFromFavorites')}</button>
                 </div>
             `;
         });
@@ -1211,9 +1292,6 @@
     // 14. INITIALIZATION (التهيئة)
     // ============================================
     function init() {
-        // Update streak on page load
-        updateStreak();
-
         // Profil / progression modifiés depuis un autre onglet -> resynchroniser et réafficher
         window.addEventListener('storage', function (e) {
             if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE || e.key.endsWith('_' + STORAGE_KEYS.PROGRESS)) {

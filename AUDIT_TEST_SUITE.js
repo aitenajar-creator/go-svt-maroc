@@ -62,27 +62,37 @@
             // Test 2.1: Enregistrement de résultat
             window.StudentSpace.saveQuizResult('quiz_test_1', 8, 10, [
                 { question: 'Q1', selected: 'A', correct: 'B' }
-            ]);
+            ], 'attempt_test_1');
             
             const profileData = window.StudentSpace.getProfileData(profileId);
             logTest('2.1 Enregistrement de résultat', profileData.quizResults.length === 1, `Résultats: ${profileData.quizResults.length}`);
             
             // Test 2.2: Évitement des doublons (même quiz dans la minute)
-            window.StudentSpace.saveQuizResult('quiz_test_1', 8, 10, []);
+            window.StudentSpace.saveQuizResult('quiz_test_1', 8, 10, [], 'attempt_test_1');
             const profileData2 = window.StudentSpace.getProfileData(profileId);
-            logTest('2.2 Évitement des doublons', profileData2.quizResults.length === 1, `Pas de doublon: ${profileData2.quizResults.length}`);
+            logTest('2.2 Idempotence du même essai', profileData2.quizResults.length === 1, `Essais: ${profileData2.quizResults.length}`);
+
+            // Une nouvelle tentative du même quiz doit être conservée, même dans la même minute.
+            window.StudentSpace.saveQuizResult('quiz_test_1', 6, 10, [], 'attempt_test_2');
+            const profileData3 = window.StudentSpace.getProfileData(profileId);
+            logTest('2.3 Nouvelle tentative conservée', profileData3.quizResults.length === 2, `Essais: ${profileData3.quizResults.length}`);
             
             // Test 2.3: Calcul correct du score
-            const result = profileData2.quizResults[0];
-            logTest('2.3 Calcul du score', result.percentage === 80, `Score: ${result.percentage}%`);
+            const result = profileData3.quizResults[0];
+            logTest('2.4 Calcul du score', result.percentage === 80, `Score: ${result.percentage}%`);
             
             // Test 2.4: Détails des réponses
-            logTest('2.4 Détails des réponses', result.mistakes.length === 1, `Erreurs: ${result.mistakes.length}`);
+            logTest('2.5 Détails des réponses', result.mistakes.length === 1, `Erreurs: ${result.mistakes.length}`);
             
             // Test 2.5: Quiz ID stable
             const quizId = result.quizId;
-            logTest('2.5 Quiz ID stable', quizId === 'quiz_test_1', `ID: ${quizId}`);
-            
+            logTest('2.6 Quiz ID stable', quizId === 'quiz_test_1', `ID: ${quizId}`);
+
+            let invalidRejected = false;
+            try { window.StudentSpace.saveQuizResult('bad', 11, 10, [], 'attempt_bad'); }
+            catch (e) { invalidRejected = true; }
+            logTest('2.7 Rejet des scores invalides', invalidRejected, 'Un score supérieur au total est rejeté');
+
             // Cleanup
             window.StudentSpace.deleteProfile(profileId);
             
@@ -287,8 +297,9 @@
             const profileId = window.StudentSpace.createProfile('FavTestUser');
             window.StudentSpace.switchProfile(profileId);
             
-            const profileData = window.StudentSpace.getProfileData(profileId);
-            logTest('8.1 Lecture favoris existants', true, 'Favoris lus depuis gosvt_favs');
+            window.StudentSpace.refresh();
+            const favoriteLink = document.querySelector('#panel-favorites .favorite-item a');
+            logTest('8.1 Lecture favoris existants', !!favoriteLink, 'Favori rendu depuis gosvt_favs');
             
             // Cleanup
             localStorage.removeItem('gosvt_favs');
