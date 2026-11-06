@@ -72,26 +72,35 @@
 
         window.StudentSpace.switchProfile(localProfileId);
 
-        // Restore cloud progress before rendering the student space.
+        // Open the student space immediately from local data. Cloud restoration
+        // runs in the background so a slow network cannot block the login screen.
+        ready = true;
+        emit();
+
         if (
           window.GoSVTCloud &&
           typeof window.GoSVTCloud.loadProgress === 'function' &&
           typeof window.StudentSpace.mergeCloudProgress === 'function'
         ) {
-          try {
-            const cloudProgress = await window.GoSVTCloud.loadProgress();
-            if (cloudProgress && typeof cloudProgress === 'object') {
+          Promise.resolve()
+            .then(() => window.GoSVTCloud.loadProgress())
+            .then(cloudProgress => {
+              if (!cloudProgress || typeof cloudProgress !== 'object') return;
               window.StudentSpace.mergeCloudProgress(localProfileId, cloudProgress);
+              // Keep the merged data locally and refresh the visible dashboard.
+              // Re-uploading is deliberately non-blocking.
               const cached = window.StudentSpace.getProfileData(localProfileId);
               if (typeof window.GoSVTCloud.syncProgress === 'function') {
-                await window.GoSVTCloud.syncProgress(cached.progress);
+                Promise.resolve()
+                  .then(() => window.GoSVTCloud.syncProgress(cached.progress))
+                  .catch(err => console.warn('[GoSVT] Background sync deferred:', err && err.message));
               }
-              console.log('[GoSVT] Cloud progress restored successfully.');
-            }
-          } catch (err) {
-            console.warn('[GoSVT] Cloud progress restoration failed:', err && err.message);
-          }
+              emit();
+              console.log('[GoSVT] Cloud progress restored in background.');
+            })
+            .catch(err => console.warn('[GoSVT] Background cloud restore failed:', err && err.message));
         }
+        return;
       }
     }
 
