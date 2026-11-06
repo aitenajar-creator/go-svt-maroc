@@ -5,6 +5,7 @@
   const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const client = window.supabaseClient;
   let ready = false, user = null, profile = null, localProfileId = null, view = 'login', recoveryMode = false;
+  let sessionGeneration = 0;
   let sessionApply = null;
   const MAP_KEY = 'gosvt_supabase_profile_map';
   const msg = (form, value) => { const el = form.querySelector('.gs-auth-msg'); if (el) el.textContent = value || ''; };
@@ -20,7 +21,12 @@
     document.dispatchEvent(new CustomEvent('gosvt:auth-changed', { detail: { loggedIn: !!user, userId: user && user.id, profile } }));
     if (window.StudentSpace) window.StudentSpace.refresh();
   }
-  function getMap() { try { return JSON.parse(localStorage.getItem(MAP_KEY) || '{}'); } catch (_) { return {}; } }
+  function getMap() {
+    try {
+      const value = JSON.parse(localStorage.getItem(MAP_KEY) || '{}');
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    } catch (_) { return {}; }
+  }
   function setMap(v) { try { localStorage.setItem(MAP_KEY, JSON.stringify(v)); } catch (_) {} }
 
   async function applySession(session) {
@@ -28,7 +34,8 @@
     // Supabase may fire SIGNED_IN while the form handler also applies the same session.
     // Share the in-flight work so the same account cannot create two local profiles.
     if (sessionApply && sessionApply.uid === uid) return sessionApply.promise;
-    const promise = applySessionInternal(session);
+    const generation = ++sessionGeneration;
+    const promise = applySessionInternal(session, generation);
     sessionApply = { uid, promise };
     try {
       return await promise;
@@ -37,40 +44,51 @@
     }
   }
 
-  async function applySessionInternal(session) {
-    user = session && session.user ? session.user : null;
+  async function applySessionInternal(session, generation) {
+    const sessionUser = session && session.user ? session.user : null;
+    const uid = sessionUser && sessionUser.id;
+    user = sessionUser;
     profile = null;
     localProfileId = null;
 
-    if (user) {
-      const { data, error } = await client
-        .from('profiles')
-        .select('id,display_name,role')
-        .eq('id', user.id)
-        .maybeSingle();
+    if (sessionUser) {
+      let data = null, error = null;
+      try {
+        ({ data, error } = await client
+          .from('profiles')
+          .select('id,display_name,role')
+          .eq('id', uid)
+          .maybeSingle());
+      } catch (err) {
+        if (generation !== sessionGeneration) return;
+        console.warn('[GoSVT] Profile read deferred:', err && err.message);
+      }
 
+      // Ignore a late profile response after another account signed in or out.
+      if (generation !== sessionGeneration) return;
       if (error) console.warn('[GoSVT] Profile read:', error.message);
 
       profile = data || {
-        id: user.id,
-        display_name: (user.user_metadata && user.user_metadata.display_name) || user.email,
+        id: uid,
+        display_name: (sessionUser.user_metadata && sessionUser.user_metadata.display_name) || sessionUser.email,
         role: 'student'
       };
 
       if (window.StudentSpace) {
         const map = getMap();
-        localProfileId = map[user.id];
+        localProfileId = map[uid];
 
         if (!localProfileId || !window.StudentSpace.getProfiles()[localProfileId]) {
           // StudentSpace profile names are limited to 40 characters.
           const requestedName = String(profile.display_name || 'Student').trim();
           const localName = requestedName.slice(0, 40) || 'Student';
           localProfileId = window.StudentSpace.createProfile(localName);
-          map[user.id] = localProfileId;
+          map[uid] = localProfileId;
           setMap(map);
         }
 
         window.StudentSpace.switchProfile(localProfileId);
+        const profileIdForSession = localProfileId;
 
         // Open the student space immediately from local data. Cloud restoration
         // runs in the background so a slow network cannot block the login screen.
@@ -85,12 +103,14 @@
           Promise.resolve()
             .then(() => window.GoSVTCloud.loadProgress())
             .then(cloudProgress => {
+              if (generation !== sessionGeneration || !user || user.id !== uid) return;
               if (!cloudProgress || typeof cloudProgress !== 'object') return;
-              window.StudentSpace.mergeCloudProgress(localProfileId, cloudProgress);
+              window.StudentSpace.mergeCloudProgress(profileIdForSession, cloudProgress);
               // Keep the merged data locally and refresh the visible dashboard.
               // Re-uploading is deliberately non-blocking.
-              const cached = window.StudentSpace.getProfileData(localProfileId);
-              if (typeof window.GoSVTCloud.syncProgress === 'function') {
+              const cached = window.StudentSpace.getProfileData(profileIdForSession);
+              if (generation === sessionGeneration && user && user.id === uid &&
+                  typeof window.GoSVTCloud.syncProgress === 'function') {
                 Promise.resolve()
                   .then(() => window.GoSVTCloud.syncProgress(cached.progress))
                   .catch(err => console.warn('[GoSVT] Background sync deferred:', err && err.message));
@@ -144,7 +164,14 @@
     container.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { view = b.dataset.view; renderGate(container); }));
     const f = container.querySelector('form[data-form]');
     if (f) f.addEventListener('submit', async e => {
-      e.preventDefault(); const btn = f.querySelector('button[type="submit"]'); if (btn) btn.disabled = true;
+      e.preventDefault();
+      if (!f.checkValidity()) {
+        const invalid = f.querySelector(':invalid');
+        if (invalid) invalid.focus();
+        msg(f, L('يرجى التحقق من الحقول المطلوبة وصيغة البريد الإلكتروني.', 'Vérifiez les champs obligatoires et le format de l’adresse e-mail.'));
+        return;
+      }
+      const btn = f.querySelector('button[type="submit"]'); if (btn) btn.disabled = true;
       try {
         const type = f.dataset.form;
         if (type === 'register') {
@@ -183,7 +210,53 @@
   }
   document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.gs-acc-logout')) logout(); const b=e.target.closest&&e.target.closest('.gs-acc-chpw'); if(b){const p=document.getElementById('gs-chpw-form');if(p)p.hidden=!p.hidden;} });
   document.addEventListener('submit', async e => { if(e.target.id!=='gs-chpw-form')return; e.preventDefault(); const f=e.target, p=f.querySelector('#gs-c-new').value, p2=f.querySelector('#gs-c-new2').value; if(p.length<8)return msg(f,L('كلمة المرور يجب أن تتكون من 8 أحرف على الأقل.','8 caractères minimum.')); if(p!==p2)return msg(f,L('كلمتا المرور غير متطابقتين.','Les mots de passe ne correspondent pas.')); const b=f.querySelector('button'); b.disabled=true; try{const {error}=await client.auth.updateUser({password:p});if(error)throw error;f.reset();msg(f,L('تم تغيير كلمة المرور.','Mot de passe modifié.'));}catch(err){msg(f,errorText(err));}finally{b.disabled=false;} });
-  function initAuth() { if (!client) { ready = true; emit(); return; } client.auth.onAuthStateChange((event, session) => { if (event === 'PASSWORD_RECOVERY') { recoveryMode = true; view = 'reset'; } if (event === 'SIGNED_OUT') { user = null; profile = null; localProfileId = null; ready = true; emit(); return; } if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session) { setTimeout(() => applySession(session).catch(e => console.error('[GoSVT Auth]', e)), 0); return; } emit(); }); client.auth.getSession().then(({ data, error }) => { if (error) console.error(error); return applySession(data && data.session); }).catch(e => { console.error(e); ready = true; emit(); }); }
+  function initAuth() {
+    if (!client) { ready = true; emit(); return; }
+    client.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        recoveryMode = true;
+        view = 'reset';
+      }
+      if (event === 'SIGNED_OUT') {
+        // Invalidate any pending profile lookup or cloud restore from the old session.
+        sessionGeneration++;
+        sessionApply = null;
+        recoveryMode = false;
+        view = 'login';
+        user = null;
+        profile = null;
+        localProfileId = null;
+        ready = true;
+        emit();
+        return;
+      }
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session) {
+        setTimeout(() => applySession(session).catch(e => console.error('[GoSVT Auth]', e)), 0);
+        return;
+      }
+      emit();
+    });
+    client.auth.getSession()
+      .then(({ data, error }) => {
+        if (error) console.error(error);
+        return applySession(data && data.session);
+      })
+      .catch(e => {
+        console.error(e);
+        ready = true;
+        emit();
+      });
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAuth); else initAuth();
-  window.StudentAccount = { isLoggedIn: () => !!user, isReady: () => ready, activeProfileId: () => localProfileId, renderGate, renderBar, logout, getUser: () => user, getProfile: () => profile };
+  window.StudentAccount = {
+    isLoggedIn: () => !!user,
+    isReady: () => ready,
+    isPasswordRecovery: () => recoveryMode,
+    activeProfileId: () => localProfileId,
+    renderGate,
+    renderBar,
+    logout,
+    getUser: () => user,
+    getProfile: () => profile
+  };
 })();

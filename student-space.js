@@ -6,6 +6,10 @@
     const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[ch]));
+    const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+    const isSafeKey = value => typeof value === 'string' && value.length > 0 &&
+        value !== '__proto__' && value !== 'prototype' && value !== 'constructor';
+    const finiteNumber = value => typeof value === 'number' && Number.isFinite(value);
     const safeLink = value => {
         const raw = String(value == null ? '' : value).trim();
         try {
@@ -72,14 +76,24 @@
 
     function getProfiles() {
         const stored = storage.get(STORAGE_KEYS.PROFILES);
-        if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
-            if (!stored.default) stored.default = {
+        if (isRecord(stored)) {
+            const profiles = Object.create(null);
+            Object.entries(stored).forEach(([id, profile]) => {
+                if (!isSafeKey(id) || !isRecord(profile) || typeof profile.name !== 'string') return;
+                profiles[id] = {
+                    id,
+                    name: profile.name.slice(0, 40),
+                    createdAt: finiteNumber(profile.createdAt) ? profile.createdAt : Date.now(),
+                    lastActive: finiteNumber(profile.lastActive) ? profile.lastActive : Date.now()
+                };
+            });
+            if (!profiles.default) profiles.default = {
                 id: 'default',
                 name: 'Élève par défaut',
                 createdAt: Date.now(),
                 lastActive: Date.now()
             };
-            return stored;
+            return profiles;
         }
         return {
             default: {
@@ -167,9 +181,14 @@
         }
         const prefix = profileId + '_';
         const rawProgress = storage.get(prefix + STORAGE_KEYS.PROGRESS);
-        const progress = rawProgress && typeof rawProgress === 'object' && !Array.isArray(rawProgress) ? rawProgress : {};
+        const progress = Object.create(null);
         ['lessons', 'exercises', 'tests'].forEach(function (k) {
-            if (!progress[k] || typeof progress[k] !== 'object' || Array.isArray(progress[k])) progress[k] = {};
+            const source = isRecord(rawProgress) && isRecord(rawProgress[k]) ? rawProgress[k] : {};
+            const bucket = Object.create(null);
+            Object.entries(source).forEach(([id, item]) => {
+                if (isSafeKey(id) && isRecord(item)) bucket[id] = item;
+            });
+            progress[k] = bucket;
         });
         const results = storage.get(prefix + STORAGE_KEYS.QUIZ_RESULTS);
         const mistakes = storage.get(prefix + STORAGE_KEYS.MISTAKES);
@@ -177,9 +196,18 @@
         const goals = storage.get(prefix + STORAGE_KEYS.GOALS);
         return {
             progress: progress,
-            quizResults: Array.isArray(results) ? results : [],
-            mistakes: Array.isArray(mistakes) ? mistakes : [],
-            streak: streak && typeof streak === 'object' ? streak : { current: 0, best: 0, lastVisit: null },
+            quizResults: Array.isArray(results) ? results.filter(r =>
+                isRecord(r) && typeof r.quizId === 'string' && finiteNumber(r.percentage) &&
+                r.percentage >= 0 && r.percentage <= 100 && finiteNumber(r.date)
+            ) : [],
+            mistakes: Array.isArray(mistakes) ? mistakes.filter(m =>
+                isRecord(m) && typeof m.quizId === 'string'
+            ) : [],
+            streak: isRecord(streak) ? {
+                current: Number.isInteger(streak.current) && streak.current >= 0 ? streak.current : 0,
+                best: Number.isInteger(streak.best) && streak.best >= 0 ? streak.best : 0,
+                lastVisit: finiteNumber(streak.lastVisit) ? streak.lastVisit : null
+            } : { current: 0, best: 0, lastVisit: null },
             goals: Array.isArray(goals) ? goals : []
         };
     }
@@ -219,19 +247,24 @@
 
     // دمج تقدم Supabase مع البيانات المحلية دون حذف بيانات محلية أو إلغاء إكمال سابق.
     function mergeCloudProgress(profileId, cloudProgress) {
-        if (!cloudProgress || typeof cloudProgress !== 'object' || Array.isArray(cloudProgress)) return;
+        if (!isRecord(cloudProgress)) return;
 
         const data = getProfileData(profileId);
         ['lessons', 'exercises', 'tests'].forEach(function (bucket) {
             const cloudEntries = cloudProgress[bucket];
-            if (!cloudEntries || typeof cloudEntries !== 'object' || Array.isArray(cloudEntries)) return;
+            if (!isRecord(cloudEntries)) return;
             const localEntries = data.progress[bucket];
 
             Object.keys(cloudEntries).forEach(function (key) {
-                const cloudItem = cloudEntries[key] && typeof cloudEntries[key] === 'object' ? cloudEntries[key] : {};
+                if (!isSafeKey(key)) return;
+                const cloudItem = isRecord(cloudEntries[key]) ? cloudEntries[key] : {};
                 const localItem = localEntries[key];
                 if (!localItem) {
-                    localEntries[key] = Object.assign({}, cloudItem, {
+                    const cleanItem = {};
+                    Object.keys(cloudItem).forEach(function (field) {
+                        if (isSafeKey(field)) cleanItem[field] = cloudItem[field];
+                    });
+                    localEntries[key] = Object.assign(cleanItem, {
                         id: cloudItem.id || key,
                         completed: cloudItem.completed === true
                     });
@@ -242,6 +275,7 @@
                 } else {
                     // ادمج الحقول مع إبقاء بيانات العرض المحلية، وعدم التراجع عن completed=true.
                     Object.keys(cloudItem).forEach(function (field) {
+                        if (!isSafeKey(field)) return;
                         if (field === 'completed') return;
                         if (localItem[field] == null || localItem[field] === '') localItem[field] = cloudItem[field];
                     });
@@ -314,6 +348,7 @@
             profileDeleted: 'تم حذف الملف',
             profileSwitched: 'تم التبديل إلى الملف',
             invalidFile: 'ملف JSON غير صالح',
+            importSuccess: 'تم استيراد البيانات بنجاح',
             confirmReplace: 'هذا الملف موجود بالفعل. هل تريد استبداله؟',
             retryMistakes: 'إعادة الأسئلة الخاطئة فقط',
             enterProfileName: 'أدخل اسم الملف الشخصي الجديد:',
@@ -361,6 +396,7 @@
             profileDeleted: 'Profil supprimé',
             profileSwitched: 'Changement de profil effectué',
             invalidFile: 'Fichier JSON invalide',
+            importSuccess: 'Données importées avec succès',
             confirmReplace: 'Ce profil existe déjà. Voulez-vous le remplacer ?',
             retryMistakes: 'Réessayer uniquement les erreurs',
             enterProfileName: 'Entrez le nom du nouveau profil:',
@@ -382,9 +418,10 @@
     // Clé stable d'un document : chemin décodé, NFC, sans "/" initial
     function normalizeItemKey(item) {
         let key = String(item == null ? '' : item);
-        key = key.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]+/i, '').replace(/^([^?#]*)[?#].*$/, function (m, path) {
-            return /%/.test(path) ? path : m; // ?/# ignorés seulement pour une URL encodée
-        });
+        if (/^[a-z][a-z0-9+.-]*:\/\//i.test(key)) {
+            try { key = new URL(key).pathname; } catch (e) { /* treat it as a relative key */ }
+        }
+        key = key.split(/[?#]/, 1)[0];
         try { key = decodeURIComponent(key); } catch (e) { /* déjà décodé */ }
         return key.normalize('NFC').replace(/^\/+/, '');
     }
@@ -416,7 +453,7 @@
         if (!canTrack()) return null;
         const category = PROGRESS_TYPE_ALIASES[type];
         const key = normalizeItemKey(item);
-        if (!category || !key) return null;
+        if (!category || !isSafeKey(key)) return null;
 
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
@@ -462,6 +499,8 @@
 
     function markLessonComplete(lessonId) {
         if (!canTrack()) return;
+        lessonId = String(lessonId == null ? '' : lessonId);
+        if (!isSafeKey(lessonId)) return;
         const profileData = getProfileData(currentProfileId);
         if (profileData.progress.lessons[lessonId]) {
             profileData.progress.lessons[lessonId].completed = true;
@@ -475,7 +514,12 @@
     function refreshStudentSpaceView() {
         const container = document.getElementById('student-space-content');
         if (!container || !container.children.length) return; // sera rendu à l'ouverture de la section
-        if (container.querySelector('.gs-auth')) return;      // écran de connexion : ne pas effacer la saisie
+        const account = window.StudentAccount;
+        const isRecovery = account && typeof account.isPasswordRecovery === 'function' && account.isPasswordRecovery();
+        // Preserve typed values while logged out, but leave the loading/login screen
+        // as soon as auth resolves or a recovery link is opened.
+        if (container.querySelector('.gs-auth-form') && account &&
+            !account.isLoggedIn() && !isRecovery) return;
         const active = container.querySelector('.space-tab.active');
         const tabName = active ? active.dataset.tab : 'dashboard';
         renderStudentSpace();
@@ -497,12 +541,13 @@
         const id = String(quizId == null ? '' : quizId).trim();
         const total = Number(totalQuestions);
         const points = Number(score);
-        if (!id || id.length > 200 || !Number.isInteger(total) || total <= 0 ||
+        if (!id || id.length > 200 || !Number.isInteger(total) || total <= 0 || total > 10000 ||
             !Number.isInteger(points) || points < 0 || points > total) {
             throw new Error('Résultat de quiz invalide.');
         }
         const profileData = getProfileData(currentProfileId);
         const token = String(attemptId || makeId());
+        if (token.length > 200) throw new Error('Identifiant de tentative invalide.');
         if (profileData.quizResults.some(r => r && r.attemptId === token)) {
             return profileData.quizResults;
         }
@@ -620,7 +665,7 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function importProfileData(jsonString) {
@@ -631,31 +676,78 @@
             const payload = JSON.parse(jsonString);
             const p = payload && payload.profile;
             const d = payload && payload.data;
-            if (!p || typeof p !== 'object' || typeof p.id !== 'string' ||
+            if (!isRecord(p) || typeof p.id !== 'string' ||
                 !/^profile_[a-zA-Z0-9_-]{1,100}$/.test(p.id) ||
                 typeof p.name !== 'string' || p.name.trim().length < 2 || p.name.length > 40 ||
-                !d || typeof d !== 'object' || !d.progress || typeof d.progress !== 'object' ||
+                !isRecord(d) || !isRecord(d.progress) ||
                 !Array.isArray(d.quizResults) || !Array.isArray(d.mistakes) ||
-                !d.streak || typeof d.streak !== 'object' || !Array.isArray(d.goals)) {
+                !isRecord(d.streak) || !Array.isArray(d.goals)) {
                 throw new Error('Structure de sauvegarde invalide.');
             }
             if (payload.version !== '1.0') {
                 throw new Error('Version de sauvegarde non prise en charge.');
             }
+            const progress = Object.create(null);
+            ['lessons', 'exercises', 'tests'].forEach(bucket => {
+                const source = isRecord(d.progress[bucket]) ? d.progress[bucket] : {};
+                const clean = Object.create(null);
+                Object.entries(source).forEach(([id, item]) => {
+                    if (!isSafeKey(id) || !isRecord(item)) return;
+                    clean[id] = {
+                        id: typeof item.id === 'string' ? item.id.slice(0, 500) : id,
+                        title: typeof item.title === 'string' ? item.title.slice(0, 500) : '',
+                        path: typeof item.path === 'string' ? item.path.slice(0, 2000) : id,
+                        completed: item.completed === true,
+                        completedAt: finiteNumber(item.completedAt) ? item.completedAt : null,
+                        firstViewed: finiteNumber(item.firstViewed) ? item.firstViewed : null,
+                        lastViewed: finiteNumber(item.lastViewed) ? item.lastViewed : null,
+                        viewCount: Number.isInteger(item.viewCount) && item.viewCount >= 0 ? item.viewCount : 0,
+                        attempts: Number.isInteger(item.attempts) && item.attempts >= 0 ? item.attempts : 0,
+                        category: typeof item.category === 'string' ? item.category.slice(0, 100) : '',
+                        lang: typeof item.lang === 'string' ? item.lang.slice(0, 100) : '',
+                        level: typeof item.level === 'string' ? item.level.slice(0, 100) : '',
+                        track: typeof item.track === 'string' ? item.track.slice(0, 100) : ''
+                    };
+                });
+                progress[bucket] = clean;
+            });
+            const quizResults = d.quizResults.filter(r =>
+                isRecord(r) && typeof r.quizId === 'string' && r.quizId.length <= 200 &&
+                Number.isInteger(r.score) && Number.isInteger(r.total) && r.total > 0 &&
+                r.total <= 10000 && r.score >= 0 && r.score <= r.total &&
+                finiteNumber(r.date)
+            ).slice(-5000).map(r => ({
+                quizId: r.quizId,
+                attemptId: typeof r.attemptId === 'string' ? r.attemptId.slice(0, 200) : makeId(),
+                score: r.score,
+                total: r.total,
+                percentage: Math.round((r.score / r.total) * 100),
+                date: r.date,
+                mistakes: Array.isArray(r.mistakes) ? r.mistakes.filter(isRecord).slice(0, r.total).map(m => ({
+                    question: String(m.question == null ? '' : m.question).slice(0, 2000),
+                    selected: String(m.selected == null ? '' : m.selected).slice(0, 1000),
+                    correct: String(m.correct == null ? '' : m.correct).slice(0, 1000),
+                    quizId: r.quizId,
+                    date: finiteNumber(m.date) ? m.date : r.date
+                })) : []
+            }));
             const normalized = {
-                progress: {
-                    lessons: d.progress.lessons && typeof d.progress.lessons === 'object' && !Array.isArray(d.progress.lessons) ? d.progress.lessons : {},
-                    exercises: d.progress.exercises && typeof d.progress.exercises === 'object' && !Array.isArray(d.progress.exercises) ? d.progress.exercises : {},
-                    tests: d.progress.tests && typeof d.progress.tests === 'object' && !Array.isArray(d.progress.tests) ? d.progress.tests : {}
-                },
-                quizResults: d.quizResults,
-                mistakes: d.mistakes,
+                progress,
+                quizResults,
+                mistakes: d.mistakes.filter(m => isRecord(m) && typeof m.quizId === 'string')
+                    .slice(-10000).map(m => ({
+                        question: String(m.question == null ? '' : m.question).slice(0, 2000),
+                        selected: String(m.selected == null ? '' : m.selected).slice(0, 1000),
+                        correct: String(m.correct == null ? '' : m.correct).slice(0, 1000),
+                        quizId: m.quizId.slice(0, 200),
+                        date: finiteNumber(m.date) ? m.date : Date.now()
+                    })),
                 streak: {
                     current: Number.isInteger(d.streak.current) && d.streak.current >= 0 ? d.streak.current : 0,
                     best: Number.isInteger(d.streak.best) && d.streak.best >= 0 ? d.streak.best : 0,
-                    lastVisit: Number.isFinite(d.streak.lastVisit) ? d.streak.lastVisit : null
+                    lastVisit: finiteNumber(d.streak.lastVisit) ? d.streak.lastVisit : null
                 },
-                goals: d.goals
+                goals: d.goals.slice(0, 500)
             };
             const profiles = getProfiles();
             const existing = profiles[p.id];
@@ -663,7 +755,7 @@
             const safeProfile = {
                 id: p.id,
                 name: p.name.normalize('NFC').trim(),
-                createdAt: Number.isFinite(p.createdAt) ? p.createdAt : Date.now(),
+                createdAt: finiteNumber(p.createdAt) ? p.createdAt : Date.now(),
                 lastActive: Date.now()
             };
             profiles[p.id] = safeProfile;
@@ -758,15 +850,25 @@
     };
 
     window.handleImportFile = function(input) {
-        const file = input.files[0];
+        const file = input && input.files && input.files[0];
         if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            alert(t('invalidFile'));
+            input.value = '';
+            return;
+        }
 
         const reader = new FileReader();
         reader.onload = function(e) {
             if (importProfileData(e.target.result)) {
-                alert(t('Données importées avec succès'));
+                alert(t('importSuccess'));
                 renderStudentSpace();
             }
+            input.value = '';
+        };
+        reader.onerror = function() {
+            alert(t('invalidFile'));
+            input.value = '';
         };
         reader.readAsText(file);
     };
@@ -802,7 +904,7 @@
             html += `
                 <div class="lesson-item completed">
                     <span title="${esc(id)}">${esc(data.title || id)}</span>
-                    <span class="lesson-date">${new Date(data.completedAt).toLocaleDateString()}</span>
+                    <span class="lesson-date">${finiteNumber(data.completedAt) ? new Date(data.completedAt).toLocaleDateString() : '—'}</span>
                 </div>
             `;
         });
@@ -1034,6 +1136,11 @@
     function renderStudentSpace() {
         const container = document.getElementById('student-space-content');
         if (!container) return;
+        if (window.StudentAccount && typeof window.StudentAccount.isPasswordRecovery === 'function' &&
+            window.StudentAccount.isPasswordRecovery()) {
+            window.StudentAccount.renderGate(container);
+            return;
+        }
         if (window.StudentAccount && !window.StudentAccount.isLoggedIn()) {
             window.StudentAccount.renderGate(container);
             return;
@@ -1104,6 +1211,17 @@
             btn.addEventListener('click', function() {
                 const quizId = this.dataset.quizId;
                 retryMistakes(quizId);
+            });
+        });
+        container.querySelectorAll('.btn-remove-fav').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const url = this.dataset.url;
+                const current = storage.get('gosvt_favs');
+                if (!Array.isArray(current)) return;
+                storage.set('gosvt_favs', current.filter(fav =>
+                    !isRecord(fav) || String(fav.url == null ? '' : fav.url) !== url
+                ));
+                renderStudentSpace();
             });
         });
     }
@@ -1350,7 +1468,9 @@
     function init() {
         // Profil / progression modifiés depuis un autre onglet -> resynchroniser et réafficher
         window.addEventListener('storage', function (e) {
-            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE || e.key.endsWith('_' + STORAGE_KEYS.PROGRESS)) {
+            const profileDataChanged = e.key && Object.values(STORAGE_KEYS).some(key => e.key.endsWith('_' + key));
+            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE || e.key === STORAGE_KEYS.PROFILES ||
+                e.key === 'gosvt_favs' || profileDataChanged) {
                 syncCurrentProfile();
                 refreshStudentSpaceView();
             }
