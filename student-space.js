@@ -267,10 +267,89 @@ function mergeCloudProgress(profileId, cloudProgress) {
             });
         }
     }
+    function saveProfileData(profileId, data, options) {
+        const prefix = profileId + '_';
 
-    // ============================================
-    // 2. LANGUAGE SYSTEM (نظام اللغة)
-    // ============================================
+        storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
+        storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
+        storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
+        storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
+        storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
+
+        // حفظ البيانات محلياً ومزامنة التقدم مع Supabase.
+        // skipCloudSync يمنع إعادة المزامنة أثناء استرجاع بيانات السحابة.
+        if (
+            !(options && options.skipCloudSync) &&
+            window.GoSVTCloud &&
+            typeof window.GoSVTCloud.syncProgress === 'function'
+        ) {
+            window.GoSVTCloud.syncProgress(data.progress).catch(function (err) {
+                console.warn(
+                    '[GoSVT] Cloud progress sync deferred:',
+                    err && err.message
+                );
+            });
+        }
+    }
+
+    // دمج تقدم Supabase مع البيانات المحلية دون فقدان المعلومات المحلية.
+    function mergeCloudProgress(profileId, cloudProgress) {
+        if (!cloudProgress || typeof cloudProgress !== 'object') return;
+
+        const data = getProfileData(profileId);
+        const buckets = ['lessons', 'exercises', 'tests'];
+
+        buckets.forEach(function (bucket) {
+            const cloudEntries = cloudProgress[bucket] || {};
+            const localEntries = data.progress[bucket];
+
+            Object.keys(cloudEntries).forEach(function (key) {
+                const cloudItem = cloudEntries[key] || {};
+                const localItem = localEntries[key];
+
+                if (!localItem) {
+                    localEntries[key] = {
+                        id: key,
+                        completed: cloudItem.completed === true,
+                        cloudUpdatedAt: cloudItem.cloudUpdatedAt || null
+                    };
+
+                    if (cloudItem.completed && cloudItem.cloudUpdatedAt) {
+                        const date = Date.parse(cloudItem.cloudUpdatedAt);
+
+                        if (Number.isFinite(date)) {
+                            localEntries[key].completedAt = date;
+                        }
+                    }
+                } else {
+                    // الاحتفاظ بالبيانات المحلية وعدم إلغاء حالة الإكمال.
+                    localItem.completed =
+                        localItem.completed === true ||
+                        cloudItem.completed === true;
+
+                    localItem.id = localItem.id || key;
+
+                    localItem.cloudUpdatedAt =
+                        cloudItem.cloudUpdatedAt || localItem.cloudUpdatedAt;
+
+                    if (
+                        localItem.completed &&
+                        !localItem.completedAt &&
+                        cloudItem.cloudUpdatedAt
+                    ) {
+                        const date = Date.parse(cloudItem.cloudUpdatedAt);
+
+                        if (Number.isFinite(date)) {
+                            localItem.completedAt = date;
+                        }
+                    }
+                }
+            });
+        });
+
+        // حفظ الدمج محلياً دون تشغيل مزامنة جديدة.
+        saveProfileData(profileId, data, { skipCloudSync: true });
+    }
     function lang() {
         return document.documentElement.getAttribute('lang') === 'fr' ? 'fr' : 'ar';
     }
@@ -1447,24 +1526,24 @@ function mergeCloudProgress(profileId, cloudProgress) {
 
     // Expose functions globally for integration with other systems
     window.StudentSpace = {
-        window.StudentSpace = {
-    updateProgress,
-    markLessonComplete,
-    saveQuizResult,
-    updateStreak,
-    getDashboardStats,
-    renderStudentSpace,
-    refresh: refreshStudentSpaceView,
-    createProfile,
-    deleteProfile,
-    switchProfile,
-    getCurrentProfile,
-    getProfiles,
-    getProfileData,
-    mergeCloudProgress,
-    exportProfileData,
-    importProfileData,
-    retryMistakes
+            // Expose functions globally for integration with other systems
+    window.StudentSpace = {
+        updateProgress,
+        markLessonComplete,
+        saveQuizResult,
+        updateStreak,
+        getDashboardStats,
+        renderStudentSpace,
+        refresh: refreshStudentSpaceView,
+        createProfile,
+        deleteProfile,
+        switchProfile,
+        getCurrentProfile,
+        getProfiles,
+        getProfileData,
+        mergeCloudProgress,
+        exportProfileData,
+        importProfileData,
+        retryMistakes
     };
-
 })();
