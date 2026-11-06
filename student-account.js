@@ -5,6 +5,7 @@
   const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const client = window.supabaseClient;
   let ready = false, user = null, profile = null, localProfileId = null, view = 'login', recoveryMode = false;
+  let sessionApply = null;
   const MAP_KEY = 'gosvt_supabase_profile_map';
   const msg = (form, value) => { const el = form.querySelector('.gs-auth-msg'); if (el) el.textContent = value || ''; };
   const errorText = err => {
@@ -23,6 +24,20 @@
   function setMap(v) { try { localStorage.setItem(MAP_KEY, JSON.stringify(v)); } catch (_) {} }
 
   async function applySession(session) {
+    const uid = session && session.user ? session.user.id : null;
+    // Supabase may fire SIGNED_IN while the form handler also applies the same session.
+    // Share the in-flight work so the same account cannot create two local profiles.
+    if (sessionApply && sessionApply.uid === uid) return sessionApply.promise;
+    const promise = applySessionInternal(session);
+    sessionApply = { uid, promise };
+    try {
+      return await promise;
+    } finally {
+      if (sessionApply && sessionApply.promise === promise) sessionApply = null;
+    }
+  }
+
+  async function applySessionInternal(session) {
     user = session && session.user ? session.user : null;
     profile = null;
     localProfileId = null;
@@ -34,15 +49,11 @@
         .eq('id', user.id)
         .maybeSingle();
 
-      if (error) {
-        console.warn('[GoSVT] Profile read:', error.message);
-      }
+      if (error) console.warn('[GoSVT] Profile read:', error.message);
 
       profile = data || {
         id: user.id,
-        display_name:
-          (user.user_metadata && user.user_metadata.display_name) ||
-          user.email,
+        display_name: (user.user_metadata && user.user_metadata.display_name) || user.email,
         role: 'student'
       };
 
@@ -50,14 +61,11 @@
         const map = getMap();
         localProfileId = map[user.id];
 
-        if (
-          !localProfileId ||
-          !window.StudentSpace.getProfiles()[localProfileId]
-        ) {
-          localProfileId = window.StudentSpace.createProfile(
-            profile.display_name || 'Student'
-          );
-
+        if (!localProfileId || !window.StudentSpace.getProfiles()[localProfileId]) {
+          // StudentSpace profile names are limited to 40 characters.
+          const requestedName = String(profile.display_name || 'Student').trim();
+          const localName = requestedName.slice(0, 40) || 'Student';
+          localProfileId = window.StudentSpace.createProfile(localName);
           map[user.id] = localProfileId;
           setMap(map);
         }
@@ -71,33 +79,17 @@
           typeof window.StudentSpace.mergeCloudProgress === 'function'
         ) {
           try {
-            const cloudProgress =
-              await window.GoSVTCloud.loadProgress();
-
-            if (cloudProgress) {
-              window.StudentSpace.mergeCloudProgress(
-                localProfileId,
-                cloudProgress
-              );
-
-              const cached =
-                window.StudentSpace.getProfileData(localProfileId);
-
-              if (
-                typeof window.GoSVTCloud.syncProgress === 'function'
-              ) {
+            const cloudProgress = await window.GoSVTCloud.loadProgress();
+            if (cloudProgress && typeof cloudProgress === 'object') {
+              window.StudentSpace.mergeCloudProgress(localProfileId, cloudProgress);
+              const cached = window.StudentSpace.getProfileData(localProfileId);
+              if (typeof window.GoSVTCloud.syncProgress === 'function') {
                 await window.GoSVTCloud.syncProgress(cached.progress);
               }
-
-              console.log(
-                '[GoSVT] Cloud progress restored successfully.'
-              );
+              console.log('[GoSVT] Cloud progress restored successfully.');
             }
           } catch (err) {
-            console.warn(
-              '[GoSVT] Cloud progress restoration failed:',
-              err && err.message
-            );
+            console.warn('[GoSVT] Cloud progress restoration failed:', err && err.message);
           }
         }
       }
@@ -106,7 +98,6 @@
     ready = true;
     emit();
   }
-
   function field(id, label, type, attrs='') {
     return `<label class="gs-auth-field" for="${id}"><span>${label}</span><input id="${id}" name="${id}" type="${type}" ${attrs}></label>`;
   }
@@ -183,6 +174,7 @@
   }
   document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.gs-acc-logout')) logout(); const b=e.target.closest&&e.target.closest('.gs-acc-chpw'); if(b){const p=document.getElementById('gs-chpw-form');if(p)p.hidden=!p.hidden;} });
   document.addEventListener('submit', async e => { if(e.target.id!=='gs-chpw-form')return; e.preventDefault(); const f=e.target, p=f.querySelector('#gs-c-new').value, p2=f.querySelector('#gs-c-new2').value; if(p.length<8)return msg(f,L('كلمة المرور يجب أن تتكون من 8 أحرف على الأقل.','8 caractères minimum.')); if(p!==p2)return msg(f,L('كلمتا المرور غير متطابقتين.','Les mots de passe ne correspondent pas.')); const b=f.querySelector('button'); b.disabled=true; try{const {error}=await client.auth.updateUser({password:p});if(error)throw error;f.reset();msg(f,L('تم تغيير كلمة المرور.','Mot de passe modifié.'));}catch(err){msg(f,errorText(err));}finally{b.disabled=false;} });
-  document.addEventListener('DOMContentLoaded', () => { if (!client) { ready=true; return; } client.auth.getSession().then(({data,error})=>{if(error)console.error(error);return applySession(data&&data.session);}).catch(e=>{console.error(e);ready=true;emit();}); client.auth.onAuthStateChange((event, session)=>{ if(event==='PASSWORD_RECOVERY'){recoveryMode=true;view='reset';} if(event==='SIGNED_OUT'){user=null;profile=null;localProfileId=null;ready=true;} if(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'||event==='USER_UPDATED'){ if(session) { setTimeout(()=>applySession(session),0); return; } } emit(); }); });
+  function initAuth() { if (!client) { ready = true; emit(); return; } client.auth.onAuthStateChange((event, session) => { if (event === 'PASSWORD_RECOVERY') { recoveryMode = true; view = 'reset'; } if (event === 'SIGNED_OUT') { user = null; profile = null; localProfileId = null; ready = true; emit(); return; } if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session) { setTimeout(() => applySession(session).catch(e => console.error('[GoSVT Auth]', e)), 0); return; } emit(); }); client.auth.getSession().then(({ data, error }) => { if (error) console.error(error); return applySession(data && data.session); }).catch(e => { console.error(e); ready = true; emit(); }); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAuth); else initAuth();
   window.StudentAccount = { isLoggedIn: () => !!user, isReady: () => ready, activeProfileId: () => localProfileId, renderGate, renderBar, logout, getUser: () => user, getProfile: () => profile };
 })();

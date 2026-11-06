@@ -184,172 +184,80 @@
         };
     }
 
-    function saveProfileData(profileId, data, options) {
-        // Merge cloud progress into the local profile without losing local metadata.
-function mergeCloudProgress(profileId, cloudProgress) {
-    if (!cloudProgress || typeof cloudProgress !== 'object') return;
-
-    const data = getProfileData(profileId);
-    const buckets = ['lessons', 'exercises', 'tests'];
-
-    buckets.forEach(bucket => {
-        const cloudEntries = cloudProgress[bucket] || {};
-        const localEntries = data.progress[bucket];
-
-        Object.keys(cloudEntries).forEach(key => {
-            const cloudItem = cloudEntries[key] || {};
-            const localItem = localEntries[key];
-
-            if (!localItem) {
-                localEntries[key] = {
-                    id: key,
-                    completed: cloudItem.completed === true,
-                    cloudUpdatedAt: cloudItem.cloudUpdatedAt || null
-                };
-
-                if (cloudItem.completed && cloudItem.cloudUpdatedAt) {
-                    const date = Date.parse(cloudItem.cloudUpdatedAt);
-                    if (Number.isFinite(date)) {
-                        localEntries[key].completedAt = date;
-                    }
-                }
-            } else {
-                // Preserve local metadata and never downgrade completion.
-                localItem.completed =
-                    localItem.completed === true ||
-                    cloudItem.completed === true;
-
-                localItem.id = localItem.id || key;
-                localItem.cloudUpdatedAt =
-                    cloudItem.cloudUpdatedAt || localItem.cloudUpdatedAt;
-
-                if (localItem.completed && !localItem.completedAt &&
-                    cloudItem.cloudUpdatedAt) {
-                    const date = Date.parse(cloudItem.cloudUpdatedAt);
-                    if (Number.isFinite(date)) {
-                        localItem.completedAt = date;
-                    }
-                }
-            }
-        });
-    });
-
-    saveProfileData(profileId, data, { skipCloudSync: true });
-}
-    const prefix = profileId + '_';
-
-    storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
-    storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
-    storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
-    storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
-    storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
-
-    // Allow saving restored cloud data without immediately syncing it.
-    if (!(options && options.skipCloudSync) &&
-        window.GoSVTCloud &&
-        typeof window.GoSVTCloud.syncProgress === 'function') {
-
-        window.GoSVTCloud.syncProgress(data.progress).catch(function (err) {
-            console.warn('[GoSVT] Cloud progress sync deferred:', err.message);
-        });
+    // حفظ البيانات محلياً، ثم مزامنة التقدم مع Supabase إن كانت الخدمة جاهزة.
+    // لا نفترض أن syncProgress يعيد Promise؛ نغلف النتيجة لتفادي أخطاء .catch.
+    function syncCloudProgress(progress) {
+        if (!window.GoSVTCloud || typeof window.GoSVTCloud.syncProgress !== 'function') return;
+        Promise.resolve()
+            .then(function () { return window.GoSVTCloud.syncProgress(progress); })
+            .catch(function (err) {
+                console.warn('[GoSVT] Cloud progress sync deferred:', err && err.message ? err.message : err);
+            });
     }
-}
+
+    function saveProfileData(profileId, data, options) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId]) {
+            throw new Error('Profil introuvable.');
+        }
+        data = data || {};
+        data.progress = data.progress && typeof data.progress === 'object' ? data.progress : {};
+        data.quizResults = Array.isArray(data.quizResults) ? data.quizResults : [];
+        data.mistakes = Array.isArray(data.mistakes) ? data.mistakes : [];
+        data.streak = data.streak && typeof data.streak === 'object' ? data.streak : { current: 0, best: 0, lastVisit: null };
+        data.goals = Array.isArray(data.goals) ? data.goals : [];
+
         const prefix = profileId + '_';
         storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
         storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
         storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
         storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
         storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
-        // Keep the browser cache for offline use and synchronize learning progress to Supabase.
-        if (window.GoSVTCloud && typeof window.GoSVTCloud.syncProgress === 'function') {
-            window.GoSVTCloud.syncProgress(data.progress).catch(function (err) {
-                console.warn('[GoSVT] Cloud progress sync deferred:', err && err.message);
-            });
-        }
-    }
-    function saveProfileData(profileId, data, options) {
-        const prefix = profileId + '_';
 
-        storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
-        storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
-        storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
-        storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
-        storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
-
-        // حفظ البيانات محلياً ومزامنة التقدم مع Supabase.
-        // skipCloudSync يمنع إعادة المزامنة أثناء استرجاع بيانات السحابة.
-        if (
-            !(options && options.skipCloudSync) &&
-            window.GoSVTCloud &&
-            typeof window.GoSVTCloud.syncProgress === 'function'
-        ) {
-            window.GoSVTCloud.syncProgress(data.progress).catch(function (err) {
-                console.warn(
-                    '[GoSVT] Cloud progress sync deferred:',
-                    err && err.message
-                );
-            });
-        }
+        // أثناء استرجاع بيانات السحابة نحفظ محلياً فقط لتجنب حلقة مزامنة.
+        if (!(options && options.skipCloudSync)) syncCloudProgress(data.progress);
     }
 
-    // دمج تقدم Supabase مع البيانات المحلية دون فقدان المعلومات المحلية.
+    // دمج تقدم Supabase مع البيانات المحلية دون حذف بيانات محلية أو إلغاء إكمال سابق.
     function mergeCloudProgress(profileId, cloudProgress) {
-        if (!cloudProgress || typeof cloudProgress !== 'object') return;
+        if (!cloudProgress || typeof cloudProgress !== 'object' || Array.isArray(cloudProgress)) return;
 
         const data = getProfileData(profileId);
-        const buckets = ['lessons', 'exercises', 'tests'];
-
-        buckets.forEach(function (bucket) {
-            const cloudEntries = cloudProgress[bucket] || {};
+        ['lessons', 'exercises', 'tests'].forEach(function (bucket) {
+            const cloudEntries = cloudProgress[bucket];
+            if (!cloudEntries || typeof cloudEntries !== 'object' || Array.isArray(cloudEntries)) return;
             const localEntries = data.progress[bucket];
 
             Object.keys(cloudEntries).forEach(function (key) {
-                const cloudItem = cloudEntries[key] || {};
+                const cloudItem = cloudEntries[key] && typeof cloudEntries[key] === 'object' ? cloudEntries[key] : {};
                 const localItem = localEntries[key];
-
                 if (!localItem) {
-                    localEntries[key] = {
-                        id: key,
-                        completed: cloudItem.completed === true,
-                        cloudUpdatedAt: cloudItem.cloudUpdatedAt || null
-                    };
-
-                    if (cloudItem.completed && cloudItem.cloudUpdatedAt) {
+                    localEntries[key] = Object.assign({}, cloudItem, {
+                        id: cloudItem.id || key,
+                        completed: cloudItem.completed === true
+                    });
+                    if (!localEntries[key].completedAt && cloudItem.cloudUpdatedAt) {
                         const date = Date.parse(cloudItem.cloudUpdatedAt);
-
-                        if (Number.isFinite(date)) {
-                            localEntries[key].completedAt = date;
-                        }
+                        if (Number.isFinite(date)) localEntries[key].completedAt = date;
                     }
                 } else {
-                    // الاحتفاظ بالبيانات المحلية وعدم إلغاء حالة الإكمال.
-                    localItem.completed =
-                        localItem.completed === true ||
-                        cloudItem.completed === true;
-
+                    // ادمج الحقول مع إبقاء بيانات العرض المحلية، وعدم التراجع عن completed=true.
+                    Object.keys(cloudItem).forEach(function (field) {
+                        if (field === 'completed') return;
+                        if (localItem[field] == null || localItem[field] === '') localItem[field] = cloudItem[field];
+                    });
                     localItem.id = localItem.id || key;
-
-                    localItem.cloudUpdatedAt =
-                        cloudItem.cloudUpdatedAt || localItem.cloudUpdatedAt;
-
-                    if (
-                        localItem.completed &&
-                        !localItem.completedAt &&
-                        cloudItem.cloudUpdatedAt
-                    ) {
+                    localItem.completed = localItem.completed === true || cloudItem.completed === true;
+                    if (!localItem.completedAt && cloudItem.cloudUpdatedAt) {
                         const date = Date.parse(cloudItem.cloudUpdatedAt);
-
-                        if (Number.isFinite(date)) {
-                            localItem.completedAt = date;
-                        }
+                        if (Number.isFinite(date)) localItem.completedAt = date;
                     }
                 }
             });
         });
 
-        // حفظ الدمج محلياً دون تشغيل مزامنة جديدة.
         saveProfileData(profileId, data, { skipCloudSync: true });
     }
+
     function lang() {
         return document.documentElement.getAttribute('lang') === 'fr' ? 'fr' : 'ar';
     }
@@ -1524,9 +1432,7 @@ function mergeCloudProgress(profileId, cloudProgress) {
         init();
     }
 
-    // Expose functions globally for integration with other systems
-    window.StudentSpace = {
-            // Expose functions globally for integration with other systems
+    // Expose functions globally for integration with the account and content systems.
     window.StudentSpace = {
         updateProgress,
         markLessonComplete,
