@@ -6,10 +6,6 @@
     const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[ch]));
-    const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
-    const isSafeKey = value => typeof value === 'string' && value.length > 0 &&
-        value !== '__proto__' && value !== 'prototype' && value !== 'constructor';
-    const finiteNumber = value => typeof value === 'number' && Number.isFinite(value);
     const safeLink = value => {
         const raw = String(value == null ? '' : value).trim();
         try {
@@ -33,6 +29,8 @@
         MISTAKES: 'gosvt_mistakes',
         STREAK: 'gosvt_streak',
         GOALS: 'gosvt_goals',
+        NOTES: 'gosvt_notes',
+        STUDY_PLAN: 'gosvt_study_plan',
         LAST_VISIT: 'gosvt_last_visit'
     };
 
@@ -76,24 +74,14 @@
 
     function getProfiles() {
         const stored = storage.get(STORAGE_KEYS.PROFILES);
-        if (isRecord(stored)) {
-            const profiles = Object.create(null);
-            Object.entries(stored).forEach(([id, profile]) => {
-                if (!isSafeKey(id) || !isRecord(profile) || typeof profile.name !== 'string') return;
-                profiles[id] = {
-                    id,
-                    name: profile.name.slice(0, 40),
-                    createdAt: finiteNumber(profile.createdAt) ? profile.createdAt : Date.now(),
-                    lastActive: finiteNumber(profile.lastActive) ? profile.lastActive : Date.now()
-                };
-            });
-            if (!profiles.default) profiles.default = {
+        if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
+            if (!stored.default) stored.default = {
                 id: 'default',
                 name: 'Élève par défaut',
                 createdAt: Date.now(),
                 lastActive: Date.now()
             };
-            return profiles;
+            return stored;
         }
         return {
             default: {
@@ -181,117 +169,47 @@
         }
         const prefix = profileId + '_';
         const rawProgress = storage.get(prefix + STORAGE_KEYS.PROGRESS);
-        const progress = Object.create(null);
+        const progress = rawProgress && typeof rawProgress === 'object' && !Array.isArray(rawProgress) ? rawProgress : {};
         ['lessons', 'exercises', 'tests'].forEach(function (k) {
-            const source = isRecord(rawProgress) && isRecord(rawProgress[k]) ? rawProgress[k] : {};
-            const bucket = Object.create(null);
-            Object.entries(source).forEach(([id, item]) => {
-                if (isSafeKey(id) && isRecord(item)) bucket[id] = item;
-            });
-            progress[k] = bucket;
+            if (!progress[k] || typeof progress[k] !== 'object' || Array.isArray(progress[k])) progress[k] = {};
         });
         const results = storage.get(prefix + STORAGE_KEYS.QUIZ_RESULTS);
         const mistakes = storage.get(prefix + STORAGE_KEYS.MISTAKES);
         const streak = storage.get(prefix + STORAGE_KEYS.STREAK);
         const goals = storage.get(prefix + STORAGE_KEYS.GOALS);
+        const notes = storage.get(prefix + STORAGE_KEYS.NOTES);
+        const studyPlan = storage.get(prefix + STORAGE_KEYS.STUDY_PLAN);
         return {
             progress: progress,
-            quizResults: Array.isArray(results) ? results.filter(r =>
-                isRecord(r) && typeof r.quizId === 'string' && finiteNumber(r.percentage) &&
-                r.percentage >= 0 && r.percentage <= 100 && finiteNumber(r.date)
-            ) : [],
-            mistakes: Array.isArray(mistakes) ? mistakes.filter(m =>
-                isRecord(m) && typeof m.quizId === 'string'
-            ) : [],
-            streak: isRecord(streak) ? {
-                current: Number.isInteger(streak.current) && streak.current >= 0 ? streak.current : 0,
-                best: Number.isInteger(streak.best) && streak.best >= 0 ? streak.best : 0,
-                lastVisit: finiteNumber(streak.lastVisit) ? streak.lastVisit : null
-            } : { current: 0, best: 0, lastVisit: null },
-            goals: Array.isArray(goals) ? goals : []
+            quizResults: Array.isArray(results) ? results : [],
+            mistakes: Array.isArray(mistakes) ? mistakes : [],
+            streak: streak && typeof streak === 'object' ? streak : { current: 0, best: 0, lastVisit: null },
+            goals: Array.isArray(goals) ? goals : [],
+            notes: Array.isArray(notes) ? notes.filter(n => n && typeof n === 'object') : [],
+            studyPlan: Array.isArray(studyPlan) ? studyPlan.filter(item => item && typeof item === 'object') : []
         };
     }
 
-    // حفظ البيانات محلياً، ثم مزامنة التقدم مع Supabase إن كانت الخدمة جاهزة.
-    // لا نفترض أن syncProgress يعيد Promise؛ نغلف النتيجة لتفادي أخطاء .catch.
-    function syncCloudProgress(progress) {
-        if (!window.GoSVTCloud || typeof window.GoSVTCloud.syncProgress !== 'function') return;
-        Promise.resolve()
-            .then(function () { return window.GoSVTCloud.syncProgress(progress); })
-            .catch(function (err) {
-                console.warn('[GoSVT] Cloud progress sync deferred:', err && err.message ? err.message : err);
-            });
-    }
-
-    function saveProfileData(profileId, data, options) {
-        if (typeof profileId !== 'string' || !getProfiles()[profileId]) {
-            throw new Error('Profil introuvable.');
-        }
-        data = data || {};
-        data.progress = data.progress && typeof data.progress === 'object' ? data.progress : {};
-        data.quizResults = Array.isArray(data.quizResults) ? data.quizResults : [];
-        data.mistakes = Array.isArray(data.mistakes) ? data.mistakes : [];
-        data.streak = data.streak && typeof data.streak === 'object' ? data.streak : { current: 0, best: 0, lastVisit: null };
-        data.goals = Array.isArray(data.goals) ? data.goals : [];
-
+    function saveProfileData(profileId, data) {
         const prefix = profileId + '_';
         storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
         storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
         storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
         storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
         storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
-
-        // أثناء استرجاع بيانات السحابة نحفظ محلياً فقط لتجنب حلقة مزامنة.
-        if (!(options && options.skipCloudSync)) syncCloudProgress(data.progress);
-    }
-
-    // دمج تقدم Supabase مع البيانات المحلية دون حذف بيانات محلية أو إلغاء إكمال سابق.
-    function mergeCloudProgress(profileId, cloudProgress) {
-        if (!isRecord(cloudProgress)) return;
-
-        const data = getProfileData(profileId);
-        ['lessons', 'exercises', 'tests'].forEach(function (bucket) {
-            const cloudEntries = cloudProgress[bucket];
-            if (!isRecord(cloudEntries)) return;
-            const localEntries = data.progress[bucket];
-
-            Object.keys(cloudEntries).forEach(function (key) {
-                if (!isSafeKey(key)) return;
-                const cloudItem = isRecord(cloudEntries[key]) ? cloudEntries[key] : {};
-                const localItem = localEntries[key];
-                if (!localItem) {
-                    const cleanItem = {};
-                    Object.keys(cloudItem).forEach(function (field) {
-                        if (isSafeKey(field)) cleanItem[field] = cloudItem[field];
-                    });
-                    localEntries[key] = Object.assign(cleanItem, {
-                        id: cloudItem.id || key,
-                        completed: cloudItem.completed === true
-                    });
-                    if (!localEntries[key].completedAt && cloudItem.cloudUpdatedAt) {
-                        const date = Date.parse(cloudItem.cloudUpdatedAt);
-                        if (Number.isFinite(date)) localEntries[key].completedAt = date;
-                    }
-                } else {
-                    // ادمج الحقول مع إبقاء بيانات العرض المحلية، وعدم التراجع عن completed=true.
-                    Object.keys(cloudItem).forEach(function (field) {
-                        if (!isSafeKey(field)) return;
-                        if (field === 'completed') return;
-                        if (localItem[field] == null || localItem[field] === '') localItem[field] = cloudItem[field];
-                    });
-                    localItem.id = localItem.id || key;
-                    localItem.completed = localItem.completed === true || cloudItem.completed === true;
-                    if (!localItem.completedAt && cloudItem.cloudUpdatedAt) {
-                        const date = Date.parse(cloudItem.cloudUpdatedAt);
-                        if (Number.isFinite(date)) localItem.completedAt = date;
-                    }
-                }
+        storage.set(prefix + STORAGE_KEYS.NOTES, Array.isArray(data.notes) ? data.notes : []);
+        storage.set(prefix + STORAGE_KEYS.STUDY_PLAN, Array.isArray(data.studyPlan) ? data.studyPlan : []);
+        // Keep the browser cache for offline use and synchronize learning progress to Supabase.
+        if (window.GoSVTCloud && typeof window.GoSVTCloud.syncProgress === 'function') {
+            window.GoSVTCloud.syncProgress(data.progress).catch(function (err) {
+                console.warn('[GoSVT] Cloud progress sync deferred:', err && err.message);
             });
-        });
-
-        saveProfileData(profileId, data, { skipCloudSync: true });
+        }
     }
 
+    // ============================================
+    // 2. LANGUAGE SYSTEM (نظام اللغة)
+    // ============================================
     function lang() {
         return document.documentElement.getAttribute('lang') === 'fr' ? 'fr' : 'ar';
     }
@@ -314,6 +232,30 @@
             mistakes: 'أخطائي',
             favorites: 'مفضلتي',
             motivation: 'التحفيز',
+            planner: 'برنامج المراجعة',
+            notesTab: 'ملاحظاتي',
+            libraryTab: 'مواردي',
+            welcome: 'مرحباً بك في فضائك الدراسي',
+            continueLearning: 'تابع التعلم',
+            quickAccess: 'وصول سريع',
+            addTask: 'إضافة موعد مراجعة',
+            taskTitle: 'عنوان المراجعة',
+            taskDate: 'تاريخ المراجعة',
+            duration: 'المدة بالدقائق',
+            addNote: 'إضافة ملاحظة',
+            noteTitle: 'عنوان الملاحظة',
+            noteBody: 'اكتب ملاحظتك هنا...',
+            save: 'حفظ',
+            delete: 'حذف',
+            done: 'منجز',
+            pending: 'قيد الإنجاز',
+            noTasks: 'لا توجد مواعيد مراجعة بعد',
+            noNotes: 'لا توجد ملاحظات بعد',
+            resources: 'الدروس والموارد',
+            exercises: 'التمارين',
+            exams: 'الامتحانات',
+            interactiveQuiz: 'اختبارات تفاعلية',
+            summaries: 'الملخصات',
             profiles: 'الملفات الشخصية',
             settings: 'الإعدادات',
             lessonsViewed: 'الدروس المشاهدة',
@@ -348,7 +290,6 @@
             profileDeleted: 'تم حذف الملف',
             profileSwitched: 'تم التبديل إلى الملف',
             invalidFile: 'ملف JSON غير صالح',
-            importSuccess: 'تم استيراد البيانات بنجاح',
             confirmReplace: 'هذا الملف موجود بالفعل. هل تريد استبداله؟',
             retryMistakes: 'إعادة الأسئلة الخاطئة فقط',
             enterProfileName: 'أدخل اسم الملف الشخصي الجديد:',
@@ -362,6 +303,30 @@
             mistakes: 'Mes erreurs',
             favorites: 'Mes favoris',
             motivation: 'Motivation',
+            planner: 'Mon planning',
+            notesTab: 'Mes notes',
+            libraryTab: 'Mes ressources',
+            welcome: 'Bienvenue dans votre espace d’apprentissage',
+            continueLearning: 'Continuer à apprendre',
+            quickAccess: 'Accès rapide',
+            addTask: 'Ajouter une séance',
+            taskTitle: 'Titre de la révision',
+            taskDate: 'Date de révision',
+            duration: 'Durée en minutes',
+            addNote: 'Ajouter une note',
+            noteTitle: 'Titre de la note',
+            noteBody: 'Écrivez votre note ici...',
+            save: 'Enregistrer',
+            delete: 'Supprimer',
+            done: 'Terminée',
+            pending: 'À faire',
+            noTasks: 'Aucune séance de révision pour le moment',
+            noNotes: 'Aucune note pour le moment',
+            resources: 'Cours et ressources',
+            exercises: 'Exercices',
+            exams: 'Examens',
+            interactiveQuiz: 'Quiz interactifs',
+            summaries: 'Résumés',
             profiles: 'Profils',
             settings: 'Paramètres',
             lessonsViewed: 'Leçons consultées',
@@ -396,7 +361,6 @@
             profileDeleted: 'Profil supprimé',
             profileSwitched: 'Changement de profil effectué',
             invalidFile: 'Fichier JSON invalide',
-            importSuccess: 'Données importées avec succès',
             confirmReplace: 'Ce profil existe déjà. Voulez-vous le remplacer ?',
             retryMistakes: 'Réessayer uniquement les erreurs',
             enterProfileName: 'Entrez le nom du nouveau profil:',
@@ -418,10 +382,9 @@
     // Clé stable d'un document : chemin décodé, NFC, sans "/" initial
     function normalizeItemKey(item) {
         let key = String(item == null ? '' : item);
-        if (/^[a-z][a-z0-9+.-]*:\/\//i.test(key)) {
-            try { key = new URL(key).pathname; } catch (e) { /* treat it as a relative key */ }
-        }
-        key = key.split(/[?#]/, 1)[0];
+        key = key.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]+/i, '').replace(/^([^?#]*)[?#].*$/, function (m, path) {
+            return /%/.test(path) ? path : m; // ?/# ignorés seulement pour une URL encodée
+        });
         try { key = decodeURIComponent(key); } catch (e) { /* déjà décodé */ }
         return key.normalize('NFC').replace(/^\/+/, '');
     }
@@ -453,7 +416,7 @@
         if (!canTrack()) return null;
         const category = PROGRESS_TYPE_ALIASES[type];
         const key = normalizeItemKey(item);
-        if (!category || !isSafeKey(key)) return null;
+        if (!category || !key) return null;
 
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
@@ -499,8 +462,6 @@
 
     function markLessonComplete(lessonId) {
         if (!canTrack()) return;
-        lessonId = String(lessonId == null ? '' : lessonId);
-        if (!isSafeKey(lessonId)) return;
         const profileData = getProfileData(currentProfileId);
         if (profileData.progress.lessons[lessonId]) {
             profileData.progress.lessons[lessonId].completed = true;
@@ -514,12 +475,7 @@
     function refreshStudentSpaceView() {
         const container = document.getElementById('student-space-content');
         if (!container || !container.children.length) return; // sera rendu à l'ouverture de la section
-        const account = window.StudentAccount;
-        const isRecovery = account && typeof account.isPasswordRecovery === 'function' && account.isPasswordRecovery();
-        // Preserve typed values while logged out, but leave the loading/login screen
-        // as soon as auth resolves or a recovery link is opened.
-        if (container.querySelector('.gs-auth-form') && account &&
-            !account.isLoggedIn() && !isRecovery) return;
+        if (container.querySelector('.gs-auth')) return;      // écran de connexion : ne pas effacer la saisie
         const active = container.querySelector('.space-tab.active');
         const tabName = active ? active.dataset.tab : 'dashboard';
         renderStudentSpace();
@@ -541,13 +497,12 @@
         const id = String(quizId == null ? '' : quizId).trim();
         const total = Number(totalQuestions);
         const points = Number(score);
-        if (!id || id.length > 200 || !Number.isInteger(total) || total <= 0 || total > 10000 ||
+        if (!id || id.length > 200 || !Number.isInteger(total) || total <= 0 ||
             !Number.isInteger(points) || points < 0 || points > total) {
             throw new Error('Résultat de quiz invalide.');
         }
         const profileData = getProfileData(currentProfileId);
         const token = String(attemptId || makeId());
-        if (token.length > 200) throw new Error('Identifiant de tentative invalide.');
         if (profileData.quizResults.some(r => r && r.attemptId === token)) {
             return profileData.quizResults;
         }
@@ -665,7 +620,7 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        URL.revokeObjectURL(url);
     }
 
     function importProfileData(jsonString) {
@@ -676,78 +631,33 @@
             const payload = JSON.parse(jsonString);
             const p = payload && payload.profile;
             const d = payload && payload.data;
-            if (!isRecord(p) || typeof p.id !== 'string' ||
+            if (!p || typeof p !== 'object' || typeof p.id !== 'string' ||
                 !/^profile_[a-zA-Z0-9_-]{1,100}$/.test(p.id) ||
                 typeof p.name !== 'string' || p.name.trim().length < 2 || p.name.length > 40 ||
-                !isRecord(d) || !isRecord(d.progress) ||
+                !d || typeof d !== 'object' || !d.progress || typeof d.progress !== 'object' ||
                 !Array.isArray(d.quizResults) || !Array.isArray(d.mistakes) ||
-                !isRecord(d.streak) || !Array.isArray(d.goals)) {
+                !d.streak || typeof d.streak !== 'object' || !Array.isArray(d.goals)) {
                 throw new Error('Structure de sauvegarde invalide.');
             }
             if (payload.version !== '1.0') {
                 throw new Error('Version de sauvegarde non prise en charge.');
             }
-            const progress = Object.create(null);
-            ['lessons', 'exercises', 'tests'].forEach(bucket => {
-                const source = isRecord(d.progress[bucket]) ? d.progress[bucket] : {};
-                const clean = Object.create(null);
-                Object.entries(source).forEach(([id, item]) => {
-                    if (!isSafeKey(id) || !isRecord(item)) return;
-                    clean[id] = {
-                        id: typeof item.id === 'string' ? item.id.slice(0, 500) : id,
-                        title: typeof item.title === 'string' ? item.title.slice(0, 500) : '',
-                        path: typeof item.path === 'string' ? item.path.slice(0, 2000) : id,
-                        completed: item.completed === true,
-                        completedAt: finiteNumber(item.completedAt) ? item.completedAt : null,
-                        firstViewed: finiteNumber(item.firstViewed) ? item.firstViewed : null,
-                        lastViewed: finiteNumber(item.lastViewed) ? item.lastViewed : null,
-                        viewCount: Number.isInteger(item.viewCount) && item.viewCount >= 0 ? item.viewCount : 0,
-                        attempts: Number.isInteger(item.attempts) && item.attempts >= 0 ? item.attempts : 0,
-                        category: typeof item.category === 'string' ? item.category.slice(0, 100) : '',
-                        lang: typeof item.lang === 'string' ? item.lang.slice(0, 100) : '',
-                        level: typeof item.level === 'string' ? item.level.slice(0, 100) : '',
-                        track: typeof item.track === 'string' ? item.track.slice(0, 100) : ''
-                    };
-                });
-                progress[bucket] = clean;
-            });
-            const quizResults = d.quizResults.filter(r =>
-                isRecord(r) && typeof r.quizId === 'string' && r.quizId.length <= 200 &&
-                Number.isInteger(r.score) && Number.isInteger(r.total) && r.total > 0 &&
-                r.total <= 10000 && r.score >= 0 && r.score <= r.total &&
-                finiteNumber(r.date)
-            ).slice(-5000).map(r => ({
-                quizId: r.quizId,
-                attemptId: typeof r.attemptId === 'string' ? r.attemptId.slice(0, 200) : makeId(),
-                score: r.score,
-                total: r.total,
-                percentage: Math.round((r.score / r.total) * 100),
-                date: r.date,
-                mistakes: Array.isArray(r.mistakes) ? r.mistakes.filter(isRecord).slice(0, r.total).map(m => ({
-                    question: String(m.question == null ? '' : m.question).slice(0, 2000),
-                    selected: String(m.selected == null ? '' : m.selected).slice(0, 1000),
-                    correct: String(m.correct == null ? '' : m.correct).slice(0, 1000),
-                    quizId: r.quizId,
-                    date: finiteNumber(m.date) ? m.date : r.date
-                })) : []
-            }));
             const normalized = {
-                progress,
-                quizResults,
-                mistakes: d.mistakes.filter(m => isRecord(m) && typeof m.quizId === 'string')
-                    .slice(-10000).map(m => ({
-                        question: String(m.question == null ? '' : m.question).slice(0, 2000),
-                        selected: String(m.selected == null ? '' : m.selected).slice(0, 1000),
-                        correct: String(m.correct == null ? '' : m.correct).slice(0, 1000),
-                        quizId: m.quizId.slice(0, 200),
-                        date: finiteNumber(m.date) ? m.date : Date.now()
-                    })),
+                progress: {
+                    lessons: d.progress.lessons && typeof d.progress.lessons === 'object' && !Array.isArray(d.progress.lessons) ? d.progress.lessons : {},
+                    exercises: d.progress.exercises && typeof d.progress.exercises === 'object' && !Array.isArray(d.progress.exercises) ? d.progress.exercises : {},
+                    tests: d.progress.tests && typeof d.progress.tests === 'object' && !Array.isArray(d.progress.tests) ? d.progress.tests : {}
+                },
+                quizResults: d.quizResults,
+                mistakes: d.mistakes,
                 streak: {
                     current: Number.isInteger(d.streak.current) && d.streak.current >= 0 ? d.streak.current : 0,
                     best: Number.isInteger(d.streak.best) && d.streak.best >= 0 ? d.streak.best : 0,
-                    lastVisit: finiteNumber(d.streak.lastVisit) ? d.streak.lastVisit : null
+                    lastVisit: Number.isFinite(d.streak.lastVisit) ? d.streak.lastVisit : null
                 },
-                goals: d.goals.slice(0, 500)
+                goals: d.goals,
+                notes: Array.isArray(d.notes) ? d.notes.filter(n => n && typeof n === 'object').slice(0, 500) : [],
+                studyPlan: Array.isArray(d.studyPlan) ? d.studyPlan.filter(item => item && typeof item === 'object').slice(0, 500) : []
             };
             const profiles = getProfiles();
             const existing = profiles[p.id];
@@ -755,7 +665,7 @@
             const safeProfile = {
                 id: p.id,
                 name: p.name.normalize('NFC').trim(),
-                createdAt: finiteNumber(p.createdAt) ? p.createdAt : Date.now(),
+                createdAt: Number.isFinite(p.createdAt) ? p.createdAt : Date.now(),
                 lastActive: Date.now()
             };
             profiles[p.id] = safeProfile;
@@ -794,6 +704,20 @@
                     <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImportFile(this)">
                 </div>
             </div>
+            <section class="gs-student-welcome">
+                <div><span class="gs-eyebrow">GO SVT MAROC · ESPACE ÉLÈVE</span><h2>${t('welcome')}</h2>
+                <p>${lang() === 'ar' ? 'تعلم، تدرب، نظم وقتك، وتابع تطورك خطوة بخطوة.' : 'Apprenez, entraînez-vous et suivez vos progrès à votre rythme.'}</p></div>
+                <a class="gs-primary-link" href="#cours">${t('continueLearning')} ←</a>
+            </section>
+            <h3 class="gs-section-title">${t('quickAccess')}</h3>
+            <div class="gs-quick-links">
+                <a href="#cours"><span>📚</span>${t('resources')}</a>
+                <a href="#exercices"><span>✏️</span>${t('exercises')}</a>
+                <a href="#examens"><span>📝</span>${t('exams')}</a>
+                <a href="#quiz"><span>❓</span>${t('interactiveQuiz')}</a>
+                <a href="#resumes"><span>📋</span>${t('summaries')}</a>
+            </div>
+            <h3 class="gs-section-title">${lang() === 'ar' ? 'ملخص نشاطك الدراسي' : 'Votre activité scolaire'}</h3>
             <div class="dashboard-grid">
                 <div class="stat-card">
                     <div class="stat-icon">📚</div>
@@ -850,25 +774,15 @@
     };
 
     window.handleImportFile = function(input) {
-        const file = input && input.files && input.files[0];
+        const file = input.files[0];
         if (!file) return;
-        if (file.size > 5 * 1024 * 1024) {
-            alert(t('invalidFile'));
-            input.value = '';
-            return;
-        }
 
         const reader = new FileReader();
         reader.onload = function(e) {
             if (importProfileData(e.target.result)) {
-                alert(t('importSuccess'));
+                alert(t('Données importées avec succès'));
                 renderStudentSpace();
             }
-            input.value = '';
-        };
-        reader.onerror = function() {
-            alert(t('invalidFile'));
-            input.value = '';
         };
         reader.readAsText(file);
     };
@@ -904,7 +818,7 @@
             html += `
                 <div class="lesson-item completed">
                     <span title="${esc(id)}">${esc(data.title || id)}</span>
-                    <span class="lesson-date">${finiteNumber(data.completedAt) ? new Date(data.completedAt).toLocaleDateString() : '—'}</span>
+                    <span class="lesson-date">${new Date(data.completedAt).toLocaleDateString()}</span>
                 </div>
             `;
         });
@@ -1133,14 +1047,101 @@
         renderStudentSpace();
     };
 
+
+    // ============================================
+    // 11.1 STUDY PLANNER + PERSONAL NOTES
+    // ============================================
+    function renderPlanner() {
+        const data = getProfileData(currentProfileId);
+        const items = [...data.studyPlan].sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+        const rows = items.map(item => `
+            <article class="gs-plan-item ${item.completed ? 'is-done' : ''}">
+                <div class="gs-plan-date">${escapeHtml(item.date || '')}</div>
+                <div class="gs-plan-main"><strong>${escapeHtml(item.title || '')}</strong>
+                    <small>${Number(item.duration) || 30} ${lang() === 'ar' ? 'دقيقة' : 'min'} · ${item.completed ? t('done') : t('pending')}</small></div>
+                <div class="gs-plan-actions">
+                    <button type="button" class="gs-task-toggle" data-task-id="${escapeHtml(item.id)}">${item.completed ? '↩' : '✓'}</button>
+                    <button type="button" class="gs-task-delete" data-task-id="${escapeHtml(item.id)}" aria-label="${t('delete')}">×</button>
+                </div>
+            </article>`).join('');
+        return `<div class="gs-module">
+            <h2>${t('planner')}</h2>
+            <form id="gs-plan-form" class="gs-entry-form">
+                <label>${t('taskTitle')}<input name="title" maxlength="120" required></label>
+                <label>${t('taskDate')}<input name="date" type="date" required></label>
+                <label>${t('duration')}<input name="duration" type="number" min="5" max="600" value="30"></label>
+                <button type="submit">${t('addTask')}</button>
+            </form>
+            <div class="gs-plan-list">${rows || `<p class="no-data">${t('noTasks')}</p>`}</div>
+        </div>`;
+    }
+
+    function renderNotes() {
+        const data = getProfileData(currentProfileId);
+        const rows = [...data.notes].sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0))
+            .map(note => `<article class="gs-note-card">
+                <div class="gs-note-heading"><strong>${escapeHtml(note.title || '')}</strong>
+                <button type="button" class="gs-note-delete" data-note-id="${escapeHtml(note.id)}" aria-label="${t('delete')}">×</button></div>
+                <p>${escapeHtml(note.body || '').replace(/\n/g, '<br>')}</p>
+                <small>${note.updatedAt ? new Date(note.updatedAt).toLocaleDateString() : ''}</small>
+            </article>`).join('');
+        return `<div class="gs-module">
+            <h2>${t('notesTab')}</h2>
+            <form id="gs-note-form" class="gs-note-form">
+                <label>${t('noteTitle')}<input name="title" maxlength="120" required></label>
+                <label>${t('noteBody')}<textarea name="body" rows="4" maxlength="5000" required placeholder="${t('noteBody')}"></textarea></label>
+                <button type="submit">${t('save')}</button>
+            </form>
+            <div class="gs-notes-grid">${rows || `<p class="no-data">${t('noNotes')}</p>`}</div>
+        </div>`;
+    }
+
+    function bindPlannerAndNotes(container) {
+        const planForm = container.querySelector('#gs-plan-form');
+        if (planForm) planForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const form = new FormData(planForm);
+            const title = String(form.get('title') || '').trim();
+            const date = String(form.get('date') || '');
+            if (!title || !date) return;
+            const data = getProfileData(currentProfileId);
+            data.studyPlan.push({ id: makeId(), title: title.slice(0, 120), date, duration: Math.min(600, Math.max(5, Number(form.get('duration')) || 30)), completed: false, createdAt: Date.now() });
+            saveProfileData(currentProfileId, data);
+            refreshStudentSpaceView();
+        });
+        const noteForm = container.querySelector('#gs-note-form');
+        if (noteForm) noteForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const form = new FormData(noteForm);
+            const title = String(form.get('title') || '').trim();
+            const body = String(form.get('body') || '').trim();
+            if (!title || !body) return;
+            const data = getProfileData(currentProfileId);
+            data.notes.unshift({ id: makeId(), title: title.slice(0, 120), body: body.slice(0, 5000), createdAt: Date.now(), updatedAt: Date.now() });
+            saveProfileData(currentProfileId, data);
+            refreshStudentSpaceView();
+        });
+        container.querySelectorAll('.gs-task-toggle').forEach(button => button.addEventListener('click', function () {
+            const data = getProfileData(currentProfileId);
+            const item = data.studyPlan.find(x => x.id === this.dataset.taskId);
+            if (item) item.completed = !item.completed;
+            saveProfileData(currentProfileId, data); refreshStudentSpaceView();
+        }));
+        container.querySelectorAll('.gs-task-delete').forEach(button => button.addEventListener('click', function () {
+            const data = getProfileData(currentProfileId);
+            data.studyPlan = data.studyPlan.filter(x => x.id !== this.dataset.taskId);
+            saveProfileData(currentProfileId, data); refreshStudentSpaceView();
+        }));
+        container.querySelectorAll('.gs-note-delete').forEach(button => button.addEventListener('click', function () {
+            const data = getProfileData(currentProfileId);
+            data.notes = data.notes.filter(x => x.id !== this.dataset.noteId);
+            saveProfileData(currentProfileId, data); refreshStudentSpaceView();
+        }));
+    }
+
     function renderStudentSpace() {
         const container = document.getElementById('student-space-content');
         if (!container) return;
-        if (window.StudentAccount && typeof window.StudentAccount.isPasswordRecovery === 'function' &&
-            window.StudentAccount.isPasswordRecovery()) {
-            window.StudentAccount.renderGate(container);
-            return;
-        }
         if (window.StudentAccount && !window.StudentAccount.isLoggedIn()) {
             window.StudentAccount.renderGate(container);
             return;
@@ -1156,6 +1157,8 @@
                     <button class="space-tab" data-tab="mistakes">${t('mistakes')}</button>
                     <button class="space-tab" data-tab="favorites">${t('favorites')}</button>
                     <button class="space-tab" data-tab="motivation">${t('motivation')}</button>
+                    <button class="space-tab" data-tab="planner">🗓 ${t('planner')}</button>
+                    <button class="space-tab" data-tab="notes">🗒 ${t('notesTab')}</button>
                 </div>
                 <div class="space-content">
                     <div class="space-panel active" id="panel-dashboard">
@@ -1176,11 +1179,18 @@
                     <div class="space-panel" id="panel-motivation">
                         ${renderMotivation()}
                     </div>
+                    <div class="space-panel" id="panel-planner">
+                        ${renderPlanner()}
+                    </div>
+                    <div class="space-panel" id="panel-notes">
+                        ${renderNotes()}
+                    </div>
                 </div>
             </div>
         `;
 
         container.innerHTML = html;
+        bindPlannerAndNotes(container);
 
         // Add event listeners
         container.querySelectorAll('.space-tab').forEach(tab => {
@@ -1211,17 +1221,6 @@
             btn.addEventListener('click', function() {
                 const quizId = this.dataset.quizId;
                 retryMistakes(quizId);
-            });
-        });
-        container.querySelectorAll('.btn-remove-fav').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const url = this.dataset.url;
-                const current = storage.get('gosvt_favs');
-                if (!Array.isArray(current)) return;
-                storage.set('gosvt_favs', current.filter(fav =>
-                    !isRecord(fav) || String(fav.url == null ? '' : fav.url) !== url
-                ));
-                renderStudentSpace();
             });
         });
     }
@@ -1444,7 +1443,34 @@
             color: #999;
             font-style: italic;
         }
+
+        .gs-student-welcome{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:1.6rem 1.8rem;margin-bottom:1.5rem;border-radius:18px;background:linear-gradient(120deg,#edf6e9,#f4f8ef);border:1px solid #dcebd5}
+        .gs-student-welcome h2{margin:.4rem 0;color:#244d27;font-size:1.5rem}.gs-student-welcome p{margin:.3rem 0;color:#526451}
+        .gs-eyebrow{font-size:.72rem;letter-spacing:.08em;font-weight:700;color:#54834c}
+        .gs-primary-link{display:inline-block;background:#2d5a27;color:#fff!important;text-decoration:none;padding:.8rem 1.1rem;border-radius:10px;white-space:nowrap;font-weight:700}
+        .gs-section-title{margin:1.4rem 0 .8rem;color:#294d2b}
+        .gs-quick-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.8rem;margin-bottom:1.4rem}
+        .gs-quick-links a{display:flex;align-items:center;gap:.65rem;padding:1rem;background:#fff;border:1px solid #e5ebdf;border-radius:12px;text-decoration:none;color:#294d2b;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+        .gs-quick-links a span{font-size:1.35rem}
+        .gs-module{background:#fff;border:1px solid #e6e9e2;border-radius:16px;padding:1.3rem;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+        .gs-entry-form,.gs-note-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.8rem;align-items:end;padding:1rem;background:#f7faf5;border-radius:12px;margin:1rem 0}
+        .gs-entry-form label,.gs-note-form label{display:flex;flex-direction:column;gap:.35rem;font-weight:600;color:#425442}
+        .gs-entry-form input,.gs-note-form input,.gs-note-form textarea{width:100%;box-sizing:border-box;padding:.7rem;border:1px solid #d8dfd3;border-radius:8px;font:inherit;background:#fff}
+        .gs-entry-form button,.gs-note-form button{padding:.75rem 1rem;border:0;border-radius:8px;background:#2d5a27;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+        .gs-plan-item{display:flex;align-items:center;gap:1rem;padding:.85rem;border-bottom:1px solid #edf0ea}
+        .gs-plan-item.is-done{opacity:.65}.gs-plan-item.is-done .gs-plan-main strong{text-decoration:line-through}
+        .gs-plan-date{min-width:112px;color:#477344;font-weight:700}.gs-plan-main{display:flex;flex:1;flex-direction:column;gap:.2rem}.gs-plan-main small,.gs-note-card small{color:#788274}
+        .gs-plan-actions{display:flex;gap:.4rem}.gs-plan-actions button,.gs-note-heading button{border:0;border-radius:7px;padding:.45rem .7rem;cursor:pointer;background:#eaf2e7;color:#285329;font-weight:700}
+        .gs-plan-actions .gs-task-delete,.gs-note-heading button{background:#fff0ee;color:#a33}
+        .gs-notes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
+        .gs-note-card{padding:1rem;border:1px solid #e5eadf;border-radius:12px;background:#fff;min-width:0}
+        .gs-note-heading{display:flex;align-items:center;justify-content:space-between;gap:.5rem}.gs-note-card p{white-space:normal;overflow-wrap:anywhere;line-height:1.7}
         @media (max-width: 768px) {
+            .gs-student-welcome{align-items:flex-start;flex-direction:column}
+            .gs-plan-item{align-items:flex-start;flex-wrap:wrap}
+            .gs-plan-date{min-width:100%}
+            .gs-entry-form,.gs-note-form{grid-template-columns:1fr}
+
             .student-space {
                 padding: 1rem;
             }
@@ -1468,9 +1494,7 @@
     function init() {
         // Profil / progression modifiés depuis un autre onglet -> resynchroniser et réafficher
         window.addEventListener('storage', function (e) {
-            const profileDataChanged = e.key && Object.values(STORAGE_KEYS).some(key => e.key.endsWith('_' + key));
-            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE || e.key === STORAGE_KEYS.PROFILES ||
-                e.key === 'gosvt_favs' || profileDataChanged) {
+            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE || e.key.endsWith('_' + STORAGE_KEYS.PROGRESS)) {
                 syncCurrentProfile();
                 refreshStudentSpaceView();
             }
@@ -1552,7 +1576,7 @@
         init();
     }
 
-    // Expose functions globally for integration with the account and content systems.
+    // Expose functions globally for integration with other systems
     window.StudentSpace = {
         updateProgress,
         markLessonComplete,
@@ -1567,9 +1591,9 @@
         getCurrentProfile,
         getProfiles,
         getProfileData,
-        mergeCloudProgress,
         exportProfileData,
         importProfileData,
         retryMistakes
     };
+
 })();

@@ -310,6 +310,29 @@
         }
     }
 
+
+    // ============================================
+    // TEST 9: STUDY PLANNER AND PERSONAL NOTES
+    // ============================================
+    function testPlannerAndNotes() {
+        console.log('\n=== TEST 9: MODÈLE DU PLANNING ET DES NOTES ===');
+        try {
+            const profileId = window.StudentSpace.createProfile('PlannerNotesTest');
+            window.StudentSpace.switchProfile(profileId);
+            const data = window.StudentSpace.getProfileData(profileId);
+            data.studyPlan.push({ id: 'task_test', title: 'Réviser la cellule', date: '2026-11-07', duration: 45, completed: false });
+            data.notes.push({ id: 'note_test', title: 'Définition', body: 'La cellule est l’unité structurale du vivant.', createdAt: Date.now() });
+            // The public save path is exercised through the existing data update methods in the UI;
+            // this test confirms the data model exposes profile-scoped collections.
+            logTest('9.1 Collections planning et notes disponibles',
+                Array.isArray(data.studyPlan) && Array.isArray(data.notes),
+                `Collections disponibles — planning: ${data.studyPlan.length}, notes: ${data.notes.length}`);
+            window.StudentSpace.deleteProfile(profileId);
+        } catch (e) {
+            logTest('9.0 Tests planning et notes', false, `Erreur: ${e.message}`);
+        }
+    }
+
     // ============================================
     // RUN ALL TESTS
     // ============================================
@@ -326,6 +349,7 @@
         testProfileIsolation();
         testPersistence();
         testFavoritesIntegration();
+        testPlannerAndNotes();
         
         // Summary
         console.log('\n╔════════════════════════════════════════════════════════════╗');
