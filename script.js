@@ -436,14 +436,23 @@ function setupTabs() {
 }
 
 function setupNavigation() {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            const id = this.getAttribute('href').substring(1);
-            if (id && document.getElementById(id)) {
-                e.preventDefault();
-                navigateTo(id);
-            }
-        });
+    // Delegated navigation also handles links rendered later (for example,
+    // the quick-access links inside the dynamically rendered student space).
+    if (document.documentElement.dataset.gosvtNavigationBound === 'true') return;
+    document.documentElement.dataset.gosvtNavigationBound = 'true';
+
+    document.addEventListener('click', function (e) {
+        const anchor = e.target && e.target.closest
+            ? e.target.closest('a[href^="#"]')
+            : null;
+        if (!anchor) return;
+
+        const href = anchor.getAttribute('href') || '';
+        const id = href.slice(1);
+        if (!id || !document.getElementById(id)) return;
+
+        e.preventDefault();
+        navigateTo(id);
     });
 }
 
