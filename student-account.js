@@ -21,54 +21,92 @@
   }
   function getMap() { try { return JSON.parse(localStorage.getItem(MAP_KEY) || '{}'); } catch (_) { return {}; } }
   function setMap(v) { try { localStorage.setItem(MAP_KEY, JSON.stringify(v)); } catch (_) {} }
+
   async function applySession(session) {
     user = session && session.user ? session.user : null;
-    profile = null; localProfileId = null;
+    profile = null;
+    localProfileId = null;
+
     if (user) {
-      const { data, error } = await client.from('profiles').select('id,display_name,role').eq('id', user.id).maybeSingle();
-      if (error) console.warn('[GoSVT] Profile read:', error.message);
-      profile = data || { id: user.id, display_name: user.user_metadata && user.user_metadata.display_name || user.email, role: 'student' };
+      const { data, error } = await client
+        .from('profiles')
+        .select('id,display_name,role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('[GoSVT] Profile read:', error.message);
+      }
+
+      profile = data || {
+        id: user.id,
+        display_name:
+          (user.user_metadata && user.user_metadata.display_name) ||
+          user.email,
+        role: 'student'
+      };
+
       if (window.StudentSpace) {
         const map = getMap();
         localProfileId = map[user.id];
-        if (!localProfileId || !window.StudentSpace.getProfiles()[localProfileId]) {
-          localProfileId = window.StudentSpace.createProfile(profile.display_name || 'Student');
-          map[user.id] = localProfileId; setMap(map);
+
+        if (
+          !localProfileId ||
+          !window.StudentSpace.getProfiles()[localProfileId]
+        ) {
+          localProfileId = window.StudentSpace.createProfile(
+            profile.display_name || 'Student'
+          );
+
+          map[user.id] = localProfileId;
+          setMap(map);
         }
+
         window.StudentSpace.switchProfile(localProfileId);
-        // Migrate the locally cached learning progress into this authenticated account.
+
         // Restore cloud progress before rendering the student space.
-if (window.GoSVTCloud &&
-    window.StudentSpace &&
-    typeof window.GoSVTCloud.loadProgress === 'function') {
+        if (
+          window.GoSVTCloud &&
+          typeof window.GoSVTCloud.loadProgress === 'function' &&
+          typeof window.StudentSpace.mergeCloudProgress === 'function'
+        ) {
+          try {
+            const cloudProgress =
+              await window.GoSVTCloud.loadProgress();
 
-  try {
-    const cloudProgress = await window.GoSVTCloud.loadProgress();
+            if (cloudProgress) {
+              window.StudentSpace.mergeCloudProgress(
+                localProfileId,
+                cloudProgress
+              );
 
-    if (cloudProgress) {
-      // Merge cloud data with local data without losing local metadata.
-      window.StudentSpace.mergeCloudProgress(
-        localProfileId,
-        cloudProgress
-      );
+              const cached =
+                window.StudentSpace.getProfileData(localProfileId);
 
-      // Synchronize the merged result after a successful cloud read.
-      const cached = window.StudentSpace.getProfileData(localProfileId);
+              if (
+                typeof window.GoSVTCloud.syncProgress === 'function'
+              ) {
+                await window.GoSVTCloud.syncProgress(cached.progress);
+              }
 
-      await window.GoSVTCloud.syncProgress(cached.progress);
-
-      console.log('[GoSVT] Cloud progress restored successfully.');
-    }
-  } catch (err) {
-    // Do not overwrite cloud data if restoration failed.
-    console.warn('[GoSVT] Cloud progress restoration failed:', err.message);
-  }
-}
+              console.log(
+                '[GoSVT] Cloud progress restored successfully.'
+              );
+            }
+          } catch (err) {
+            console.warn(
+              '[GoSVT] Cloud progress restoration failed:',
+              err && err.message
+            );
+          }
         }
       }
     }
-    ready = true; emit();
+
+    ready = true;
+    emit();
   }
+
   function field(id, label, type, attrs='') {
     return `<label class="gs-auth-field" for="${id}"><span>${label}</span><input id="${id}" name="${id}" type="${type}" ${attrs}></label>`;
   }
