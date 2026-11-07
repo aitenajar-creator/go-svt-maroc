@@ -146,6 +146,40 @@
       if (error) throw error;
     },
 
+    // Favorites are stored as resource paths and isolated by the authenticated Supabase user.
+    async loadFavorites() {
+      const studentId = await authenticatedStudentId();
+      if (!studentId) return null;
+      const { data, error } = await client.from('student_favorites')
+        .select('content_key').eq('student_id', studentId).eq('content_type', 'resource');
+      if (error) throw error;
+      return (data || []).map(row => String(row.content_key || '')).filter(Boolean);
+    },
+
+    async syncFavorites(paths) {
+      const studentId = await authenticatedStudentId();
+      if (!studentId || !Array.isArray(paths)) return;
+      const clean = Array.from(new Set(paths.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim().slice(0, 500))));
+      const { data: existing, error: readError } = await client.from('student_favorites')
+        .select('content_key').eq('student_id', studentId).eq('content_type', 'resource');
+      if (readError) throw readError;
+      const keep = new Set(clean);
+      const obsolete = (existing || []).map(row => row.content_key).filter(key => !keep.has(key));
+      if (obsolete.length) {
+        const { error } = await client.from('student_favorites').delete()
+          .eq('student_id', studentId).eq('content_type', 'resource').in('content_key', obsolete);
+        if (error) throw error;
+      }
+      if (!clean.length) return;
+      const rows = clean.map(contentKey => ({
+        student_id: studentId, content_key: contentKey, content_type: 'resource'
+      }));
+      const { error } = await client.from('student_favorites').upsert(rows, {
+        onConflict: 'student_id,content_key,content_type'
+      });
+      if (error) throw error;
+    },
+
     async loadStudyPlan() {
       const studentId = await authenticatedStudentId();
       if (!studentId) return null;
