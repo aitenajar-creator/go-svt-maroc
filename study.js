@@ -20,7 +20,64 @@
         try { const v = JSON.parse(storage.get(key)); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (e) { return {}; }
     }
     const save = (key, value) => storage.set(key, JSON.stringify(value));
+    let activeFavoriteUid = null;
     const getFavs = () => readList('gosvt-favs');
+
+    function saveFavoriteList(paths, syncCloud) {
+        const clean = Array.from(new Set((Array.isArray(paths) ? paths : [])
+            .filter(path => typeof path === 'string' && path.trim())
+            .map(path => path.trim().slice(0, 500))));
+        save('gosvt-favs', clean);
+        if (activeFavoriteUid) save('gosvt-favs:' + activeFavoriteUid, clean);
+        if (syncCloud !== false && activeFavoriteUid && window.GoSVTCloud &&
+            typeof window.GoSVTCloud.syncFavorites === 'function') {
+            window.GoSVTCloud.syncFavorites(clean)
+                .catch(err => console.warn('[GoSVT] Favorites cloud sync deferred:', err && err.message));
+        }
+        renderRevision();
+        if (window.StudentSpace && typeof window.StudentSpace.refresh === 'function') {
+            window.StudentSpace.refresh();
+        }
+        return clean;
+    }
+
+    function activateFavoriteAccount(uid, cloudPaths) {
+        if (!uid) return;
+        activeFavoriteUid = String(uid);
+        const cached = readList('gosvt-favs:' + activeFavoriteUid);
+        const migrated = storage.get('gosvt-favs-migrated:' + activeFavoriteUid) === true;
+        const legacy = migrated ? [] : getFavs();
+        const merged = Array.from(new Set([
+            ...(Array.isArray(cloudPaths) ? cloudPaths : []), ...cached, ...legacy
+        ].filter(path => typeof path === 'string' && path.trim()).map(path => path.trim().slice(0, 500))));
+        save('gosvt-favs:' + activeFavoriteUid, merged);
+        save('gosvt-favs-migrated:' + activeFavoriteUid, true);
+        save('gosvt-favs', merged);
+        if (window.GoSVTCloud && typeof window.GoSVTCloud.syncFavorites === 'function') {
+            window.GoSVTCloud.syncFavorites(merged)
+                .catch(err => console.warn('[GoSVT] Initial favorites sync deferred:', err && err.message));
+        }
+        renderRevision();
+        if (window.StudentSpace && typeof window.StudentSpace.refresh === 'function') {
+            window.StudentSpace.refresh();
+        }
+    }
+
+    function deactivateFavoriteAccount() {
+        if (activeFavoriteUid) save('gosvt-favs:' + activeFavoriteUid, getFavs());
+        activeFavoriteUid = null;
+        save('gosvt-favs', []);
+        renderRevision();
+        if (window.StudentSpace && typeof window.StudentSpace.refresh === 'function') {
+            window.StudentSpace.refresh();
+        }
+    }
+
+    window.GoSVTStudyFavorites = {
+        activate: activateFavoriteAccount,
+        deactivate: deactivateFavoriteAccount,
+        set: paths => saveFavoriteList(paths, true)
+    };
     const getOffline = () => readList('gosvt-offline');
     const getNotes = () => readObject('gosvt-notes');
 
@@ -76,6 +133,10 @@
         const on = index === -1;
         if (on) favs.unshift(path); else favs.splice(index, 1);
         save('gosvt-favs', favs);
+        if (activeFavoriteUid) save('gosvt-favs:' + activeFavoriteUid, favs);
+        if (activeFavoriteUid && window.GoSVTCloud && typeof window.GoSVTCloud.syncFavorites === 'function') {
+            window.GoSVTCloud.syncFavorites(favs).catch(err => console.warn('[GoSVT] Favorite toggle sync deferred:', err && err.message));
+        }
         byPath('.gs-fav', path).forEach(b => { b.classList.toggle('on', on); b.textContent = on ? '★' : '☆'; });
         toast(on ? t('⭐ أُضيف إلى مراجعتي', '⭐ Ajouté à Ma révision') : t('حُذف من المفضلة', 'Retiré des favoris'));
         renderRevision();
