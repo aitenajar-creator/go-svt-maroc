@@ -95,6 +95,21 @@
         ready = true;
         emit();
 
+        if (window.GoSVTCloud && window.GoSVTStudyFavorites &&
+            typeof window.GoSVTCloud.loadFavorites === 'function') {
+          window.GoSVTCloud.loadFavorites()
+            .then(paths => {
+              if (generation !== sessionGeneration || !user || user.id !== uid) return;
+              window.GoSVTStudyFavorites.activate(uid, paths);
+            })
+            .catch(err => {
+              console.warn('[GoSVT] Favorites cloud restore deferred:', err && err.message);
+              if (generation === sessionGeneration && user && user.id === uid) {
+                window.GoSVTStudyFavorites.activate(uid, null);
+              }
+            });
+        }
+
         if (window.GoSVTCloud && window.StudentSpace) {
           Promise.all([
             typeof window.GoSVTCloud.loadProgress === 'function' ? window.GoSVTCloud.loadProgress() : Promise.resolve(null),
@@ -224,6 +239,9 @@
         view = 'reset';
       }
       if (event === 'SIGNED_OUT') {
+        if (window.GoSVTStudyFavorites && typeof window.GoSVTStudyFavorites.deactivate === 'function') {
+          window.GoSVTStudyFavorites.deactivate();
+        }
         // Invalidate any pending profile lookup or cloud restore from the old session.
         sessionGeneration++;
         sessionApply = null;
