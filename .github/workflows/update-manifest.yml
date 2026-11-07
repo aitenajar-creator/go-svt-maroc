@@ -11,6 +11,11 @@ on:
 permissions:
   contents: write
 
+# Serialize manifest updates so concurrent pushes cannot race on main.
+concurrency:
+  group: update-content-manifest-main
+  cancel-in-progress: false
+
 jobs:
   update-manifest:
     runs-on: ubuntu-latest
@@ -64,5 +69,17 @@ jobs:
             echo "Manifest unchanged - nothing to commit"
           else
             git commit -m "Auto-update manifest.json"
-            git push
+            # Another workflow or a manual push may update main while this job runs.
+            # Rebase on the latest main and retry instead of failing on a non-fast-forward push.
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              echo "Push attempt $attempt failed; retrying..."
+              sleep 2
+            done
+            echo "Unable to push manifest after 3 attempts."
+            exit 1
           fi
