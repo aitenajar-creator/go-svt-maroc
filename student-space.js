@@ -759,10 +759,21 @@
                 </div>
             </div>
             <section class="gs-student-welcome">
-                <div><span class="gs-eyebrow">GO SVT MAROC · ESPACE ÉLÈVE</span><h2>${t('welcome')}</h2>
-                <p>${lang() === 'ar' ? 'تعلم، تدرب، نظم وقتك، وتابع تطورك خطوة بخطوة.' : 'Apprenez, entraînez-vous et suivez vos progrès à votre rythme.'}</p></div>
-                <a class="gs-primary-link" href="#cours">${t('continueLearning')} ←</a>
+                <div class="gs-welcome-copy"><span class="gs-eyebrow">GO SVT MAROC · ESPACE ÉLÈVE</span>
+                <h2>${lang() === 'ar' ? 'مرحباً ' + escapeHtml(currentProfile.name) + '، مستعد لاكتشاف جديد؟' : 'Bonjour ' + escapeHtml(currentProfile.name) + ', prêt à découvrir ?'}</h2>
+                <p>${lang() === 'ar' ? 'رحلتك في علوم الحياة والأرض تبدأ بخطوة صغيرة اليوم: افهم درساً، أنجز تمريناً، واكتشف مدى تقدمك.' : 'Un petit pas aujourd’hui : comprendre une leçon, faire un exercice et mesurer vos progrès.'}</p>
+                <div class="gs-welcome-tags"><span>🧬 ${lang() === 'ar' ? 'افهم' : 'Comprendre'}</span><span>🔬 ${lang() === 'ar' ? 'استكشف' : 'Explorer'}</span><span>🎯 ${lang() === 'ar' ? 'أتقن' : 'Maîtriser'}</span></div></div>
+                <a class="gs-primary-link" href="#cours">${lang() === 'ar' ? 'ابدأ التعلم الآن' : 'Commencer'} <span aria-hidden="true">←</span></a>
             </section>
+            <div class="gs-learning-path">
+                <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
+                <div class="gs-path-steps">
+                    <a href="#cours"><span class="gs-path-icon">📖</span><strong>${lang() === 'ar' ? 'أفهم الدرس' : 'Comprendre'}</strong><small>${lang() === 'ar' ? 'دروس وملخصات' : 'Cours et résumés'}</small></a>
+                    <a href="#exercices"><span class="gs-path-icon">🧩</span><strong>${lang() === 'ar' ? 'أطبق ما تعلمت' : 'Appliquer'}</strong><small>${lang() === 'ar' ? 'تمارين متدرجة' : 'Exercices progressifs'}</small></a>
+                    <a href="#quiz"><span class="gs-path-icon">⚡</span><strong>${lang() === 'ar' ? 'أختبر نفسي' : 'Me tester'}</strong><small>${lang() === 'ar' ? 'اختبارات تفاعلية' : 'Quiz interactifs'}</small></a>
+                    <a href="#examens"><span class="gs-path-icon">🏆</span><strong>${lang() === 'ar' ? 'أستعد للامتحان' : 'Me préparer'}</strong><small>${lang() === 'ar' ? 'فروض وامتحانات' : 'Devoirs et examens'}</small></a>
+                </div>
+            </div>
             <h3 class="gs-section-title">${t('quickAccess')}</h3>
             <div class="gs-quick-links">
                 <a href="#cours"><span>📚</span>${t('resources')}</a>
@@ -1567,6 +1578,45 @@
         .gs-notes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
         .gs-note-card{padding:1rem;border:1px solid #e5eadf;border-radius:12px;background:#fff;min-width:0}
         .gs-note-heading{display:flex;align-items:center;justify-content:space-between;gap:.5rem}.gs-note-card p{white-space:normal;overflow-wrap:anywhere;line-height:1.7}
+        /* Modern learning dashboard refresh */
+        .student-space{max-width:1280px;padding:clamp(1rem,2.5vw,2rem);color:#20352c}
+        .space-nav{position:relative;gap:.55rem;padding:.55rem;margin:0 0 1.35rem;background:#f4f7f2;border:1px solid #e5ece3;border-radius:16px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin}
+        .space-tab{flex:0 0 auto;padding:.72rem 1.05rem;border:1px solid transparent;border-radius:11px;background:transparent;color:#52665a;white-space:nowrap}
+        .space-tab:hover{background:#e8f0e5;transform:translateY(-1px)}
+        .space-tab.active{background:linear-gradient(135deg,#236b43,#174c35);color:#fff;box-shadow:0 5px 14px rgba(28,91,57,.2)}
+        .gs-student-welcome{position:relative;overflow:hidden;min-height:180px;padding:clamp(1.4rem,3vw,2.2rem);border:0;border-radius:22px;background:radial-gradient(circle at 12% 15%,rgba(255,255,255,.22),transparent 27%),linear-gradient(115deg,#123f35 0%,#236b4b 58%,#6b9c56 100%);box-shadow:0 12px 30px rgba(27,82,57,.15);color:#fff}
+        .gs-student-welcome:after{content:"🧬";position:absolute;right:8%;bottom:-30px;font-size:9rem;opacity:.10;transform:rotate(-18deg);pointer-events:none}
+        [dir="rtl"] .gs-student-welcome:after{right:auto;left:8%}
+        .gs-student-welcome h2{position:relative;z-index:1;margin:.5rem 0;color:#fff;font-size:clamp(1.3rem,2.6vw,1.9rem);line-height:1.5}
+        .gs-student-welcome p{position:relative;z-index:1;max-width:680px;color:rgba(255,255,255,.86);line-height:1.9}
+        .gs-eyebrow{color:#c8e8b7;letter-spacing:.07em}
+        .gs-primary-link{position:relative;z-index:2;background:#fff;color:#19553a!important;border-radius:12px;padding:.85rem 1.2rem;box-shadow:0 5px 14px rgba(0,0,0,.12);transition:transform .2s,box-shadow .2s}
+        .gs-primary-link:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.18)}
+        .gs-welcome-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+        .gs-welcome-tags span{padding:.35rem .75rem;border:1px solid rgba(255,255,255,.25);border-radius:99px;background:rgba(255,255,255,.12);font-size:.83rem;color:#fff}
+        .gs-learning-path{margin:1.2rem 0 1.5rem;padding:1.2rem;border:1px solid #e4ece1;border-radius:19px;background:linear-gradient(145deg,#fff,#f7faf5)}
+        .gs-path-heading{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
+        .gs-path-heading h3{margin:.25rem 0;color:#244d37;font-size:1.12rem}
+        .gs-path-mark{font-size:2rem}
+        .gs-path-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
+        .gs-path-steps a{display:flex;min-width:0;flex-direction:column;gap:.35rem;padding:1rem;border:1px solid #e7eee4;border-radius:14px;background:#fff;color:#294b37;text-decoration:none;transition:transform .2s,border-color .2s,box-shadow .2s}
+        .gs-path-steps a:hover{transform:translateY(-3px);border-color:#a8c9a2;box-shadow:0 8px 18px rgba(37,83,49,.09)}
+        .gs-path-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#edf6e9;font-size:1.35rem}
+        .gs-path-steps strong{font-size:.96rem}.gs-path-steps small{color:#718074;line-height:1.5}
+        .gs-section-title{margin:1.6rem 0 .85rem;color:#244d37;font-size:1.12rem}
+        .gs-quick-links a{border-radius:14px;transition:transform .2s,border-color .2s,box-shadow .2s}
+        .gs-quick-links a:hover{transform:translateY(-3px);border-color:#b7d1b0;box-shadow:0 8px 18px rgba(37,83,49,.09)}
+        .dashboard-grid{gap:.85rem}
+        .stat-card{position:relative;overflow:hidden;border:1px solid #e8eee5;border-radius:16px;box-shadow:0 4px 14px rgba(24,57,37,.055);transition:transform .2s,box-shadow .2s}
+        .stat-card:hover{transform:translateY(-3px);box-shadow:0 9px 20px rgba(24,57,37,.10)}
+        .stat-icon{display:inline-grid;place-items:center;width:48px;height:48px;border-radius:14px;background:#eff6ec}
+        .stat-value{color:#236b43}
+        .space-content{animation:gsSpaceIn .28s ease both}
+        .space-panel.active{animation:gsSpaceIn .25s ease both}
+        .gs-module,.progress-section,.history-list,.mistakes-list,.favorites-list{border:1px solid #e8eee5;border-radius:16px;box-shadow:0 4px 14px rgba(24,57,37,.045)}
+        @keyframes gsSpaceIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        @media(max-width:800px){.gs-path-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:520px){.gs-path-steps{grid-template-columns:1fr 1fr}.gs-path-steps a{padding:.8rem}.gs-student-welcome:after{font-size:6rem;right:2%}[dir="rtl"] .gs-student-welcome:after{right:auto;left:2%}}
         @media (max-width: 768px) {
             .gs-student-welcome{align-items:flex-start;flex-direction:column}
             .gs-plan-item{align-items:flex-start;flex-wrap:wrap}
