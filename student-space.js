@@ -1157,7 +1157,8 @@
             const date = String(form.get('date') || '');
             if (!title || !date) return;
             const data = getProfileData(currentProfileId);
-            data.studyPlan.push({ id: makeId(), title: title.slice(0, 120), date, duration: Math.min(600, Math.max(5, Number(form.get('duration')) || 30)), completed: false, createdAt: Date.now() });
+            const now = Date.now();
+            data.studyPlan.push({ id: makeId(), title: title.slice(0, 120), date, duration: Math.min(600, Math.max(5, Number(form.get('duration')) || 30)), completed: false, createdAt: now, updatedAt: now });
             saveProfileData(currentProfileId, data);
             refreshStudentSpaceView();
         });
@@ -1176,7 +1177,7 @@
         container.querySelectorAll('.gs-task-toggle').forEach(button => button.addEventListener('click', function () {
             const data = getProfileData(currentProfileId);
             const item = data.studyPlan.find(x => x.id === this.dataset.taskId);
-            if (item) item.completed = !item.completed;
+            if (item) { item.completed = !item.completed; item.updatedAt = Date.now(); }
             saveProfileData(currentProfileId, data); refreshStudentSpaceView();
         }));
         container.querySelectorAll('.gs-task-delete').forEach(button => button.addEventListener('click', function () {
