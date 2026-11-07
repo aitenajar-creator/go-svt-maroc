@@ -95,30 +95,36 @@
         ready = true;
         emit();
 
-        if (
-          window.GoSVTCloud &&
-          typeof window.GoSVTCloud.loadProgress === 'function' &&
-          typeof window.StudentSpace.mergeCloudProgress === 'function'
-        ) {
-          Promise.resolve()
-            .then(() => window.GoSVTCloud.loadProgress())
-            .then(cloudProgress => {
-              if (generation !== sessionGeneration || !user || user.id !== uid) return;
-              if (!cloudProgress || typeof cloudProgress !== 'object') return;
+        if (window.GoSVTCloud && window.StudentSpace) {
+          Promise.all([
+            typeof window.GoSVTCloud.loadProgress === 'function' ? window.GoSVTCloud.loadProgress() : Promise.resolve(null),
+            typeof window.GoSVTCloud.loadNotes === 'function' ? window.GoSVTCloud.loadNotes() : Promise.resolve(null),
+            typeof window.GoSVTCloud.loadStudyPlan === 'function' ? window.GoSVTCloud.loadStudyPlan() : Promise.resolve(null)
+          ]).then(results => {
+            if (generation !== sessionGeneration || !user || user.id !== uid) return;
+            const [cloudProgress, cloudNotes, cloudPlan] = results;
+            if (cloudProgress && typeof window.StudentSpace.mergeCloudProgress === 'function') {
               window.StudentSpace.mergeCloudProgress(profileIdForSession, cloudProgress);
-              // Keep the merged data locally and refresh the visible dashboard.
-              // Re-uploading is deliberately non-blocking.
-              const cached = window.StudentSpace.getProfileData(profileIdForSession);
-              if (generation === sessionGeneration && user && user.id === uid &&
-                  typeof window.GoSVTCloud.syncProgress === 'function') {
-                Promise.resolve()
-                  .then(() => window.GoSVTCloud.syncProgress(cached.progress))
-                  .catch(err => console.warn('[GoSVT] Background sync deferred:', err && err.message));
-              }
-              emit();
-              console.log('[GoSVT] Cloud progress restored in background.');
-            })
-            .catch(err => console.warn('[GoSVT] Background cloud restore failed:', err && err.message));
+            }
+            if ((Array.isArray(cloudNotes) || Array.isArray(cloudPlan)) &&
+                typeof window.StudentSpace.mergeCloudCollections === 'function') {
+              window.StudentSpace.mergeCloudCollections(profileIdForSession, cloudNotes, cloudPlan);
+            }
+            if (generation !== sessionGeneration || !user || user.id !== uid) return;
+            const cached = window.StudentSpace.getProfileData(profileIdForSession);
+            const syncJobs = [
+              ['progress', 'syncProgress', cached.progress],
+              ['notes', 'syncNotes', cached.notes],
+              ['study plan', 'syncStudyPlan', cached.studyPlan]
+            ];
+            syncJobs.forEach(job => {
+              if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
+              Promise.resolve().then(() => window.GoSVTCloud[job[1]](job[2]))
+                .catch(err => console.warn('[GoSVT] Background ' + job[0] + ' sync deferred:', err && err.message));
+            });
+            emit();
+            console.log('[GoSVT] Cloud student data restored in background.');
+          }).catch(err => console.warn('[GoSVT] Background cloud restore failed:', err && err.message));
         }
         return;
       }
