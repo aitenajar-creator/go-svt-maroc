@@ -190,6 +190,48 @@
         };
     }
 
+    function mergeCloudProgress(profileId, cloudProgress) {
+        if (!cloudProgress || typeof cloudProgress !== 'object' || !getProfiles()[profileId]) return;
+        const data = getProfileData(profileId);
+        ['lessons', 'exercises', 'tests'].forEach(function (bucket) {
+            const incoming = cloudProgress[bucket] && typeof cloudProgress[bucket] === 'object' ? cloudProgress[bucket] : {};
+            Object.keys(incoming).forEach(function (key) {
+                const remote = incoming[key] || {};
+                const local = data.progress[bucket][key] || { id: key };
+                if (remote.completed === true) local.completed = true;
+                if (remote.cloudUpdatedAt) local.cloudUpdatedAt = remote.cloudUpdatedAt;
+                data.progress[bucket][key] = local;
+            });
+        });
+        saveProfileData(profileId, data);
+    }
+
+    function mergeCloudCollections(profileId, cloudNotes, cloudPlan) {
+        if (!getProfiles()[profileId]) return;
+        const prefix = profileId + '_';
+        const data = getProfileData(profileId);
+        function mergeById(localItems, remoteItems) {
+            const merged = new Map();
+            (Array.isArray(localItems) ? localItems : []).forEach(function (item) {
+                if (item && item.id) merged.set(String(item.id), item);
+            });
+            (Array.isArray(remoteItems) ? remoteItems : []).forEach(function (remote) {
+                if (!remote || !remote.id) return;
+                const key = String(remote.id);
+                const local = merged.get(key);
+                const localTime = Number(local && (local.updatedAt || local.createdAt)) || 0;
+                const remoteTime = Number(remote.updatedAt || remote.createdAt) || 0;
+                if (!local || remoteTime > localTime) merged.set(key, remote);
+            });
+            return Array.from(merged.values());
+        }
+        if (Array.isArray(cloudNotes)) data.notes = mergeById(data.notes, cloudNotes);
+        if (Array.isArray(cloudPlan)) data.studyPlan = mergeById(data.studyPlan, cloudPlan);
+        storage.set(prefix + STORAGE_KEYS.NOTES, data.notes);
+        storage.set(prefix + STORAGE_KEYS.STUDY_PLAN, data.studyPlan);
+        saveProfileData(profileId, data);
+    }
+
     function saveProfileData(profileId, data) {
         const prefix = profileId + '_';
         storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
@@ -199,10 +241,20 @@
         storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
         storage.set(prefix + STORAGE_KEYS.NOTES, Array.isArray(data.notes) ? data.notes : []);
         storage.set(prefix + STORAGE_KEYS.STUDY_PLAN, Array.isArray(data.studyPlan) ? data.studyPlan : []);
-        // Keep the browser cache for offline use and synchronize learning progress to Supabase.
-        if (window.GoSVTCloud && typeof window.GoSVTCloud.syncProgress === 'function') {
-            window.GoSVTCloud.syncProgress(data.progress).catch(function (err) {
-                console.warn('[GoSVT] Cloud progress sync deferred:', err && err.message);
+        // Keep a local offline cache and synchronize the signed-in student's data.
+        if (window.GoSVTCloud) {
+            const jobs = [
+                ['progress', 'syncProgress', data.progress],
+                ['notes', 'syncNotes', data.notes],
+                ['study plan', 'syncStudyPlan', data.studyPlan]
+            ];
+            jobs.forEach(function (job) {
+                if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
+                Promise.resolve().then(function () {
+                    return window.GoSVTCloud[job[1]](job[2]);
+                }).catch(function (err) {
+                    console.warn('[GoSVT] Cloud ' + job[0] + ' sync deferred:', err && err.message);
+                });
             });
         }
     }
@@ -1129,13 +1181,23 @@
         }));
         container.querySelectorAll('.gs-task-delete').forEach(button => button.addEventListener('click', function () {
             const data = getProfileData(currentProfileId);
-            data.studyPlan = data.studyPlan.filter(x => x.id !== this.dataset.taskId);
-            saveProfileData(currentProfileId, data); refreshStudentSpaceView();
+            const deletedId = this.dataset.taskId;
+            data.studyPlan = data.studyPlan.filter(x => x.id !== deletedId);
+            saveProfileData(currentProfileId, data);
+            if (window.GoSVTCloud && typeof window.GoSVTCloud.deleteStudyPlanItem === 'function') {
+                window.GoSVTCloud.deleteStudyPlanItem(deletedId).catch(err => console.warn('[GoSVT] Cloud planner delete deferred:', err && err.message));
+            }
+            refreshStudentSpaceView();
         }));
         container.querySelectorAll('.gs-note-delete').forEach(button => button.addEventListener('click', function () {
             const data = getProfileData(currentProfileId);
-            data.notes = data.notes.filter(x => x.id !== this.dataset.noteId);
-            saveProfileData(currentProfileId, data); refreshStudentSpaceView();
+            const deletedId = this.dataset.noteId;
+            data.notes = data.notes.filter(x => x.id !== deletedId);
+            saveProfileData(currentProfileId, data);
+            if (window.GoSVTCloud && typeof window.GoSVTCloud.deleteNote === 'function') {
+                window.GoSVTCloud.deleteNote(deletedId).catch(err => console.warn('[GoSVT] Cloud note delete deferred:', err && err.message));
+            }
+            refreshStudentSpaceView();
         }));
     }
 
@@ -1591,6 +1653,8 @@
         getCurrentProfile,
         getProfiles,
         getProfileData,
+        mergeCloudProgress,
+        mergeCloudCollections,
         exportProfileData,
         importProfileData,
         retryMistakes
