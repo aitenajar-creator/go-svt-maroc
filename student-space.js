@@ -1061,7 +1061,12 @@
                 const path = this.dataset.path;
                 const storedFavorites = storage.get('gosvt-favs');
                 const favs = Array.isArray(storedFavorites) ? storedFavorites : [];
-                storage.set('gosvt-favs', favs.filter(item => item !== path));
+                const nextFavorites = favs.filter(item => item !== path);
+                if (window.GoSVTStudyFavorites && typeof window.GoSVTStudyFavorites.set === 'function') {
+                    window.GoSVTStudyFavorites.set(nextFavorites);
+                } else {
+                    storage.set('gosvt-favs', nextFavorites);
+                }
                 panel.innerHTML = renderFavorites();
                 bindFavoritesPanel(panel);
             });
