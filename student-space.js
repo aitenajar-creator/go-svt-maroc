@@ -1048,6 +1048,21 @@
         return html;
     }
 
+    // Refresh and bind the favorites panel whenever the student opens its tab.
+    function bindFavoritesPanel(panel) {
+        if (!panel) return;
+        panel.querySelectorAll('.btn-remove-fav').forEach(button => {
+            button.addEventListener('click', function () {
+                const url = this.dataset.url;
+                const storedFavorites = storage.get('gosvt_favs');
+                const favs = Array.isArray(storedFavorites) ? storedFavorites : [];
+                storage.set('gosvt_favs', favs.filter(fav => fav && fav.url !== url));
+                panel.innerHTML = renderFavorites();
+                bindFavoritesPanel(panel);
+            });
+        });
+    }
+
     // ============================================
     // 11. MOTIVATION (التحفيز)
     // ============================================
@@ -1259,7 +1274,16 @@
         container.querySelectorAll('.space-tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 const tabName = this.dataset.tab;
-                
+
+                // Favorites may have changed since the student space was rendered.
+                if (tabName === 'favorites') {
+                    const favoritesPanel = container.querySelector('#panel-favorites');
+                    if (favoritesPanel) {
+                        favoritesPanel.innerHTML = renderFavorites();
+                        bindFavoritesPanel(favoritesPanel);
+                    }
+                }
+
                 // Update tabs
                 container.querySelectorAll('.space-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
