@@ -15,81 +15,75 @@
   });
 })();
 
-/* Go SVT Cloud Progress: sync and restore */
+/* Go SVT Cloud Data: progress, notes and study planner */
 (function () {
   'use strict';
-
   const client = window.supabaseClient;
   if (!client) return;
 
+  async function authenticatedStudentId() {
+    const { data, error } = await client.auth.getUser();
+    if (error) throw error;
+    return data && data.user ? data.user.id : null;
+  }
+
+  function parseNoteRow(row) {
+    let value = {};
+    try { value = JSON.parse(row.note); } catch (_) { value = { body: row.note }; }
+    if (!value || typeof value !== 'object' || Array.isArray(value)) value = { body: String(row.note || '') };
+    return {
+      id: String(value.id || row.content_key),
+      title: String(value.title || '').slice(0, 120),
+      body: String(value.body || '').slice(0, 5000),
+      createdAt: Number(value.createdAt) || Date.parse(row.updated_at) || Date.now(),
+      updatedAt: Number(value.updatedAt) || Date.parse(row.updated_at) || Date.now()
+    };
+  }
+
+  function parsePlanRow(row) {
+    return {
+      id: String(row.item_key),
+      title: String(row.title || '').slice(0, 120),
+      date: String(row.scheduled_date || ''),
+      duration: Math.min(600, Math.max(5, Number(row.duration_minutes) || 30)),
+      completed: row.completed === true,
+      createdAt: Date.parse(row.created_at) || Date.now(),
+      updatedAt: Date.parse(row.updated_at) || Date.parse(row.created_at) || Date.now()
+    };
+  }
+
   window.GoSVTCloud = {
     async loadProgress() {
-      const { data: authData, error: authError } =
-        await client.auth.getUser();
-
-      if (authError) throw authError;
-      if (!authData.user) return null;
-
-      const { data, error } = await client
-        .from('student_progress')
+      const studentId = await authenticatedStudentId();
+      if (!studentId) return null;
+      const { data, error } = await client.from('student_progress')
         .select('content_key, content_type, completed, updated_at')
-        .eq('student_id', authData.user.id);
-
+        .eq('student_id', studentId);
       if (error) throw error;
-
-      const progress = {
-        lessons: {},
-        exercises: {},
-        tests: {}
-      };
-
-      const types = {
-        lesson: 'lessons',
-        exercise: 'exercises',
-        unit: 'tests'
-      };
-
+      const progress = { lessons: {}, exercises: {}, tests: {} };
+      const types = { lesson: 'lessons', exercise: 'exercises', unit: 'tests' };
       (data || []).forEach(row => {
         const bucket = types[row.content_type];
         if (!bucket || !row.content_key) return;
-
         progress[bucket][row.content_key] = {
           id: row.content_key,
           completed: row.completed === true,
           cloudUpdatedAt: row.updated_at || null
         };
       });
-
       return progress;
     },
 
     async syncProgress(progress) {
       if (!progress || typeof progress !== 'object') return;
-
-      const { data: authData, error: authError } =
-        await client.auth.getUser();
-
-      if (authError) throw authError;
-      if (!authData.user) return;
-
-      const studentId = authData.user.id;
+      const studentId = await authenticatedStudentId();
+      if (!studentId) return;
       const rows = [];
-
-      const types = {
-        lessons: 'lesson',
-        exercises: 'exercise',
-        tests: 'unit'
-      };
-
+      const types = { lessons: 'lesson', exercises: 'exercise', tests: 'unit' };
       Object.keys(types).forEach(bucket => {
-        const entries = progress[bucket] &&
-          typeof progress[bucket] === 'object'
-          ? progress[bucket]
-          : {};
-
+        const entries = progress[bucket] && typeof progress[bucket] === 'object' ? progress[bucket] : {};
         Object.keys(entries).forEach(key => {
           const item = entries[key] || {};
-
           rows.push({
             student_id: studentId,
             content_key: String(key).slice(0, 500),
@@ -99,15 +93,95 @@
           });
         });
       });
-
       if (!rows.length) return;
+      const { error } = await client.from('student_progress').upsert(rows, {
+        onConflict: 'student_id,content_key,content_type'
+      });
+      if (error) throw error;
+    },
 
-      const { error } = await client
-        .from('student_progress')
-        .upsert(rows, {
-          onConflict: 'student_id,content_key,content_type'
+    async loadNotes() {
+      const studentId = await authenticatedStudentId();
+      if (!studentId) return null;
+      const { data, error } = await client.from('student_notes')
+        .select('content_key,note,updated_at').eq('student_id', studentId);
+      if (error) throw error;
+      return (data || []).map(parseNoteRow);
+    },
+
+    async syncNotes(notes) {
+      const studentId = await authenticatedStudentId();
+      if (!studentId || !Array.isArray(notes) || !notes.length) return;
+      const rows = notes.filter(n => n && typeof n === 'object' && n.id)
+        .map(n => {
+          const payload = {
+            id: String(n.id),
+            title: String(n.title || '').slice(0, 120),
+            body: String(n.body || '').slice(0, 5000),
+            createdAt: Number(n.createdAt) || Date.now(),
+            updatedAt: Number(n.updatedAt) || Date.now()
+          };
+          return {
+            student_id: studentId,
+            content_key: payload.id.slice(0, 500),
+            note: JSON.stringify(payload),
+            updated_at: new Date(payload.updatedAt).toISOString()
+          };
         });
+      if (!rows.length) return;
+      rows.forEach(row => {
+        if (row.note.length > 10000) throw new Error('الملاحظة تتجاوز الحد المسموح للتخزين السحابي.');
+      });
+      const { error } = await client.from('student_notes').upsert(rows, {
+        onConflict: 'student_id,content_key'
+      });
+      if (error) throw error;
+    },
 
+    async deleteNote(noteId) {
+      const studentId = await authenticatedStudentId();
+      if (!studentId || !noteId) return;
+      const { error } = await client.from('student_notes').delete()
+        .eq('student_id', studentId).eq('content_key', String(noteId));
+      if (error) throw error;
+    },
+
+    async loadStudyPlan() {
+      const studentId = await authenticatedStudentId();
+      if (!studentId) return null;
+      const { data, error } = await client.from('student_study_plan')
+        .select('item_key,title,scheduled_date,duration_minutes,completed,created_at,updated_at')
+        .eq('student_id', studentId);
+      if (error) throw error;
+      return (data || []).map(parsePlanRow);
+    },
+
+    async syncStudyPlan(items) {
+      const studentId = await authenticatedStudentId();
+      if (!studentId || !Array.isArray(items) || !items.length) return;
+      const rows = items.filter(item => item && typeof item === 'object' && item.id && item.date)
+        .map(item => ({
+          student_id: studentId,
+          item_key: String(item.id).slice(0, 500),
+          title: String(item.title || '').trim().slice(0, 120),
+          scheduled_date: String(item.date),
+          duration_minutes: Math.min(600, Math.max(5, Number(item.duration) || 30)),
+          completed: item.completed === true,
+          created_at: new Date(Number(item.createdAt) || Date.now()).toISOString(),
+          updated_at: new Date(Number(item.updatedAt) || Date.now()).toISOString()
+        }));
+      if (!rows.length) return;
+      const { error } = await client.from('student_study_plan').upsert(rows, {
+        onConflict: 'student_id,item_key'
+      });
+      if (error) throw error;
+    },
+
+    async deleteStudyPlanItem(itemId) {
+      const studentId = await authenticatedStudentId();
+      if (!studentId || !itemId) return;
+      const { error } = await client.from('student_study_plan').delete()
+        .eq('student_id', studentId).eq('item_key', String(itemId));
       if (error) throw error;
     }
   };
