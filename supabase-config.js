@@ -112,27 +112,3 @@
     }
   };
 })();
-(function () {
-  const client = window.supabaseClient;
-  if (!client) return;
-  window.GoSVTCloud = {
-    async syncProgress(progress) {
-      if (!progress || typeof progress !== 'object') return;
-      const { data: authData, error: authError } = await client.auth.getUser();
-      if (authError || !authData.user) return;
-      const studentId = authData.user.id;
-      const rows = [];
-      const types = { lessons: 'lesson', exercises: 'exercise', tests: 'unit' };
-      Object.keys(types).forEach(bucket => {
-        const entries = progress[bucket] && typeof progress[bucket] === 'object' ? progress[bucket] : {};
-        Object.keys(entries).forEach(key => {
-          const item = entries[key] || {};
-          rows.push({ student_id: studentId, content_key: String(key).slice(0, 500), content_type: types[bucket], completed: item.completed === true, updated_at: new Date().toISOString() });
-        });
-      });
-      if (!rows.length) return;
-      const { error } = await client.from('student_progress').upsert(rows, { onConflict: 'student_id,content_key,content_type' });
-      if (error) console.warn('[GoSVT] Progress cloud sync:', error.message);
-    }
-  };
-})();
