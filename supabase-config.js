@@ -100,6 +100,37 @@
       if (error) throw error;
     },
 
+    async loadDailyChallenge(challengeDate) {
+      const studentId = await authenticatedStudentId();
+      if (!studentId || !/^\\d{4}-\\d{2}-\\d{2}$/.test(String(challengeDate || ''))) return null;
+      const { data, error } = await client.from('student_daily_challenges')
+        .select('challenge_date,challenge_id,selected_option,is_correct,points,answered_at')
+        .eq('student_id', studentId).eq('challenge_date', challengeDate).maybeSingle();
+      if (error) throw error;
+      return data || null;
+    },
+
+    async submitDailyChallenge(payload) {
+      const studentId = await authenticatedStudentId();
+      if (!studentId) throw new Error('يجب تسجيل الدخول أولاً.');
+      if (!payload || !/^\\d{4}-\\d{2}-\\d{2}$/.test(String(payload.challenge_date || '')) ||
+          !/^svt-daily-\\d{4}-\\d{2}-\\d{2}$/.test(String(payload.challenge_id || '')) ||
+          !Number.isInteger(payload.selected_option) || payload.selected_option < 0 || payload.selected_option > 3 ||
+          typeof payload.is_correct !== 'boolean' || ![0, 10].includes(payload.points)) {
+        throw new Error('بيانات التحدي غير صالحة.');
+      }
+      const { data, error } = await client.from('student_daily_challenges').insert({
+        student_id: studentId,
+        challenge_date: payload.challenge_date,
+        challenge_id: payload.challenge_id,
+        selected_option: payload.selected_option,
+        is_correct: payload.is_correct,
+        points: payload.points
+      }).select('challenge_date,challenge_id,selected_option,is_correct,points,answered_at').single();
+      if (error) throw error;
+      return data;
+    },
+
     async loadNotes() {
       const studentId = await authenticatedStudentId();
       if (!studentId) return null;
