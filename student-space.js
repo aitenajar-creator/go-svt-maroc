@@ -733,6 +733,49 @@
         }
     }
 
+    // Badges are derived from real progress records. Those records are already synced to Supabase.
+    function renderAchievements() {
+        const data = getProfileData(currentProfileId);
+        const lessonsViewed = Object.keys(data.progress.lessons || {}).length;
+        const exercisesViewed = Object.keys(data.progress.exercises || {}).length;
+        const completedLessons = Object.values(data.progress.lessons || {}).filter(item => item && item.completed === true).length;
+        const badges = lang() === 'ar' ? [
+            { icon: '🌱', title: 'مستكشف صغير', detail: 'شاهدت أول درس في علوم الحياة والأرض', value: lessonsViewed, target: 1 },
+            { icon: '📚', title: 'محب المعرفة', detail: 'شاهدت خمسة دروس مختلفة', value: lessonsViewed, target: 5 },
+            { icon: '✏️', title: 'متدرب نشيط', detail: 'اطلعت على أول تمرين', value: exercisesViewed, target: 1 },
+            { icon: '✅', title: 'خطوة نحو الإتقان', detail: 'أكملت أول درس', value: completedLessons, target: 1 },
+            { icon: '🏅', title: 'باني المعرفة', detail: 'أكملت ثلاثة دروس', value: completedLessons, target: 3 }
+        ] : [
+            { icon: '🌱', title: 'Petit explorateur', detail: 'Vous avez consulté votre premier cours', value: lessonsViewed, target: 1 },
+            { icon: '📚', title: 'Curieux', detail: 'Vous avez consulté cinq cours différents', value: lessonsViewed, target: 5 },
+            { icon: '✏️', title: 'Entraînement actif', detail: 'Vous avez consulté votre premier exercice', value: exercisesViewed, target: 1 },
+            { icon: '✅', title: 'Vers la maîtrise', detail: 'Vous avez terminé votre premier cours', value: completedLessons, target: 1 },
+            { icon: '🏅', title: 'Bâtisseur du savoir', detail: 'Vous avez terminé trois cours', value: completedLessons, target: 3 }
+        ];
+        const earned = badges.filter(badge => badge.value >= badge.target).length;
+        const heading = lang() === 'ar' ? 'إنجازاتي وشاراتي' : 'Mes réussites et badges';
+        const subtitle = lang() === 'ar'
+            ? 'كل شارة تعكس خطوة حقيقية في مسارك الدراسي.'
+            : 'Chaque badge récompense une étape réelle de votre parcours.';
+        const status = lang() === 'ar' ? 'مكتسبة' : 'Obtenu';
+        const locked = lang() === 'ar' ? 'قيد الإنجاز' : 'À débloquer';
+        return `<section class="gs-achievements">
+            <div class="gs-achievements-heading">
+                <div><span class="gs-eyebrow">${lang() === 'ar' ? 'تقدمك يستحق التقدير' : 'VOS EFFORTS COMPTENT'}</span><h3>${heading}</h3><p>${subtitle}</p></div>
+                <div class="gs-achievements-count"><strong>${earned}/${badges.length}</strong><small>${lang() === 'ar' ? 'شارات مكتسبة' : 'badges obtenus'}</small></div>
+            </div>
+            <div class="gs-badges-grid">${badges.map(badge => {
+                const unlocked = badge.value >= badge.target;
+                const percent = Math.min(100, Math.round((badge.value / badge.target) * 100));
+                return `<article class="gs-badge-card ${unlocked ? 'is-earned' : 'is-locked'}">
+                    <span class="gs-badge-icon">${badge.icon}</span>
+                    <div class="gs-badge-copy"><strong>${badge.title}</strong><small>${badge.detail}</small>
+                    ${unlocked ? `<span class="gs-badge-status">${status} ✓</span>` : `<span class="gs-badge-status">${locked} · ${Math.min(badge.value, badge.target)}/${badge.target}</span><span class="gs-badge-track"><i style="width:${percent}%"></i></span>`}</div>
+                </article>`;
+            }).join('')}</div>
+        </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -815,6 +858,7 @@
                     <div class="stat-label">${t('globalProgress')}</div>
                 </div>
             </div>
+            ${renderAchievements()}
         `;
         return html;
     }
@@ -1614,6 +1658,26 @@
         .space-content{animation:gsSpaceIn .28s ease both}
         .space-panel.active{animation:gsSpaceIn .25s ease both}
         .gs-module,.progress-section,.history-list,.mistakes-list,.favorites-list{border:1px solid #e8eee5;border-radius:16px;box-shadow:0 4px 14px rgba(24,57,37,.045)}
+        .gs-achievements{margin-top:1.5rem;padding:1.25rem;background:linear-gradient(135deg,#f7fbf5,#fff);border:1px solid #e2ecdf;border-radius:18px}
+        .gs-achievements-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+        .gs-achievements-heading h3{margin:.25rem 0;color:#244d37;font-size:1.15rem}
+        .gs-achievements-heading p{margin:0;color:#718074;font-size:.88rem}
+        .gs-achievements-count{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding:.55rem .9rem;background:#eaf4e7;border-radius:13px;color:#28623e}
+        .gs-achievements-count strong{font-size:1.25rem}.gs-achievements-count small{font-size:.72rem}
+        .gs-badges-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.75rem}
+        .gs-badge-card{display:flex;align-items:center;gap:.8rem;min-width:0;padding:.85rem;background:#fff;border:1px solid #e5ece2;border-radius:14px}
+        .gs-badge-card.is-earned{border-color:#c9dfc4;background:#fbfef9}
+        .gs-badge-card.is-locked{opacity:.78}
+        .gs-badge-icon{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:13px;background:#eef5eb;font-size:1.55rem;filter:grayscale(.75)}
+        .gs-badge-card.is-earned .gs-badge-icon{background:#e3f2dd;filter:none}
+        .gs-badge-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:.2rem}
+        .gs-badge-copy strong{color:#294d36;font-size:.9rem}
+        .gs-badge-copy small{color:#718074;font-size:.76rem;line-height:1.45}
+        .gs-badge-status{color:#56805b;font-size:.72rem;font-weight:700}
+        .gs-badge-card.is-locked .gs-badge-status{color:#8b9188}
+        .gs-badge-track{height:5px;overflow:hidden;background:#edf0eb;border-radius:8px}
+        .gs-badge-track i{display:block;height:100%;background:#78ad70;border-radius:8px}
+        @media(max-width:520px){.gs-achievements{padding:.9rem}.gs-achievements-heading{align-items:flex-start}.gs-badges-grid{grid-template-columns:1fr}}
         @keyframes gsSpaceIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
         @media(max-width:800px){.gs-path-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media(max-width:520px){.gs-path-steps{grid-template-columns:1fr 1fr}.gs-path-steps a{padding:.8rem}.gs-student-welcome:after{font-size:6rem;right:2%}[dir="rtl"] .gs-student-welcome:after{right:auto;left:2%}}
