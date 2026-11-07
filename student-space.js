@@ -527,7 +527,9 @@
     function refreshStudentSpaceView() {
         const container = document.getElementById('student-space-content');
         if (!container || !container.children.length) return; // sera rendu à l'ouverture de la section
-        if (container.querySelector('.gs-auth')) return;      // écran de connexion : ne pas effacer la saisie
+        // Preserve typed login fields while signed out, but switch to the dashboard immediately after a successful sign-in.
+        if (container.querySelector('.gs-auth') &&
+            !(window.StudentAccount && window.StudentAccount.isLoggedIn())) return;
         const active = container.querySelector('.space-tab.active');
         const tabName = active ? active.dataset.tab : 'dashboard';
         renderStudentSpace();
