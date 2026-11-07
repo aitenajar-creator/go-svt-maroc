@@ -690,12 +690,8 @@
             storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
             const card = document.getElementById('gs-daily-challenge');
             if (card && card.dataset.challengeDate === info.date) {
-                const activeTab = document.querySelector('#student-space-content .space-tab.active');
-                const activeName = activeTab ? activeTab.dataset.tab : 'dashboard';
-                renderStudentSpace();
-                const tabs = document.querySelectorAll('#student-space-content .space-tab');
-                tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === activeName));
-                document.querySelectorAll('#student-space-content .space-panel').forEach(panel => panel.classList.toggle('active', panel.id === 'panel-' + activeName));
+                // Update only the challenge card; rebuilding the whole student space causes visible flicker.
+                card.outerHTML = renderDailyChallenge();
             }
         } catch (err) {
             console.warn('[GoSVT] Daily challenge restore deferred:', err && err.message);
