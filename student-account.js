@@ -8,6 +8,22 @@
   let sessionGeneration = 0;
   let sessionApply = null;
   const MAP_KEY = 'gosvt_supabase_profile_map';
+  const STUDY_TRACKS = {
+    TC: [
+      { value: 'TCS', ar: 'الجذع المشترك العلمي', fr: 'Tronc commun scientifique' },
+      { value: 'TCL', ar: 'الجذع المشترك الأدبي', fr: 'Tronc commun lettres' }
+    ],
+    '1BAC': [
+      { value: '1BACSE', ar: 'العلوم التجريبية', fr: 'Sciences expérimentales' },
+      { value: '1BACSM', ar: 'العلوم الرياضية', fr: 'Sciences mathématiques' },
+      { value: '1BACL', ar: 'الآداب', fr: 'Lettres' }
+    ],
+    '2BAC': [
+      { value: '2BACSVT', ar: 'علوم الحياة والأرض', fr: 'Sciences de la vie et de la Terre' },
+      { value: '2BACSP', ar: 'العلوم الفيزيائية', fr: 'Sciences physiques' },
+      { value: '2BACSM', ar: 'العلوم الرياضية', fr: 'Sciences mathématiques' }
+    ]
+  };
   const msg = (form, value) => { const el = form.querySelector('.gs-auth-msg'); if (el) el.textContent = value || ''; };
   const errorText = err => {
     const m = String(err && (err.message || err.error_description) || '');
@@ -68,10 +84,15 @@
       if (generation !== sessionGeneration) return;
       if (error) console.warn('[GoSVT] Profile read:', error.message);
 
-      profile = data || {
-        id: uid,
-        display_name: (sessionUser.user_metadata && sessionUser.user_metadata.display_name) || sessionUser.email,
-        role: 'student'
+      const metadata = sessionUser.user_metadata || {};
+      profile = {
+        ...(data || {
+          id: uid,
+          display_name: metadata.display_name || sessionUser.email,
+          role: 'student'
+        }),
+        study_level: metadata.study_level || (data && data.study_level) || null,
+        study_track: metadata.study_track || (data && data.study_track) || null
       };
 
       if (window.StudentSpace) {
@@ -159,6 +180,19 @@
       form = `<form class="gs-auth-form" data-form="register" novalidate>
         ${field('gs-r-name', L('الاسم الكامل', 'Nom complet'), 'text', 'autocomplete="name" maxlength="80" required')}
         ${field('gs-r-email', L('البريد الإلكتروني', 'Adresse e-mail'), 'email', 'autocomplete="email" required')}
+        <label class="gs-auth-field" for="gs-r-level"><span>${L('المستوى الدراسي', 'Niveau scolaire')}</span>
+          <select id="gs-r-level" name="study_level" required>
+            <option value="">${L('اختر المستوى', 'Choisir le niveau')}</option>
+            <option value="TC">TC — ${L('الجذع المشترك', 'Tronc commun')}</option>
+            <option value="1BAC">1BAC — ${L('الأولى باكالوريا', '1ère année Bac')}</option>
+            <option value="2BAC">2BAC — ${L('الثانية باكالوريا', '2ème année Bac')}</option>
+          </select>
+        </label>
+        <label class="gs-auth-field" for="gs-r-track"><span>${L('المسلك الدراسي', 'Filière')}</span>
+          <select id="gs-r-track" name="study_track" required disabled>
+            <option value="">${L('اختر المستوى أولاً', 'Choisissez d’abord le niveau')}</option>
+          </select>
+        </label>
         ${field('gs-r-pwd', L('كلمة المرور (8 أحرف على الأقل)', 'Mot de passe (8 caractères min.)'), 'password', 'autocomplete="new-password" minlength="8" required')}
         ${field('gs-r-pwd2', L('تأكيد كلمة المرور', 'Confirmer le mot de passe'), 'password', 'autocomplete="new-password" required')}
         <p class="gs-auth-msg" role="alert" aria-live="polite"></p><button class="gs-auth-submit" type="submit">${L('إنشاء الحساب', 'Créer mon compte')}</button></form>`;
@@ -184,6 +218,16 @@
     container.innerHTML = `<div class="student-space"><div class="gs-auth"><div class="gs-auth-icon" aria-hidden="true">🎓</div><h3>${L('مساحتي','Mon espace')}</h3><p class="gs-auth-lead">${L('سجّل الدخول أو أنشئ حساباً لحفظ تقدمك.', 'Connectez-vous ou créez un compte pour sauvegarder votre progression.')}</p>${tabs}${form}<p class="gs-auth-note">${L('تتم إدارة الحسابات بشكل آمن عبر Supabase. لا تشارك كلمة المرور مع أي شخص.', 'Les comptes sont gérés de manière sécurisée par Supabase. Ne partagez votre mot de passe avec personne.')}</p></div></div>`;
     container.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { view = b.dataset.view; renderGate(container); }));
     const f = container.querySelector('form[data-form]');
+    if (f && f.dataset.form === 'register') {
+      const levelSelect = f.querySelector('#gs-r-level');
+      const trackSelect = f.querySelector('#gs-r-track');
+      levelSelect.addEventListener('change', () => {
+        const tracks = STUDY_TRACKS[levelSelect.value] || [];
+        trackSelect.innerHTML = `<option value="">${L('اختر المسلك', 'Choisir la filière')}</option>` +
+          tracks.map(item => `<option value="${item.value}">${L(item.ar, item.fr)}</option>`).join('');
+        trackSelect.disabled = tracks.length === 0;
+      });
+    }
     if (f) f.addEventListener('submit', async e => {
       e.preventDefault();
       if (!f.checkValidity()) {
@@ -198,10 +242,15 @@
         if (type === 'register') {
           const name = f.querySelector('#gs-r-name').value.trim(), email = f.querySelector('#gs-r-email').value.trim().toLowerCase();
           const password = f.querySelector('#gs-r-pwd').value, confirm = f.querySelector('#gs-r-pwd2').value;
+          const studyLevel = f.querySelector('#gs-r-level').value;
+          const studyTrack = f.querySelector('#gs-r-track').value;
+          if (!STUDY_TRACKS[studyLevel] || !STUDY_TRACKS[studyLevel].some(item => item.value === studyTrack)) {
+            throw new Error(L('يرجى اختيار المستوى والمسلك الدراسي الصحيحين.', 'Veuillez choisir un niveau et une filière valides.'));
+          }
           if (name.length < 2 || name.length > 80) throw new Error(L('الاسم يجب أن يتكون من حرفين إلى 80 حرفاً.', 'Le nom doit contenir entre 2 et 80 caractères.'));
           if (password.length < 8) throw new Error(L('كلمة المرور يجب أن تتكون من 8 أحرف على الأقل.', 'Le mot de passe doit contenir au moins 8 caractères.'));
           if (password !== confirm) throw new Error(L('كلمتا المرور غير متطابقتين.', 'Les mots de passe ne correspondent pas.'));
-          const { data, error } = await client.auth.signUp({ email, password, options: { data: { display_name: name }, emailRedirectTo: window.location.origin + window.location.pathname } });
+          const { data, error } = await client.auth.signUp({ email, password, options: { data: { display_name: name, study_level: studyLevel, study_track: studyTrack }, emailRedirectTo: window.location.origin + window.location.pathname } });
           if (error) throw error;
           if (data.session) { await applySession(data.session); }
           else { msg(f, L('تم إنشاء الحساب. تحقق من بريدك الإلكتروني واضغط رابط التأكيد، ثم سجّل الدخول.', 'Compte créé. Vérifiez votre e-mail et cliquez sur le lien de confirmation, puis connectez-vous.')); }
