@@ -183,6 +183,88 @@
       const { error } = await client.from('student_study_plan').delete()
         .eq('student_id', studentId).eq('item_key', String(itemId));
       if (error) throw error;
+    },
+
+    async loadNotes() {
+      const { data: authData, error: authError } = await client.auth.getUser();
+      if (errorAuth(errorAuth)) {}
+      if (authError) throw authError;
+      if (!authData.user) return null;
+      const { data, error } = await client.from('student_notes')
+        .select('content_key, note, updated_at').eq('student_id', authData.user.id);
+      if (error) throw error;
+      return (data || []).map(row => {
+        let parsed = {};
+        try { parsed = JSON.parse(row.note); } catch (_) { parsed = { body: row.note }; }
+        return { id: row.content_key, title: String(parsed.title || ''), body: String(parsed.body || ''),
+          createdAt: Number(parsed.createdAt) || Date.parse(row.updated_at) || Date.now(),
+          updatedAt: Date.parse(row.updated_at) || Number(parsed.updatedAt) || Date.now() };
+      });
+    },
+
+    async syncNotes(notes) {
+      if (!Array.isArray(notes)) return;
+      const { data: authData, error: authError } = await client.auth.getUser();
+      if (authError) throw authError;
+      if (!authData.user) return;
+      const rows = notes.filter(n => n && n.id).map(n => {
+        const payload = JSON.stringify({ id:String(n.id), title:String(n.title||'').slice(0,120),
+          body:String(n.body||'').slice(0,5000), createdAt:Number(n.createdAt)||Date.now(),
+          updatedAt:Number(n.updatedAt)||Date.now() });
+        if (payload.length > 10000) throw new Error('Note exceeds the Supabase 10000-character limit.');
+        return { student_id:authData.user.id, content_key:String(n.id).slice(0,500), note:payload,
+          updated_at:new Date(Number(n.updatedAt)||Date.now()).toISOString() };
+      });
+      if (!rows.length) return;
+      const { error } = await client.from('student_notes').upsert(rows,{onConflict:'student_id,content_key'});
+      if (error) throw error;
+    },
+
+    async deleteNote(noteId) {
+      const { data: authData, error: authError } = await client.auth.getUser();
+      if (authError) throw authError;
+      if (!authData.user) return;
+      const { error } = await client.from('student_notes').delete()
+        .eq('student_id',authData.user.id).eq('content_key',String(noteId));
+      if (error) throw error;
+    },
+
+    async loadStudyPlan() {
+      const { data: authData, error: authError } = await client.auth.getUser();
+      if (authError) throw authError;
+      if (!authData.user) return null;
+      const { data, error } = await client.from('student_study_plan')
+        .select('item_key,title,scheduled_date,duration_minutes,completed,created_at,updated_at')
+        .eq('student_id',authData.user.id);
+      if (error) throw error;
+      return (data||[]).map(row => ({ id:row.item_key,title:row.title,date:row.scheduled_date,
+        duration:row.duration_minutes,completed:row.completed===true,
+        createdAt:Date.parse(row.created_at)||Date.now(),updatedAt:Date.parse(row.updated_at)||Date.now() }));
+    },
+
+    async syncStudyPlan(items) {
+      if (!Array.isArray(items)) return;
+      const { data: authData, error: authError } = await client.auth.getUser();
+      if (authError) throw authError;
+      if (!authData.user) return;
+      const rows=items.filter(x=>x&&x.id&&x.date&&x.title).map(x=>({
+        student_id:authData.user.id,item_key:String(x.id).slice(0,500),title:String(x.title).slice(0,120),
+        scheduled_date:String(x.date),duration_minutes:Math.min(600,Math.max(5,Number(x.duration)||30)),
+        completed:x.completed===true,created_at:new Date(Number(x.createdAt)||Date.now()).toISOString(),
+        updated_at:new Date(Number(x.updatedAt)||Date.now()).toISOString()
+      }));
+      if (!rows.length) return;
+      const { error }=await client.from('student_study_plan').upsert(rows,{onConflict:'student_id,item_key'});
+      if(error) throw error;
+    },
+
+    async deleteStudyPlanItem(itemId) {
+      const { data: authData, error: authError } = await client.auth.getUser();
+      if (authError) throw authError;
+      if (!authData.user) return;
+      const { error }=await client.from('student_study_plan').delete()
+        .eq('student_id',authData.user.id).eq('item_key',String(itemId));
+      if(error) throw error;
     }
   };
 })();
