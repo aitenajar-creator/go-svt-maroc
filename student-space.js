@@ -912,6 +912,21 @@
         });
 
         const accountBar = window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
+        const academic = window.StudentAccount && window.StudentAccount.getProfile ? window.StudentAccount.getProfile() : null;
+        const academicNames = {
+            TCS: ['الجذع المشترك العلمي', 'Tronc commun scientifique'],
+            TCL: ['الجذع المشترك الأدبي', 'Tronc commun lettres'],
+            '1BACSE': ['الأولى باكالوريا - علوم تجريبية', '1ère Bac - Sciences expérimentales'],
+            '1BACSM': ['الأولى باكالوريا - علوم رياضية', '1ère Bac - Sciences mathématiques'],
+            '1BACL': ['الأولى باكالوريا - آداب', '1ère Bac - Lettres'],
+            '2BACSVT': ['الثانية باكالوريا - علوم الحياة والأرض', '2ème Bac - SVT'],
+            '2BACSP': ['الثانية باكالوريا - علوم فيزيائية', '2ème Bac - Sciences physiques'],
+            '2BACSM': ['الثانية باكالوريا - علوم رياضية', '2ème Bac - Sciences mathématiques']
+        };
+        const academicName = academic && academicNames[academic.study_track]
+            ? (lang() === 'ar' ? academicNames[academic.study_track][0] : academicNames[academic.study_track][1]) : '';
+        const academicBanner = academicName
+            ? `<div class="gs-student-level">🎓 <span>${lang() === 'ar' ? 'مستواك الدراسي:' : 'Votre niveau :'}</span> <strong>${escapeHtml(academicName)}</strong></div>` : '';
         const html = `
             <div class="dashboard-header">
                 ${accountBar || `<div class="profile-selector">
@@ -1730,6 +1745,8 @@
             font-style: italic;
         }
 
+        .gs-student-level{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;padding:.75rem 1rem;margin:.8rem 0 1rem;border:1px solid #dcebd5;border-radius:10px;background:#f5faf1;color:#315b31}
+        .gs-student-level strong{font-weight:800}
         .gs-student-welcome{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:1.6rem 1.8rem;margin-bottom:1.5rem;border-radius:18px;background:linear-gradient(120deg,#edf6e9,#f4f8ef);border:1px solid #dcebd5}
         .gs-student-welcome h2{margin:.4rem 0;color:#244d27;font-size:1.5rem}.gs-student-welcome p{margin:.3rem 0;color:#526451}
         .gs-eyebrow{font-size:.72rem;letter-spacing:.08em;font-weight:700;color:#54834c}
