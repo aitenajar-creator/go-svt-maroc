@@ -637,7 +637,11 @@
     ];
 
     function getDailyChallengeInfo() {
-        const date = new Date().toISOString().slice(0, 10);
+        const dateParts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Africa/Casablanca', year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(new Date());
+        const dateValues = Object.fromEntries(dateParts.map(part => [part.type, part.value]));
+        const date = dateValues.year + '-' + dateValues.month + '-' + dateValues.day;
         const dayNumber = Math.floor(Date.parse(date + 'T00:00:00Z') / 86400000);
         const index = ((dayNumber % DAILY_CHALLENGES.length) + DAILY_CHALLENGES.length) % DAILY_CHALLENGES.length;
         return { date: date, id: 'svt-daily-' + date, question: DAILY_CHALLENGES[index] };
