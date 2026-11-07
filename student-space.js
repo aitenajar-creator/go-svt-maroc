@@ -31,7 +31,8 @@
         GOALS: 'gosvt_goals',
         NOTES: 'gosvt_notes',
         STUDY_PLAN: 'gosvt_study_plan',
-        LAST_VISIT: 'gosvt_last_visit'
+        LAST_VISIT: 'gosvt_last_visit',
+        DAILY_CHALLENGES: 'gosvt_daily_challenges'
     };
 
     const storage = {
@@ -179,6 +180,7 @@
         const goals = storage.get(prefix + STORAGE_KEYS.GOALS);
         const notes = storage.get(prefix + STORAGE_KEYS.NOTES);
         const studyPlan = storage.get(prefix + STORAGE_KEYS.STUDY_PLAN);
+        const dailyChallenges = storage.get(prefix + STORAGE_KEYS.DAILY_CHALLENGES);
         return {
             progress: progress,
             quizResults: Array.isArray(results) ? results : [],
@@ -186,7 +188,8 @@
             streak: streak && typeof streak === 'object' ? streak : { current: 0, best: 0, lastVisit: null },
             goals: Array.isArray(goals) ? goals : [],
             notes: Array.isArray(notes) ? notes.filter(n => n && typeof n === 'object') : [],
-            studyPlan: Array.isArray(studyPlan) ? studyPlan.filter(item => item && typeof item === 'object') : []
+            studyPlan: Array.isArray(studyPlan) ? studyPlan.filter(item => item && typeof item === 'object') : [],
+            dailyChallenges: dailyChallenges && typeof dailyChallenges === 'object' && !Array.isArray(dailyChallenges) ? dailyChallenges : {}
         };
     }
 
@@ -241,6 +244,7 @@
         storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
         storage.set(prefix + STORAGE_KEYS.NOTES, Array.isArray(data.notes) ? data.notes : []);
         storage.set(prefix + STORAGE_KEYS.STUDY_PLAN, Array.isArray(data.studyPlan) ? data.studyPlan : []);
+        storage.set(prefix + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges && typeof data.dailyChallenges === 'object' ? data.dailyChallenges : {});
         // Keep a local offline cache and synchronize the signed-in student's data.
         if (window.GoSVTCloud) {
             const jobs = [
@@ -620,6 +624,126 @@
         return profileData.streak;
     }
 
+
+    // Daily SVT challenge: one deterministic question per UTC date.
+    const DAILY_CHALLENGES = [
+        { ar: { q: 'ما العضية المسؤولة أساساً عن إنتاج الطاقة القابلة للاستعمال في الخلية؟', options: ['النواة', 'الميتوكندري', 'جهاز غولجي', 'الريبوسوم'], explanation: 'الميتوكندري يساهم في إنتاج ATP خلال التنفس الخلوي.' }, fr: { q: 'Quel organite joue un rôle majeur dans la production d’énergie utilisable par la cellule ?', options: ['Le noyau', 'La mitochondrie', 'L’appareil de Golgi', 'Le ribosome'], explanation: 'La mitochondrie participe à la production d’ATP lors de la respiration cellulaire.' }, answer: 1 },
+        { ar: { q: 'ما الغاز الذي تمتصه النباتات الخضراء خلال عملية التركيب الضوئي؟', options: ['الأكسجين', 'الآزوت', 'ثنائي أكسيد الكربون', 'الهيدروجين'], explanation: 'تمتص النباتات ثنائي أكسيد الكربون وتستعمله مع الماء والضوء لتركيب المادة العضوية.' }, fr: { q: 'Quel gaz les plantes vertes absorbent-elles pendant la photosynthèse ?', options: ['Le dioxygène', 'Le diazote', 'Le dioxyde de carbone', 'Le dihydrogène'], explanation: 'Les plantes utilisent le dioxyde de carbone, l’eau et la lumière pour fabriquer de la matière organique.' }, answer: 2 },
+        { ar: { q: 'أين يتم تبادل الغازات التنفسية بين الهواء والدم في الرئتين؟', options: ['القصبة الهوائية', 'الحويصلات الرئوية', 'الحنجرة', 'الشعب الرئيسية'], explanation: 'تسمح جدران الحويصلات الرئوية الرقيقة بانتشار الأكسجين وثنائي أكسيد الكربون بين الهواء والدم.' }, fr: { q: 'Où ont lieu les échanges gazeux entre l’air et le sang dans les poumons ?', options: ['La trachée', 'Les alvéoles pulmonaires', 'Le larynx', 'Les bronches principales'], explanation: 'Les parois fines des alvéoles permettent la diffusion du dioxygène et du dioxyde de carbone.' }, answer: 1 },
+        { ar: { q: 'ما الوحدة البنيوية والوظيفية الأساسية للكائنات الحية؟', options: ['النسيج', 'العضو', 'الخلية', 'الجهاز'], explanation: 'الخلية هي أصغر وحدة بنيوية ووظيفية للكائن الحي.' }, fr: { q: 'Quelle est l’unité structurale et fonctionnelle de base des êtres vivants ?', options: ['Le tissu', 'L’organe', 'La cellule', 'L’appareil'], explanation: 'La cellule est la plus petite unité structurale et fonctionnelle du vivant.' }, answer: 2 },
+        { ar: { q: 'ما اسم انتقال الماء عبر غشاء شبه منفذ من وسط أقل تركيزاً بالمواد المذابة إلى وسط أكثر تركيزاً؟', options: ['الانتشار', 'الأسموز', 'النقل النشيط', 'البلعمة'], explanation: 'الأسموز هو انتقال الماء عبر غشاء شبه منفذ وفق فرق تركيز المواد المذابة.' }, fr: { q: 'Comment appelle-t-on le passage de l’eau à travers une membrane semi-perméable vers le milieu le plus concentré en solutés ?', options: ['La diffusion', 'L’osmose', 'Le transport actif', 'La phagocytose'], explanation: 'L’osmose correspond au déplacement de l’eau à travers une membrane semi-perméable selon le gradient de concentration.' }, answer: 1 },
+        { ar: { q: 'ما الجزيئة التي تحمل المعلومة الوراثية عند معظم الكائنات الحية؟', options: ['ATP', 'DNA', 'الغلوكوز', 'الهيموغلوبين'], explanation: 'يحمل الحمض النووي DNA المعلومة الوراثية عند معظم الكائنات الحية.' }, fr: { q: 'Quelle molécule porte l’information génétique chez la plupart des êtres vivants ?', options: ['ATP', 'ADN', 'Glucose', 'Hémoglobine'], explanation: 'L’ADN porte l’information génétique chez la plupart des êtres vivants.' }, answer: 1 },
+        { ar: { q: 'أي مكوّن من الدم يساهم أساساً في نقل الأكسجين؟', options: ['الكريات الحمراء', 'الصفائح الدموية', 'الكريات البيضاء', 'البلازما فقط'], explanation: 'تحتوي الكريات الحمراء على الهيموغلوبين الذي يرتبط بالأكسجين ويساهم في نقله.' }, fr: { q: 'Quel élément du sang assure principalement le transport du dioxygène ?', options: ['Les globules rouges', 'Les plaquettes', 'Les globules blancs', 'Le plasma seul'], explanation: 'Les globules rouges contiennent l’hémoglobine qui fixe et transporte le dioxygène.' }, answer: 0 }
+    ];
+
+    function getDailyChallengeInfo() {
+        const date = new Date().toISOString().slice(0, 10);
+        const dayNumber = Math.floor(Date.parse(date + 'T00:00:00Z') / 86400000);
+        const index = ((dayNumber % DAILY_CHALLENGES.length) + DAILY_CHALLENGES.length) % DAILY_CHALLENGES.length;
+        return { date: date, id: 'svt-daily-' + date, question: DAILY_CHALLENGES[index] };
+    }
+
+    function renderDailyChallenge() {
+        const info = getDailyChallengeInfo();
+        const record = getProfileData(currentProfileId).dailyChallenges[info.date];
+        const fr = lang() === 'fr';
+        const q = fr ? info.question.fr : info.question.ar;
+        const title = fr ? 'Le défi SVT du jour' : 'التحدي العلمي اليومي';
+        const intro = fr ? 'Une question courte pour entretenir votre curiosité scientifique.' : 'سؤال يومي قصير لتنمية فضولك العلمي وترسيخ مكتسباتك.';
+        const points = fr ? '10 points' : '10 نقاط';
+        let body = '';
+        if (record) {
+            const chosen = Number(record.selected_option);
+            const correct = record.is_correct === true;
+            body = `<div class="gs-daily-result ${correct ? 'is-correct' : 'is-wrong'}">
+                <strong>${correct ? (fr ? 'Bonne réponse ! +10 points' : 'إجابة صحيحة! +10 نقاط') : (fr ? 'Ce n’est pas la bonne réponse.' : 'ليست الإجابة الصحيحة.')}</strong>
+                <p>${fr ? 'Votre réponse' : 'إجابتك'} : ${escapeHtml(q.options[chosen] || '')}</p>
+                <p>${fr ? 'Réponse correcte' : 'الإجابة الصحيحة'} : ${escapeHtml(q.options[info.question.answer])}</p>
+                <small>${escapeHtml(q.explanation)}</small>
+                <span>${fr ? 'Défi déjà validé aujourd’hui' : 'لقد أجبت عن تحدي اليوم بالفعل'}</span>
+            </div>`;
+        } else {
+            body = `<div class="gs-daily-options">${q.options.map((option, index) => `<button type="button" class="gs-daily-option" data-daily-option="${index}"><span>${String.fromCharCode(65 + index)}</span>${escapeHtml(option)}</button>`).join('')}</div>
+                <p class="gs-daily-hint">${fr ? 'Choisissez une seule réponse. Vous ne pourrez répondre qu’une fois aujourd’hui.' : 'اختر إجابة واحدة فقط. يمكنك المشاركة مرة واحدة اليوم.'}</p>`;
+        }
+        return `<section class="gs-daily-challenge" id="gs-daily-challenge" data-challenge-date="${info.date}">
+            <div class="gs-daily-head"><div><span class="gs-eyebrow">${fr ? 'UN RENDEZ-VOUS SCIENTIFIQUE' : 'موعدك اليومي مع العلم'}</span><h3>🧠 ${title}</h3><p>${intro}</p></div><strong class="gs-daily-points">⭐ ${points}</strong></div>
+            <div class="gs-daily-question"><span>${fr ? 'QUESTION DU JOUR' : 'سؤال اليوم'}</span><h4>${escapeHtml(q.q)}</h4></div>
+            ${body}<p class="gs-daily-message" aria-live="polite"></p>
+        </section>`;
+    }
+
+    async function hydrateDailyChallenge() {
+        if (!window.GoSVTCloud || typeof window.GoSVTCloud.loadDailyChallenge !== 'function' ||
+            !(window.StudentAccount && window.StudentAccount.isLoggedIn())) return;
+        const profileId = currentProfileId;
+        const info = getDailyChallengeInfo();
+        try {
+            const remote = await window.GoSVTCloud.loadDailyChallenge(info.date);
+            if (profileId !== currentProfileId || !remote) return;
+            const data = getProfileData(profileId);
+            data.dailyChallenges[info.date] = remote;
+            storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
+            const card = document.getElementById('gs-daily-challenge');
+            if (card && card.dataset.challengeDate === info.date) {
+                const activeTab = document.querySelector('#student-space-content .space-tab.active');
+                const activeName = activeTab ? activeTab.dataset.tab : 'dashboard';
+                renderStudentSpace();
+                const tabs = document.querySelectorAll('#student-space-content .space-tab');
+                tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === activeName));
+                document.querySelectorAll('#student-space-content .space-panel').forEach(panel => panel.classList.toggle('active', panel.id === 'panel-' + activeName));
+            }
+        } catch (err) {
+            console.warn('[GoSVT] Daily challenge restore deferred:', err && err.message);
+        }
+    }
+
+    async function answerDailyChallenge(selectedOption, button) {
+        const info = getDailyChallengeInfo();
+        const data = getProfileData(currentProfileId);
+        if (data.dailyChallenges[info.date]) return;
+        const option = Number(selectedOption);
+        if (!Number.isInteger(option) || option < 0 || option > 3) return;
+        const card = document.getElementById('gs-daily-challenge');
+        if (!card || card.dataset.challengeDate !== info.date) return;
+        const message = card.querySelector('.gs-daily-message');
+        const buttons = Array.from(card.querySelectorAll('.gs-daily-option'));
+        buttons.forEach(item => { item.disabled = true; });
+        if (message) message.textContent = lang() === 'fr' ? 'Enregistrement de votre réponse...' : 'جارٍ تسجيل إجابتك...';
+        const correct = option === info.question.answer;
+        const payload = {
+            challenge_date: info.date,
+            challenge_id: info.id,
+            selected_option: option,
+            is_correct: correct,
+            points: correct ? 10 : 0,
+            answered_at: new Date().toISOString()
+        };
+        try {
+            if (!window.GoSVTCloud || typeof window.GoSVTCloud.submitDailyChallenge !== 'function') {
+                throw new Error('Cloud challenge service unavailable');
+            }
+            const saved = await window.GoSVTCloud.submitDailyChallenge(payload);
+            data.dailyChallenges[info.date] = saved || payload;
+            storage.set(currentProfileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
+            refreshStudentSpaceView();
+        } catch (err) {
+            console.error('[GoSVT] Daily challenge submission failed:', err);
+            if (message) message.textContent = lang() === 'fr'
+                ? 'Impossible d’enregistrer votre réponse. Vérifiez la connexion puis réessayez.'
+                : 'تعذر تسجيل إجابتك. تحقق من الاتصال ثم أعد المحاولة.';
+            buttons.forEach(item => { item.disabled = false; });
+            try {
+                const existing = await window.GoSVTCloud.loadDailyChallenge(info.date);
+                if (existing) {
+                    data.dailyChallenges[info.date] = existing;
+                    storage.set(currentProfileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
+                    refreshStudentSpaceView();
+                }
+            } catch (_) {}
+        }
+    }
+
     // ============================================
     // 6. DASHBOARD (لوحة القيادة)
     // ============================================
@@ -817,6 +941,7 @@
                     <a href="#examens"><span class="gs-path-icon">🏆</span><strong>${lang() === 'ar' ? 'أستعد للامتحان' : 'Me préparer'}</strong><small>${lang() === 'ar' ? 'فروض وامتحانات' : 'Devoirs et examens'}</small></a>
                 </div>
             </div>
+            ${renderDailyChallenge()}
             <h3 class="gs-section-title">${t('quickAccess')}</h3>
             <div class="gs-quick-links">
                 <a href="#cours"><span>📚</span>${t('resources')}</a>
@@ -1339,6 +1464,10 @@
         container.innerHTML = html;
         bindPlannerAndNotes(container);
         bindFavoritesPanel(container.querySelector('#panel-favorites'));
+        hydrateDailyChallenge();
+        container.querySelectorAll('.gs-daily-option').forEach(button => {
+            button.addEventListener('click', function () { answerDailyChallenge(this.dataset.dailyOption, this); });
+        });
 
         // Add event listeners
         container.querySelectorAll('.space-tab').forEach(tab => {
@@ -1658,6 +1787,13 @@
         .space-content{animation:gsSpaceIn .28s ease both}
         .space-panel.active{animation:gsSpaceIn .25s ease both}
         .gs-module,.progress-section,.history-list,.mistakes-list,.favorites-list{border:1px solid #e8eee5;border-radius:16px;box-shadow:0 4px 14px rgba(24,57,37,.045)}
+        .gs-daily-challenge{margin:1.35rem 0;padding:1.25rem;border:1px solid #dce9d8;border-radius:18px;background:linear-gradient(145deg,#f7fbf5,#fff);box-shadow:0 5px 18px rgba(24,57,37,.045)}
+        .gs-daily-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}.gs-daily-head h3{margin:.3rem 0;color:#244d37;font-size:1.15rem}.gs-daily-head p{margin:.25rem 0;color:#718074;font-size:.88rem;line-height:1.6}
+        .gs-daily-points{flex:0 0 auto;padding:.55rem .8rem;border-radius:12px;background:#edf5e9;color:#32633b;font-size:.85rem;white-space:nowrap}
+        .gs-daily-question{margin:1rem 0 .8rem;padding:1rem;border-radius:13px;background:#fff;border:1px solid #e7eee4}.gs-daily-question>span{font-size:.7rem;font-weight:700;color:#71906d}.gs-daily-question h4{margin:.4rem 0 0;color:#294d36;line-height:1.8;font-size:1rem}
+        .gs-daily-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}.gs-daily-option{display:flex;align-items:center;gap:.7rem;padding:.8rem;border:1px solid #e1e9dd;border-radius:11px;background:#fff;color:#304b38;text-align:start;font:inherit;cursor:pointer;transition:border-color .2s,transform .2s}.gs-daily-option:hover:not(:disabled){border-color:#78a875;transform:translateY(-2px)}.gs-daily-option:disabled{opacity:.65;cursor:default}.gs-daily-option span{display:grid;place-items:center;flex:0 0 29px;width:29px;height:29px;border-radius:9px;background:#edf5e9;color:#32633b;font-weight:700}
+        .gs-daily-hint,.gs-daily-message{margin:.7rem 0 0;color:#788274;font-size:.8rem}.gs-daily-result{padding:1rem;border-radius:12px;background:#f5f8f3;border:1px solid #dce9d8}.gs-daily-result.is-correct{background:#f0f8ed;border-color:#cce3c5}.gs-daily-result.is-wrong{background:#fff8ed;border-color:#f0dfc4}.gs-daily-result strong{color:#285c36}.gs-daily-result p{margin:.4rem 0;color:#425442}.gs-daily-result small{display:block;line-height:1.7;color:#596b59}.gs-daily-result span{display:block;margin-top:.6rem;font-size:.78rem;color:#718074}
+        @media(max-width:560px){.gs-daily-head{flex-direction:column}.gs-daily-options{grid-template-columns:1fr}.gs-daily-points{align-self:flex-start}}
         .gs-achievements{margin-top:1.5rem;padding:1.25rem;background:linear-gradient(135deg,#f7fbf5,#fff);border:1px solid #e2ecdf;border-radius:18px}
         .gs-achievements-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
         .gs-achievements-heading h3{margin:.25rem 0;color:#244d37;font-size:1.15rem}
