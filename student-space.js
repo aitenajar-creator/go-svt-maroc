@@ -1026,42 +1026,49 @@
     // 10. FAVORITES INTEGRATION (تكامل المفضلة)
     // ============================================
     function renderFavorites() {
-        // Integrate with existing favorites.js
-        const storedFavorites = storage.get('gosvt_favs');
-        const favs = Array.isArray(storedFavorites) ? storedFavorites.filter(f => f && typeof f === 'object') : [];
+        // study.js stores favorites as file paths in the "gosvt-favs" key.
+        const storedFavorites = storage.get('gosvt-favs');
+        const favs = Array.isArray(storedFavorites)
+            ? storedFavorites.filter(path => typeof path === 'string' && path.trim())
+            : [];
 
         if (favs.length === 0) {
             return `<p class="no-data">${t('noData')}</p>`;
         }
 
         let html = '<div class="favorites-list">';
-        favs.forEach(fav => {
+        favs.forEach(path => {
+            const filename = path.split('/').pop();
+            const title = typeof getFileTitle === 'function'
+                ? getFileTitle(filename)
+                : filename.replace(/\\.[^/.]+$/, '').replace(/[_-]/g, ' ');
             html += `
                 <div class="favorite-item">
-                    <a href="${escapeHtml(safeLink(fav.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(fav.title)}</a>
-                    <button class="btn-remove-fav" data-url="${escapeHtml(fav.url)}">${t('removeFromFavorites')}</button>
+                    <a href="${escapeHtml(safeLink(path))}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
+                    <button type="button" class="btn-remove-fav" data-path="${escapeHtml(path)}">${t('removeFromFavorites')}</button>
                 </div>
             `;
         });
         html += '</div>';
-
         return html;
     }
 
-    // Refresh and bind the favorites panel whenever the student opens its tab.
+    // Keep the student-space list aligned with the favorites format used by study.js.
     function bindFavoritesPanel(panel) {
         if (!panel) return;
         panel.querySelectorAll('.btn-remove-fav').forEach(button => {
             button.addEventListener('click', function () {
-                const url = this.dataset.url;
-                const storedFavorites = storage.get('gosvt_favs');
+                const path = this.dataset.path;
+                const storedFavorites = storage.get('gosvt-favs');
                 const favs = Array.isArray(storedFavorites) ? storedFavorites : [];
-                storage.set('gosvt_favs', favs.filter(fav => fav && fav.url !== url));
+                storage.set('gosvt-favs', favs.filter(item => item !== path));
                 panel.innerHTML = renderFavorites();
                 bindFavoritesPanel(panel);
             });
         });
     }
+
+
 
     // ============================================
     // 11. MOTIVATION (التحفيز)
@@ -1269,6 +1276,7 @@
 
         container.innerHTML = html;
         bindPlannerAndNotes(container);
+        bindFavoritesPanel(container.querySelector('#panel-favorites'));
 
         // Add event listeners
         container.querySelectorAll('.space-tab').forEach(tab => {
