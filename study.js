@@ -45,8 +45,13 @@
         if (!uid) return;
         activeFavoriteUid = String(uid);
         const cached = readList('gosvt-favs:' + activeFavoriteUid);
-        const migrated = storage.get('gosvt-favs-migrated:' + activeFavoriteUid) === true;
-        const legacy = migrated ? [] : getFavs();
+        const migrated = storage.get('gosvt-favs-migrated:' + activeFavoriteUid) === 'true';
+        // Import the old device-wide list only once, into the first account that claims it.
+        // This prevents an account switch without a clean sign-out from inheriting another user's favorites.
+        const legacyOwner = storage.get('gosvt-favs-legacy-owner');
+        const mayImportLegacy = !migrated && !legacyOwner;
+        const legacy = mayImportLegacy ? getFavs() : [];
+        if (mayImportLegacy) save('gosvt-favs-legacy-owner', activeFavoriteUid);
         const merged = Array.from(new Set([
             ...(Array.isArray(cloudPaths) ? cloudPaths : []), ...cached, ...legacy
         ].filter(path => typeof path === 'string' && path.trim()).map(path => path.trim().slice(0, 500))));
