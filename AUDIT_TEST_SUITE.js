@@ -229,11 +229,13 @@
             // Données pour profil 1
             window.StudentSpace.switchProfile(profileId1);
             window.StudentSpace.saveQuizResult('quiz_iso', 9, 10, []);
+            window.StudentSpace.updateProgress('lesson', 'lesson_a');
             window.StudentSpace.markLessonComplete('lesson_a');
             
             // Données pour profil 2
             window.StudentSpace.switchProfile(profileId2);
             window.StudentSpace.saveQuizResult('quiz_iso', 5, 10, []);
+            window.StudentSpace.updateProgress('lesson', 'lesson_b');
             window.StudentSpace.markLessonComplete('lesson_b');
             
             // Vérification isolation
@@ -270,9 +272,12 @@
             logTest('7.1 Données sauvegardées immédiatement', dataBefore.quizResults.length === 1, `Résultats: ${dataBefore.quizResults.length}`);
             
             // Vérifier depuis localStorage
-            const localStorageKey = 'gosvt_student_space_data_' + profileId;
+            const localStorageKey = profileId + '_gosvt_quiz_results';
             const localStorageData = localStorage.getItem(localStorageKey);
-            logTest('7.2 Données dans localStorage', !!localStorageData, 'Présent dans localStorage');
+            let persistedResults = [];
+            try { persistedResults = JSON.parse(localStorageData || '[]'); } catch (_) {}
+            logTest('7.2 Données dans localStorage', Array.isArray(persistedResults) && persistedResults.length === 1,
+                'Résultat retrouvé dans la clé locale propre au profil');
             
             // Cleanup
             window.StudentSpace.deleteProfile(profileId);
@@ -290,8 +295,8 @@
         
         try {
             // Test 8.1: Vérifier que le système lit depuis gosvt_favs
-            localStorage.setItem('gosvt_favs', JSON.stringify([
-                { title: 'Test Favorite', url: 'http://test.com' }
+            localStorage.setItem('gosvt-favs', JSON.stringify([
+                'cours/francais/2BAC/2BACSVT/test-favorite.pdf'
             ]));
             
             const profileId = window.StudentSpace.createProfile('FavTestUser');
@@ -299,10 +304,11 @@
             
             window.StudentSpace.refresh();
             const favoriteLink = document.querySelector('#panel-favorites .favorite-item a');
-            logTest('8.1 Lecture favoris existants', !!favoriteLink, 'Favori rendu depuis gosvt_favs');
+            logTest('8.1 Lecture favoris existants', !!favoriteLink && /test-favorite/.test(favoriteLink.href),
+                'Favori lu depuis gosvt-favs (format tableau de chemins)');
             
             // Cleanup
-            localStorage.removeItem('gosvt_favs');
+            localStorage.removeItem('gosvt-favs');
             window.StudentSpace.deleteProfile(profileId);
             
         } catch (e) {
