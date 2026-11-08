@@ -1,0 +1,29 @@
+name: Audit PDF duplicates (read-only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run read-only PDF duplicate audit
+        run: |
+          python3 _tools/audit_pdf_duplicates.py
+          python3 _tools/audit_pdf_duplicates.py --json > pdf-duplicate-audit.json
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-duplicate-audit
+          path: pdf-duplicate-audit.json
+          if-no-files-found: error
+          retention-days: 14
