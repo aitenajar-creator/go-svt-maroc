@@ -302,7 +302,8 @@
             const profileId = window.StudentSpace.createProfile('FavTestUser');
             window.StudentSpace.switchProfile(profileId);
             
-            window.StudentSpace.refresh();
+            // The standalone runner starts with an empty container, so render explicitly.
+            window.StudentSpace.renderStudentSpace();
             const favoriteLink = document.querySelector('#panel-favorites .favorite-item a');
             logTest('8.1 Lecture favoris existants', !!favoriteLink && /test-favorite/.test(favoriteLink.href),
                 'Favori lu depuis gosvt-favs (format tableau de chemins)');
