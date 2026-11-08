@@ -337,6 +337,8 @@
     // RUN ALL TESTS
     // ============================================
     function runAllTests() {
+        // A fresh run must not include results from a previous button click.
+        testResults.length = 0;
         console.log('\n╔════════════════════════════════════════════════════════════╗');
         console.log('║     GO SVT MAROC - AUDIT TEST SUITE                     ║');
         console.log('╚════════════════════════════════════════════════════════════╝\n');
