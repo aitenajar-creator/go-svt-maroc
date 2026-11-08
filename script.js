@@ -154,7 +154,7 @@ function renderCard(path, badgeText) {
 
 // تحديد الشعبة من بنية مسار الملف، بما في ذلك مجلدات الامتحانات.
 function getTrackInfo(path) {
-    const parts = String(path).replace(/^\\/+/, '').split('/');
+    const parts = String(path).replace(/^\/+/, '').split('/');
     const trackLabels = {
         TCS: ['الجذع المشترك العلمي', 'Tronc commun scientifique'],
         TCL: ['الجذع المشترك الأدبي', 'Tronc commun littéraire'],
