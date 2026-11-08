@@ -152,6 +152,27 @@ function renderCard(path, badgeText) {
         </div>`;
 }
 
+// تحديد الشعبة من بنية مسار الملف، بما في ذلك مجلدات الامتحانات.
+function getTrackInfo(path) {
+    const parts = String(path).replace(/^\\/+/, '').split('/');
+    const trackLabels = {
+        TCS: ['الجذع المشترك العلمي', 'Tronc commun scientifique'],
+        TCL: ['الجذع المشترك الأدبي', 'Tronc commun littéraire'],
+        '1BACSE': ['الأولى باكالوريا: علوم تجريبية', '1ère Bac : Sciences expérimentales'],
+        '1BACL': ['الأولى باكالوريا: علوم رياضية', '1ère Bac : Sciences mathématiques'],
+        '1BACSM': ['الأولى باكالوريا: علوم رياضية', '1ère Bac : Sciences mathématiques'],
+        '2BACSVT': ['الثانية باكالوريا: علوم الحياة والأرض', '2ème Bac : Sciences de la vie et de la Terre'],
+        '2BACSP': ['الثانية باكالوريا: علوم فيزيائية', '2ème Bac : Sciences physiques'],
+        '2BACSM': ['الثانية باكالوريا: علوم رياضية', '2ème Bac : Sciences mathématiques'],
+        '2BAC SVT': ['الثانية باكالوريا: علوم الحياة والأرض', '2ème Bac : Sciences de la vie et de la Terre'],
+        '2BAC SP': ['الثانية باكالوريا: علوم فيزيائية', '2ème Bac : Sciences physiques'],
+        '2BAC SM': ['الثانية باكالوريا: علوم رياضية', '2ème Bac : Sciences mathématiques']
+    };
+    const index = parts.findIndex(part => Object.prototype.hasOwnProperty.call(trackLabels, part));
+    if (index < 0) return null;
+    return { key: parts[index], label: trackLabels[parts[index]][currentLang === 'fr' ? 1 : 0], index };
+}
+
 // ---------- عرض الأقسام ----------
 async function loadContentFromManifest(type, subject, level) {
     const container = document.getElementById(`${type}-content`);
@@ -187,9 +208,41 @@ async function loadContentFromManifest(type, subject, level) {
         }
 
         const count = `<p class="files-count">${files.length} ${t('ملف', 'fichier(s)')}</p>`;
-        container.innerHTML = count + files.map(p => {
-            const sub = p.slice(prefix.length).split('/').slice(0, -1).join(' / ');
-            return renderCard(p, sub ? `${level} - ${sub}` : level);
+        const grouped = new Map();
+        files.forEach(path => {
+            const track = getTrackInfo(path);
+            const key = track ? track.key : '__shared__';
+            if (!grouped.has(key)) grouped.set(key, { track, files: [] });
+            grouped.get(key).files.push(path);
+        });
+
+        // عند وجود أكثر من شعبة، نعرض كل شعبة في مجموعة مستقلة بدلاً من خلط الملفات.
+        const hasTrackGroups = [...grouped.values()].some(group => group.track);
+        const renderFiles = paths => paths.map(path => {
+            const track = getTrackInfo(path);
+            const relativeParts = path.slice(prefix.length).split('/').slice(0, -1);
+            if (track && relativeParts.includes(track.key)) {
+                relativeParts.splice(relativeParts.indexOf(track.key), 1);
+            }
+            const sub = relativeParts.filter(Boolean).join(' / ');
+            return renderCard(path, sub ? `${level} - ${sub}` : level);
+        }).join('');
+
+        if (!hasTrackGroups) {
+            container.innerHTML = count + renderFiles(files);
+            return;
+        }
+
+        const orderedGroups = [...grouped.values()].sort((a, b) => {
+            if (!a.track) return 1;
+            if (!b.track) return -1;
+            return a.track.label.localeCompare(b.track.label, currentLang === 'fr' ? 'fr' : 'ar');
+        });
+        container.innerHTML = count + orderedGroups.map(group => {
+            const heading = group.track
+                ? group.track.label
+                : t('ملفات مشتركة بين الشعب', 'Ressources communes');
+            return `<section class="track-content-group"><h3 class="track-content-heading">${escapeHtml(heading)}</h3><div class="content-grid">${renderFiles(group.files)}</div></section>`;
         }).join('');
     } catch (error) {
         console.error('Error loading content:', error);
