@@ -70,28 +70,56 @@
     <script>
         function runTests() {
             const output = document.getElementById('test-output');
-            output.innerHTML = 'Exécution des tests...\n\n';
-            
-            // Override console.log to capture output
+            const button = document.querySelector('.btn-run');
+            output.textContent = 'Exécution des tests...\\n\\n';
+            if (button) button.disabled = true;
+
+            // Keep this standalone audit page from permanently changing the site's
+            // existing browser data (including favorites) during its test run.
+            const storageSnapshot = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                storageSnapshot.push([key, localStorage.getItem(key)]);
+            }
+
             const originalLog = console.log;
             const logs = [];
-            
             console.log = function(...args) {
-                logs.push(args.join(' '));
+                logs.push(args.map(value => String(value)).join(' '));
                 originalLog.apply(console, args);
             };
-            
+
             setTimeout(() => {
-                const results = window.runAuditTests();
-                
-                // Restore console.log
-                console.log = originalLog;
-                
-                // Format output
-                let html = logs.join('\n').replace(/✅/g, '<span class="pass">✅</span>').replace(/❌/g, '<span class="fail">❌</span>');
-                html += '\n\n=== RÉSUMÉ ===\n';
-                html += `Tests réussis: ${results.passed}/${results.total}\n`;
-                
+                let results = null;
+                let failure = null;
+                try {
+                    results = window.runAuditTests();
+                } catch (error) {
+                    failure = error;
+                } finally {
+                    console.log = originalLog;
+
+                    // Restore the exact pre-test localStorage snapshot.
+                    try {
+                        localStorage.clear();
+                        storageSnapshot.forEach(([key, value]) => localStorage.setItem(key, value));
+                    } catch (restoreError) {
+                        failure = failure || restoreError;
+                    }
+                    if (button) button.disabled = false;
+                }
+
+                let html = logs.join('\\n')
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/✅/g, '<span class="pass">✅</span>')
+                    .replace(/❌/g, '<span class="fail">❌</span>');
+                if (failure) {
+                    html += '\\n\\nخطأ أثناء تشغيل الاختبارات: ' + String(failure.message || failure);
+                } else if (results) {
+                    html += '\\n\\n=== RÉSUMÉ ===\\n';
+                    html += `Tests réussis: ${results.passed}/${results.total}\\n`;
+                    html += '\\nتمت استعادة بيانات المتصفح التي كانت موجودة قبل الاختبار.';
+                }
                 output.innerHTML = html;
             }, 100);
         }
