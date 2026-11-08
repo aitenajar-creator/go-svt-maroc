@@ -104,6 +104,20 @@ function trackNewFiles(files) {
     fileDates = next;
 }
 
+// نسخ مطابقة محفوظة داخل مجلدات الفصول؛ نخفيها من القوائم والبحث فقط
+// مع الإبقاء على الملفات ومساراتها المباشرة دون أي تغيير.
+const HIDDEN_DUPLICATE_COURSE_COPIES = new Set([
+    'cours/francais/TC/TCS/Chapitre 1/eleves-TCS  AIT ENAJAR U1C1.pdf',
+    'cours/francais/TC/TCS/Chapitre 2/eleves-TCS  AIT ENAJAR U1C2.pdf',
+    'cours/francais/TC/TCS/Chapitre 3/eleves-TCS  AIT ENAJAR U1C3.pdf',
+    'cours/francais/TC/TCS/Chapitre 4/eleves-TCS  AIT ENAJAR U1C4.pdf',
+    'cours/francais/TC/TCS/Chapitre 5/eleves-TCS  AIT ENAJAR U1C5.pdf'
+]);
+
+function isHiddenDuplicateCourseCopy(path) {
+    return HIDDEN_DUPLICATE_COURSE_COPIES.has(String(path).replace(/^\\/+/, ''));
+}
+
 function isNew(path) {
     const d = fileDates[path];
     return d && (Date.now() - d) < CONFIG.NEW_DAYS * 86400000;
@@ -159,7 +173,7 @@ async function loadContentFromManifest(type, subject, level) {
         const allFiles = await loadManifest();
         if (container.dataset.requestId !== requestId) return;
 
-        let files = allFiles.filter(p => p.startsWith(prefix));
+        let files = allFiles.filter(p => p.startsWith(prefix) && !isHiddenDuplicateCourseCopy(p));
         if (academic && studentTrack && type === 'examens') {
             const examTrackNames = { '2BACSVT': '2BAC SVT', '2BACSP': '2BAC SP', '2BACSM': '2BAC SM' };
             const examTrackName = examTrackNames[studentTrack];
@@ -228,6 +242,7 @@ async function runSearch(query) {
     try {
         const all = await loadManifest();
         const matches = all.filter(p => {
+            if (isHiddenDuplicateCourseCopy(p)) return false;
             const hay = normalizeText(p);
             return words.every(w => hay.includes(w));
         });
