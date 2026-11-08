@@ -53,6 +53,7 @@ jobs:
                   if not clean:
                       continue
                   rel = root.replace(os.sep, "/")
+                  pdf_paths.extend(f"{rel}/{name}" for name in clean if name.lower().endswith(".pdf"))
                   node = tree
                   for part in rel.split("/"):
                       node = node.setdefault(part, {})
@@ -81,7 +82,7 @@ jobs:
               sitemap.extend(["  <url>", f"    <loc>{escape(url)}</loc>", "  </url>"])
           sitemap.append("</urlset>")
           with open("sitemap.xml", "w", encoding="utf-8") as fh:
-              fh.write("\\n".join(sitemap) + "\\n")
+              fh.write("\n".join(sitemap) + "\n")
           print("sitemap.xml OK -", len(urls), "URLs including homepage")
           PYEOF
 
