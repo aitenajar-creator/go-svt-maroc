@@ -115,7 +115,7 @@ const HIDDEN_DUPLICATE_COURSE_COPIES = new Set([
 ]);
 
 function isHiddenDuplicateCourseCopy(path) {
-    return HIDDEN_DUPLICATE_COURSE_COPIES.has(String(path).replace(/^\\/+/, ''));
+    return HIDDEN_DUPLICATE_COURSE_COPIES.has(String(path).replace(/^\/+/, ''));
 }
 
 function isNew(path) {
