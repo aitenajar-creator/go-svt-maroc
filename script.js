@@ -185,9 +185,13 @@ async function loadContentFromManifest(type, subject, level) {
         ? account.getProfile() : null;
     const studentLevel = academic && academic.study_level;
     const studentTrack = academic && academic.study_track;
-    if (studentLevel && studentTrack) level = studentLevel;
-    const trackPrefix = studentTrack && (type === 'cours' || type === 'exercices')
-        ? `${studentTrack}/` : '';
+    // أولوية الاختيار الظاهر في أزرار المستوى والشعبة على مستوى الحساب.
+    const pathwayTrack = window.GoSVTPathways && typeof window.GoSVTPathways.trackFor === 'function'
+        ? window.GoSVTPathways.trackFor(type, level) : 'all';
+    const effectiveStudentTrack = pathwayTrack && pathwayTrack !== 'all'
+        ? pathwayTrack : (studentLevel === level ? studentTrack : null);
+    const trackPrefix = effectiveStudentTrack && (type === 'cours' || type === 'exercices')
+        ? `${effectiveStudentTrack}/` : '';
     const prefix = `/${type}/${subject}/${level}/${trackPrefix}`;
 
     try {
@@ -195,9 +199,9 @@ async function loadContentFromManifest(type, subject, level) {
         if (container.dataset.requestId !== requestId) return;
 
         let files = allFiles.filter(p => p.startsWith(prefix) && !isHiddenDuplicateCourseCopy(p));
-        if (academic && studentTrack && type === 'examens') {
+        if (academic && effectiveStudentTrack && type === 'examens') {
             const examTrackNames = { '2BACSVT': '2BAC SVT', '2BACSP': '2BAC SP', '2BACSM': '2BAC SM' };
-            const examTrackName = examTrackNames[studentTrack];
+            const examTrackName = examTrackNames[effectiveStudentTrack];
             if (examTrackName) files = files.filter(p => p.includes('/' + examTrackName + '/'));
         }
         files = files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
@@ -268,7 +272,7 @@ function getSectionState(section) {
     return {
         type: (subjectBtn && subjectBtn.dataset.type) || section.id,
         subject: subjectBtn ? subjectBtn.dataset.subject : 'francais',
-        level: academic && academic.study_level ? academic.study_level : (levelBtn ? levelBtn.dataset.level : 'TC')
+        level: levelBtn ? levelBtn.dataset.level : (academic && academic.study_level ? academic.study_level : 'TC')
     };
 }
 
