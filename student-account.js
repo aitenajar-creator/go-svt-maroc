@@ -159,10 +159,11 @@
           Promise.all([
             typeof window.GoSVTCloud.loadProgress === 'function' ? window.GoSVTCloud.loadProgress(uid) : Promise.resolve(null),
             typeof window.GoSVTCloud.loadNotes === 'function' ? window.GoSVTCloud.loadNotes(uid) : Promise.resolve(null),
-            typeof window.GoSVTCloud.loadStudyPlan === 'function' ? window.GoSVTCloud.loadStudyPlan(uid) : Promise.resolve(null)
+            typeof window.GoSVTCloud.loadStudyPlan === 'function' ? window.GoSVTCloud.loadStudyPlan(uid) : Promise.resolve(null),
+            typeof window.GoSVTCloud.loadQuizAttempts === 'function' ? window.GoSVTCloud.loadQuizAttempts(uid) : Promise.resolve(null)
           ]).then(results => {
             if (generation !== sessionGeneration || !user || user.id !== uid) return;
-            const [cloudProgress, cloudNotes, cloudPlan] = results;
+            const [cloudProgress, cloudNotes, cloudPlan, cloudQuizAttempts] = results;
             if (cloudProgress && typeof window.StudentSpace.mergeCloudProgress === 'function') {
               window.StudentSpace.mergeCloudProgress(profileIdForSession, cloudProgress);
             }
@@ -170,12 +171,17 @@
                 typeof window.StudentSpace.mergeCloudCollections === 'function') {
               window.StudentSpace.mergeCloudCollections(profileIdForSession, cloudNotes, cloudPlan);
             }
+            if (Array.isArray(cloudQuizAttempts) &&
+                typeof window.StudentSpace.mergeCloudQuizAttempts === 'function') {
+              window.StudentSpace.mergeCloudQuizAttempts(profileIdForSession, cloudQuizAttempts);
+            }
             if (generation !== sessionGeneration || !user || user.id !== uid) return;
             const cached = window.StudentSpace.getProfileData(profileIdForSession);
             const syncJobs = [
               ['progress', 'syncProgress', cached.progress],
               ['notes', 'syncNotes', cached.notes],
-              ['study plan', 'syncStudyPlan', cached.studyPlan]
+              ['study plan', 'syncStudyPlan', cached.studyPlan],
+              ['quiz attempts', 'syncQuizAttempts', cached.quizResults]
             ];
             syncJobs.forEach(job => {
               if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
