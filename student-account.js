@@ -142,7 +142,7 @@
 
         if (window.GoSVTCloud && window.GoSVTStudyFavorites &&
             typeof window.GoSVTCloud.loadFavorites === 'function') {
-          window.GoSVTCloud.loadFavorites()
+          window.GoSVTCloud.loadFavorites(uid)
             .then(paths => {
               if (generation !== sessionGeneration || !user || user.id !== uid) return;
               window.GoSVTStudyFavorites.activate(uid, paths);
@@ -157,9 +157,9 @@
 
         if (window.GoSVTCloud && window.StudentSpace) {
           Promise.all([
-            typeof window.GoSVTCloud.loadProgress === 'function' ? window.GoSVTCloud.loadProgress() : Promise.resolve(null),
-            typeof window.GoSVTCloud.loadNotes === 'function' ? window.GoSVTCloud.loadNotes() : Promise.resolve(null),
-            typeof window.GoSVTCloud.loadStudyPlan === 'function' ? window.GoSVTCloud.loadStudyPlan() : Promise.resolve(null)
+            typeof window.GoSVTCloud.loadProgress === 'function' ? window.GoSVTCloud.loadProgress(uid) : Promise.resolve(null),
+            typeof window.GoSVTCloud.loadNotes === 'function' ? window.GoSVTCloud.loadNotes(uid) : Promise.resolve(null),
+            typeof window.GoSVTCloud.loadStudyPlan === 'function' ? window.GoSVTCloud.loadStudyPlan(uid) : Promise.resolve(null)
           ]).then(results => {
             if (generation !== sessionGeneration || !user || user.id !== uid) return;
             const [cloudProgress, cloudNotes, cloudPlan] = results;
@@ -179,7 +179,7 @@
             ];
             syncJobs.forEach(job => {
               if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
-              Promise.resolve().then(() => window.GoSVTCloud[job[1]](job[2]))
+              Promise.resolve().then(() => window.GoSVTCloud[job[1]](job[2], uid))
                 .catch(err => console.warn('[GoSVT] Background ' + job[0] + ' sync deferred:', err && err.message));
             });
             emit();

@@ -31,7 +31,7 @@
         if (activeFavoriteUid) save('gosvt-favs:' + activeFavoriteUid, clean);
         if (syncCloud !== false && activeFavoriteUid && window.GoSVTCloud &&
             typeof window.GoSVTCloud.syncFavorites === 'function') {
-            window.GoSVTCloud.syncFavorites(clean)
+            window.GoSVTCloud.syncFavorites(clean, activeFavoriteUid)
                 .catch(err => console.warn('[GoSVT] Favorites cloud sync deferred:', err && err.message));
         }
         renderRevision();
@@ -59,7 +59,7 @@
         save('gosvt-favs-migrated:' + activeFavoriteUid, true);
         save('gosvt-favs', merged);
         if (window.GoSVTCloud && typeof window.GoSVTCloud.syncFavorites === 'function') {
-            window.GoSVTCloud.syncFavorites(merged)
+            window.GoSVTCloud.syncFavorites(merged, activeFavoriteUid)
                 .catch(err => console.warn('[GoSVT] Initial favorites sync deferred:', err && err.message));
         }
         renderRevision();
@@ -140,7 +140,7 @@
         save('gosvt-favs', favs);
         if (activeFavoriteUid) save('gosvt-favs:' + activeFavoriteUid, favs);
         if (activeFavoriteUid && window.GoSVTCloud && typeof window.GoSVTCloud.syncFavorites === 'function') {
-            window.GoSVTCloud.syncFavorites(favs).catch(err => console.warn('[GoSVT] Favorite toggle sync deferred:', err && err.message));
+            window.GoSVTCloud.syncFavorites(favs, activeFavoriteUid).catch(err => console.warn('[GoSVT] Favorite toggle sync deferred:', err && err.message));
         }
         byPath('.gs-fav', path).forEach(b => { b.classList.toggle('on', on); b.textContent = on ? '★' : '☆'; });
         toast(on ? t('⭐ أُضيف إلى مراجعتي', '⭐ Ajouté à Ma révision') : t('حُذف من المفضلة', 'Retiré des favoris'));
