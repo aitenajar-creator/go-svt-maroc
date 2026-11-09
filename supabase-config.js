@@ -55,7 +55,8 @@
     };
   }
 
-  window.GoSVTCloud = {\n    async loadQuizAttempts(expectedStudentId) {
+  window.GoSVTCloud = {
+    async loadQuizAttempts(expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
       const { data, error } = await client.from('student_quiz_attempts')
