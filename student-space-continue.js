@@ -42,12 +42,18 @@
   function getData() {
     if (!window.StudentSpace || typeof window.StudentSpace.getProfileData !== 'function') return null;
     try {
-      // StudentAccount's authenticated profile is authoritative; the legacy
-      // localStorage key may refer to a different profile or account.
-      const profile = typeof window.StudentSpace.getCurrentProfile === 'function'
-        ? window.StudentSpace.getCurrentProfile() : null;
-      const id = profile && profile.id
-        ? profile.id : localStorage.getItem('gosvt_current_profile');
+      // Prefer the authenticated account's mapped local profile. Never fall
+      // back to another account's legacy profile while Supabase auth is active.
+      let id = null;
+      if (window.StudentAccount) {
+        if (!window.StudentAccount.isLoggedIn()) return null;
+        id = typeof window.StudentAccount.activeProfileId === 'function'
+          ? window.StudentAccount.activeProfileId() : null;
+      } else {
+        const profile = typeof window.StudentSpace.getCurrentProfile === 'function'
+          ? window.StudentSpace.getCurrentProfile() : null;
+        id = profile && profile.id ? profile.id : null;
+      }
       if (!id) return null;
       return window.StudentSpace.getProfileData(id);
     } catch (_) { return null; }
