@@ -922,6 +922,47 @@
         </section>`;
     }
 
+    function renderStudyRecommendations() {
+        const data = getProfileData(currentProfileId);
+        const latestByQuiz = Object.create(null);
+        (data.quizResults || []).forEach(result => {
+            if (!result || typeof result.quizId !== 'string' ||
+                !Number.isFinite(result.percentage) || !Number.isFinite(result.date)) return;
+            if (!latestByQuiz[result.quizId] || result.date > latestByQuiz[result.quizId].date) {
+                latestByQuiz[result.quizId] = result;
+            }
+        });
+        const needsReview = Object.values(latestByQuiz)
+            .filter(result => result.percentage < 70)
+            .sort((a, b) => a.percentage - b.percentage)
+            .slice(0, 3);
+        if (!needsReview.length) return '';
+
+        return `
+            <section class="gs-review-recommendations">
+                <div class="gs-review-recommendations-head">
+                    <span>🎯</span>
+                    <div>
+                        <strong>${lang() === 'ar' ? 'مراجعة مقترحة' : 'Révisions conseillées'}</strong>
+                        <p>${lang() === 'ar' ? 'راجع هذه المحاور لتعزيز مكتسباتك.' : 'Consolidez vos acquis sur ces thèmes.'}</p>
+                    </div>
+                </div>
+                <div class="gs-review-recommendations-list">
+                    ${needsReview.map(result => {
+                        const path = result.quizId.replace(/^\\/+/, '');
+                        if (!/^quiz\\/[^?#]+\\.json$/i.test(path) || path.split('/').includes('..')) return '';
+                        const href = '/?quiz=' + encodeURIComponent(path) + '#quiz';
+                        return `
+                            <a class="gs-review-recommendation" href="${escapeHtml(href)}">
+                                <span>${escapeHtml(path.split('/').pop().replace(/\\.json$/i, '').replace(/[_-]/g, ' '))}</span>
+                                <strong>${result.percentage}%</strong>
+                                <small>${lang() === 'ar' ? 'أعد المراجعة' : 'Revoir'} ←</small>
+                            </a>`;
+                    }).join('')}
+                </div>
+            </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -979,6 +1020,7 @@
                 </div>
             </div>
             ${renderDailyChallenge()}
+            ${renderStudyRecommendations()}
             <h3 class="gs-section-title">${t('quickAccess')}</h3>
             <div class="gs-quick-links">
                 <a href="#cours"><span>📚</span>${t('resources')}</a>
@@ -1192,11 +1234,31 @@
 
         let html = '<div class="mistakes-list">';
         Object.entries(mistakesByQuiz).forEach(([quizId, quizMistakes]) => {
+            const attempts = (profileData.quizResults || [])
+                .filter(result => result && result.quizId === quizId && Number.isFinite(result.percentage))
+                .sort((a, b) => a.date - b.date);
+            const latest = attempts.length ? attempts[attempts.length - 1] : null;
+            const previous = attempts.length > 1 ? attempts[attempts.length - 2] : null;
+            const best = attempts.reduce((value, result) => Math.max(value, result.percentage), 0);
+            const change = latest && previous ? latest.percentage - previous.percentage : null;
+            const trend = change === null
+                ? t('لا تتوفر مقارنة بعد', 'Pas encore de comparaison')
+                : change > 0
+                    ? (lang() === 'ar' ? 'تحسن +' + change + ' نقطة' : 'Progression +' + change + ' pts')
+                    : change < 0
+                        ? (lang() === 'ar' ? 'تراجع ' + change + ' نقطة' : 'Baisse ' + change + ' pts')
+                        : t('نتيجة مستقرة', 'Résultat stable');
             html += `
                 <div class="mistake-quiz-group">
                     <div class="mistake-quiz-header">
                         <span>Quiz: ${escapeHtml(quizId)}</span>
                         <button class="btn-retry-mistakes" data-quiz-id="${escapeHtml(quizId)}">${t('retryMistakes')}</button>
+                    </div>
+                    <div class="gs-mistake-progress">
+                        <span>${lang() === 'ar' ? 'المحاولات:' : 'Tentatives :'} <strong>${attempts.length}</strong></span>
+                        <span>${lang() === 'ar' ? 'آخر نتيجة:' : 'Dernier score :'} <strong>${latest ? latest.percentage + '%' : '—'}</strong></span>
+                        <span>${lang() === 'ar' ? 'أفضل نتيجة:' : 'Meilleur score :'} <strong>${attempts.length ? best + '%' : '—'}</strong></span>
+                        <span>${trend}</span>
                     </div>
                     ${quizMistakes.map(mistake => `
                         <div class="mistake-item">
