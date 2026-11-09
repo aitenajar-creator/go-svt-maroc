@@ -1220,25 +1220,20 @@
     }
 
     function retryMistakes(quizId) {
-        const profileData = getProfileData(currentProfileId);
-        const quizMistakes = profileData.mistakes.filter(m => m.quizId === quizId);
-        
+        const profileId = currentProfileId;
+        const profileData = getProfileData(profileId);
+        const quizMistakes = profileData.mistakes.filter(m => m && m.quizId === quizId);
         if (quizMistakes.length === 0) return;
 
-        // Store mistakes for retry in sessionStorage
-        try {
-            sessionStorage.setItem('gosvt_retry_mistakes', JSON.stringify(quizMistakes));
-        } catch (e) {
-            console.error('Impossible de préparer la reprise des erreurs:', e);
-            alert(t('invalidFile'));
+        // Launch a focused interactive review directly from the saved mistakes.
+        // No sessionStorage hand-off is needed, so another account cannot inherit it.
+        if (!window.GoSVTQuiz || typeof window.GoSVTQuiz.reviewMistakes !== 'function') {
+            alert(t('تعذر فتح مراجعة الأخطاء الآن.', 'La révision des erreurs est indisponible pour le moment.'));
             return;
         }
-        
-        // Navigate to quiz section (this assumes quiz is accessible via hash)
+        if (currentProfileId !== profileId) return;
         window.location.hash = 'quiz';
-        
-        // Show alert to user
-        alert(t('mistakesLoaded'));
+        window.GoSVTQuiz.reviewMistakes(quizMistakes);
     }
 
     // ============================================
