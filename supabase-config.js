@@ -55,7 +55,58 @@
     };
   }
 
-  window.GoSVTCloud = {
+  window.GoSVTCloud = {\n    async loadQuizAttempts(expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
+      if (!studentId) return null;
+      const { data, error } = await client.from('student_quiz_attempts')
+        .select('attempt_id,quiz_id,score,total_questions,percentage,mistakes,attempted_at')
+        .eq('student_id', studentId)
+        .order('attempted_at', { ascending: true });
+      if (error) throw error;
+      return (data || []).map(row => ({
+        attemptId: String(row.attempt_id),
+        quizId: String(row.quiz_id),
+        score: Number(row.score),
+        total: Number(row.total_questions),
+        percentage: Number(row.percentage),
+        date: Date.parse(row.attempted_at) || Date.now(),
+        mistakes: Array.isArray(row.mistakes) ? row.mistakes : []
+      }));
+    },
+
+    async syncQuizAttempts(attempts, expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
+      if (!studentId || !Array.isArray(attempts) || !attempts.length) return;
+      const rows = attempts.filter(a => a && typeof a === 'object' &&
+          typeof a.attemptId === 'string' && a.attemptId.length > 0 &&
+          typeof a.quizId === 'string' && a.quizId.length > 0 &&
+          Number.isInteger(Number(a.score)) && Number.isInteger(Number(a.total)) &&
+          Number(a.total) > 0 && Number(a.score) >= 0 && Number(a.score) <= Number(a.total))
+        .map(a => ({
+          student_id: studentId,
+          attempt_id: a.attemptId.slice(0, 200),
+          quiz_id: a.quizId.slice(0, 200),
+          score: Number(a.score),
+          total_questions: Number(a.total),
+          percentage: Math.round((Number(a.score) / Number(a.total)) * 100),
+          mistakes: (Array.isArray(a.mistakes) ? a.mistakes : []).slice(0, Number(a.total)).map(m => ({
+            question: String(m && m.question || '').slice(0, 2000),
+            selected: String(m && m.selected || '').slice(0, 1000),
+            correct: String(m && m.correct || '').slice(0, 1000),
+            quizId: String(a.quizId).slice(0, 200),
+            date: Number(m && m.date) || Number(a.date) || Date.now()
+          })),
+          attempted_at: new Date(Number(a.date) || Date.now()).toISOString()
+        }));
+      if (!rows.length) return;
+      const { error } = await client.from('student_quiz_attempts').upsert(rows, {
+        onConflict: 'student_id,attempt_id',
+        ignoreDuplicates: true
+      });
+      if (error) throw error;
+    },
+
+
     async loadProgress(expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
