@@ -51,7 +51,6 @@
   function renderCard() {
     const dashboard = document.getElementById('panel-dashboard');
     if (!dashboard || !dashboard.classList.contains('active')) return;
-    const path = window.location.pathname;
     const isFrench = document.documentElement.lang === 'fr';
     const t = isFrench ? labels.fr : labels.ar;
     const data = getData();
@@ -68,14 +67,16 @@
       .filter(function (item) { return item && !item.completed; })
       .sort(function (a, b) { return String(a.date || '').localeCompare(String(b.date || '')); })[0];
 
-    const safeLessonPath = recent && /^cours\/[a-z0-9_\-À-ÿ /]+\.pdf$/i.test(recent.path)
+    const safeLessonPath = recent && /^cours\//i.test(recent.path) && /\.pdf$/i.test(recent.path) && !recent.path.split('/').includes('..')
       ? '/' + recent.path.split('/').map(encodeURIComponent).join('/') : '';
     const completed = lessons.filter(function (item) { return item && item.completed; }).length;
     const percent = lessons.length ? Math.round(completed / lessons.length * 100) : 0;
+    const signature = JSON.stringify({ lang: isFrench ? 'fr' : 'ar', recent: recent ? [recent.path, recent.title, recent.lastViewed, recent.track, recent.level] : null, task: pendingTask ? [pendingTask.id, pendingTask.title, pendingTask.date, pendingTask.duration] : null, lessons: lessons.length, completed: completed, exercises: exercises.length });
     const card = document.createElement('section');
     card.id = ROOT_ID;
     card.className = 'gs-continue-card';
     card.setAttribute('dir', isFrench ? 'ltr' : 'rtl');
+    card.dataset.signature = signature;
 
     const recentBlock = recent
       ? '<div class="gs-continue-item"><span class="gs-continue-icon">📖</span><div class="gs-continue-copy"><small>' + t.recent + '</small><strong>' + escapeHtml(recent.title || recent.path.split('/').pop()) + '</strong><span>' + escapeHtml(recent.track || recent.level || 'SVT') + '</span></div>' +
@@ -92,7 +93,8 @@
       '<div class="gs-continue-stats"><div><strong>' + lessons.length + '</strong><span>' + t.viewed + '</span></div><div><strong>' + completed + '</strong><span>' + t.completed + '</span></div><div><strong>' + exercises.length + '</strong><span>' + t.exercises + '</span></div><div class="gs-continue-progress"><div><span>' + (isFrench ? 'Progression des cours terminés' : 'نسبة إتمام الدروس') + '</span><strong>' + percent + '%</strong></div><i><b style="width:' + percent + '%"></b></i></div></div>';
 
     const existing = document.getElementById(ROOT_ID);
-    if (existing) existing.remove();
+    if (existing && existing.dataset.signature === signature) return;
+    if (existing) existing.replaceWith(card);
     const anchor = dashboard.querySelector('.gs-learning-path') || dashboard.querySelector('.gs-daily-challenge');
     if (anchor) anchor.insertAdjacentElement('beforebegin', card);
     else dashboard.prepend(card);
