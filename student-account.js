@@ -33,6 +33,16 @@
     if (/password should be at least|weak password/i.test(m)) return L('كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل.', 'Mot de passe trop faible : 8 caractères minimum.');
     return m || L('حدث خطأ. تحقق من الاتصال وحاول مجدداً.', 'Une erreur est survenue. Vérifiez la connexion et réessayez.');
   };
+  function setAccountSwitching(active) {
+    const switching = !!active;
+    document.body.classList.toggle('gs-account-switching', switching);
+    const root = document.getElementById('student-space-content');
+    if (root) {
+      if (switching) root.setAttribute('aria-busy', 'true');
+      else root.removeAttribute('aria-busy');
+    }
+  }
+
   function emit() {
     document.dispatchEvent(new CustomEvent('gosvt:auth-changed', { detail: { loggedIn: !!user, userId: user && user.id, profile } }));
     if (window.StudentSpace) window.StudentSpace.refresh();
@@ -56,6 +66,8 @@
     try {
       return await promise;
     } finally {
+      // A stale request must never uncover the workspace while a newer account is loading.
+      if (generation === sessionGeneration) setAccountSwitching(false);
       if (sessionApply && sessionApply.promise === promise) sessionApply = null;
     }
   }
@@ -63,6 +75,9 @@
   async function applySessionInternal(session, generation) {
     const sessionUser = session && session.user ? session.user : null;
     const uid = sessionUser && sessionUser.id;
+    const previousUid = user && user.id;
+    // Hide the previous student's workspace while the new account profile is being loaded.
+    if (uid !== previousUid) setAccountSwitching(true);
     user = sessionUser;
     profile = null;
     localProfileId = null;
@@ -294,6 +309,7 @@
         // Invalidate any pending profile lookup or cloud restore from the old session.
         sessionGeneration++;
         sessionApply = null;
+        setAccountSwitching(false);
         recoveryMode = false;
         view = 'login';
         user = null;
