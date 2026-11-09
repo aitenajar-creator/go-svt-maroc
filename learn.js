@@ -258,7 +258,14 @@
         try {
             const quiz = await loadQuiz(path);
             if (quiz.titre) title.textContent = `❓ ${quiz.titre}`;
-            quizState = { path, quiz, order: shuffle(quiz.questions.map((_, i) => i)), index: 0, score: 0, wrong: [], answered: false };
+            quizState = {
+                path, quiz, order: shuffle(quiz.questions.map((_, i) => i)),
+                index: 0, score: 0, wrong: [], answered: false,
+                attemptId: (window.crypto && crypto.randomUUID)
+                    ? crypto.randomUUID()
+                    : 'attempt_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2),
+                resultSaved: false
+            };
             renderQuestion();
         } catch (e) {
             quizBody().innerHTML = `<p class="error">${t('تعذر تحميل الاختبار.', 'Impossible de charger ce quiz.')} <small>(${escapeHtml(e.message)})</small></p>`;
@@ -328,6 +335,25 @@
         scores[s.path] = { best, last: pct, date: Date.now() };
         storage.set('gosvt-quiz', JSON.stringify(scores));
         trackEvent('quiz', s.path);
+
+        // Save modern course quizzes to the student's personal assessment history.
+        // Keep the attempt token stable so duplicate result rendering cannot add repeats.
+        if (!s.resultSaved && window.StudentSpace &&
+            typeof window.StudentSpace.saveQuizResult === 'function') {
+            const mistakes = s.wrong.map(function (item) {
+                return {
+                    question: item.q.question,
+                    selected: item.q.choix[item.choice],
+                    correct: item.q.choix[item.q.reponse]
+                };
+            });
+            try {
+                window.StudentSpace.saveQuizResult(s.path, s.score, total, mistakes, s.attemptId);
+                s.resultSaved = true;
+            } catch (error) {
+                console.warn('[GoSVT] Quiz result could not be added to student history:', error);
+            }
+        }
 
         const msg = pct >= 80 ? t('🏆 ممتاز! أنت متمكن من هذا الدرس.', '🏆 Excellent ! Vous maîtrisez ce chapitre.')
             : pct >= 50 ? t('👍 جيد، راجع الأخطاء أسفله.', '👍 Bien ! Revoyez les erreurs ci-dessous.')
