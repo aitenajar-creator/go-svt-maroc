@@ -104,7 +104,7 @@
     },
 
     async loadDailyChallenge(challengeDate) {
-      const studentId = await authenticatedStudentId(expectedStudentId);
+      const studentId = await authenticatedStudentId();
       if (!studentId || !/^\d{4}-\d{2}-\d{2}$/.test(String(challengeDate || ''))) return null;
       const { data, error } = await client.from('student_daily_challenges')
         .select('challenge_date,challenge_id,selected_option,is_correct,points,answered_at')
@@ -114,7 +114,7 @@
     },
 
     async submitDailyChallenge(payload) {
-      const studentId = await authenticatedStudentId(expectedStudentId);
+      const studentId = await authenticatedStudentId();
       if (!studentId) throw new Error('يجب تسجيل الدخول أولاً.');
       if (!payload || !/^\d{4}-\d{2}-\d{2}$/.test(String(payload.challenge_date || '')) ||
           !/^svt-daily-\d{4}-\d{2}-\d{2}$/.test(String(payload.challenge_id || '')) ||
