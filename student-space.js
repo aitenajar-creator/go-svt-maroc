@@ -245,8 +245,14 @@
         storage.set(prefix + STORAGE_KEYS.NOTES, Array.isArray(data.notes) ? data.notes : []);
         storage.set(prefix + STORAGE_KEYS.STUDY_PLAN, Array.isArray(data.studyPlan) ? data.studyPlan : []);
         storage.set(prefix + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges && typeof data.dailyChallenges === 'object' ? data.dailyChallenges : {});
-        // Keep a local offline cache and synchronize the signed-in student's data.
-        if (window.GoSVTCloud) {
+        // Keep the offline cache, but sync only when this profile still belongs to
+        // the currently authenticated account. Pass its UID so delayed requests
+        // cannot be redirected to a different account after an account switch.
+        const account = window.StudentAccount;
+        const cloudUid = account && account.isLoggedIn() &&
+            account.activeProfileId() === profileId &&
+            account.getUser() && account.getUser().id;
+        if (window.GoSVTCloud && cloudUid) {
             const jobs = [
                 ['progress', 'syncProgress', data.progress],
                 ['notes', 'syncNotes', data.notes],
@@ -255,7 +261,7 @@
             jobs.forEach(function (job) {
                 if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
                 Promise.resolve().then(function () {
-                    return window.GoSVTCloud[job[1]](job[2]);
+                    return window.GoSVTCloud[job[1]](job[2], cloudUid);
                 }).catch(function (err) {
                     console.warn('[GoSVT] Cloud ' + job[0] + ' sync deferred:', err && err.message);
                 });
@@ -1410,7 +1416,7 @@
             data.studyPlan = data.studyPlan.filter(x => x.id !== deletedId);
             saveProfileData(currentProfileId, data);
             if (window.GoSVTCloud && typeof window.GoSVTCloud.deleteStudyPlanItem === 'function') {
-                window.GoSVTCloud.deleteStudyPlanItem(deletedId).catch(err => console.warn('[GoSVT] Cloud planner delete deferred:', err && err.message));
+                window.GoSVTCloud.deleteStudyPlanItem(deletedId, window.StudentAccount && window.StudentAccount.getUser() && window.StudentAccount.getUser().id).catch(err => console.warn('[GoSVT] Cloud planner delete deferred:', err && err.message));
             }
             refreshStudentSpaceView();
         }));
@@ -1420,7 +1426,7 @@
             data.notes = data.notes.filter(x => x.id !== deletedId);
             saveProfileData(currentProfileId, data);
             if (window.GoSVTCloud && typeof window.GoSVTCloud.deleteNote === 'function') {
-                window.GoSVTCloud.deleteNote(deletedId).catch(err => console.warn('[GoSVT] Cloud note delete deferred:', err && err.message));
+                window.GoSVTCloud.deleteNote(deletedId, window.StudentAccount && window.StudentAccount.getUser() && window.StudentAccount.getUser().id).catch(err => console.warn('[GoSVT] Cloud note delete deferred:', err && err.message));
             }
             refreshStudentSpaceView();
         }));
