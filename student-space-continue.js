@@ -42,7 +42,12 @@
   function getData() {
     if (!window.StudentSpace || typeof window.StudentSpace.getProfileData !== 'function') return null;
     try {
-      const id = localStorage.getItem('gosvt_current_profile');
+      // StudentAccount's authenticated profile is authoritative; the legacy
+      // localStorage key may refer to a different profile or account.
+      const profile = typeof window.StudentSpace.getCurrentProfile === 'function'
+        ? window.StudentSpace.getCurrentProfile() : null;
+      const id = profile && profile.id
+        ? profile.id : localStorage.getItem('gosvt_current_profile');
       if (!id) return null;
       return window.StudentSpace.getProfileData(id);
     } catch (_) { return null; }
