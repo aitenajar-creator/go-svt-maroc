@@ -670,3 +670,11 @@ html.gs-dark .gs-academic-notice {
 html.gs-dark :where(a, button, input, select, textarea, [tabindex]):focus-visible {
     outline-color: #f4c95d;
 }
+
+
+/* Prevent the previous student's workspace from flashing or accepting input
+   while Supabase switches to another authenticated account. */
+body.gs-account-switching #student-space-content {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
