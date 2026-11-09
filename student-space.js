@@ -235,6 +235,52 @@
         saveProfileData(profileId, data);
     }
 
+    function mergeCloudQuizAttempts(profileId, cloudAttempts) {
+        if (!Array.isArray(cloudAttempts) || !getProfiles()[profileId]) return;
+        const data = getProfileData(profileId);
+        const byAttempt = new Map();
+        data.quizResults.forEach(function (attempt) {
+            if (attempt && attempt.attemptId) byAttempt.set(String(attempt.attemptId), attempt);
+        });
+        cloudAttempts.forEach(function (remote) {
+            if (!remote || !remote.attemptId || !remote.quizId) return;
+            const key = String(remote.attemptId);
+            if (!byAttempt.has(key)) {
+                const attempt = {
+                    attemptId: key,
+                    quizId: String(remote.quizId),
+                    score: Number(remote.score) || 0,
+                    total: Number(remote.total) || 0,
+                    percentage: Number(remote.percentage) || 0,
+                    date: Number(remote.date) || Date.now(),
+                    mistakes: Array.isArray(remote.mistakes) ? remote.mistakes : []
+                };
+                byAttempt.set(key, attempt);
+            }
+        });
+        data.quizResults = Array.from(byAttempt.values()).sort((a, b) => (Number(a.date) || 0) - (Number(b.date) || 0));
+        const mistakeKeys = new Set(data.mistakes.map(m =>
+            [m && m.quizId, m && m.question, m && m.selected, m && m.correct, m && m.date].join('|')
+        ));
+        data.quizResults.forEach(function (attempt) {
+            (Array.isArray(attempt.mistakes) ? attempt.mistakes : []).forEach(function (mistake) {
+                const normalized = {
+                    question: String(mistake && mistake.question || '').slice(0, 2000),
+                    selected: String(mistake && mistake.selected || '').slice(0, 1000),
+                    correct: String(mistake && mistake.correct || '').slice(0, 1000),
+                    quizId: String(attempt.quizId),
+                    date: Number(mistake && mistake.date) || Number(attempt.date) || Date.now()
+                };
+                const key = [normalized.quizId, normalized.question, normalized.selected, normalized.correct, normalized.date].join('|');
+                if (!mistakeKeys.has(key)) {
+                    mistakeKeys.add(key);
+                    data.mistakes.push(normalized);
+                }
+            });
+        });
+        saveProfileData(profileId, data);
+    }
+
     function saveProfileData(profileId, data) {
         const prefix = profileId + '_';
         storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
@@ -256,7 +302,8 @@
             const jobs = [
                 ['progress', 'syncProgress', data.progress],
                 ['notes', 'syncNotes', data.notes],
-                ['study plan', 'syncStudyPlan', data.studyPlan]
+                ['study plan', 'syncStudyPlan', data.studyPlan],
+                ['quiz attempts', 'syncQuizAttempts', data.quizResults]
             ];
             jobs.forEach(function (job) {
                 if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
@@ -2043,6 +2090,7 @@
         getProfileData,
         mergeCloudProgress,
         mergeCloudCollections,
+        mergeCloudQuizAttempts,
         exportProfileData,
         importProfileData,
         retryMistakes
