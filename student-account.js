@@ -77,7 +77,16 @@
     const uid = sessionUser && sessionUser.id;
     const previousUid = user && user.id;
     // Hide the previous student's workspace while the new account profile is being loaded.
-    if (uid !== previousUid) setAccountSwitching(true);
+    if (uid !== previousUid) {
+      setAccountSwitching(true);
+      // A direct account-to-account sign-in may not emit SIGNED_OUT first.
+      // Save and deactivate the previous account's favorites before the new
+      // account's cloud favorites finish loading.
+      if (previousUid && window.GoSVTStudyFavorites &&
+          typeof window.GoSVTStudyFavorites.deactivate === 'function') {
+        window.GoSVTStudyFavorites.deactivate();
+      }
+    }
     user = sessionUser;
     profile = null;
     localProfileId = null;
