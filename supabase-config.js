@@ -21,10 +21,13 @@
   const client = window.supabaseClient;
   if (!client) return;
 
-  async function authenticatedStudentId() {
+  async function authenticatedStudentId(expectedStudentId) {
     const { data, error } = await client.auth.getUser();
     if (error) throw error;
-    return data && data.user ? data.user.id : null;
+    const actualStudentId = data && data.user ? data.user.id : null;
+    // A delayed request from a previous account must never read or write for the new account.
+    if (expectedStudentId && actualStudentId !== expectedStudentId) return null;
+    return actualStudentId;
   }
 
   function parseNoteRow(row) {
@@ -53,8 +56,8 @@
   }
 
   window.GoSVTCloud = {
-    async loadProgress() {
-      const studentId = await authenticatedStudentId();
+    async loadProgress(expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
       const { data, error } = await client.from('student_progress')
         .select('content_key, content_type, completed, updated_at')
@@ -74,9 +77,9 @@
       return progress;
     },
 
-    async syncProgress(progress) {
+    async syncProgress(progress, expectedStudentId) {
       if (!progress || typeof progress !== 'object') return;
-      const studentId = await authenticatedStudentId();
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return;
       const rows = [];
       const types = { lessons: 'lesson', exercises: 'exercise', tests: 'unit' };
@@ -101,7 +104,7 @@
     },
 
     async loadDailyChallenge(challengeDate) {
-      const studentId = await authenticatedStudentId();
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !/^\d{4}-\d{2}-\d{2}$/.test(String(challengeDate || ''))) return null;
       const { data, error } = await client.from('student_daily_challenges')
         .select('challenge_date,challenge_id,selected_option,is_correct,points,answered_at')
@@ -111,7 +114,7 @@
     },
 
     async submitDailyChallenge(payload) {
-      const studentId = await authenticatedStudentId();
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) throw new Error('يجب تسجيل الدخول أولاً.');
       if (!payload || !/^\d{4}-\d{2}-\d{2}$/.test(String(payload.challenge_date || '')) ||
           !/^svt-daily-\d{4}-\d{2}-\d{2}$/.test(String(payload.challenge_id || '')) ||
@@ -131,8 +134,8 @@
       return data;
     },
 
-    async loadNotes() {
-      const studentId = await authenticatedStudentId();
+    async loadNotes(expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
       const { data, error } = await client.from('student_notes')
         .select('content_key,note,updated_at').eq('student_id', studentId);
@@ -140,8 +143,8 @@
       return (data || []).map(parseNoteRow);
     },
 
-    async syncNotes(notes) {
-      const studentId = await authenticatedStudentId();
+    async syncNotes(notes, expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !Array.isArray(notes) || !notes.length) return;
       const rows = notes.filter(n => n && typeof n === 'object' && n.id)
         .map(n => {
@@ -169,8 +172,8 @@
       if (error) throw error;
     },
 
-    async deleteNote(noteId) {
-      const studentId = await authenticatedStudentId();
+    async deleteNote(noteId, expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !noteId) return;
       const { error } = await client.from('student_notes').delete()
         .eq('student_id', studentId).eq('content_key', String(noteId));
@@ -178,8 +181,8 @@
     },
 
     // Favorites are stored as resource paths and isolated by the authenticated Supabase user.
-    async loadFavorites() {
-      const studentId = await authenticatedStudentId();
+    async loadFavorites(expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
       const { data, error } = await client.from('student_favorites')
         .select('content_key').eq('student_id', studentId).eq('content_type', 'resource');
@@ -187,8 +190,8 @@
       return (data || []).map(row => String(row.content_key || '')).filter(Boolean);
     },
 
-    async syncFavorites(paths) {
-      const studentId = await authenticatedStudentId();
+    async syncFavorites(paths, expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !Array.isArray(paths)) return;
       const clean = Array.from(new Set(paths.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim().slice(0, 500))));
       const { data: existing, error: readError } = await client.from('student_favorites')
@@ -211,8 +214,8 @@
       if (error) throw error;
     },
 
-    async loadStudyPlan() {
-      const studentId = await authenticatedStudentId();
+    async loadStudyPlan(expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
       const { data, error } = await client.from('student_study_plan')
         .select('item_key,title,scheduled_date,duration_minutes,completed,created_at,updated_at')
@@ -221,8 +224,8 @@
       return (data || []).map(parsePlanRow);
     },
 
-    async syncStudyPlan(items) {
-      const studentId = await authenticatedStudentId();
+    async syncStudyPlan(items, expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !Array.isArray(items) || !items.length) return;
       const rows = items.filter(item => item && typeof item === 'object' && item.id && item.date)
         .map(item => ({
@@ -242,8 +245,8 @@
       if (error) throw error;
     },
 
-    async deleteStudyPlanItem(itemId) {
-      const studentId = await authenticatedStudentId();
+    async deleteStudyPlanItem(itemId, expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !itemId) return;
       const { error } = await client.from('student_study_plan').delete()
         .eq('student_id', studentId).eq('item_key', String(itemId));
