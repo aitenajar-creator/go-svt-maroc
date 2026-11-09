@@ -84,8 +84,9 @@
             dashboard.insertAdjacentElement('afterend', badge);
         }
         const t = TEXT[language()];
-        badge.innerHTML = '<span>🎓 ' + t.badge + '</span><strong>' + name + '</strong><small>' +
+        const markup = '<span>🎓 ' + t.badge + '</span><strong>' + name + '</strong><small>' +
             t.level + ': ' + profile.level + ' · ' + t.track + ': ' + profile.track + '</small>';
+        if (badge.innerHTML !== markup) badge.innerHTML = markup;
     }
 
     function setTrack(section, profile) {
