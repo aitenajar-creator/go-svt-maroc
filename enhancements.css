@@ -562,3 +562,46 @@ html.gs-dark .gs-continue-card{background:#1b2a20;border-color:#3d5a3e;color:#e5
 html.gs-dark .gs-continue-heading h3,html.gs-dark .gs-continue-copy strong,html.gs-dark .gs-continue-next strong{color:#d9efcf}
 html.gs-dark .gs-continue-item,html.gs-dark .gs-continue-next{background:#17231b;border-color:#3d5a3e}
 html.gs-dark .gs-continue-stats>div{background:#24372a}
+
+
+/* Academic path lock: hide other levels and tracks for signed-in students. */
+.gs-academic-locked .level-tab-btn[hidden],
+.gs-academic-locked .gs-track-btn[hidden],
+.gs-academic-locked .gs-track-label[hidden] {
+    display: none !important;
+}
+.gs-academic-profile {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .35rem .7rem;
+    margin: .85rem 0 1rem;
+    padding: .8rem 1rem;
+    border: 1px solid #d8e8d3;
+    border-inline-start: 4px solid #2d7a43;
+    border-radius: 12px;
+    background: #f3f8f0;
+    color: #294d36;
+}
+.gs-academic-profile span { font-weight: 700; }
+.gs-academic-profile strong { color: #236b43; }
+.gs-academic-profile small { opacity: .8; }
+.gs-academic-notice {
+    padding: .9rem 1rem;
+    border: 1px solid #e7c875;
+    border-radius: 10px;
+    background: #fff8e6;
+    color: #674d13;
+    line-height: 1.7;
+}
+html.gs-dark .gs-academic-profile {
+    background: #1b2a20;
+    border-color: #3d5a3e;
+    color: #e5efe4;
+}
+html.gs-dark .gs-academic-profile strong { color: #9fd89a; }
+html.gs-dark .gs-academic-notice {
+    background: #382e17;
+    border-color: #80672a;
+    color: #f5df9b;
+}
