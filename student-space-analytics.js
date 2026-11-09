@@ -185,6 +185,50 @@
     });
   }
 
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .gs-performance-analytics{margin:1.25rem 0;padding:1.25rem;border:1px solid #dce9d8;border-radius:19px;background:linear-gradient(145deg,#f8fbf6,#fff);box-shadow:0 5px 18px rgba(24,57,37,.05);color:#294d36}
+    .gs-pa-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+    .gs-pa-eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.05em;color:#638c5e}
+    .gs-pa-heading h3{margin:.25rem 0;color:#244d37;font-size:1.18rem}
+    .gs-pa-heading p,.gs-pa-section-head p{margin:.2rem 0;color:#718074;font-size:.84rem;line-height:1.6}
+    .gs-pa-icon{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:14px;background:#eaf4e7;font-size:1.55rem}
+    .gs-pa-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.65rem;margin:1rem 0}
+    .gs-pa-metrics>div{display:flex;flex-direction:column;gap:.25rem;min-width:0;padding:.85rem;border:1px solid #e4ece1;border-radius:13px;background:#fff}
+    .gs-pa-metrics span{color:#718074;font-size:.76rem;line-height:1.5}
+    .gs-pa-metrics strong{color:#236b43;font-size:1.55rem;font-variant-numeric:tabular-nums}
+    .gs-pa-metrics small{font-size:.72rem;line-height:1.5;color:#788579}
+    .gs-pa-metrics small.is-up{color:#267344}.gs-pa-metrics small.is-down{color:#a45b32}
+    .gs-pa-section{margin-top:1.2rem;padding:1rem;border:1px solid #e5ece2;border-radius:15px;background:rgba(255,255,255,.75)}
+    .gs-pa-section-head h4{margin:0;color:#294d36;font-size:1rem}
+    .gs-pa-chart-wrap{width:100%;overflow-x:auto}
+    .gs-pa-chart{display:block;width:100%;min-width:300px;max-height:220px}
+    .gs-pa-grid{stroke:#e7eee4;stroke-width:1;stroke-dasharray:4 4}
+    .gs-pa-axis{fill:#718074;font-size:11px}
+    .gs-pa-bar{fill:#69a66a}
+    .gs-pa-focus-list{display:grid;gap:.6rem;margin-top:.8rem}
+    .gs-pa-focus-item{display:flex;align-items:center;gap:.7rem;padding:.8rem;border:1px solid #e6ede3;border-radius:12px;background:#fff}
+    .gs-pa-focus-rank{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:#edf5e9;color:#32633b;font-weight:800}
+    .gs-pa-focus-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:.15rem}
+    .gs-pa-focus-copy strong{font-size:.88rem;color:#294d36}
+    .gs-pa-focus-copy span{font-size:.75rem;color:#718074;line-height:1.5}
+    .gs-pa-review{padding:.55rem .75rem;border:0;border-radius:9px;background:#236b43;color:#fff;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}
+    .gs-pa-review:hover{background:#194e31}
+    .gs-pa-no-focus,.gs-pa-empty{display:flex;align-items:center;gap:.8rem;padding:.9rem;border:1px dashed #d9e6d5;border-radius:12px;color:#68796b;line-height:1.7}
+    .gs-pa-no-focus>span{font-size:1.45rem}.gs-pa-no-focus p{flex:1;margin:0}
+    .gs-pa-no-focus a{color:#236b43;font-weight:700;text-decoration:none;white-space:nowrap}
+    html.gs-dark .gs-performance-analytics{background:linear-gradient(145deg,#17251a,#1b261c);border-color:#38543a;color:#dce9dc}
+    html.gs-dark .gs-pa-heading h3,html.gs-dark .gs-pa-section-head h4,html.gs-dark .gs-pa-focus-copy strong{color:#dce9dc}
+    html.gs-dark .gs-pa-heading p,html.gs-dark .gs-pa-section-head p,html.gs-dark .gs-pa-metrics span,html.gs-dark .gs-pa-focus-copy span,html.gs-dark .gs-pa-no-focus,html.gs-dark .gs-pa-empty{color:#b8c9b8}
+    html.gs-dark .gs-pa-metrics>div,html.gs-dark .gs-pa-section,html.gs-dark .gs-pa-focus-item{background:#1d2c20;border-color:#38543a}
+    html.gs-dark .gs-pa-metrics strong{color:#9fd89a}
+    html.gs-dark .gs-pa-axis{fill:#b8c9b8}.gs-pa-bar{fill:#78b878}
+    @media(max-width:650px){.gs-pa-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-pa-focus-item{align-items:flex-start;flex-wrap:wrap}.gs-pa-review{margin-inline-start:2.5rem}}
+    @media(max-width:420px){.gs-performance-analytics{padding:.85rem}.gs-pa-section{padding:.75rem}.gs-pa-heading h3{font-size:1.03rem}}
+  `;
+  document.head.appendChild(style);
+
   let queued = false;
   function schedule() {
     if (queued) return;
