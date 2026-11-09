@@ -949,12 +949,14 @@
                 </div>
                 <div class="gs-review-recommendations-list">
                     ${needsReview.map(result => {
-                        const path = result.quizId.replace(/^\\/+/, '');
-                        if (!/^quiz\\/[^?#]+\\.json$/i.test(path) || path.split('/').includes('..')) return '';
+                        const path = result.quizId.charAt(0) === '/' ? result.quizId.slice(1) : result.quizId;
+                        if (!path.startsWith('quiz/') || !path.toLowerCase().endsWith('.json') ||
+                            path.split('/').includes('..') || path.includes('?') || path.includes('#')) return '';
                         const href = '/?quiz=' + encodeURIComponent(path) + '#quiz';
+                        const label = path.split('/').pop().slice(0, -5).replace(/[_-]/g, ' ');
                         return `
                             <a class="gs-review-recommendation" href="${escapeHtml(href)}">
-                                <span>${escapeHtml(path.split('/').pop().replace(/\\.json$/i, '').replace(/[_-]/g, ' '))}</span>
+                                <span>${escapeHtml(label)}</span>
                                 <strong>${result.percentage}%</strong>
                                 <small>${lang() === 'ar' ? 'أعد المراجعة' : 'Revoir'} ←</small>
                             </a>`;
