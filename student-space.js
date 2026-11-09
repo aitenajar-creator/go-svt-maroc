@@ -686,11 +686,18 @@
     async function hydrateDailyChallenge() {
         if (!window.GoSVTCloud || typeof window.GoSVTCloud.loadDailyChallenge !== 'function' ||
             !(window.StudentAccount && window.StudentAccount.isLoggedIn())) return;
+        const account = window.StudentAccount;
         const profileId = currentProfileId;
+        const user = account && account.getUser && account.getUser();
+        const studentId = user && user.id;
+        if (!studentId || !account.isLoggedIn()) return;
         const info = getDailyChallengeInfo();
+        const stillOwner = () => currentProfileId === profileId &&
+            window.StudentAccount && window.StudentAccount.isLoggedIn() &&
+            window.StudentAccount.getUser() && window.StudentAccount.getUser().id === studentId;
         try {
-            const remote = await window.GoSVTCloud.loadDailyChallenge(info.date);
-            if (profileId !== currentProfileId || !remote) return;
+            const remote = await window.GoSVTCloud.loadDailyChallenge(info.date, studentId);
+            if (!stillOwner() || !remote) return;
             const data = getProfileData(profileId);
             data.dailyChallenges[info.date] = remote;
             storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
@@ -705,8 +712,15 @@
     }
 
     async function answerDailyChallenge(selectedOption, button) {
+        const account = window.StudentAccount;
+        if (!account || !account.isLoggedIn() || !account.getUser || !account.getUser()) return;
+        const profileId = currentProfileId;
+        const studentId = account.getUser().id;
+        const stillOwner = () => currentProfileId === profileId &&
+            window.StudentAccount && window.StudentAccount.isLoggedIn() &&
+            window.StudentAccount.getUser() && window.StudentAccount.getUser().id === studentId;
         const info = getDailyChallengeInfo();
-        const data = getProfileData(currentProfileId);
+        const data = getProfileData(profileId);
         if (data.dailyChallenges[info.date]) return;
         const option = Number(selectedOption);
         if (!Number.isInteger(option) || option < 0 || option > 3) return;
@@ -729,21 +743,23 @@
             if (!window.GoSVTCloud || typeof window.GoSVTCloud.submitDailyChallenge !== 'function') {
                 throw new Error('Cloud challenge service unavailable');
             }
-            const saved = await window.GoSVTCloud.submitDailyChallenge(payload);
+            const saved = await window.GoSVTCloud.submitDailyChallenge(payload, studentId);
+            if (!stillOwner()) return;
             data.dailyChallenges[info.date] = saved || payload;
-            storage.set(currentProfileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
+            storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
             refreshStudentSpaceView();
         } catch (err) {
+            if (!stillOwner()) return;
             console.error('[GoSVT] Daily challenge submission failed:', err);
             if (message) message.textContent = lang() === 'fr'
                 ? 'Impossible d’enregistrer votre réponse. Vérifiez la connexion puis réessayez.'
                 : 'تعذر تسجيل إجابتك. تحقق من الاتصال ثم أعد المحاولة.';
             buttons.forEach(item => { item.disabled = false; });
             try {
-                const existing = await window.GoSVTCloud.loadDailyChallenge(info.date);
-                if (existing) {
+                const existing = await window.GoSVTCloud.loadDailyChallenge(info.date, studentId);
+                if (existing && stillOwner()) {
                     data.dailyChallenges[info.date] = existing;
-                    storage.set(currentProfileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
+                    storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
                     refreshStudentSpaceView();
                 }
             } catch (_) {}
