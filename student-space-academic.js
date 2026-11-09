@@ -156,6 +156,9 @@
         }
         const profile = academicProfile();
         if (!profile) {
+            // Do not leave a previous student's restrictions active when the
+            // current account has no valid academic path (legacy accounts).
+            restorePublicNavigation();
             showNotice(TEXT[language()].missing);
             return;
         }
