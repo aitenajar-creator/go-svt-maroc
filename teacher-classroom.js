@@ -291,6 +291,10 @@
         const submissionRate=students.length&&assignmentIds.length
           ? Math.min(100,Math.round((submittedPairs.size/(students.length*assignmentIds.length))*100)):null;
         const overdueMissingCount=Array.from(overdueByStudent.values()).reduce((sum,value)=>sum+value,0);
+        const followUpCount=students.filter(s=>{
+          const overdue=overdueByStudent.get(s.student_id)||0;
+          return overdue>0||(s.average_score!=null&&Number(s.average_score)<50)||(Number(s.completed_lessons)||0)===0;
+        }).length;
         lastClassReport=students.length?{
           studentCount:students.length,lessonTotal,totalQuizAverage:classAverage,
           quizAverage:classAverage,uniqueSubmissionCount:submittedPairs.size,
@@ -304,14 +308,19 @@
             '<div class="gs-cl-row"><strong>'+totalLessons+'</strong><p class="gs-cl-muted">'+tr('درساً مكتملاً','leçons terminées')+'</p></div>'+
             '<div class="gs-cl-row"><strong>'+classAverage+(classAverage==='—'?'':'%')+'</strong><p class="gs-cl-muted">'+tr('متوسط نتائج التلاميذ المسجلين','moyenne des élèves inscrits')+'</p></div>'+
             '<div class="gs-cl-row"><strong>'+submittedPairs.size+'</strong><p class="gs-cl-muted">'+tr('إجابة واجب فريدة مستلمة','réponses uniques reçues')+'</p></div>'+
+            '<div class="gs-cl-row"><strong>'+followUpCount+'</strong><p class="gs-cl-muted">'+tr('تلاميذ مقترح تتبعهم','élèves à suivre')+'</p></div>'+
             '</div>'+
             (submissionRate===null?'':'<p class="gs-cl-muted">'+tr('معدل تسليم الواجبات','Taux de remise')+': '+submissionRate+'%</p>')+
             students.map(s=>{
               const submitted=submittedByStudent.get(s.student_id)||0;
               const overdue=overdueByStudent.get(s.student_id)||0;
               const assignmentProgress=assignmentIds.length?Math.round(submitted/assignmentIds.length*100):null;
-              const needsFollowUp=overdue>0||(s.average_score!=null&&Number(s.average_score)<50)||(Number(s.completed_lessons)||0)===0;
-              return '<article class="gs-cl-row"><strong>'+esc(s.display_name)+'</strong>'+(needsFollowUp?'<p class="gs-cl-muted">'+tr('متابعة تربوية مقترحة','Suivi pédagogique suggéré')+'</p>':'')+
+              const reasons=[];
+              if(overdue>0)reasons.push(tr('واجبات متأخرة غير مسلمة: '+overdue,'Devoirs en retard non remis : '+overdue));
+              if(s.average_score!=null&&Number(s.average_score)<50)reasons.push(tr('متوسط النتائج أقل من 50%','Moyenne des résultats inférieure à 50 %'));
+              if((Number(s.completed_lessons)||0)===0)reasons.push(tr('لم يسجل دروساً مكتملة بعد','Aucune leçon terminée enregistrée'));
+              const needsFollowUp=reasons.length>0;
+              return '<article class="gs-cl-row"><strong>'+esc(s.display_name)+'</strong>'+(needsFollowUp?'<p class="gs-cl-muted">'+tr('متابعة تربوية مقترحة','Suivi pédagogique suggéré')+'</p><ul>'+reasons.map(reason=>'<li>'+esc(reason)+'</li>').join('')+'</ul>':'')+
                 '<p class="gs-cl-muted">'+esc(s.study_level||'')+' · '+esc(s.study_track||'')+' · '+tr('تاريخ الانضمام','Inscrit le')+' '+(s.joined_at?esc(new Date(s.joined_at).toLocaleDateString(ar()?'ar-MA':'fr-FR')):'—')+'</p>'+
                 '<p>'+tr('الدروس المكتملة','Leçons terminées')+': <strong>'+(Number(s.completed_lessons)||0)+'</strong> · '+tr('محاولات الاختبار','Tentatives')+': <strong>'+(Number(s.quiz_attempts)||0)+'</strong> · '+tr('متوسط النتائج','Moyenne')+': <strong>'+(s.average_score==null?'—':esc(s.average_score)+'%')+'</strong></p>'+
                 '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+'</article>';
