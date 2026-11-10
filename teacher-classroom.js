@@ -77,7 +77,7 @@
       [tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis'),report.overdueMissingCount],
       [tr('تاريخ التصدير','Date d’export'),new Date().toLocaleString(ar()?'ar-MA':'fr-FR')]
     ];
-    const csv='\\uFEFF'+rows.map(row=>row.map(value=>'"'+String(value==null?'':value).replace(/"/g,'""')+'"').join(';')).join('\\r\\n');
+    const csv='\uFEFF'+rows.map(row=>row.map(value=>'"'+String(value==null?'':value).replace(/"/g,'""')+'"').join(';')).join('\r\n');
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
     const link=document.createElement('a');
