@@ -1457,17 +1457,31 @@
     // ============================================
     function renderPlanner() {
         const data = getProfileData(currentProfileId);
+        const today = new Date();
+        const todayKey = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
         const items = [...data.studyPlan].sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
-        const rows = items.map(item => `
-            <article class="gs-plan-item ${item.completed ? 'is-done' : ''}">
-                <div class="gs-plan-date">${escapeHtml(item.date || '')}</div>
+        const rows = items.map(item => {
+            const date = String(item.date || '');
+            const overdue = !item.completed && /^\d{4}-\d{2}-\d{2}$/.test(date) && date < todayKey;
+            const dueToday = !item.completed && date === todayKey;
+            const status = item.completed
+                ? (lang() === 'ar' ? 'مكتملة' : 'Terminée')
+                : overdue
+                    ? (lang() === 'ar' ? 'متأخرة' : 'En retard')
+                    : dueToday
+                        ? (lang() === 'ar' ? 'موعدها اليوم' : "Aujourd’hui")
+                        : (lang() === 'ar' ? 'قادمة' : 'À venir');
+            return `
+            <article class="gs-plan-item ${item.completed ? 'is-done' : ''} ${overdue ? 'is-overdue' : ''} ${dueToday ? 'is-due-today' : ''}">
+                <div class="gs-plan-date">${escapeHtml(date)}</div>
                 <div class="gs-plan-main"><strong>${escapeHtml(item.title || '')}</strong>
-                    <small>${Number(item.duration) || 30} ${lang() === 'ar' ? 'دقيقة' : 'min'} · ${item.completed ? t('done') : t('pending')}</small></div>
+                    <small>${Number(item.duration) || 30} ${lang() === 'ar' ? 'دقيقة' : 'min'} · ${status}</small></div>
                 <div class="gs-plan-actions">
                     <button type="button" class="gs-task-toggle" data-task-id="${escapeHtml(item.id)}">${item.completed ? '↩' : '✓'}</button>
                     <button type="button" class="gs-task-delete" data-task-id="${escapeHtml(item.id)}" aria-label="${t('delete')}">×</button>
                 </div>
-            </article>`).join('');
+            </article>`;
+        }).join('');
         return `<div class="gs-module">
             <h2>${t('planner')}</h2>
             <form id="gs-plan-form" class="gs-entry-form">

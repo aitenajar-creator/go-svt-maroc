@@ -701,3 +701,16 @@ html[dir="rtl"] .header-actions {
         width: 100%;
     }
 }
+
+/* Study planner: make upcoming and overdue sessions easy to scan. */
+.gs-plan-item.is-overdue {
+    border-inline-start: 4px solid #d97706;
+    background: color-mix(in srgb, #d97706 7%, transparent);
+}
+.gs-plan-item.is-due-today {
+    border-inline-start: 4px solid #0d9488;
+    background: color-mix(in srgb, #0d9488 7%, transparent);
+}
+.gs-plan-item.is-done {
+    opacity: .78;
+}
