@@ -204,6 +204,8 @@
             : '<p class="gs-cl-muted">'+(inboxFilter==='answered'?tr('لا توجد أسئلة تمت الإجابة عنها بعد.','Aucune question répondue pour le moment.'):inboxFilter==='open'?tr('أحسنت! لا توجد أسئلة تنتظر الإجابة.','Aucune question en attente.'):tr('لا توجد أسئلة واردة حالياً.','Aucune question reçue.'))+'</p>');
       }
     } else {
+      const alertHost=document.getElementById('gs-cl-alerts');
+      if(alertHost)alertHost.innerHTML='<p class="gs-cl-muted">'+tr('أنشئ قسماً أولاً لعرض تنبيهات المتابعة والأولويات.','Créez une classe pour afficher les alertes de suivi et les priorités.')+'</p>';
       const inbox=document.getElementById('gs-cl-inbox');if(inbox)inbox.innerHTML=`<p class="gs-cl-muted">${tr('أنشئ قسماً أولاً لاستقبال الأسئلة.','Créez une classe pour recevoir des questions.')}</p>`;
     }
     const work=document.createElement('div');work.id='gs-cl-teacher-work';work.style.marginTop='1rem';host.appendChild(work);
