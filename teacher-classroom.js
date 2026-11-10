@@ -259,10 +259,25 @@
     if(a.error)throw a.error;
     const subHost=document.getElementById('gs-cl-submissions');
     if(!a.data.length){if(subHost)subHost.innerHTML='<p class="gs-cl-muted">'+tr('لم تنشر واجبات بعد.','Aucun devoir publié.')+'</p>';return;}
-    const submissions=await client.from('teacher_assignment_submissions').select('id,assignment_id,student_id,answer,score,feedback,submitted_at').in('assignment_id',a.data.map(x=>x.id)).order('submitted_at',{ascending:false}).limit(150);
+    const submissions=await client.from('teacher_assignment_submissions').select('id,assignment_id,student_id,answer,score,feedback,submitted_at,reviewed_at').in('assignment_id',a.data.map(x=>x.id)).order('submitted_at',{ascending:false}).limit(150);
     if(submissions.error)throw submissions.error;
     const titles=new Map(a.data.map(x=>[x.id,x.title]));
-    if(subHost)subHost.innerHTML=(submissions.data||[]).length?submissions.data.map(x=>'<article class="gs-cl-row"><strong>'+esc(titles.get(x.assignment_id)||tr('واجب','Devoir'))+'</strong><p class="gs-cl-muted">'+tr('معرّف التلميذ','ID élève')+': '+esc(x.student_id.slice(0,8))+' · '+esc(new Date(x.submitted_at).toLocaleString())+'</p><details><summary>'+tr('عرض الإجابة','Voir la réponse')+'</summary><p>'+esc(x.answer)+'</p></details><label>'+tr('النقطة من 20','Note sur 20')+'</label><input type="number" min="0" max="20" step="0.25" data-score-for="'+esc(x.id)+'" value="'+(x.score==null?'':esc(x.score))+'"><label>'+tr('ملاحظات التصحيح','Commentaire')+'</label><textarea data-feedback-for="'+esc(x.id)+'" maxlength="5000">'+esc(x.feedback||'')+'</textarea><button type="button" data-action="grade-submission" data-id="'+esc(x.id)+'">'+tr('حفظ التصحيح','Enregistrer la correction')+'</button></article>').join(''):'<p class="gs-cl-muted">'+tr('لم يتوصل القسم بإجابات بعد.','Aucune réponse reçue pour le moment.')+'</p>';
+    const received=submissions.data||[];
+    const reviewedCount=received.filter(x=>!!x.reviewed_at).length;
+    const pendingCount=received.length-reviewedCount;
+    if(subHost)subHost.innerHTML=received.length
+      ? '<div class="gs-cl-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:.75rem">'+
+          '<div class="gs-cl-row"><strong>'+received.length+'</strong><p class="gs-cl-muted">'+tr('إجابات مستلمة','Réponses reçues')+'</p></div>'+
+          '<div class="gs-cl-row"><strong>'+pendingCount+'</strong><p class="gs-cl-muted">'+tr('تحتاج إلى تصحيح','À corriger')+'</p></div>'+
+          '<div class="gs-cl-row"><strong>'+reviewedCount+'</strong><p class="gs-cl-muted">'+tr('تم تصحيحها','Corrigées')+'</p></div></div>'+
+        '<label for="gs-cl-submission-assignment">'+tr('تصفية حسب الواجب','Filtrer par devoir')+'</label><select id="gs-cl-submission-assignment"><option value="all">'+tr('جميع الواجبات','Tous les devoirs')+'</option>'+a.data.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+'</option>').join('')+'</select>'+
+        '<label for="gs-cl-submission-status">'+tr('حالة التصحيح','État de correction')+'</label><select id="gs-cl-submission-status"><option value="all">'+tr('كل الإجابات','Toutes les réponses')+'</option><option value="pending">'+tr('تحتاج إلى تصحيح','À corriger')+' ('+pendingCount+')</option><option value="reviewed">'+tr('تم تصحيحها','Corrigées')+' ('+reviewedCount+')</option></select>'+
+        '<p id="gs-cl-submission-filter-status" class="gs-cl-muted" role="status" aria-live="polite"></p>'+
+        '<div id="gs-cl-submission-cards" class="gs-cl-list">'+received.map(x=>{
+          const reviewed=!!x.reviewed_at;
+          return '<article class="gs-cl-row" data-submission-card="true" data-assignment-id="'+esc(x.assignment_id)+'" data-reviewed="'+(reviewed?'true':'false')+'"><strong>'+esc(titles.get(x.assignment_id)||tr('واجب','Devoir'))+'</strong><p class="gs-cl-muted">'+(reviewed?tr('تم التصحيح','Corrigée'):tr('بانتظار التصحيح','En attente de correction'))+' · '+tr('معرّف التلميذ','ID élève')+': '+esc(x.student_id.slice(0,8))+' · '+esc(new Date(x.submitted_at).toLocaleString())+'</p><details><summary>'+tr('عرض الإجابة','Voir la réponse')+'</summary><p>'+esc(x.answer)+'</p></details><label>'+tr('النقطة من 20','Note sur 20')+'</label><input type="number" min="0" max="20" step="0.25" data-score-for="'+esc(x.id)+'" value="'+(x.score==null?'':esc(x.score))+'"><label>'+tr('ملاحظات التصحيح','Commentaire')+'</label><textarea data-feedback-for="'+esc(x.id)+'" maxlength="5000">'+esc(x.feedback||'')+'</textarea><button type="button" data-action="grade-submission" data-id="'+esc(x.id)+'">'+tr('حفظ التصحيح','Enregistrer la correction')+'</button></article>';
+        }).join('')+'</div>'
+      : '<p class="gs-cl-muted">'+tr('لم يتوصل القسم بإجابات بعد.','Aucune réponse reçue pour le moment.')+'</p>';
   }
 
   async function renderThread(id) {
@@ -612,6 +627,27 @@
     mountedFor=null;
     mount();
   }
+  function applySubmissionFilters(){
+    const host=document.getElementById('gs-cl-submission-cards');
+    if(!host)return;
+    const assignment=document.getElementById('gs-cl-submission-assignment');
+    const status=document.getElementById('gs-cl-submission-status');
+    const assignmentId=assignment?assignment.value:'all';
+    const state=status?status.value:'all';
+    const cards=Array.from(host.querySelectorAll('[data-submission-card="true"]'));
+    let visible=0;
+    cards.forEach(card=>{
+      const assignmentMatch=assignmentId==='all'||card.dataset.assignmentId===assignmentId;
+      const statusMatch=state==='all'||(state==='reviewed'?card.dataset.reviewed==='true':card.dataset.reviewed!=='true');
+      card.hidden=!(assignmentMatch&&statusMatch);
+      if(!card.hidden)visible++;
+    });
+    const message=document.getElementById('gs-cl-submission-filter-status');
+    if(message)message.textContent=tr('الإجابات المعروضة: '+visible+' من '+cards.length,'Réponses affichées : '+visible+' sur '+cards.length);
+  }
+  document.addEventListener('change',e=>{
+    if(e.target&&(e.target.id==='gs-cl-submission-assignment'||e.target.id==='gs-cl-submission-status'))applySubmissionFilters();
+  });
   function applyRosterFilters(){
     const host=document.getElementById('gs-cl-roster');
     if(!host)return;
