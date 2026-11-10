@@ -739,12 +739,31 @@
         const studentId = user && user.id;
         if (!studentId || !account.isLoggedIn()) return;
         const info = getDailyChallengeInfo();
+        const cardBeforeSync = document.getElementById('gs-daily-challenge');
+        if (cardBeforeSync && cardBeforeSync.dataset.challengeDate === info.date) {
+            cardBeforeSync.dataset.challengeSync = 'pending';
+            cardBeforeSync.querySelectorAll('.gs-daily-option').forEach(option => { option.disabled = true; });
+            const message = cardBeforeSync.querySelector('.gs-daily-message');
+            if (message) message.textContent = lang() === 'fr'
+                ? 'Vérification de votre participation…'
+                : 'جارٍ التحقق من مشاركتك السابقة اليوم…';
+        }
         const stillOwner = () => currentProfileId === profileId &&
             window.StudentAccount && window.StudentAccount.isLoggedIn() &&
             window.StudentAccount.getUser() && window.StudentAccount.getUser().id === studentId;
         try {
             const remote = await window.GoSVTCloud.loadDailyChallenge(info.date, studentId);
-            if (!stillOwner() || !remote) return;
+            if (!stillOwner()) return;
+            if (!remote) {
+                const currentCard = document.getElementById('gs-daily-challenge');
+                if (currentCard && currentCard.dataset.challengeDate === info.date) {
+                    currentCard.dataset.challengeSync = 'ready';
+                    currentCard.querySelectorAll('.gs-daily-option').forEach(option => { option.disabled = false; });
+                    const message = currentCard.querySelector('.gs-daily-message');
+                    if (message) message.textContent = '';
+                }
+                return;
+            }
             const data = getProfileData(profileId);
             data.dailyChallenges[info.date] = remote;
             storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
@@ -755,6 +774,15 @@
             }
         } catch (err) {
             console.warn('[GoSVT] Daily challenge restore deferred:', err && err.message);
+            const currentCard = document.getElementById('gs-daily-challenge');
+            if (stillOwner() && currentCard && currentCard.dataset.challengeDate === info.date) {
+                currentCard.dataset.challengeSync = 'ready';
+                currentCard.querySelectorAll('.gs-daily-option').forEach(option => { option.disabled = false; });
+                const message = currentCard.querySelector('.gs-daily-message');
+                if (message) message.textContent = lang() === 'fr'
+                    ? 'Vérification indisponible. Votre réponse sera vérifiée lors de son enregistrement.'
+                    : 'تعذر التحقق المسبق. سيتم التحقق من إجابتك عند تسجيلها.';
+            }
         }
     }
 
@@ -772,7 +800,7 @@
         const option = Number(selectedOption);
         if (!Number.isInteger(option) || option < 0 || option > 3) return;
         const card = document.getElementById('gs-daily-challenge');
-        if (!card || card.dataset.challengeDate !== info.date) return;
+        if (!card || card.dataset.challengeDate !== info.date || card.dataset.challengeSync === 'pending') return;
         const message = card.querySelector('.gs-daily-message');
         const buttons = Array.from(card.querySelectorAll('.gs-daily-option'));
         buttons.forEach(item => { item.disabled = true; });
