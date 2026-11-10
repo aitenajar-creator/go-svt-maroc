@@ -89,9 +89,9 @@
   }
 
   async function loadStudent(host,user) {
-    const {data:links,error}=await client.from('teacher_class_students').select('class_id,teacher_classes(id,name,study_level,study_track)').eq('student_id',user.id);
+    const {data:links,error}=await client.rpc('gosvt_student_classes');
     if(error) throw error;
-    const classes=(links||[]).map(x=>x.teacher_classes).filter(Boolean);
+    const classes=(links||[]).map(x=>({id:x.class_id,name:x.class_name,study_level:x.study_level,study_track:x.study_track}));
     host.innerHTML=`
       <div class="gs-cl-grid">
         <div class="gs-cl-card"><h3>${tr('الانضمام إلى قسم','Rejoindre une classe')}</h3><p class="gs-cl-muted">${tr('أدخل رمز القسم الذي يمنحك إياه الأستاذ.','Saisissez le code fourni par votre enseignant.')}</p><label for="gs-cl-code">${tr('رمز الانضمام','Code de classe')}</label><input id="gs-cl-code" maxlength="10" autocomplete="off" placeholder="XXXXXXXXXX"><button type="button" data-action="join">${tr('الانضمام','Rejoindre')}</button></div>
