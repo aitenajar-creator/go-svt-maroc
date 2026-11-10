@@ -240,7 +240,12 @@
         const submissions=submissionsResult.data||[];
         const submittedByStudent=new Map();
         const submittedPairs=new Set();
-        submissions.forEach(x=>{submittedByStudent.set(x.student_id,(submittedByStudent.get(x.student_id)||0)+1);submittedPairs.add(x.student_id+':'+x.assignment_id);});
+        submissions.forEach(x=>{
+          const pair=x.student_id+':'+x.assignment_id;
+          if(submittedPairs.has(pair))return;
+          submittedPairs.add(pair);
+          submittedByStudent.set(x.student_id,(submittedByStudent.get(x.student_id)||0)+1);
+        });
         const now=Date.now();
         const overdueAssignments=(assignmentsResult.data||[]).filter(a=>a.due_at&&new Date(a.due_at).getTime()<now);
         const overdueByStudent=new Map();
@@ -249,7 +254,7 @@
         const quizAverages=students.filter(s=>s.average_score!=null).map(s=>Number(s.average_score));
         const classAverage=quizAverages.length?(quizAverages.reduce((a,b)=>a+b,0)/quizAverages.length).toFixed(1):'—';
         const submissionRate=students.length&&assignmentIds.length
-          ? Math.round((submissions.length/(students.length*assignmentIds.length))*100):null;
+          ? Math.min(100,Math.round((submittedPairs.size/(students.length*assignmentIds.length))*100)):null;
         if(host)host.innerHTML=students.length
           ? '<div class="gs-cl-grid" style="margin-bottom:1rem">'+
             '<div class="gs-cl-row"><strong>'+students.length+'</strong><p class="gs-cl-muted">'+tr('تلميذاً في القسم','élèves dans la classe')+'</p></div>'+
@@ -264,7 +269,7 @@
               const assignmentProgress=assignmentIds.length?Math.round(submitted/assignmentIds.length*100):null;
               const needsFollowUp=overdue>0||(s.average_score!=null&&Number(s.average_score)<50)||(Number(s.completed_lessons)||0)===0;
               return '<article class="gs-cl-row"><strong>'+esc(s.display_name)+'</strong>'+(needsFollowUp?'<p class="gs-cl-muted">'+tr('متابعة تربوية مقترحة','Suivi pédagogique suggéré')+'</p>':'')+
-                '<p class="gs-cl-muted">'+esc(s.study_level||'')+' · '+esc(s.study_track||'')+' · '+tr('تاريخ الانضمام','Inscrit le')+' '+(s.joined_at?esc(new Date(s.joined_at).toLocaleDateString()):'—')+'</p>'+
+                '<p class="gs-cl-muted">'+esc(s.study_level||'')+' · '+esc(s.study_track||'')+' · '+tr('تاريخ الانضمام','Inscrit le')+' '+(s.joined_at?esc(new Date(s.joined_at).toLocaleDateString(ar()?'ar-MA':'fr-FR')):'—')+'</p>'+
                 '<p>'+tr('الدروس المكتملة','Leçons terminées')+': <strong>'+(Number(s.completed_lessons)||0)+'</strong> · '+tr('محاولات الاختبار','Tentatives')+': <strong>'+(Number(s.quiz_attempts)||0)+'</strong> · '+tr('متوسط النتائج','Moyenne')+': <strong>'+(s.average_score==null?'—':esc(s.average_score)+'%')+'</strong></p>'+
                 '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+'</article>';
             }).join('')
