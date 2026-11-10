@@ -678,3 +678,85 @@ body.gs-account-switching #student-space-content {
     visibility: hidden !important;
     pointer-events: none !important;
 }
+
+
+/* ===== Dashboard cards: compact mobile layout and accessible actions ===== */
+#student-space-content .gs-continue-card,
+#student-space-content .gs-performance-analytics {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+#student-space-content .gs-continue-card *,
+#student-space-content .gs-performance-analytics * {
+    box-sizing: border-box;
+}
+#student-space-content .gs-continue-progress i {
+    display: block;
+    width: 100%;
+}
+#student-space-content .gs-pa-chart-wrap {
+    max-width: 100%;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+}
+#student-space-content .gs-pa-chart { height: auto; }
+#student-space-content .gs-pa-review {
+    min-height: 44px;
+    padding: .65rem .85rem;
+}
+@media (max-width: 520px) {
+    #student-space-content .gs-continue-item,
+    #student-space-content .gs-continue-next { min-width: 0; }
+    #student-space-content .gs-continue-copy,
+    #student-space-content .gs-continue-next > div,
+    #student-space-content .gs-pa-focus-copy { overflow-wrap: anywhere; }
+    #student-space-content .gs-continue-empty p { min-width: 0; }
+    #student-space-content .gs-pa-heading { gap: .65rem; }
+    #student-space-content .gs-pa-icon {
+        flex-basis: 40px;
+        width: 40px;
+        height: 40px;
+    }
+    #student-space-content .gs-pa-metrics > div {
+        min-width: 0;
+        padding: .7rem;
+    }
+    #student-space-content .gs-pa-metrics strong {
+        font-size: clamp(1.15rem, 6vw, 1.45rem);
+    }
+    #student-space-content .gs-pa-focus-item {
+        min-width: 0;
+        gap: .55rem;
+    }
+    #student-space-content .gs-pa-review {
+        width: 100%;
+        margin: .25rem 0 0;
+        white-space: normal;
+    }
+    #student-space-content .gs-pa-no-focus {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+    #student-space-content .gs-pa-no-focus p {
+        min-width: 0;
+        flex: 1 1 calc(100% - 2.5rem);
+    }
+    #student-space-content .gs-pa-no-focus a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+}
+@media (max-width: 360px) {
+    #student-space-content .gs-continue-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    #student-space-content .gs-continue-progress { grid-column: 1 / -1; }
+    #student-space-content .gs-continue-stats > div > span { font-size: .72rem; }
+}
+html.gs-dark #student-space-content .gs-pa-review {
+    background: #34794b;
+    color: #fff;
+}
