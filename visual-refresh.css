@@ -1,0 +1,108 @@
+/* GO SVT Maroc — visual refresh for student and teacher spaces */
+:root{
+  --gs-visual-ink:#17352b;
+  --gs-visual-green:#176b4b;
+  --gs-visual-mint:#e9f6ef;
+  --gs-visual-gold:#f3c969;
+}
+body{background:#f4f8f5}
+.header{background:linear-gradient(105deg,rgba(12,63,48,.97),rgba(30,111,76,.92))}
+.logo h1{letter-spacing:-.035em}
+.main-nav a{border-radius:999px}
+.hero{
+  position:relative;isolation:isolate;overflow:hidden;
+  background-image:linear-gradient(90deg,rgba(8,48,37,.91),rgba(13,83,57,.76)),url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=2000&q=85');
+  background-size:cover;background-position:center 42%;
+  min-height:390px;display:flex;align-items:center
+}
+.hero .container{position:relative;z-index:1}
+.hero h2{text-shadow:0 2px 18px rgba(0,0,0,.2)}
+.hero p{max-width:760px;margin-inline:auto}
+.hero-buttons .btn{border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.features{background:linear-gradient(180deg,#fff,#f1f8f3)}
+.feature-grid{gap:1.25rem}
+.feature-card{
+  position:relative;overflow:hidden;text-align:start;
+  border:1px solid #e2eee6;border-radius:20px;padding:1.5rem;
+  background:linear-gradient(145deg,#fff 55%,#f1f8f3);
+  box-shadow:0 10px 28px rgba(27,76,51,.07)
+}
+.feature-card:after{content:"";position:absolute;inset:auto -22px -38px auto;width:120px;height:120px;border-radius:50%;background:rgba(63,153,105,.08)}
+.feature-icon{
+  display:grid;place-items:center;width:64px;height:64px;border-radius:19px;
+  background:linear-gradient(145deg,#e0f4e8,#f5fbf6);font-size:2.35rem;
+  box-shadow:inset 0 0 0 1px rgba(42,120,78,.08)
+}
+.feature-card h3{font-size:1.15rem}
+.section-title{font-weight:800;letter-spacing:-.025em}
+.content-card{border:1px solid #e6eee8;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(27,76,51,.06)}
+.content-card:hover{transform:translateY(-4px);box-shadow:0 15px 32px rgba(27,76,51,.12)}
+.tab-btn,.level-tab-btn{border-radius:999px}
+#student-space>.container>.section-title{margin-bottom:1.25rem}
+#student-space .student-space{
+  max-width:1320px!important;margin:0 auto!important;padding:clamp(1rem,2.5vw,2rem)!important;
+  border:1px solid #e0ece4!important;border-radius:26px!important;
+  background:linear-gradient(160deg,#fff 0%,#f4faf6 100%)!important;
+  box-shadow:0 18px 48px rgba(22,75,49,.09)!important
+}
+#student-space .dashboard-header{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  border-radius:22px!important;padding:clamp(1.5rem,4vw,2.6rem)!important;
+  color:#fff!important;
+  background-image:linear-gradient(100deg,rgba(7,55,40,.92),rgba(19,104,70,.75)),url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=1600&q=85')!important;
+  background-size:cover!important;background-position:center!important;
+  box-shadow:0 14px 32px rgba(17,79,52,.18)!important
+}
+#student-space .dashboard-header h2,#student-space .dashboard-header h3{color:#fff!important}
+#student-space .space-tab{
+  border-radius:14px!important;border:1px solid #e0ebe3!important;
+  background:#fff!important;color:#28513c!important;font-weight:700!important;
+  transition:transform .2s ease,box-shadow .2s ease!important
+}
+#student-space .space-tab.active{
+  color:#fff!important;background:linear-gradient(135deg,#176b4b,#31966a)!important;
+  box-shadow:0 8px 20px rgba(23,107,75,.2)!important
+}
+#student-space .space-tab:hover{transform:translateY(-2px)!important}
+#student-space .space-panel{border-radius:18px!important}
+#student-space .dashboard-grid>*,#student-space .stat-card,#student-space .dashboard-card{
+  border-radius:18px!important;box-shadow:0 8px 22px rgba(25,75,49,.07)!important
+}
+#gs-classroom{
+  border:1px solid #dcebe1!important;border-radius:24px!important;
+  background:linear-gradient(160deg,#fff,#f4faf6)!important;
+  box-shadow:0 16px 42px rgba(22,75,49,.09)!important
+}
+#gs-classroom .gs-cl-head{
+  position:relative;isolation:isolate;overflow:hidden;
+  margin:-.15rem -.15rem 1.2rem;padding:1.5rem;border-radius:18px;
+  color:#fff;background-image:linear-gradient(100deg,rgba(8,57,42,.93),rgba(26,111,75,.78)),url('https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=1500&q=85');
+  background-size:cover;background-position:center 44%
+}
+#gs-classroom .gs-cl-head h3,#gs-classroom .gs-cl-head p{color:#fff!important}
+#gs-classroom .gs-cl-head .gs-cl-tag{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3)}
+#gs-classroom .gs-cl-head button{background:#fff!important;color:#17583d!important}
+#gs-classroom .gs-cl-card{
+  border:1px solid #e0ebe3!important;border-radius:18px!important;
+  background:rgba(255,255,255,.88)!important;
+  box-shadow:0 8px 22px rgba(25,75,49,.055)!important;
+  transition:transform .2s ease,box-shadow .2s ease
+}
+#gs-classroom .gs-cl-card:hover{box-shadow:0 13px 28px rgba(25,75,49,.1)!important}
+#gs-classroom .gs-cl-card h3{display:flex;align-items:center;gap:.55rem;color:#1d6245!important}
+#gs-classroom .gs-cl-row{border:1px solid #e4eee7;background:linear-gradient(120deg,#f4faf6,#fff)!important;border-radius:13px!important}
+#gs-classroom button{border-radius:12px;background:linear-gradient(135deg,#176b4b,#31966a);box-shadow:0 5px 14px rgba(23,107,75,.13)}
+#gs-classroom button.gs-cl-secondary{background:#e8f5ed!important;color:#1d6245!important;box-shadow:none}
+#gs-classroom input,#gs-classroom select,#gs-classroom textarea{border-radius:12px!important;border-color:#d6e5da!important}
+#gs-classroom :focus-visible,#student-space :focus-visible{outline-color:#e0ad3c!important}
+@media(max-width:700px){
+ .hero{min-height:340px;background-position:58% center;padding:3rem 0}
+ .hero h2{font-size:clamp(1.8rem,7vw,2.5rem)}
+ .feature-card{text-align:center}
+ .feature-icon{margin-inline:auto}
+ #student-space .dashboard-header{background-position:60% center!important}
+ #gs-classroom .gs-cl-head{padding:1rem}
+}
+@media(prefers-reduced-motion:reduce){
+ .feature-card,.content-card,#student-space .space-tab,#gs-classroom .gs-cl-card{transition:none!important}
+}
