@@ -175,7 +175,15 @@
           {n:lateAssignments.count||0,t:tr('واجبات تجاوزت آخر أجل','Devoirs après échéance'),d:tr('واجبات تجاوز تاريخ تسليمها','Devoirs dont la date limite est dépassée')},
           {n:latePlans.count||0,t:tr('خطط دعم تحتاج إلى مراجعة','Plans de soutien à revoir'),d:tr('خطط لم تكتمل وتجاوزت تاريخ المراجعة','Plans non terminés dont la date de révision est dépassée')}
         ];
-        alertHost.innerHTML=cards.map(x=>'<article class="gs-cl-row"><strong style="font-size:1.5rem">'+x.n+'</strong><p><strong>'+x.t+'</strong></p><small class="gs-cl-muted">'+x.d+'</small></article>').join('');
+        const priorities=[
+          {n:pendingQuestions.count||0,level:1,t:tr('أجب عن أسئلة التلاميذ أولاً','Répondre d’abord aux questions des élèves'),d:tr('توجد أسئلة تنتظر إجابتك.','Des questions attendent votre réponse.'),href:'#gs-cl-inbox',cta:tr('فتح صندوق الأسئلة','Ouvrir la boîte de réception')},
+          {n:latePlans.count||0,level:2,t:tr('راجع خطط الدعم المتأخرة','Réviser les plans de soutien en retard'),d:tr('تحقق من الخطط غير المكتملة وحدد الإجراء التالي.','Vérifiez les plans incomplets et définissez la prochaine action.'),href:'#gs-cl-classes',cta:tr('مراجعة الأقسام','Examiner les classes')},
+          {n:lateAssignments.count||0,level:3,t:tr('تابع الواجبات المتأخرة','Suivre les devoirs en retard'),d:tr('تحقق من التسليمات الناقصة في أقسامك.','Vérifiez les remises manquantes dans vos classes.'),href:'#gs-cl-classes',cta:tr('مراجعة الأقسام','Examiner les classes')}
+        ].filter(x=>x.n>0).sort((a,b)=>a.level-b.level);
+        alertHost.innerHTML=cards.map(x=>'<article class="gs-cl-row"><strong style="font-size:1.5rem">'+x.n+'</strong><p><strong>'+x.t+'</strong></p><small class="gs-cl-muted">'+x.d+'</small></article>').join('')+
+          '<section class="gs-cl-row" style="grid-column:1/-1"><h4>'+tr('أولوياتك اليوم','Vos priorités du jour')+'</h4>'+
+          (priorities.length?'<ol>'+priorities.map(x=>'<li style="margin:.5rem 0"><strong>'+x.t+'</strong> — '+x.n+'<p class="gs-cl-muted">'+x.d+'</p><a class="gs-cl-secondary" href="'+x.href+'">'+x.cta+'</a></li>').join('')+'</ol>':'<p class="gs-cl-muted">'+tr('لا توجد مهام عاجلة حسب المؤشرات الحالية. أحسنت!','Aucune tâche urgente selon les indicateurs actuels. Bravo !')+'</p>')+
+          '</section>';
       }
 
       const {data:questions,error:qerr}=await client.from('teacher_questions').select('id,class_id,student_id,subject,body,status,created_at').in('class_id',ids).order('created_at',{ascending:false}).limit(60);
