@@ -65,7 +65,13 @@
     const isFrench = document.documentElement.lang === 'fr';
     const t = isFrench ? labels.fr : labels.ar;
     const data = getData();
-    if (!data) return;
+    if (!data) {
+      // Never leave the previous account's learning summary visible after logout
+      // or while the authenticated profile is unavailable.
+      const staleCard = document.getElementById(ROOT_ID);
+      if (staleCard) staleCard.remove();
+      return;
+    }
 
     const lessons = Object.values((data.progress && data.progress.lessons) || {});
     const exercises = Object.values((data.progress && data.progress.exercises) || {});
@@ -83,7 +89,7 @@
     const completed = lessons.filter(function (item) { return item && item.completed; }).length;
     const percent = lessons.length ? Math.round(completed / lessons.length * 100) : 0;
     const attempts = Array.isArray(data.quizResults) ? data.quizResults : [];
-    const signature = JSON.stringify({ lang: isFrench ? 'fr' : 'ar', recent: recent ? [recent.path, recent.title, recent.lastViewed, recent.track, recent.level] : null, task: pendingTask ? [pendingTask.id, pendingTask.title, pendingTask.date, pendingTask.duration] : null, quiz: attempts.map(function (item) { return [item && item.quizId, item && item.date, item && Array.isArray(item.mistakes) ? item.mistakes.length : 0]; }), lessons: lessons.length, completed: completed, exercises: exercises.length });
+    const signature = JSON.stringify({ lang: isFrench ? 'fr' : 'ar', recent: recent ? [recent.path, recent.title, recent.lastViewed, recent.track, recent.level] : null, task: pendingTask ? [pendingTask.id, pendingTask.title, pendingTask.date, pendingTask.duration] : null, quiz: attempts.map(function (item) { return [item && item.quizId, item && item.date, item && item.percentage, item && Array.isArray(item.mistakes) ? item.mistakes.map(function (mistake) { return mistake && [mistake.question, mistake.date]; }) : []]; }), lessons: lessons.length, completed: completed, exercises: exercises.length });
     const card = document.createElement('section');
     card.id = ROOT_ID;
     card.className = 'gs-continue-card';
@@ -143,6 +149,8 @@
     schedule();
     window.addEventListener('storage', schedule);
     document.addEventListener('gosvt:favorites-updated', schedule);
+    // Refresh immediately when Supabase changes the active student or signs out.
+    document.addEventListener('gosvt:auth-changed', schedule);
     document.addEventListener('click', function (event) {
       if (event.target.closest && event.target.closest('.lang-switcher')) window.setTimeout(schedule, 120);
     });
