@@ -16,6 +16,7 @@
   };
   let mountedFor = null;
   let busy = false;
+  let lastClassReport = null;
 
   function styles() {
     if (document.getElementById('gs-classroom-style')) return;
@@ -63,6 +64,29 @@
     if(error) throw error;
     return data;
   }
+  function downloadClassReport(report) {
+    if (!report) return;
+    const rows = [
+      [tr('المؤشر','Indicateur'),tr('القيمة','Valeur')],
+      [tr('عدد التلاميذ','Nombre d’élèves'),report.studentCount],
+      [tr('مجموع الدروس المكتملة','Total des leçons terminées'),report.lessonTotal],
+      [tr('متوسط نتائج التلاميذ المسجلين (%)','Moyenne des résultats des élèves inscrits (%)'),report.quizAverage],
+      [tr('إجابات الواجبات الفريدة المستلمة','Soumissions de devoirs uniques reçues'),report.uniqueSubmissionCount],
+      [tr('إجمالي فرص التسليم','Nombre total de remises attendues'),report.expectedSubmissionCount],
+      [tr('معدل التسليم (%)','Taux de remise (%)'),report.submissionRate],
+      [tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis'),report.overdueMissingCount],
+      [tr('تاريخ التصدير','Date d’export'),new Date().toLocaleString(ar()?'ar-MA':'fr-FR')]
+    ];
+    const csv='\uFEFF'+rows.map(row=>row.map(value=>'"'+String(value==null?'':value).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='go-svt-rapport-classe-'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
   function notice(text, bad) {
     const el=document.querySelector('#gs-classroom .gs-cl-msg');
     if(el){el.textContent=text;el.style.color=bad?'#b42318':'#2b7135';}
@@ -255,12 +279,20 @@
         const classAverage=quizAverages.length?(quizAverages.reduce((a,b)=>a+b,0)/quizAverages.length).toFixed(1):'—';
         const submissionRate=students.length&&assignmentIds.length
           ? Math.min(100,Math.round((submittedPairs.size/(students.length*assignmentIds.length))*100)):null;
+        const overdueMissingCount=Array.from(overdueByStudent.values()).reduce((sum,value)=>sum+value,0);
+        lastClassReport=students.length?{
+          studentCount:students.length,lessonTotal,totalQuizAverage:classAverage,
+          quizAverage:classAverage,uniqueSubmissionCount:submittedPairs.size,
+          expectedSubmissionCount:students.length*assignmentIds.length,
+          submissionRate:submissionRate===null?'—':submissionRate,
+          overdueMissingCount
+        }:null;
         if(host)host.innerHTML=students.length
-          ? '<div class="gs-cl-grid" style="margin-bottom:1rem">'+
+          ? '<div class="gs-cl-head"><strong>'+tr('ملخص القسم','Résumé de la classe')+'</strong><button type="button" class="gs-cl-secondary" data-action="export-class-report">'+tr('تصدير تقرير CSV','Exporter le rapport CSV')+'</button></div><div class="gs-cl-grid" style="margin-bottom:1rem">'+
             '<div class="gs-cl-row"><strong>'+students.length+'</strong><p class="gs-cl-muted">'+tr('تلميذاً في القسم','élèves dans la classe')+'</p></div>'+
             '<div class="gs-cl-row"><strong>'+totalLessons+'</strong><p class="gs-cl-muted">'+tr('درساً مكتملاً','leçons terminées')+'</p></div>'+
-            '<div class="gs-cl-row"><strong>'+classAverage+(classAverage==='—'?'':'%')+'</strong><p class="gs-cl-muted">'+tr('متوسط نتائج الاختبارات','moyenne des quiz')+'</p></div>'+
-            '<div class="gs-cl-row"><strong>'+submissions.length+'</strong><p class="gs-cl-muted">'+tr('إجابة واجب مستلمة','réponses reçues')+'</p></div>'+
+            '<div class="gs-cl-row"><strong>'+classAverage+(classAverage==='—'?'':'%')+'</strong><p class="gs-cl-muted">'+tr('متوسط نتائج التلاميذ المسجلين','moyenne des élèves inscrits')+'</p></div>'+
+            '<div class="gs-cl-row"><strong>'+submittedPairs.size+'</strong><p class="gs-cl-muted">'+tr('إجابة واجب فريدة مستلمة','réponses uniques reçues')+'</p></div>'+
             '</div>'+
             (submissionRate===null?'':'<p class="gs-cl-muted">'+tr('معدل تسليم الواجبات','Taux de remise')+': '+submissionRate+'%</p>')+
             students.map(s=>{
@@ -321,6 +353,9 @@
         const feedback=feedbackField?feedbackField.value.trim():'';
         const {error}=await client.from('teacher_assignment_submissions').update({score,feedback,reviewed_at:new Date().toISOString()}).eq('id',id);if(error)throw error;
         notice(tr('تم حفظ التصحيح.','Correction enregistrée.'));await refreshPanel();
+      } else if(action==='export-class-report'){
+        if(!lastClassReport)throw new Error(tr('لا يوجد تقرير جاهز للتصدير.','Aucun rapport disponible à exporter.'));
+        downloadClassReport(lastClassReport);
       } else if(action==='thread'){
         await renderThread(id);
       } else if(action==='reply'){
