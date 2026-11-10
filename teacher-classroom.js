@@ -295,6 +295,9 @@
         const classId=document.getElementById('gs-cl-question-class').value;
         const subject=document.getElementById('gs-cl-question-title').value.trim();
         const body=document.getElementById('gs-cl-question-body').value.trim();
+        if(!classId)throw new Error(tr('انضم إلى قسم أولاً قبل إرسال السؤال.','Rejoignez d’abord une classe avant d’envoyer une question.'));
+        if(subject.length<3)throw new Error(tr('اكتب موضوعاً واضحاً من 3 أحرف على الأقل.','Saisissez un sujet d’au moins 3 caractères.'));
+        if(body.length<5)throw new Error(tr('اكتب تفاصيل السؤال في 5 أحرف على الأقل.','Décrivez votre question en au moins 5 caractères.'));
         const {error}=await client.from('teacher_questions').insert({class_id:classId,student_id:user.id,subject,body});
         if(error)throw error;
         notice(tr('تم إرسال سؤالك إلى الأستاذ.','Votre question a été envoyée.'));
@@ -303,6 +306,8 @@
         const name=document.getElementById('gs-cl-name').value.trim();
         const study_level=document.getElementById('gs-cl-level').value;
         const study_track=document.getElementById('gs-cl-track').value;
+        if(name.length<3)throw new Error(tr('اسم القسم يجب أن يتكون من 3 أحرف على الأقل.','Le nom de la classe doit contenir au moins 3 caractères.'));
+        if(!study_level||!study_track)throw new Error(tr('حدد المستوى والمسلك الدراسي.','Sélectionnez le niveau et la filière.'));
         const {error}=await client.from('teacher_classes').insert({teacher_id:user.id,name,study_level,study_track});
         if(error)throw error;
         await refreshPanel();
@@ -543,7 +548,10 @@
         if(title.length<2)throw new Error(tr('أدخل عنوان الحصة.','Saisissez le titre de la séance.'));
         const rawStart=document.getElementById('gs-cl-session-start').value;
         if(!rawStart)throw new Error(tr('حدد تاريخ الحصة ووقتها.','Veuillez choisir la date et l’heure.'));
-        const starts_at=new Date(rawStart).toISOString();
+        const startDate=new Date(rawStart);
+        if(!Number.isFinite(startDate.getTime()))throw new Error(tr('تاريخ الحصة غير صالح.','La date de la séance est invalide.'));
+        if(startDate.getTime()<Date.now()-60000)throw new Error(tr('اختر موعداً في المستقبل.','Choisissez une date future.'));
+        const starts_at=startDate.toISOString();
         const rawUrl=document.getElementById('gs-cl-session-url').value.trim();
         const meeting_url=rawUrl?safeHttpUrl(rawUrl):null;
         if(rawUrl&&!meeting_url)throw new Error(tr('الرابط يجب أن يبدأ بـ http أو https.','Le lien doit commencer par http ou https.'));
