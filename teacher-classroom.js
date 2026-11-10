@@ -229,7 +229,39 @@
       } else if(action==='roster'){
         const {data,error}=await client.rpc('gosvt_teacher_class_roster',{p_class_id:id});if(error)throw error;
         const host=document.getElementById('gs-cl-roster');
-        if(host)host.innerHTML=(data||[]).length?data.map(s=>`<article class="gs-cl-row"><strong>${esc(s.display_name)}</strong><p class="gs-cl-muted">${esc(s.study_level||'')} · ${esc(s.study_track||'')}</p><p>${tr('الدروس المكتملة','Leçons terminées')}: ${Number(s.completed_lessons)||0} · ${tr('محاولات الاختبار','Tentatives')}: ${Number(s.quiz_attempts)||0} · ${tr('المعدل','Moyenne')}: ${s.average_score==null?'—':esc(s.average_score)+'%'}</p></article>`).join(''):`<p class="gs-cl-muted">${tr('لا يوجد تلاميذ في هذا القسم بعد.','Aucun élève dans cette classe.')}</p>`;
+        const students=data||[];
+        const assignmentsResult=await client.from('teacher_assignments').select('id,title').eq('class_id',id);
+        if(assignmentsResult.error)throw assignmentsResult.error;
+        const assignmentIds=(assignmentsResult.data||[]).map(a=>a.id);
+        const submissionsResult=assignmentIds.length
+          ? await client.from('teacher_assignment_submissions').select('assignment_id,student_id,submitted_at,score').in('assignment_id',assignmentIds)
+          : {data:[],error:null};
+        if(submissionsResult.error)throw submissionsResult.error;
+        const submissions=submissionsResult.data||[];
+        const submittedByStudent=new Map();
+        submissions.forEach(x=>submittedByStudent.set(x.student_id,(submittedByStudent.get(x.student_id)||0)+1));
+        const totalLessons=students.reduce((n,s)=>n+(Number(s.completed_lessons)||0),0);
+        const quizAverages=students.filter(s=>s.average_score!=null).map(s=>Number(s.average_score));
+        const classAverage=quizAverages.length?(quizAverages.reduce((a,b)=>a+b,0)/quizAverages.length).toFixed(1):'—';
+        const submissionRate=students.length&&assignmentIds.length
+          ? Math.round((submissions.length/(students.length*assignmentIds.length))*100):null;
+        if(host)host.innerHTML=students.length
+          ? '<div class="gs-cl-grid" style="margin-bottom:1rem">'+
+            '<div class="gs-cl-row"><strong>'+students.length+'</strong><p class="gs-cl-muted">'+tr('تلميذاً في القسم','élèves dans la classe')+'</p></div>'+
+            '<div class="gs-cl-row"><strong>'+totalLessons+'</strong><p class="gs-cl-muted">'+tr('درساً مكتملاً','leçons terminées')+'</p></div>'+
+            '<div class="gs-cl-row"><strong>'+classAverage+(classAverage==='—'?'':'%')+'</strong><p class="gs-cl-muted">'+tr('متوسط نتائج الاختبارات','moyenne des quiz')+'</p></div>'+
+            '<div class="gs-cl-row"><strong>'+submissions.length+'</strong><p class="gs-cl-muted">'+tr('إجابة واجب مستلمة','réponses reçues')+'</p></div>'+
+            '</div>'+
+            (submissionRate===null?'':'<p class="gs-cl-muted">'+tr('معدل تسليم الواجبات','Taux de remise')+': '+submissionRate+'%</p>')+
+            students.map(s=>{
+              const submitted=submittedByStudent.get(s.student_id)||0;
+              const assignmentProgress=assignmentIds.length?Math.round(submitted/assignmentIds.length*100):null;
+              return '<article class="gs-cl-row"><strong>'+esc(s.display_name)+'</strong>'+
+                '<p class="gs-cl-muted">'+esc(s.study_level||'')+' · '+esc(s.study_track||'')+' · '+tr('تاريخ الانضمام','Inscrit le')+' '+(s.joined_at?esc(new Date(s.joined_at).toLocaleDateString()):'—')+'</p>'+
+                '<p>'+tr('الدروس المكتملة','Leçons terminées')+': <strong>'+(Number(s.completed_lessons)||0)+'</strong> · '+tr('محاولات الاختبار','Tentatives')+': <strong>'+(Number(s.quiz_attempts)||0)+'</strong> · '+tr('متوسط النتائج','Moyenne')+': <strong>'+(s.average_score==null?'—':esc(s.average_score)+'%')+'</strong></p>'+
+                '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p></article>';
+            }).join('')
+          : '<p class="gs-cl-muted">'+tr('لا يوجد تلاميذ في هذا القسم بعد.','Aucun élève dans cette classe.')+'</p>';
       } else if(action==='create-assignment'){
         const class_id=document.getElementById('gs-cl-assignment-class').value;
         const title=document.getElementById('gs-cl-assignment-title').value.trim();
