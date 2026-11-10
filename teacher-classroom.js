@@ -323,9 +323,25 @@
               return '<article class="gs-cl-row"><strong>'+esc(s.display_name)+'</strong>'+(needsFollowUp?'<p class="gs-cl-muted">'+tr('متابعة تربوية مقترحة','Suivi pédagogique suggéré')+'</p><ul>'+reasons.map(reason=>'<li>'+esc(reason)+'</li>').join('')+'</ul>':'')+
                 '<p class="gs-cl-muted">'+esc(s.study_level||'')+' · '+esc(s.study_track||'')+' · '+tr('تاريخ الانضمام','Inscrit le')+' '+(s.joined_at?esc(new Date(s.joined_at).toLocaleDateString(ar()?'ar-MA':'fr-FR')):'—')+'</p>'+
                 '<p>'+tr('الدروس المكتملة','Leçons terminées')+': <strong>'+(Number(s.completed_lessons)||0)+'</strong> · '+tr('محاولات الاختبار','Tentatives')+': <strong>'+(Number(s.quiz_attempts)||0)+'</strong> · '+tr('متوسط النتائج','Moyenne')+': <strong>'+(s.average_score==null?'—':esc(s.average_score)+'%')+'</strong></p>'+
-                '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+'</article>';
+                '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+'<button type="button" class="gs-cl-secondary" data-action="student-notes" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('ملاحظات الأستاذ الخاصة','Notes pédagogiques privées')+'</button><div id="gs-cl-notes-'+esc(s.student_id)+'"></div></article>';
             }).join('')
           : '<p class="gs-cl-muted">'+tr('لا يوجد تلاميذ في هذا القسم بعد.','Aucun élève dans cette classe.')+'</p>';
+      } else if(action==='student-notes'){
+        const classId=button.dataset.classId, studentId=id;
+        const notesHost=document.getElementById('gs-cl-notes-'+studentId);
+        if(!notesHost)throw new Error(tr('تعذر فتح سجل الملاحظات.','Impossible d’ouvrir les notes.'));
+        const {data:notes,error}=await client.from('teacher_student_notes').select('id,note,created_at').eq('class_id',classId).eq('student_id',studentId).order('created_at',{ascending:false}).limit(50);
+        if(error)throw error;
+        notesHost.innerHTML='<div class="gs-cl-card" style="margin-top:.7rem"><strong>'+tr('ملاحظات الأستاذ الخاصة بـ ','Notes privées pour ')+esc(button.dataset.name)+'</strong><div class="gs-cl-list">'+(notes||[]).map(n=>'<article class="gs-cl-row"><p>'+esc(n.note)+'</p><small class="gs-cl-muted">'+esc(new Date(n.created_at).toLocaleString(ar()?'ar-MA':'fr-FR'))+'</small></article>').join('')+(notes.length?'':'<p class="gs-cl-muted">'+tr('لا توجد ملاحظات مسجلة بعد.','Aucune note enregistrée.')+'</p>')+'</div><label>'+tr('إضافة ملاحظة تربوية','Ajouter une note pédagogique')+'</label><textarea data-note-for="'+esc(studentId)+'" maxlength="5000"></textarea><button type="button" data-action="save-student-note" data-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حفظ الملاحظة','Enregistrer la note')+'</button></div>';
+      } else if(action==='save-student-note'){
+        const field=document.querySelector('[data-note-for="'+CSS.escape(id)+'"]');
+        const note=field?field.value.trim():'';
+        if(!note)throw new Error(tr('اكتب الملاحظة قبل الحفظ.','Saisissez une note avant l’enregistrement.'));
+        const {error}=await client.from('teacher_student_notes').insert({class_id:button.dataset.classId,student_id:id,teacher_id:user.id,note});
+        if(error)throw error;
+        notice(tr('تم حفظ الملاحظة الخاصة.','Note privée enregistrée.'));
+        const notesHost=document.getElementById('gs-cl-notes-'+id);
+        if(notesHost)notesHost.innerHTML='<p class="gs-cl-msg">'+tr('حُفظت الملاحظة. اضغط على «ملاحظات الأستاذ الخاصة» لعرض السجل المحدث.','Note enregistrée. Cliquez sur « Notes pédagogiques privées » pour actualiser le registre.')+'</p>';
       } else if(action==='create-assignment'){
         const class_id=document.getElementById('gs-cl-assignment-class').value;
         const title=document.getElementById('gs-cl-assignment-title').value.trim();
