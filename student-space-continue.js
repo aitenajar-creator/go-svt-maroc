@@ -82,7 +82,8 @@
       ? '/' + recent.path.split('/').map(encodeURIComponent).join('/') : '';
     const completed = lessons.filter(function (item) { return item && item.completed; }).length;
     const percent = lessons.length ? Math.round(completed / lessons.length * 100) : 0;
-    const signature = JSON.stringify({ lang: isFrench ? 'fr' : 'ar', recent: recent ? [recent.path, recent.title, recent.lastViewed, recent.track, recent.level] : null, task: pendingTask ? [pendingTask.id, pendingTask.title, pendingTask.date, pendingTask.duration] : null, lessons: lessons.length, completed: completed, exercises: exercises.length });
+    const attempts = Array.isArray(data.quizResults) ? data.quizResults : [];
+    const signature = JSON.stringify({ lang: isFrench ? 'fr' : 'ar', recent: recent ? [recent.path, recent.title, recent.lastViewed, recent.track, recent.level] : null, task: pendingTask ? [pendingTask.id, pendingTask.title, pendingTask.date, pendingTask.duration] : null, quiz: attempts.map(function (item) { return [item && item.quizId, item && item.date, item && Array.isArray(item.mistakes) ? item.mistakes.length : 0]; }), lessons: lessons.length, completed: completed, exercises: exercises.length });
     const card = document.createElement('section');
     card.id = ROOT_ID;
     card.className = 'gs-continue-card';
@@ -94,9 +95,20 @@
         (safeLessonPath ? '<a class="gs-continue-action" href="' + escapeHtml(safeLessonPath) + '" target="_blank" rel="noopener noreferrer">' + t.resume + ' ↗</a>' : '') + '</div>'
       : '<div class="gs-continue-empty"><span>🌱</span><p>' + t.noRecent + '</p><a href="#cours">' + t.browse + ' ←</a></div>';
 
-    const nextBlock = pendingTask
-      ? '<div class="gs-continue-next"><span>🎯</span><div><small>' + t.next + '</small><strong>' + escapeHtml(pendingTask.title || t.plan) + '</strong><span>' + escapeHtml(pendingTask.date || '') + ' · ' + (pendingTask.duration || 30) + (isFrench ? ' min' : ' دقيقة') + '</span></div><a href="#student-space" data-open-planner="true">' + (isFrench ? 'Voir le planning' : 'عرض الخطة') + '</a></div>'
-      : '<div class="gs-continue-next"><span>🧪</span><div><small>' + t.next + '</small><strong>' + (isFrench ? 'Passez à un exercice pour consolider vos acquis' : 'انتقل إلى تمرين لترسيخ ما تعلمته') + '</strong></div><a href="#exercices">' + (isFrench ? 'Voir les exercices' : 'استكشف التمارين') + ' ←</a></div>';
+    // Keep this selection consistent with the analytics panel: only dated quiz
+    // attempts are eligible, and dates are numeric millisecond timestamps.
+    const latestWithMistakes = attempts.filter(function (item) {
+      return item && item.quizId && Number.isFinite(Number(item.date)) &&
+        Array.isArray(item.mistakes) && item.mistakes.length;
+    }).sort(function (a, b) { return Number(b.date) - Number(a.date); })[0];
+    const recommendation = latestWithMistakes
+      ? { icon: '🧠', title: isFrench ? 'Revoir les erreurs de votre dernier quiz' : 'راجع أخطاء آخر اختبار أنجزته', href: '#gs-performance-analytics', label: isFrench ? 'Voir mon analyse' : 'عرض تحليل أدائي' }
+      : pendingTask
+        ? { icon: '🎯', title: escapeHtml(pendingTask.title || t.plan), detail: escapeHtml(pendingTask.date || '') + ' · ' + (pendingTask.duration || 30) + (isFrench ? ' min' : ' دقيقة'), href: '#student-space', label: isFrench ? 'Voir le planning' : 'عرض الخطة', planner: true }
+        : recent
+          ? { icon: '📖', title: isFrench ? 'Continuez votre apprentissage' : 'واصل التعلم انطلاقاً من آخر درس', href: safeLessonPath || '#cours', label: isFrench ? 'Reprendre' : 'استكمال التعلم' }
+          : { icon: '🧪', title: isFrench ? 'Commencez par un exercice adapté à votre niveau' : 'ابدأ بتمرين مناسب لمستواك الدراسي', href: '#exercices', label: isFrench ? 'Voir les exercices' : 'استكشف التمارين' };
+    const nextBlock = '<div class="gs-continue-next"><span>' + recommendation.icon + '</span><div><small>' + t.next + '</small><strong>' + recommendation.title + '</strong>' + (recommendation.detail ? '<span>' + recommendation.detail + '</span>' : '') + '</div><a href="' + escapeHtml(recommendation.href) + '"' + (recommendation.planner ? ' data-open-planner="true"' : '') + '>' + recommendation.label + ' ←</a></div>';
 
     card.innerHTML =
       '<div class="gs-continue-heading"><div><span class="gs-continue-eyebrow">' + t.eyebrow + '</span><h3>' + t.title + '</h3></div><span class="gs-continue-mark">🧭</span></div>' +
