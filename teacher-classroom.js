@@ -357,8 +357,8 @@
         const {error}=await client.from('teacher_student_support_plans').insert({class_id:button.dataset.classId,student_id:id,teacher_id:user.id,title,actions,success_criteria,due_at,status});
         if(error)throw error;
         notice(tr('تم حفظ خطة الدعم الفردية.','Plan de soutien individuel enregistré.'));
-        const trigger=document.querySelector('[data-action="open-support-plan"][data-id="'+CSS.escape(id)+'"][data-class-id="'+CSS.escape(button.dataset.classId)+'"]');
-        if(trigger)await act(trigger);
+        const host=document.getElementById('gs-cl-support-'+id);
+        if(host)host.innerHTML='<p class="gs-cl-msg">'+tr('حُفظت الخطة. اضغط على «خطة الدعم الفردية» لعرض السجل المحدث.','Plan enregistré. Cliquez sur « Plan de soutien individuel » pour actualiser le registre.')+'</p>';
       } else if(action==='student-notes'){
         const classId=button.dataset.classId, studentId=id;
         const notesHost=document.getElementById('gs-cl-notes-'+studentId);
