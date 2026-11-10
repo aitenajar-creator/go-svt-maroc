@@ -82,6 +82,7 @@
       ? '/' + recent.path.split('/').map(encodeURIComponent).join('/') : '';
     const completed = lessons.filter(function (item) { return item && item.completed; }).length;
     const percent = lessons.length ? Math.round(completed / lessons.length * 100) : 0;
+    const attempts = Array.isArray(data.quizResults) ? data.quizResults : [];
     const signature = JSON.stringify({ lang: isFrench ? 'fr' : 'ar', recent: recent ? [recent.path, recent.title, recent.lastViewed, recent.track, recent.level] : null, task: pendingTask ? [pendingTask.id, pendingTask.title, pendingTask.date, pendingTask.duration] : null, quiz: attempts.map(function (item) { return [item && item.quizId, item && item.date, item && Array.isArray(item.mistakes) ? item.mistakes.length : 0]; }), lessons: lessons.length, completed: completed, exercises: exercises.length });
     const card = document.createElement('section');
     card.id = ROOT_ID;
@@ -94,7 +95,6 @@
         (safeLessonPath ? '<a class="gs-continue-action" href="' + escapeHtml(safeLessonPath) + '" target="_blank" rel="noopener noreferrer">' + t.resume + ' ↗</a>' : '') + '</div>'
       : '<div class="gs-continue-empty"><span>🌱</span><p>' + t.noRecent + '</p><a href="#cours">' + t.browse + ' ←</a></div>';
 
-    const attempts = Array.isArray(data.quizResults) ? data.quizResults : [];
     const latestWithMistakes = attempts.filter(function (item) {
       return item && item.quizId && Array.isArray(item.mistakes) && item.mistakes.length;
     }).sort(function (a, b) { return (Number(b.date) || 0) - (Number(a.date) || 0); })[0];
