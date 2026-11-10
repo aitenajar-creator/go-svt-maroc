@@ -14,7 +14,7 @@
       points: 'نقطة مئوية مقارنة بالمحاولات الخمس السابقة',
       focus: 'مجالات تستحق المراجعة', focusHint: 'اقتراحات مبنية على نتائجك والأخطاء المسجلة.',
       review: 'راجع أخطاء هذا الاختبار', noWeak: 'لا توجد حالياً أخطاء متكررة تستدعي اقتراح مراجعة محددة. واصل التدريب!',
-      quiz: 'اختبار', errors: 'أخطاء مسجلة', mean: 'متوسط النتائج',
+      quiz: 'اختبار', errors: 'أخطاء مسجلة', mean: 'متوسط النتائج', question: 'سؤال يحتاج إلى مراجعة',
       allGood: 'أداء جيد! حافظ على المراجعة المنتظمة.',
       goQuiz: 'استكشف الاختبارات', empty: 'ستظهر تحليلاتك بعد إنجاز أول اختبار.',
       date: 'المحاولة'
@@ -29,7 +29,7 @@
       points: 'points par rapport aux cinq tentatives précédentes',
       focus: 'Points à retravailler', focusHint: 'Suggestions fondées sur vos résultats et erreurs enregistrées.',
       review: 'Revoir les erreurs de ce quiz', noWeak: 'Aucune difficulté particulière détectée pour le moment. Continuez à vous entraîner !',
-      quiz: 'Quiz', errors: 'erreurs enregistrées', mean: 'Moyenne',
+      quiz: 'Quiz', errors: 'erreurs enregistrées', mean: 'Moyenne', question: 'Question à retravailler',
       allGood: 'Bon travail ! Gardez un rythme de révision régulier.',
       goQuiz: 'Découvrir les quiz', empty: 'Vos analyses apparaîtront après votre premier quiz.',
       date: 'Tentative'
@@ -94,30 +94,37 @@
   function buildFocus(data, attempts, t, fr) {
     const groups = new Map();
     attempts.forEach(a => {
-      const id = String(a.quizId || '');
-      if (!id) return;
-      if (!groups.has(id)) groups.set(id, { id, scores: [], errors: 0, lastDate: 0 });
-      const g = groups.get(id);
-      g.scores.push(a.percentage);
-      g.errors += Array.isArray(a.mistakes) ? a.mistakes.length : 0;
-      g.lastDate = Math.max(g.lastDate, a.date);
+      const quizId = String(a.quizId || '');
+      if (!quizId || !Array.isArray(a.mistakes)) return;
+      a.mistakes.forEach(m => {
+        const question = String(m && m.question || '').replace(/\s+/g, ' ').trim();
+        const key = quizId + '|' + (question.toLocaleLowerCase() || '__unknown__');
+        if (!groups.has(key)) groups.set(key, { quizId, question, errors: 0, lastDate: 0, scores: [] });
+        const group = groups.get(key);
+        group.errors += 1;
+        group.lastDate = Math.max(group.lastDate, Number(m && m.date) || a.date || 0);
+      });
     });
-    const weak = Array.from(groups.values())
-      .filter(g => g.errors > 0)
-      .map(g => ({ ...g, mean: average(g.scores) }))
-      .sort((a, b) => a.mean - b.mean || b.errors - a.errors)
+    groups.forEach(group => {
+      group.scores = attempts.filter(a => String(a.quizId || '') === group.quizId).map(a => a.percentage);
+      group.mean = average(group.scores);
+    });
+    const focus = Array.from(groups.values())
+      .sort((a, b) => b.errors - a.errors || a.mean - b.mean || b.lastDate - a.lastDate)
       .slice(0, 3);
-    if (!weak.length) {
+    if (!focus.length) {
       return '<div class="gs-pa-no-focus"><span>🌿</span><p>' + t.noWeak + '</p><a href="#quiz">' + t.goQuiz + ' ←</a></div>';
     }
-    return '<div class="gs-pa-focus-list">' + weak.map((g, i) =>
-      '<article class="gs-pa-focus-item"><div class="gs-pa-focus-rank">' + (i + 1) +
-      '</div><div class="gs-pa-focus-copy"><strong>' + t.quiz + ' ' + (i + 1) +
-      '</strong><span>' + t.mean + ': ' + g.mean + '% · ' + g.errors + ' ' + t.errors +
-      '</span></div><button type="button" class="gs-pa-review" data-review-quiz="' + esc(g.id) +
-      '">' + t.review + '</button></article>'
-    ).join('') + '</div>';
+    return '<div class="gs-pa-focus-list">' + focus.map((g, i) => {
+      const preview = g.question ? (g.question.length > 150 ? g.question.slice(0, 147) + '…' : g.question) : t.question;
+      return '<article class="gs-pa-focus-item"><div class="gs-pa-focus-rank">' + (i + 1) +
+        '</div><div class="gs-pa-focus-copy"><strong>' + esc(preview) +
+        '</strong><span>' + t.mean + ': ' + g.mean + '% · ' + g.errors + ' ' + t.errors +
+        '</span></div><button type="button" class="gs-pa-review" data-review-quiz="' + esc(g.quizId) +
+        '">' + t.review + '</button></article>';
+    }).join('') + '</div>';
   }
+
   function render() {
     const dashboard = document.getElementById('panel-dashboard');
     if (!dashboard || !dashboard.classList.contains('active')) return;
