@@ -403,6 +403,8 @@
             }).join('')
           : '<p class="gs-cl-muted">'+tr('لا يوجد تلاميذ في هذا القسم بعد.','Aucun élève dans cette classe.')+'</p>';
         notice(students.length?tr('تم تحميل قائمة التلاميذ بنجاح: '+students.length,'Liste des élèves chargée : '+students.length):tr('تم تحميل القسم، ولا يوجد تلاميذ منضمون إليه بعد.','Classe chargée : aucun élève n’y est encore inscrit.'));
+        const rosterSearchStatus=document.getElementById('gs-cl-roster-search-status');
+        if(rosterSearchStatus)rosterSearchStatus.textContent=tr('جميع التلاميذ معروضون: '+students.length,'Tous les élèves sont affichés : '+students.length);
       } else if(action==='student-report'){
         const classId=button.dataset.classId,studentId=id;
         const host=document.getElementById('gs-cl-report-'+studentId);
@@ -623,7 +625,9 @@
       if(match)visible++;
     });
     const status=document.getElementById('gs-cl-roster-search-status');
-    if(status)status.textContent=tr('النتائج المعروضة: '+visible+' من '+cards.length,'Résultats affichés : '+visible+' sur '+cards.length);
+    if(status)status.textContent=term&&visible===0
+      ?tr('لا توجد نتائج مطابقة لبحثك. جرّب اسماً أو مسلكاً آخر.','Aucun résultat correspondant. Essayez un autre nom ou une autre filière.')
+      :tr('النتائج المعروضة: '+visible+' من '+cards.length,'Résultats affichés : '+visible+' sur '+cards.length);
   });
   document.addEventListener('click',e=>{
     const button=e.target.closest&&e.target.closest('#gs-classroom [data-action]');
