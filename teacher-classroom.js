@@ -9,6 +9,13 @@
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const ar = () => (typeof currentLang !== 'undefined' ? currentLang === 'ar' : document.documentElement.dir === 'rtl');
   const tr = (a, f) => ar() ? a : f;
+  const noteTypeLabel = type => ({
+    understanding:tr('صعوبات الفهم','Difficultés de compréhension'),
+    results:tr('ضعف النتائج','Résultats insuffisants'),
+    attendance:tr('المواظبة والمشاركة','Assiduité et participation'),
+    progress:tr('تقدم دراسي','Progrès scolaires'),
+    other:tr('ملاحظة عامة','Note générale')
+  }[type] || tr('ملاحظة عامة','Note générale'));
   const tracks = {
     TC: [['TCS','الجذع المشترك العلمي'],['TCL','الجذع المشترك الأدبي']],
     '1BAC': [['1BACSE','العلوم التجريبية'],['1BACSM','العلوم الرياضية'],['1BACL','الآداب']],
@@ -335,26 +342,30 @@
         const classId=button.dataset.classId, studentId=id;
         const notesHost=document.getElementById('gs-cl-notes-'+studentId);
         if(!notesHost)throw new Error(tr('تعذر فتح سجل الملاحظات.','Impossible d’ouvrir les notes.'));
-        const {data:notes,error}=await client.from('teacher_student_notes').select('id,note,created_at,teacher_id').eq('class_id',classId).eq('student_id',studentId).order('created_at',{ascending:false}).limit(50);
+        const {data:notes,error}=await client.from('teacher_student_notes').select('id,note,note_type,created_at,teacher_id').eq('class_id',classId).eq('student_id',studentId).order('created_at',{ascending:false}).limit(50);
         if(error)throw error;
-        notesHost.innerHTML='<div class="gs-cl-card" style="margin-top:.7rem"><strong>'+tr('ملاحظات الأستاذ الخاصة بـ ','Notes privées pour ')+esc(button.dataset.name)+'</strong><div class="gs-cl-list">'+(notes||[]).map(n=>{const canManage=profileForNotePermission(n,user);return '<article class="gs-cl-row" data-note-card="'+esc(n.id)+'"><p data-note-text="'+esc(n.id)+'">'+esc(n.note)+'</p><small class="gs-cl-muted">'+esc(new Date(n.created_at).toLocaleString(ar()?'ar-MA':'fr-FR'))+'</small>'+(canManage?'<div class="gs-cl-head" style="margin-top:.5rem"><button type="button" class="gs-cl-secondary" data-action="edit-student-note" data-id="'+esc(n.id)+'" data-student-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('تعديل','Modifier')+'</button><button type="button" class="gs-cl-secondary" data-action="delete-student-note" data-id="'+esc(n.id)+'" data-student-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حذف','Supprimer')+'</button></div>':'')+'</article>';}).join('')+(notes.length?'':'<p class="gs-cl-muted">'+tr('لا توجد ملاحظات مسجلة بعد.','Aucune note enregistrée.')+'</p>')+'</div><label>'+tr('إضافة ملاحظة تربوية','Ajouter une note pédagogique')+'</label><textarea data-note-for="'+esc(studentId)+'" maxlength="5000"></textarea><button type="button" data-action="save-student-note" data-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حفظ الملاحظة','Enregistrer la note')+'</button></div>';
+        notesHost.innerHTML='<div class="gs-cl-card" style="margin-top:.7rem"><strong>'+tr('ملاحظات الأستاذ الخاصة بـ ','Notes privées pour ')+esc(button.dataset.name)+'</strong><div class="gs-cl-list">'+(notes||[]).map(n=>{const canManage=profileForNotePermission(n,user);return '<article class="gs-cl-row" data-note-card="'+esc(n.id)+'" data-note-type="'+esc(n.note_type||'other')+'"><span class="gs-cl-pill">'+esc(noteTypeLabel(n.note_type))+'</span><p data-note-text="'+esc(n.id)+'">'+esc(n.note)+'</p><small class="gs-cl-muted">'+esc(new Date(n.created_at).toLocaleString(ar()?'ar-MA':'fr-FR'))+'</small>'+(canManage?'<div class="gs-cl-head" style="margin-top:.5rem"><button type="button" class="gs-cl-secondary" data-action="edit-student-note" data-id="'+esc(n.id)+'" data-student-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('تعديل','Modifier')+'</button><button type="button" class="gs-cl-secondary" data-action="delete-student-note" data-id="'+esc(n.id)+'" data-student-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حذف','Supprimer')+'</button></div>':'')+'</article>';}).join('')+(notes.length?'':'<p class="gs-cl-muted">'+tr('لا توجد ملاحظات مسجلة بعد.','Aucune note enregistrée.')+'</p>')+'</div><label>'+tr('تصنيف الملاحظة','Catégorie de la note')+'</label><select data-note-type-for="'+esc(studentId)+'"><option value="understanding">'+tr('صعوبات الفهم','Difficultés de compréhension')+'</option><option value="results">'+tr('ضعف النتائج','Résultats insuffisants')+'</option><option value="attendance">'+tr('المواظبة والمشاركة','Assiduité et participation')+'</option><option value="progress">'+tr('تقدم دراسي','Progrès scolaires')+'</option><option value="other">'+tr('ملاحظة عامة','Note générale')+'</option></select><label>'+tr('إضافة ملاحظة تربوية','Ajouter une note pédagogique')+'</label><textarea data-note-for="'+esc(studentId)+'" maxlength="5000"></textarea><button type="button" data-action="save-student-note" data-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حفظ الملاحظة','Enregistrer la note')+'</button></div>';
       } else if(action==='edit-student-note'){
         const card=button.closest('[data-note-card]');
         const text=card&&card.querySelector('[data-note-text]');
         if(!card||!text)throw new Error(tr('تعذر فتح الملاحظة للتعديل.','Impossible de modifier cette note.'));
-        card.insertAdjacentHTML('beforeend','<label>'+tr('تعديل الملاحظة','Modifier la note')+'</label><textarea data-edit-note="'+esc(id)+'" maxlength="5000">'+esc(text.textContent)+'</textarea><button type="button" data-action="update-student-note" data-id="'+esc(id)+'" data-student-id="'+esc(button.dataset.studentId)+'" data-class-id="'+esc(button.dataset.classId)+'">'+tr('حفظ التعديل','Enregistrer les modifications')+'</button>');
+        card.insertAdjacentHTML('beforeend','<label>'+tr('تصنيف الملاحظة','Catégorie de la note')+'</label><select data-edit-note-type="'+esc(id)+'"><option value="understanding">'+tr('صعوبات الفهم','Difficultés de compréhension')+'</option><option value="results">'+tr('ضعف النتائج','Résultats insuffisants')+'</option><option value="attendance">'+tr('المواظبة والمشاركة','Assiduité et participation')+'</option><option value="progress">'+tr('تقدم دراسي','Progrès scolaires')+'</option><option value="other">'+tr('ملاحظة عامة','Note générale')+'</option></select><label>'+tr('تعديل الملاحظة','Modifier la note')+'</label><textarea data-edit-note="'+esc(id)+'" maxlength="5000">'+esc(text.textContent)+'</textarea><button type="button" data-action="update-student-note" data-id="'+esc(id)+'" data-student-id="'+esc(button.dataset.studentId)+'" data-class-id="'+esc(button.dataset.classId)+'">'+tr('حفظ التعديل','Enregistrer les modifications')+'</button>');
+        const typeSelect=card.querySelector('[data-edit-note-type="'+CSS.escape(id)+'"]');
+        if(typeSelect)typeSelect.value=card.dataset.noteType||'other';
         button.disabled=true;
       } else if(action==='update-student-note'){
         const field=document.querySelector('[data-edit-note="'+CSS.escape(id)+'"]');
+        const typeField=document.querySelector('[data-edit-note-type="'+CSS.escape(id)+'"]');
         const note=field?field.value.trim():'';
+        const note_type=typeField?typeField.value:'other';
         if(!note)throw new Error(tr('لا يمكن حفظ ملاحظة فارغة.','La note ne peut pas être vide.'));
-        const {error}=await client.from('teacher_student_notes').update({note,updated_at:new Date().toISOString()}).eq('id',id);
+        const {error}=await client.from('teacher_student_notes').update({note,note_type,updated_at:new Date().toISOString()}).eq('id',id);
         if(error)throw error;
         notice(tr('تم تحديث الملاحظة.','Note mise à jour.'));
         const card=button.closest('[data-note-card]');
         const text=card&&card.querySelector('[data-note-text]');
         if(text)text.textContent=note;
-        if(card)card.querySelectorAll('label,textarea[data-edit-note],button[data-action="update-student-note"]').forEach(el=>el.remove());
+        if(card){const typeBadge=card.querySelector('.gs-cl-pill');if(typeBadge)typeBadge.textContent=noteTypeLabel(note_type);if(card)card.dataset.noteType=note_type;card.querySelectorAll('label,textarea[data-edit-note],select[data-edit-note-type],button[data-action="update-student-note"]').forEach(el=>el.remove());}
       } else if(action==='delete-student-note'){
         if(!window.confirm(tr('هل تريد حذف هذه الملاحظة نهائياً؟','Supprimer définitivement cette note ?')))return;
         const {error}=await client.from('teacher_student_notes').delete().eq('id',id);
@@ -365,8 +376,10 @@
       } else if(action==='save-student-note'){
         const field=document.querySelector('[data-note-for="'+CSS.escape(id)+'"]');
         const note=field?field.value.trim():'';
+        const typeField=document.querySelector('[data-note-type-for="'+CSS.escape(id)+'"]');
+        const note_type=typeField?typeField.value:'other';
         if(!note)throw new Error(tr('اكتب الملاحظة قبل الحفظ.','Saisissez une note avant l’enregistrement.'));
-        const {error}=await client.from('teacher_student_notes').insert({class_id:button.dataset.classId,student_id:id,teacher_id:user.id,note});
+        const {error}=await client.from('teacher_student_notes').insert({class_id:button.dataset.classId,student_id:id,teacher_id:user.id,note,note_type});
         if(error)throw error;
         notice(tr('تم حفظ الملاحظة الخاصة.','Note privée enregistrée.'));
         const notesHost=document.getElementById('gs-cl-notes-'+id);
