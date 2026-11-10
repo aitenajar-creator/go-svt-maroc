@@ -214,7 +214,15 @@
           if(!latestActivity.has(message.question_id))latestActivity.set(message.question_id,message.created_at);
         });
       }
-      const orderedQuestions=[...(questions||[])].sort((a,b)=>new Date(latestActivity.get(b.id)||b.created_at)-new Date(latestActivity.get(a.id)||a.created_at));
+      const activeTeacher=await currentUser();
+      let pinsReady=true;
+      const {data:pins,error:pinsError}=await client.from('teacher_question_pins').select('question_id').eq('teacher_id',activeTeacher.id);
+      if(pinsError)pinsReady=false;
+      const pinnedIds=new Set((pins||[]).map(pin=>pin.question_id));
+      const orderedQuestions=[...(questions||[])].sort((a,b)=>{
+        const pinOrder=Number(pinnedIds.has(b.id))-Number(pinnedIds.has(a.id));
+        return pinOrder||new Date(latestActivity.get(b.id)||b.created_at)-new Date(latestActivity.get(a.id)||a.created_at);
+      });
       const inbox=document.getElementById('gs-cl-inbox');
       if(inbox){
         const openCount=(questions||[]).filter(q=>q.status!=='answered').length;
@@ -663,6 +671,17 @@
         const filter=button.dataset.filter;
         if(!['open','answered','all'].includes(filter))throw new Error(tr('عامل التصفية غير صالح.','Filtre invalide.'));
         inboxFilter=filter;
+        await refreshPanel();
+      } else if(action==='toggle-pin'){
+        const existing=await client.from('teacher_question_pins').select('question_id').eq('teacher_id',user.id).eq('question_id',id).maybeSingle();
+        if(existing.error)throw existing.error;
+        if(existing.data){
+          const {error}=await client.from('teacher_question_pins').delete().eq('teacher_id',user.id).eq('question_id',id);
+          if(error)throw error;
+        }else{
+          const {error}=await client.from('teacher_question_pins').insert({teacher_id:user.id,question_id:id});
+          if(error)throw error;
+        }
         await refreshPanel();
       } else if(action==='thread'){
         await renderThread(id);
