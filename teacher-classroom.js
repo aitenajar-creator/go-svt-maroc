@@ -53,7 +53,21 @@
       #gs-classroom .gs-cl-thread{max-height:360px;overflow:auto;display:grid;gap:.5rem;margin:.7rem 0}
       #gs-classroom .gs-cl-bubble{padding:.7rem;border-radius:12px;background:rgba(120,160,120,.13);overflow-wrap:anywhere}
       #gs-classroom .gs-cl-bubble small{display:block;opacity:.7;margin-bottom:.25rem}
-      @media(max-width:520px){#gs-classroom .gs-cl-head{align-items:flex-start}#gs-classroom button{width:100%}}
+      #gs-classroom :focus-visible{outline:3px solid #2c8b55;outline-offset:3px}
+      #gs-classroom a{overflow-wrap:anywhere}
+      #gs-classroom .gs-cl-row, #gs-classroom .gs-cl-card{min-width:0}
+      #gs-classroom details>summary{cursor:pointer;font-weight:700;padding:.45rem 0}
+      #gs-classroom button{max-width:100%;white-space:normal;line-height:1.45}
+      @media(max-width:520px){
+        #gs-classroom{margin:1rem 0;padding:.8rem;border-radius:14px}
+        #gs-classroom .gs-cl-head{align-items:stretch;gap:.65rem}
+        #gs-classroom .gs-cl-head>div{min-width:0}
+        #gs-classroom .gs-cl-card{padding:.8rem}
+        #gs-classroom button{width:100%;min-height:44px}
+        #gs-classroom .gs-cl-grid{grid-template-columns:minmax(0,1fr)}
+        #gs-classroom .gs-cl-tag{align-self:flex-start}
+      }
+      @media(prefers-reduced-motion:reduce){#gs-classroom *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
     `;
     document.head.appendChild(style);
   }
