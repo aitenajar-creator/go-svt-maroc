@@ -379,6 +379,24 @@
           '<div class="gs-cl-list">'+scoreBands.map(b=>'<div class="gs-cl-row"><div class="gs-cl-head" style="margin:0"><strong>'+esc(b.label)+'</strong><strong>'+b.count+'</strong></div><div role="img" aria-label="'+esc(b.label)+' : '+b.count+'" style="height:9px;background:var(--gs-cl-border,#ddd);border-radius:8px;overflow:hidden;margin-top:.4rem"><span style="display:block;width:'+(quizAverages.length?Math.round(b.count/quizAverages.length*100):0)+'%;height:100%;background:var(--gs-cl-accent,#27866b)"></span></div></div>').join('')+
           (unassessedCount?'<p class="gs-cl-muted">'+unassessedCount+' '+tr('تلاميذ دون نتائج اختبار مسجلة بعد','élèves sans résultat de quiz enregistré')+'</p>':'')+
           '</div><small class="gs-cl-muted">'+tr('هذه مؤشرات مجمعة للقسم وليست ترتيباً للتلاميذ. وتُعرض التفاصيل الفردية في التقرير التربوي المخصص للأستاذ.','Ces indicateurs sont agrégés et ne constituent pas un classement. Les détails individuels restent dans le rapport pédagogique réservé à l’enseignant.')+'</small></section>';
+        const submissionActivityDays=Array.from({length:7},(_,i)=>{
+          const date=new Date();date.setHours(0,0,0,0);date.setDate(date.getDate()-(6-i));
+          const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+          return {key,date,count:0};
+        });
+        const activityByDate=new Map(submissionActivityDays.map(day=>[day.key,day]));
+        submissionByPair.forEach(submission=>{
+          if(!submission.submitted_at)return;
+          const date=new Date(submission.submitted_at);
+          if(Number.isNaN(date.getTime()))return;
+          const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+          const day=activityByDate.get(key);if(day)day.count++;
+        });
+        const maxDailySubmissions=Math.max(1,...submissionActivityDays.map(day=>day.count));
+        const submissionActivityHtml='<section class="gs-cl-card" style="margin:0 0 1rem"><h4>'+tr('📅 نشاط تسليم الواجبات خلال آخر 7 أيام','📅 Activité des remises durant les 7 derniers jours')+'</h4>'+
+          (assignmentIds.length?'<p class="gs-cl-muted">'+tr('عدد عمليات التسليم الفريدة المسجلة يومياً في هذا القسم.','Nombre de remises uniques enregistrées chaque jour dans cette classe.')+'</p><div class="gs-cl-list">'+
+          submissionActivityDays.map(day=>'<div class="gs-cl-row"><div class="gs-cl-head" style="margin:0"><span>'+esc(day.date.toLocaleDateString(ar()?'ar-MA':'fr-FR',{weekday:'short',day:'numeric',month:'short'}))+'</span><strong>'+day.count+'</strong></div><div role="img" aria-label="'+day.count+'" style="height:9px;background:var(--gs-cl-border,#ddd);border-radius:8px;overflow:hidden;margin-top:.35rem"><span style="display:block;width:'+Math.round(day.count/maxDailySubmissions*100)+'%;height:100%;background:var(--gs-cl-accent,#27866b)"></span></div></div>').join('')+
+          '</div><small class="gs-cl-muted">'+tr('يعرض هذا الرسم التسليمات المسجلة فقط، ولا يستنتج سبب التأخر أو عدم التسليم.','Ce graphique présente uniquement les remises enregistrées et ne déduit pas les raisons des retards ou des absences de remise.')+'</small>': '<p class="gs-cl-muted">'+tr('لا توجد واجبات منشأة لهذا القسم بعد.','Aucun devoir n’a encore été créé pour cette classe.')+'</p>')+'</section>';
         const submissionRate=students.length&&assignmentIds.length
           ? Math.min(100,Math.round((submittedPairs.size/(students.length*assignmentIds.length))*100)):null;
         const overdueMissingCount=Array.from(overdueByStudent.values()).reduce((sum,value)=>sum+value,0);
@@ -402,6 +420,7 @@
             '<div class="gs-cl-row"><strong>'+followUpCount+'</strong><p class="gs-cl-muted">'+tr('تلاميذ مقترح تتبعهم','élèves à suivre')+'</p></div>'+
             '</div>'+
             classAnalyticsHtml+
+            submissionActivityHtml+
             (submissionRate===null?'':'<p class="gs-cl-muted">'+tr('معدل تسليم الواجبات','Taux de remise')+': '+submissionRate+'%</p>')+
             '<label for="gs-cl-roster-search">'+tr('البحث عن تلميذ بالاسم أو المسلك','Rechercher un élève par nom ou filière')+'</label><input id="gs-cl-roster-search" type="search" autocomplete="off" placeholder="'+tr('اكتب اسم التلميذ أو المستوى أو المسلك...','Saisissez un nom, un niveau ou une filière...')+'"><div class="gs-cl-head" style="justify-content:flex-start;margin:.5rem 0" role="group" aria-label="'+tr('تصفية التلاميذ','Filtrer les élèves')+'"><button type="button" class="gs-cl-secondary" data-roster-filter="all" aria-pressed="true">'+tr('جميع التلاميذ','Tous les élèves')+'</button><button type="button" class="gs-cl-secondary" data-roster-filter="followup" aria-pressed="false">'+tr('يحتاجون إلى متابعة','À suivre')+'</button></div><label for="gs-cl-roster-sort">'+tr('ترتيب القائمة','Trier la liste')+'</label><select id="gs-cl-roster-sort"><option value="default">'+tr('الترتيب الأصلي','Ordre initial')+'</option><option value="followup">'+tr('الأكثر حاجة إلى المتابعة','Priorité au suivi')+'</option><option value="score">'+tr('أقل متوسط نتائج أولاً','Résultats les plus faibles d’abord')+'</option><option value="name">'+tr('الاسم أبجدياً','Nom par ordre alphabétique')+'</option></select><p id="gs-cl-roster-search-status" class="gs-cl-muted" role="status" aria-live="polite"></p>'+
             students.map(s=>{
