@@ -312,6 +312,7 @@
         if(error)throw error;
         await refreshPanel();
       } else if(action==='roster'){
+        notice(tr('جارٍ تحميل قائمة التلاميذ ومؤشرات القسم...','Chargement de la liste des élèves et des indicateurs...'));
         const {data,error}=await client.rpc('gosvt_teacher_class_roster',{p_class_id:id});if(error)throw error;
         const host=document.getElementById('gs-cl-roster');
         const students=data||[];
@@ -401,6 +402,7 @@
                 '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+'<div class="gs-cl-head"><button type="button" class="gs-cl-secondary" data-action="student-notes" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('ملاحظات الأستاذ الخاصة','Notes pédagogiques privées')+'</button><button type="button" class="gs-cl-secondary" data-action="open-support-plan" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('خطة الدعم الفردية','Plan de soutien individuel')+'</button><button type="button" class="gs-cl-secondary" data-action="student-report" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('التقرير التربوي','Rapport pédagogique')+'</button></div><div id="gs-cl-notes-'+esc(s.student_id)+'"></div><div id="gs-cl-support-'+esc(s.student_id)+'"></div><div id="gs-cl-report-'+esc(s.student_id)+'"></div></article>';
             }).join('')
           : '<p class="gs-cl-muted">'+tr('لا يوجد تلاميذ في هذا القسم بعد.','Aucun élève dans cette classe.')+'</p>';
+        notice(students.length?tr('تم تحميل قائمة التلاميذ بنجاح: '+students.length,'Liste des élèves chargée : '+students.length):tr('تم تحميل القسم، ولا يوجد تلاميذ منضمون إليه بعد.','Classe chargée : aucun élève n’y est encore inscrit.'));
       } else if(action==='student-report'){
         const classId=button.dataset.classId,studentId=id;
         const host=document.getElementById('gs-cl-report-'+studentId);
