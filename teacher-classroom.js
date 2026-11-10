@@ -150,6 +150,7 @@
         <div class="gs-cl-card"><h3>${tr('إنشاء قسم جديد','Créer une classe')}</h3><label for="gs-cl-name">${tr('اسم القسم','Nom de la classe')}</label><input id="gs-cl-name" maxlength="120" placeholder="${tr('مثلاً: الثانية باكالوريا SVT','Ex. : 2e Bac SVT')}"><label for="gs-cl-level">${tr('المستوى','Niveau')}</label><select id="gs-cl-level"><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option></select><label for="gs-cl-track">${tr('المسلك','Filière')}</label><select id="gs-cl-track"></select><button type="button" data-action="create-class">${tr('إنشاء القسم','Créer la classe')}</button></div>
         <div class="gs-cl-card"><h3>${tr('أقسامك ورموز الانضمام','Classes et codes d’accès')}</h3><div class="gs-cl-list" id="gs-cl-classes">${classes.length?classes.map(c=>`<article class="gs-cl-row"><strong>${esc(c.name)}</strong><p class="gs-cl-muted">${esc(c.study_level)} · ${esc(c.study_track)}</p><p><strong>${tr('رمز الانضمام','Code')}: ${esc(c.join_code)}</strong></p><button type="button" class="gs-cl-secondary" data-action="roster" data-id="${esc(c.id)}">${tr('عرض التلاميذ','Voir les élèves')}</button></article>`).join(''):`<p class="gs-cl-muted">${tr('لا توجد أقسام بعد.','Aucune classe pour le moment.')}</p>`}</div></div>
       </div>
+      <div class="gs-cl-card" style="margin-top:1rem"><h3>🔔 ${tr('تنبيهات المتابعة','Alertes de suivi')}</h3><div id="gs-cl-alerts" class="gs-cl-grid"><p class="gs-cl-muted">${tr('جارٍ إعداد التنبيهات...','Préparation des alertes...')}</p></div></div>
       <div class="gs-cl-card" style="margin-top:1rem"><h3>${tr('📨 أسئلة التلاميذ','📨 Questions des élèves')}</h3><div id="gs-cl-inbox" class="gs-cl-list"><p class="gs-cl-muted">${tr('جارٍ التحميل...','Chargement...')}</p></div></div>
       <div class="gs-cl-card" style="margin-top:1rem"><h3>${tr('👥 ملف القسم','👥 Tableau de classe')}</h3><div id="gs-cl-roster"><p class="gs-cl-muted">${tr('اختر قسماً لعرض التلاميذ والمؤشرات الدراسية.','Choisissez une classe pour afficher les élèves et les indicateurs.')}</p></div></div>
       <p class="gs-cl-msg" role="status" aria-live="polite"></p>`;
@@ -158,6 +159,25 @@
     level.addEventListener('change',fillTracks);fillTracks();
     const ids=(classes||[]).map(c=>c.id);
     if(ids.length){
+      const alertHost=document.getElementById('gs-cl-alerts');
+      const today=new Date().toISOString();
+      const [pendingQuestions,lateAssignments,latePlans]=await Promise.all([
+        client.from('teacher_questions').select('id',{count:'exact',head:true}).in('class_id',ids).neq('status','answered'),
+        client.from('teacher_assignments').select('id',{count:'exact',head:true}).in('class_id',ids).not('due_at','is',null).lt('due_at',today),
+        client.from('teacher_student_support_plans').select('id',{count:'exact',head:true}).in('class_id',ids).not('due_at','is',null).lt('due_at',today).neq('status','completed')
+      ]);
+      if(pendingQuestions.error)throw pendingQuestions.error;
+      if(lateAssignments.error)throw lateAssignments.error;
+      if(latePlans.error)throw latePlans.error;
+      if(alertHost){
+        const cards=[
+          {n:pendingQuestions.count||0,t:tr('أسئلة تنتظر جوابك','Questions en attente'),d:tr('أسئلة التلاميذ التي لم تتم الإجابة عنها','Questions des élèves sans réponse')},
+          {n:lateAssignments.count||0,t:tr('واجبات تجاوزت آخر أجل','Devoirs après échéance'),d:tr('واجبات تجاوز تاريخ تسليمها','Devoirs dont la date limite est dépassée')},
+          {n:latePlans.count||0,t:tr('خطط دعم تحتاج إلى مراجعة','Plans de soutien à revoir'),d:tr('خطط لم تكتمل وتجاوزت تاريخ المراجعة','Plans non terminés dont la date de révision est dépassée')}
+        ];
+        alertHost.innerHTML=cards.map(x=>'<article class="gs-cl-row"><strong style="font-size:1.5rem">'+x.n+'</strong><p><strong>'+x.t+'</strong></p><small class="gs-cl-muted">'+x.d+'</small></article>').join('');
+      }
+
       const {data:questions,error:qerr}=await client.from('teacher_questions').select('id,class_id,student_id,subject,body,status,created_at').in('class_id',ids).order('created_at',{ascending:false}).limit(60);
       if(qerr)throw qerr;
       const inbox=document.getElementById('gs-cl-inbox');
