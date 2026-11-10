@@ -235,6 +235,11 @@
     host.innerHTML=`<div class="gs-cl-thread">${(messages||[]).map(m=>`<div class="gs-cl-bubble"><small>${m.sender_id===user.id?tr('أنت','Vous'):tr('الطرف الآخر','Votre correspondant')} · ${new Date(m.created_at).toLocaleString()}</small>${esc(m.body)}</div>`).join('')}</div><label>${tr('اكتب رداً','Écrire une réponse')}</label><textarea data-reply-for="${esc(id)}" maxlength="8000"></textarea><button type="button" data-action="reply" data-id="${esc(id)}">${tr('إرسال الرد','Envoyer la réponse')}</button>`;
   }
 
+  function profileForNotePermission(note,user){
+    const profile=window.StudentAccount&&window.StudentAccount.getProfile?window.StudentAccount.getProfile():null;
+    return !!(profile&&(profile.role==='admin'||note.teacher_id===user.id));
+  }
+
   async function act(button) {
     if(busy)return;
     const action=button.dataset.action, id=button.dataset.id;
@@ -330,9 +335,31 @@
         const classId=button.dataset.classId, studentId=id;
         const notesHost=document.getElementById('gs-cl-notes-'+studentId);
         if(!notesHost)throw new Error(tr('تعذر فتح سجل الملاحظات.','Impossible d’ouvrir les notes.'));
-        const {data:notes,error}=await client.from('teacher_student_notes').select('id,note,created_at').eq('class_id',classId).eq('student_id',studentId).order('created_at',{ascending:false}).limit(50);
+        const {data:notes,error}=await client.from('teacher_student_notes').select('id,note,created_at,teacher_id').eq('class_id',classId).eq('student_id',studentId).order('created_at',{ascending:false}).limit(50);
         if(error)throw error;
-        notesHost.innerHTML='<div class="gs-cl-card" style="margin-top:.7rem"><strong>'+tr('ملاحظات الأستاذ الخاصة بـ ','Notes privées pour ')+esc(button.dataset.name)+'</strong><div class="gs-cl-list">'+(notes||[]).map(n=>'<article class="gs-cl-row"><p>'+esc(n.note)+'</p><small class="gs-cl-muted">'+esc(new Date(n.created_at).toLocaleString(ar()?'ar-MA':'fr-FR'))+'</small></article>').join('')+(notes.length?'':'<p class="gs-cl-muted">'+tr('لا توجد ملاحظات مسجلة بعد.','Aucune note enregistrée.')+'</p>')+'</div><label>'+tr('إضافة ملاحظة تربوية','Ajouter une note pédagogique')+'</label><textarea data-note-for="'+esc(studentId)+'" maxlength="5000"></textarea><button type="button" data-action="save-student-note" data-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حفظ الملاحظة','Enregistrer la note')+'</button></div>';
+        notesHost.innerHTML='<div class="gs-cl-card" style="margin-top:.7rem"><strong>'+tr('ملاحظات الأستاذ الخاصة بـ ','Notes privées pour ')+esc(button.dataset.name)+'</strong><div class="gs-cl-list">'+(notes||[]).map(n=>{const canManage=profileForNotePermission(n,user);return '<article class="gs-cl-row" data-note-card="'+esc(n.id)+'"><p data-note-text="'+esc(n.id)+'">'+esc(n.note)+'</p><small class="gs-cl-muted">'+esc(new Date(n.created_at).toLocaleString(ar()?'ar-MA':'fr-FR'))+'</small>'+(canManage?'<div class="gs-cl-head" style="margin-top:.5rem"><button type="button" class="gs-cl-secondary" data-action="edit-student-note" data-id="'+esc(n.id)+'" data-student-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('تعديل','Modifier')+'</button><button type="button" class="gs-cl-secondary" data-action="delete-student-note" data-id="'+esc(n.id)+'" data-student-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حذف','Supprimer')+'</button></div>':'')+'</article>';}).join('')+(notes.length?'':'<p class="gs-cl-muted">'+tr('لا توجد ملاحظات مسجلة بعد.','Aucune note enregistrée.')+'</p>')+'</div><label>'+tr('إضافة ملاحظة تربوية','Ajouter une note pédagogique')+'</label><textarea data-note-for="'+esc(studentId)+'" maxlength="5000"></textarea><button type="button" data-action="save-student-note" data-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حفظ الملاحظة','Enregistrer la note')+'</button></div>';
+      } else if(action==='edit-student-note'){
+        const card=button.closest('[data-note-card]');
+        const text=card&&card.querySelector('[data-note-text]');
+        if(!card||!text)throw new Error(tr('تعذر فتح الملاحظة للتعديل.','Impossible de modifier cette note.'));
+        card.insertAdjacentHTML('beforeend','<label>'+tr('تعديل الملاحظة','Modifier la note')+'</label><textarea data-edit-note="'+esc(id)+'" maxlength="5000">'+esc(text.textContent)+'</textarea><button type="button" data-action="update-student-note" data-id="'+esc(id)+'" data-student-id="'+esc(button.dataset.studentId)+'" data-class-id="'+esc(button.dataset.classId)+'">'+tr('حفظ التعديل','Enregistrer les modifications')+'</button>');
+        button.disabled=true;
+      } else if(action==='update-student-note'){
+        const field=document.querySelector('[data-edit-note="'+CSS.escape(id)+'"]');
+        const note=field?field.value.trim():'';
+        if(!note)throw new Error(tr('لا يمكن حفظ ملاحظة فارغة.','La note ne peut pas être vide.'));
+        const {error}=await client.from('teacher_student_notes').update({note,updated_at:new Date().toISOString()}).eq('id',id);
+        if(error)throw error;
+        notice(tr('تم تحديث الملاحظة.','Note mise à jour.'));
+        const trigger=document.querySelector('[data-action="student-notes"][data-id="'+CSS.escape(button.dataset.studentId)+'"][data-class-id="'+CSS.escape(button.dataset.classId)+'"]');
+        if(trigger)await act(trigger);
+      } else if(action==='delete-student-note'){
+        if(!window.confirm(tr('هل تريد حذف هذه الملاحظة نهائياً؟','Supprimer définitivement cette note ?')))return;
+        const {error}=await client.from('teacher_student_notes').delete().eq('id',id);
+        if(error)throw error;
+        notice(tr('تم حذف الملاحظة.','Note supprimée.'));
+        const trigger=document.querySelector('[data-action="student-notes"][data-id="'+CSS.escape(button.dataset.studentId)+'"][data-class-id="'+CSS.escape(button.dataset.classId)+'"]');
+        if(trigger)await act(trigger);
       } else if(action==='save-student-note'){
         const field=document.querySelector('[data-note-for="'+CSS.escape(id)+'"]');
         const note=field?field.value.trim():'';
