@@ -150,7 +150,9 @@
     function apply() {
         timer = null;
         const p = account();
-        if (!p) {
+        if (!p || ['admin', 'teacher'].includes(String(p.role || '').toLowerCase())) {
+            // Academic-path warnings and restrictions belong only to student accounts.
+            // Teachers and administrators use the classroom workspace, not student routing.
             restorePublicNavigation();
             return;
         }
