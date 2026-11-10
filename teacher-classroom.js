@@ -214,7 +214,15 @@
           if(!latestActivity.has(message.question_id))latestActivity.set(message.question_id,message.created_at);
         });
       }
-      const orderedQuestions=[...(questions||[])].sort((a,b)=>new Date(latestActivity.get(b.id)||b.created_at)-new Date(latestActivity.get(a.id)||a.created_at));
+      const activeTeacher=await currentUser();
+      let pinsReady=true;
+      const {data:pins,error:pinsError}=await client.from('teacher_question_pins').select('question_id').eq('teacher_id',activeTeacher.id);
+      if(pinsError)pinsReady=false;
+      const pinnedIds=new Set((pins||[]).map(pin=>pin.question_id));
+      const orderedQuestions=[...(questions||[])].sort((a,b)=>{
+        const pinOrder=Number(pinnedIds.has(b.id))-Number(pinnedIds.has(a.id));
+        return pinOrder||new Date(latestActivity.get(b.id)||b.created_at)-new Date(latestActivity.get(a.id)||a.created_at);
+      });
       const inbox=document.getElementById('gs-cl-inbox');
       if(inbox){
         const openCount=(questions||[]).filter(q=>q.status!=='answered').length;
@@ -225,8 +233,9 @@
           '<button type="button" class="gs-cl-secondary" data-action="filter-inbox" data-filter="answered" aria-pressed="'+(inboxFilter==='answered')+'">'+tr('تمت الإجابة','Répondues')+' ('+answeredCount+')</button>'+
           '<button type="button" class="gs-cl-secondary" data-action="filter-inbox" data-filter="all" aria-pressed="'+(inboxFilter==='all')+'">'+tr('كل الأسئلة','Toutes')+' ('+(questions||[]).length+')</button></div>'+
           (orderedQuestions.filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).length
-            ? orderedQuestions.filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).map(q=>`<article class="gs-cl-row" data-inbox-question="true" data-search-text="${esc((q.subject||'')+' '+(q.body||''))}"><strong>${esc(q.subject)}</strong><p>${esc(q.body)}</p><p class="gs-cl-muted">${q.status==='answered'?tr('تمت الإجابة','Répondu') : tr('ينتظر جواب الأستاذ','En attente de réponse')} · ${tr('آخر نشاط','Dernière activité')}: ${new Date(latestActivity.get(q.id)||q.created_at).toLocaleString(ar()?'ar-MA':'fr-FR')}</p><button type="button" data-action="thread" data-id="${esc(q.id)}">${q.status==='answered'?tr('فتح المحادثة','Ouvrir la discussion'):tr('الإجابة عن السؤال','Répondre')}</button><div id="gs-cl-thread-${esc(q.id)}"></div></article>`).join('')
+            ? orderedQuestions.filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).map(q=>`<article class="gs-cl-row" data-inbox-question="true" data-search-text="${esc((q.subject||'')+' '+(q.body||''))}"><strong>${esc(q.subject)}</strong><p>${esc(q.body)}</p><p class="gs-cl-muted">${q.status==='answered'?tr('تمت الإجابة','Répondu') : tr('ينتظر جواب الأستاذ','En attente de réponse')} · ${tr('آخر نشاط','Dernière activité')}: ${new Date(latestActivity.get(q.id)||q.created_at).toLocaleString(ar()?'ar-MA':'fr-FR')}</p>${pinsReady?`<button type="button" class="gs-cl-secondary" data-action="toggle-pin" data-id="${esc(q.id)}">${pinnedIds.has(q.id)?tr("إلغاء التثبيت","Désépingler"):tr("تثبيت السؤال","Épingler la question")}</button>`:``}<button type="button" data-action="thread" data-id="${esc(q.id)}">${q.status==='answered'?tr('فتح المحادثة','Ouvrir la discussion'):tr('الإجابة عن السؤال','Répondre')}</button><div id="gs-cl-thread-${esc(q.id)}"></div></article>`).join('')
             : '<p class="gs-cl-muted">'+(inboxFilter==='answered'?tr('لا توجد أسئلة تمت الإجابة عنها بعد.','Aucune question répondue pour le moment.'):inboxFilter==='open'?tr('أحسنت! لا توجد أسئلة تنتظر الإجابة.','Aucune question en attente.'):tr('لا توجد أسئلة واردة حالياً.','Aucune question reçue.'))+'</p>');
+        if(!pinsReady){const n=document.createElement('p');n.className='gs-cl-muted';n.textContent=tr('تثبيت الأسئلة غير متاح بعد. نفّذ تحديث قاعدة البيانات في Supabase.','Épinglage indisponible : appliquez la migration dans Supabase.');inbox.prepend(n);}
         const searchInput=document.getElementById('gs-cl-inbox-search');
         if(searchInput)searchInput.addEventListener('input',()=>{
           const term=searchInput.value.trim().toLocaleLowerCase();
@@ -663,6 +672,17 @@
         const filter=button.dataset.filter;
         if(!['open','answered','all'].includes(filter))throw new Error(tr('عامل التصفية غير صالح.','Filtre invalide.'));
         inboxFilter=filter;
+        await refreshPanel();
+      } else if(action==='toggle-pin'){
+        const existing=await client.from('teacher_question_pins').select('question_id').eq('teacher_id',user.id).eq('question_id',id).maybeSingle();
+        if(existing.error)throw existing.error;
+        if(existing.data){
+          const {error}=await client.from('teacher_question_pins').delete().eq('teacher_id',user.id).eq('question_id',id);
+          if(error)throw error;
+        }else{
+          const {error}=await client.from('teacher_question_pins').insert({teacher_id:user.id,question_id:id});
+          if(error)throw error;
+        }
         await refreshPanel();
       } else if(action==='thread'){
         await renderThread(id);
