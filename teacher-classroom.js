@@ -205,6 +205,16 @@
 
       const {data:questions,error:qerr}=await client.from('teacher_questions').select('id,class_id,student_id,subject,body,status,created_at').in('class_id',ids).order('created_at',{ascending:false}).limit(60);
       if(qerr)throw qerr;
+      const questionIds=(questions||[]).map(q=>q.id);
+      const latestActivity=new Map();
+      if(questionIds.length){
+        const {data:messages,error:messageError}=await client.from('teacher_question_messages').select('question_id,created_at').in('question_id',questionIds).order('created_at',{ascending:false});
+        if(messageError)throw messageError;
+        (messages||[]).forEach(message=>{
+          if(!latestActivity.has(message.question_id))latestActivity.set(message.question_id,message.created_at);
+        });
+      }
+      const orderedQuestions=[...(questions||[])].sort((a,b)=>new Date(latestActivity.get(b.id)||b.created_at)-new Date(latestActivity.get(a.id)||a.created_at));
       const inbox=document.getElementById('gs-cl-inbox');
       if(inbox){
         const openCount=(questions||[]).filter(q=>q.status!=='answered').length;
@@ -214,8 +224,8 @@
           '<button type="button" class="gs-cl-secondary" data-action="filter-inbox" data-filter="open" aria-pressed="'+(inboxFilter==='open')+'">'+tr('تحتاج إلى جواب','À traiter')+' ('+openCount+')</button>'+
           '<button type="button" class="gs-cl-secondary" data-action="filter-inbox" data-filter="answered" aria-pressed="'+(inboxFilter==='answered')+'">'+tr('تمت الإجابة','Répondues')+' ('+answeredCount+')</button>'+
           '<button type="button" class="gs-cl-secondary" data-action="filter-inbox" data-filter="all" aria-pressed="'+(inboxFilter==='all')+'">'+tr('كل الأسئلة','Toutes')+' ('+(questions||[]).length+')</button></div>'+
-          ((questions||[]).filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).length
-            ? (questions||[]).filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).map(q=>`<article class="gs-cl-row" data-inbox-question="true" data-search-text="${esc((q.subject||'')+' '+(q.body||''))}"><strong>${esc(q.subject)}</strong><p>${esc(q.body)}</p><p class="gs-cl-muted">${q.status==='answered'?tr('تمت الإجابة','Répondu') : tr('ينتظر جواب الأستاذ','En attente de réponse')} · ${new Date(q.created_at).toLocaleString()}</p><button type="button" data-action="thread" data-id="${esc(q.id)}">${q.status==='answered'?tr('فتح المحادثة','Ouvrir la discussion'):tr('الإجابة عن السؤال','Répondre')}</button><div id="gs-cl-thread-${esc(q.id)}"></div></article>`).join('')
+          (orderedQuestions.filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).length
+            ? orderedQuestions.filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).map(q=>`<article class="gs-cl-row" data-inbox-question="true" data-search-text="${esc((q.subject||'')+' '+(q.body||''))}"><strong>${esc(q.subject)}</strong><p>${esc(q.body)}</p><p class="gs-cl-muted">${q.status==='answered'?tr('تمت الإجابة','Répondu') : tr('ينتظر جواب الأستاذ','En attente de réponse')} · ${tr('آخر نشاط','Dernière activité')}: ${new Date(latestActivity.get(q.id)||q.created_at).toLocaleString(ar()?'ar-MA':'fr-FR')}</p><button type="button" data-action="thread" data-id="${esc(q.id)}">${q.status==='answered'?tr('فتح المحادثة','Ouvrir la discussion'):tr('الإجابة عن السؤال','Répondre')}</button><div id="gs-cl-thread-${esc(q.id)}"></div></article>`).join('')
             : '<p class="gs-cl-muted">'+(inboxFilter==='answered'?tr('لا توجد أسئلة تمت الإجابة عنها بعد.','Aucune question répondue pour le moment.'):inboxFilter==='open'?tr('أحسنت! لا توجد أسئلة تنتظر الإجابة.','Aucune question en attente.'):tr('لا توجد أسئلة واردة حالياً.','Aucune question reçue.'))+'</p>');
         const searchInput=document.getElementById('gs-cl-inbox-search');
         if(searchInput)searchInput.addEventListener('input',()=>{
