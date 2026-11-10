@@ -178,6 +178,19 @@ begin
 end;
 $$;
 
+-- Students receive only safe class metadata; join codes remain teacher-only.
+create or replace function public.gosvt_student_classes()
+returns table (class_id uuid, class_name text, study_level text, study_track text, joined_at timestamptz)
+language sql stable security definer
+set search_path = public
+as $
+  select c.id, c.name, c.study_level, c.study_track, cs.joined_at
+  from public.teacher_class_students cs
+  join public.teacher_classes c on c.id = cs.class_id
+  where cs.student_id = (select auth.uid())
+  order by cs.joined_at desc;
+$;
+
 -- Students join only as their authenticated account; the code is never exposed in student list queries.
 create or replace function public.gosvt_join_teacher_class(p_join_code text)
 returns uuid
@@ -223,7 +236,7 @@ alter table public.teacher_review_sessions enable row level security;
 
 drop policy if exists teacher_classes_read_access on public.teacher_classes;
 create policy teacher_classes_read_access on public.teacher_classes
-for select to authenticated using (public.gosvt_can_access_class(id));
+for select to authenticated using (public.gosvt_can_manage_class(id));
 drop policy if exists teacher_classes_insert_owner on public.teacher_classes;
 create policy teacher_classes_insert_owner on public.teacher_classes
 for insert to authenticated with check (
@@ -340,6 +353,8 @@ create policy teacher_review_sessions_manage_teacher on public.teacher_review_se
 for all to authenticated using (public.gosvt_can_manage_class(class_id))
 with check (public.gosvt_can_manage_class(class_id) and created_by = (select auth.uid()));
 
+revoke all on function public.gosvt_student_classes() from public;
+grant execute on function public.gosvt_student_classes() to authenticated;
 revoke all on function public.gosvt_teacher_class_roster(uuid) from public;
 revoke all on function public.gosvt_join_teacher_class(text) from public;
 grant execute on function public.gosvt_teacher_class_roster(uuid) to authenticated;
