@@ -234,6 +234,7 @@
         const class_id=document.getElementById('gs-cl-assignment-class').value;
         const title=document.getElementById('gs-cl-assignment-title').value.trim();
         const instructions=document.getElementById('gs-cl-assignment-instructions').value.trim();
+        if(title.length<2)throw new Error(tr('أدخل عنواناً من حرفين على الأقل.','Saisissez un titre d’au moins 2 caractères.'));
         const rawUrl=document.getElementById('gs-cl-assignment-url').value.trim();
         const resource_url=rawUrl?safeHttpUrl(rawUrl):null;
         if(rawUrl&&!resource_url)throw new Error(tr('الرابط يجب أن يبدأ بـ http أو https.','Le lien doit commencer par http ou https.'));
@@ -245,12 +246,14 @@
         const class_id=document.getElementById('gs-cl-announcement-class').value;
         const title=document.getElementById('gs-cl-announcement-title').value.trim();
         const body=document.getElementById('gs-cl-announcement-body').value.trim();
+        if(title.length<2||body.length<1)throw new Error(tr('أدخل عنوان الإعلان ونصه.','Saisissez le titre et le texte de l’annonce.'));
         const {error}=await client.from('teacher_announcements').insert({class_id,created_by:user.id,title,body});if(error)throw error;
         notice(tr('تم نشر الإعلان.','Annonce publiée.'));await refreshPanel();
       } else if(action==='create-session'){
         const class_id=document.getElementById('gs-cl-session-class').value;
         const title=document.getElementById('gs-cl-session-title').value.trim();
         const description=document.getElementById('gs-cl-session-description').value.trim();
+        if(title.length<2)throw new Error(tr('أدخل عنوان الحصة.','Saisissez le titre de la séance.'));
         const rawStart=document.getElementById('gs-cl-session-start').value;
         if(!rawStart)throw new Error(tr('حدد تاريخ الحصة ووقتها.','Veuillez choisir la date et l’heure.'));
         const starts_at=new Date(rawStart).toISOString();
@@ -262,6 +265,7 @@
       } else if(action==='submit-assignment'){
         const field=document.querySelector('[data-answer-for="'+CSS.escape(id)+'"]');
         const answer=field?field.value.trim():'';
+        if(!answer)throw new Error(tr('اكتب إجابتك قبل الإرسال.','Saisissez votre réponse avant l’envoi.'));
         const {error}=await client.from('teacher_assignment_submissions').insert({assignment_id:id,student_id:user.id,answer});if(error)throw error;
         notice(tr('تم إرسال إجابتك إلى الأستاذ.','Votre réponse a été envoyée.'));await refreshPanel();
       } else if(action==='grade-submission'){
