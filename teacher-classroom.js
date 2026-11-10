@@ -642,6 +642,9 @@
     const host=document.getElementById('gs-cl-roster');
     if(!host)return;
     const cards=Array.from(host.querySelectorAll('[data-student-card="true"]'));
+    cards.forEach((card,index)=>{
+      if(card.dataset.originalOrder===undefined)card.dataset.originalOrder=String(index);
+    });
     const mode=e.target.value;
     cards.sort((a,b)=>{
       if(mode==='followup'){
@@ -656,10 +659,7 @@
       if(mode==='name')return (a.dataset.studentName||'').localeCompare(b.dataset.studentName||'',ar()?'ar':'fr',{sensitivity:'base'});
       return Number(a.dataset.originalOrder||0)-Number(b.dataset.originalOrder||0);
     });
-    cards.forEach((card,index)=>{
-      if(!card.dataset.originalOrder)card.dataset.originalOrder=String(index);
-      host.appendChild(card);
-    });
+    cards.forEach(card=>host.appendChild(card));
   });
   document.addEventListener('click',e=>{
     const filter=e.target.closest&&e.target.closest('#gs-cl-roster [data-roster-filter]');
