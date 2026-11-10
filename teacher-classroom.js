@@ -17,6 +17,7 @@
   let mountedFor = null;
   let busy = false;
   let lastClassReport = null;
+  let inboxFilter = 'open';
 
   function styles() {
     if (document.getElementById('gs-classroom-style')) return;
@@ -153,7 +154,17 @@
       const {data:questions,error:qerr}=await client.from('teacher_questions').select('id,class_id,student_id,subject,body,status,created_at').in('class_id',ids).order('created_at',{ascending:false}).limit(60);
       if(qerr)throw qerr;
       const inbox=document.getElementById('gs-cl-inbox');
-      if(inbox)inbox.innerHTML=(questions||[]).length?questions.map(q=>`<article class="gs-cl-row"><strong>${esc(q.subject)}</strong><p>${esc(q.body)}</p><p class="gs-cl-muted">${esc(q.status)} · ${new Date(q.created_at).toLocaleString()}</p><button type="button" data-action="thread" data-id="${esc(q.id)}">${tr('الإجابة عن السؤال','Répondre')}</button><div id="gs-cl-thread-${esc(q.id)}"></div></article>`).join(''):`<p class="gs-cl-muted">${tr('لا توجد أسئلة واردة حالياً.','Aucune question reçue.')}</p>`;
+      if(inbox){
+        const openCount=(questions||[]).filter(q=>q.status!=='answered').length;
+        const answeredCount=(questions||[]).filter(q=>q.status==='answered').length;
+        inbox.innerHTML='<div class="gs-cl-head" role="group" aria-label="'+tr('تصفية الأسئلة','Filtrer les questions')+'">'+
+          '<button type="button" class="gs-cl-secondary" data-action="filter-inbox" data-filter="open" aria-pressed="'+(inboxFilter==='open')+'">'+tr('تحتاج إلى جواب','À traiter')+' ('+openCount+')</button>'+
+          '<button type="button" class="gs-cl-secondary" data-action="filter-inbox" data-filter="answered" aria-pressed="'+(inboxFilter==='answered')+'">'+tr('تمت الإجابة','Répondues')+' ('+answeredCount+')</button>'+
+          '<button type="button" class="gs-cl-secondary" data-action="filter-inbox" data-filter="all" aria-pressed="'+(inboxFilter==='all')+'">'+tr('كل الأسئلة','Toutes')+' ('+(questions||[]).length+')</button></div>'+
+          ((questions||[]).filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).length
+            ? (questions||[]).filter(q=>inboxFilter==='all'||(inboxFilter==='answered'?q.status==='answered':q.status!=='answered')).map(q=>`<article class="gs-cl-row"><strong>${esc(q.subject)}</strong><p>${esc(q.body)}</p><p class="gs-cl-muted">${q.status==='answered'?tr('تمت الإجابة','Répondu') : tr('ينتظر جواب الأستاذ','En attente de réponse')} · ${new Date(q.created_at).toLocaleString()}</p><button type="button" data-action="thread" data-id="${esc(q.id)}">${q.status==='answered'?tr('فتح المحادثة','Ouvrir la discussion'):tr('الإجابة عن السؤال','Répondre')}</button><div id="gs-cl-thread-${esc(q.id)}"></div></article>`).join('')
+            : '<p class="gs-cl-muted">'+(inboxFilter==='answered'?tr('لا توجد أسئلة تمت الإجابة عنها بعد.','Aucune question répondue pour le moment.'):inboxFilter==='open'?tr('أحسنت! لا توجد أسئلة تنتظر الإجابة.','Aucune question en attente.'):tr('لا توجد أسئلة واردة حالياً.','Aucune question reçue.'))+'</p>');
+      }
     } else {
       const inbox=document.getElementById('gs-cl-inbox');if(inbox)inbox.innerHTML=`<p class="gs-cl-muted">${tr('أنشئ قسماً أولاً لاستقبال الأسئلة.','Créez une classe pour recevoir des questions.')}</p>`;
     }
@@ -356,6 +367,11 @@
       } else if(action==='export-class-report'){
         if(!lastClassReport)throw new Error(tr('لا يوجد تقرير جاهز للتصدير.','Aucun rapport disponible à exporter.'));
         downloadClassReport(lastClassReport);
+      } else if(action==='filter-inbox'){
+        const filter=button.dataset.filter;
+        if(!['open','answered','all'].includes(filter))throw new Error(tr('عامل التصفية غير صالح.','Filtre invalide.'));
+        inboxFilter=filter;
+        await refreshPanel();
       } else if(action==='thread'){
         await renderThread(id);
       } else if(action==='reply'){
