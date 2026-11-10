@@ -351,15 +351,17 @@
         const {error}=await client.from('teacher_student_notes').update({note,updated_at:new Date().toISOString()}).eq('id',id);
         if(error)throw error;
         notice(tr('تم تحديث الملاحظة.','Note mise à jour.'));
-        const trigger=document.querySelector('[data-action="student-notes"][data-id="'+CSS.escape(button.dataset.studentId)+'"][data-class-id="'+CSS.escape(button.dataset.classId)+'"]');
-        if(trigger)await act(trigger);
+        const card=button.closest('[data-note-card]');
+        const text=card&&card.querySelector('[data-note-text]');
+        if(text)text.textContent=note;
+        if(card)card.querySelectorAll('label,textarea[data-edit-note],button[data-action="update-student-note"]').forEach(el=>el.remove());
       } else if(action==='delete-student-note'){
         if(!window.confirm(tr('هل تريد حذف هذه الملاحظة نهائياً؟','Supprimer définitivement cette note ?')))return;
         const {error}=await client.from('teacher_student_notes').delete().eq('id',id);
         if(error)throw error;
         notice(tr('تم حذف الملاحظة.','Note supprimée.'));
-        const trigger=document.querySelector('[data-action="student-notes"][data-id="'+CSS.escape(button.dataset.studentId)+'"][data-class-id="'+CSS.escape(button.dataset.classId)+'"]');
-        if(trigger)await act(trigger);
+        const card=button.closest('[data-note-card]');
+        if(card)card.remove();
       } else if(action==='save-student-note'){
         const field=document.querySelector('[data-note-for="'+CSS.escape(id)+'"]');
         const note=field?field.value.trim():'';
