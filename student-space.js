@@ -1603,6 +1603,22 @@
             window.StudentAccount.renderGate(container);
             return;
         }
+
+        // Teacher and administrator accounts must not render the student dashboard.
+        // Keep all existing student data intact; this is a presentation/role separation only.
+        const activeProfile = window.StudentAccount && window.StudentAccount.getProfile
+            ? window.StudentAccount.getProfile()
+            : null;
+        if (activeProfile && (activeProfile.role === 'admin' || activeProfile.role === 'teacher')) {
+            const isArabic = document.documentElement.dir === 'rtl';
+            container.innerHTML = '<div class="student-space" role="status"><p>' +
+                (isArabic
+                    ? 'فضاء الأستاذ والإدارة — يتم تحميل أدوات المتابعة والصلاحيات.'
+                    : 'Espace enseignant et administration — chargement des outils de suivi et des accès.') +
+                '</p></div>';
+            return;
+        }
+
         syncCurrentProfile();
 
         let html = `
