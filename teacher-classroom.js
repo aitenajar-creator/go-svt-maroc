@@ -369,7 +369,7 @@
           return overdue>0||(s.average_score!=null&&Number(s.average_score)<50)||(Number(s.completed_lessons)||0)===0;
         }).length;
         lastClassReport=students.length?{
-          studentCount:students.length,lessonTotal,totalQuizAverage:classAverage,
+          studentCount:students.length,lessonTotal:totalLessons,totalQuizAverage:classAverage,
           quizAverage:classAverage,uniqueSubmissionCount:submittedPairs.size,
           expectedSubmissionCount:students.length*assignmentIds.length,
           submissionRate:submissionRate===null?'—':submissionRate,
