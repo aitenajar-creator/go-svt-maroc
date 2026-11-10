@@ -25,7 +25,7 @@ drop trigger if exists teacher_student_support_plans_touch_updated_at
   on public.teacher_student_support_plans;
 create trigger teacher_student_support_plans_touch_updated_at
   before update on public.teacher_student_support_plans
-  for each row execute function public.set_updated_at();
+  for each row execute function public.gosvt_touch_teacher_student_note();
 
 alter table public.teacher_student_support_plans enable row level security;
 
