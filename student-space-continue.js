@@ -95,9 +95,12 @@
         (safeLessonPath ? '<a class="gs-continue-action" href="' + escapeHtml(safeLessonPath) + '" target="_blank" rel="noopener noreferrer">' + t.resume + ' ↗</a>' : '') + '</div>'
       : '<div class="gs-continue-empty"><span>🌱</span><p>' + t.noRecent + '</p><a href="#cours">' + t.browse + ' ←</a></div>';
 
+    // Keep this selection consistent with the analytics panel: only dated quiz
+    // attempts are eligible, and dates are numeric millisecond timestamps.
     const latestWithMistakes = attempts.filter(function (item) {
-      return item && item.quizId && Array.isArray(item.mistakes) && item.mistakes.length;
-    }).sort(function (a, b) { return (Number(b.date) || 0) - (Number(a.date) || 0); })[0];
+      return item && item.quizId && Number.isFinite(Number(item.date)) &&
+        Array.isArray(item.mistakes) && item.mistakes.length;
+    }).sort(function (a, b) { return Number(b.date) - Number(a.date); })[0];
     const recommendation = latestWithMistakes
       ? { icon: '🧠', title: isFrench ? 'Revoir les erreurs de votre dernier quiz' : 'راجع أخطاء آخر اختبار أنجزته', href: '#gs-performance-analytics', label: isFrench ? 'Voir mon analyse' : 'عرض تحليل أدائي' }
       : pendingTask
