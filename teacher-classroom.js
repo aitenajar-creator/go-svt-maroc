@@ -342,10 +342,12 @@
         const submissions=submissionsResult.data||[];
         const submittedByStudent=new Map();
         const submittedPairs=new Set();
+        const submissionByPair=new Map();
         submissions.forEach(x=>{
           const pair=x.student_id+':'+x.assignment_id;
           if(submittedPairs.has(pair))return;
           submittedPairs.add(pair);
+          submissionByPair.set(pair,x);
           submittedByStudent.set(x.student_id,(submittedByStudent.get(x.student_id)||0)+1);
         });
         const now=Date.now();
@@ -411,10 +413,19 @@
               if(s.average_score!=null&&Number(s.average_score)<50)reasons.push(tr('متوسط النتائج أقل من 50%','Moyenne des résultats inférieure à 50 %'));
               if((Number(s.completed_lessons)||0)===0)reasons.push(tr('لم يسجل دروساً مكتملة بعد','Aucune leçon terminée enregistrée'));
               const needsFollowUp=reasons.length>0;
+              const assignmentDetails=(assignmentsResult.data||[]).map(a=>{
+                const submission=submissionByPair.get(s.student_id+':'+a.id);
+                const isLate=!submission&&a.due_at&&new Date(a.due_at).getTime()<now;
+                const state=submission?tr('تم التسليم','Remis'):isLate?tr('متأخر وغير مسلّم','En retard · non remis'):tr('لم يسلّم بعد','Pas encore remis');
+                const date=submission?new Date(submission.submitted_at).toLocaleString(ar()?'ar-MA':'fr-FR'):(a.due_at?tr('آخر أجل: ','Échéance : ')+new Date(a.due_at).toLocaleString(ar()?'ar-MA':'fr-FR'):tr('دون تاريخ محدد','Sans échéance'));
+                return '<li><strong>'+esc(a.title)+'</strong> — '+esc(state)+'<small class="gs-cl-muted" style="display:block">'+esc(date)+'</small></li>';
+              }).join('');
               return '<article class="gs-cl-row" data-student-card="true" data-follow-up="'+(needsFollowUp?'true':'false')+'" data-student-name="'+esc(s.display_name||'')+'" data-student-score="'+(s.average_score==null?'':Number(s.average_score))+'"><strong>'+esc(s.display_name)+'</strong>'+(needsFollowUp?'<p class="gs-cl-muted">'+tr('متابعة تربوية مقترحة','Suivi pédagogique suggéré')+'</p><ul>'+reasons.map(reason=>'<li>'+esc(reason)+'</li>').join('')+'</ul>':'')+
                 '<p class="gs-cl-muted">'+esc(s.study_level||'')+' · '+esc(s.study_track||'')+' · '+tr('تاريخ الانضمام','Inscrit le')+' '+(s.joined_at?esc(new Date(s.joined_at).toLocaleDateString(ar()?'ar-MA':'fr-FR')):'—')+'</p>'+
                 '<p>'+tr('الدروس المكتملة','Leçons terminées')+': <strong>'+(Number(s.completed_lessons)||0)+'</strong> · '+tr('محاولات الاختبار','Tentatives')+': <strong>'+(Number(s.quiz_attempts)||0)+'</strong> · '+tr('متوسط النتائج','Moyenne')+': <strong>'+(s.average_score==null?'—':esc(s.average_score)+'%')+'</strong></p>'+
-                '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+'<div class="gs-cl-head"><button type="button" class="gs-cl-secondary" data-action="student-notes" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('ملاحظات الأستاذ الخاصة','Notes pédagogiques privées')+'</button><button type="button" class="gs-cl-secondary" data-action="open-support-plan" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('خطة الدعم الفردية','Plan de soutien individuel')+'</button><button type="button" class="gs-cl-secondary" data-action="student-report" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('التقرير التربوي','Rapport pédagogique')+'</button></div><div id="gs-cl-notes-'+esc(s.student_id)+'"></div><div id="gs-cl-support-'+esc(s.student_id)+'"></div><div id="gs-cl-report-'+esc(s.student_id)+'"></div></article>';
+                '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+
+                (assignmentIds.length?'<details class="gs-cl-row" style="margin:.5rem 0"><summary>'+tr('تفاصيل تسليم الواجبات','Détail des remises de devoirs')+'</summary><ul class="gs-cl-list">'+assignmentDetails+'</ul></details>':'')+
+                '<div class="gs-cl-head"><button type="button" class="gs-cl-secondary" data-action="student-notes" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('ملاحظات الأستاذ الخاصة','Notes pédagogiques privées')+'</button><button type="button" class="gs-cl-secondary" data-action="open-support-plan" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('خطة الدعم الفردية','Plan de soutien individuel')+'</button><button type="button" class="gs-cl-secondary" data-action="student-report" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('التقرير التربوي','Rapport pédagogique')+'</button></div><div id="gs-cl-notes-'+esc(s.student_id)+'"></div><div id="gs-cl-support-'+esc(s.student_id)+'"></div><div id="gs-cl-report-'+esc(s.student_id)+'"></div></article>';
             }).join('')
           : '<p class="gs-cl-muted">'+tr('لا يوجد تلاميذ في هذا القسم بعد.','Aucun élève dans cette classe.')+'</p>';
         notice(students.length?tr('تم تحميل قائمة التلاميذ بنجاح: '+students.length,'Liste des élèves chargée : '+students.length):tr('تم تحميل القسم، ولا يوجد تلاميذ منضمون إليه بعد.','Classe chargée : aucun élève n’y est encore inscrit.'));
