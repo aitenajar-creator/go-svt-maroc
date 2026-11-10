@@ -340,8 +340,7 @@
         const {error}=await client.from('teacher_student_notes').insert({class_id:button.dataset.classId,student_id:id,teacher_id:user.id,note});
         if(error)throw error;
         notice(tr('تم حفظ الملاحظة الخاصة.','Note privée enregistrée.'));
-        const reopen=document.querySelector('[data-action="student-notes"][data-id="'+CSS.escape(id)+'"]');
-        if(reopen)await act(reopen);
+        if(notesHost)notesHost.innerHTML='<p class="gs-cl-msg">'+tr('حُفظت الملاحظة. اضغط على «ملاحظات الأستاذ الخاصة» لعرض السجل المحدث.','Note enregistrée. Cliquez sur « Notes pédagogiques privées » pour actualiser le registre.')+'</p>';
       } else if(action==='create-assignment'){
         const class_id=document.getElementById('gs-cl-assignment-class').value;
         const title=document.getElementById('gs-cl-assignment-title').value.trim();
