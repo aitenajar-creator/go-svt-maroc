@@ -329,6 +329,28 @@
         const totalLessons=students.reduce((n,s)=>n+(Number(s.completed_lessons)||0),0);
         const quizAverages=students.filter(s=>s.average_score!=null).map(s=>Number(s.average_score));
         const classAverage=quizAverages.length?(quizAverages.reduce((a,b)=>a+b,0)/quizAverages.length).toFixed(1):'—';
+        const sortedAverages=quizAverages.slice().sort((a,b)=>a-b);
+        const classMedian=sortedAverages.length
+          ? (sortedAverages.length%2
+            ? sortedAverages[(sortedAverages.length-1)/2]
+            : (sortedAverages[sortedAverages.length/2-1]+sortedAverages[sortedAverages.length/2])/2)
+          : null;
+        const scoreBands=[
+          {min:0,max:49.999,label:tr('أقل من 50%','Moins de 50 %')},
+          {min:50,max:69.999,label:tr('من 50 إلى 69%','De 50 à 69 %')},
+          {min:70,max:84.999,label:tr('من 70 إلى 84%','De 70 à 84 %')},
+          {min:85,max:100,label:tr('85% فأكثر','85 % et plus')}
+        ].map(b=>({...b,count:quizAverages.filter(score=>score>=b.min&&score<=b.max).length}));
+        const unassessedCount=students.length-quizAverages.length;
+        const classAnalyticsHtml='<section class="gs-cl-card" style="margin:0 0 1rem"><h4>'+tr('📊 تحليل نتائج القسم','📊 Analyse des résultats de la classe')+'</h4>'+
+          '<div class="gs-cl-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:.65rem 0">'+
+          '<div class="gs-cl-row"><strong>'+(classAverage==='—'?'—':classAverage+'%')+'</strong><p class="gs-cl-muted">'+tr('المتوسط الحسابي','Moyenne')+'</p></div>'+
+          '<div class="gs-cl-row"><strong>'+(classMedian===null?'—':classMedian.toFixed(1)+'%')+'</strong><p class="gs-cl-muted">'+tr('الوسيط','Médiane')+'</p></div>'+
+          '<div class="gs-cl-row"><strong>'+quizAverages.length+'/'+students.length+'</strong><p class="gs-cl-muted">'+tr('تلاميذ لهم نتائج مسجلة','Élèves avec résultats')+'</p></div>'+
+          '</div><p class="gs-cl-muted">'+tr('توزيع التلاميذ حسب متوسط نتائج محاولات الاختبار المسجلة في حساباتهم:','Répartition selon la moyenne des tentatives de quiz enregistrées dans leurs comptes :')+'</p>'+
+          '<div class="gs-cl-list">'+scoreBands.map(b=>'<div class="gs-cl-row"><div class="gs-cl-head" style="margin:0"><strong>'+esc(b.label)+'</strong><strong>'+b.count+'</strong></div><div role="img" aria-label="'+esc(b.label)+' : '+b.count+'" style="height:9px;background:var(--gs-cl-border,#ddd);border-radius:8px;overflow:hidden;margin-top:.4rem"><span style="display:block;width:'+(quizAverages.length?Math.round(b.count/quizAverages.length*100):0)+'%;height:100%;background:var(--gs-cl-accent,#27866b)"></span></div></div>').join('')+
+          (unassessedCount?'<p class="gs-cl-muted">'+unassessedCount+' '+tr('تلاميذ دون نتائج اختبار مسجلة بعد','élèves sans résultat de quiz enregistré')+'</p>':'')+
+          '</div><small class="gs-cl-muted">'+tr('هذه مؤشرات مجمعة للقسم وليست ترتيباً للتلاميذ. وتُعرض التفاصيل الفردية في التقرير التربوي المخصص للأستاذ.','Ces indicateurs sont agrégés et ne constituent pas un classement. Les détails individuels restent dans le rapport pédagogique réservé à l’enseignant.')+'</small></section>';
         const submissionRate=students.length&&assignmentIds.length
           ? Math.min(100,Math.round((submittedPairs.size/(students.length*assignmentIds.length))*100)):null;
         const overdueMissingCount=Array.from(overdueByStudent.values()).reduce((sum,value)=>sum+value,0);
@@ -351,6 +373,7 @@
             '<div class="gs-cl-row"><strong>'+submittedPairs.size+'</strong><p class="gs-cl-muted">'+tr('إجابة واجب فريدة مستلمة','réponses uniques reçues')+'</p></div>'+
             '<div class="gs-cl-row"><strong>'+followUpCount+'</strong><p class="gs-cl-muted">'+tr('تلاميذ مقترح تتبعهم','élèves à suivre')+'</p></div>'+
             '</div>'+
+            classAnalyticsHtml+
             (submissionRate===null?'':'<p class="gs-cl-muted">'+tr('معدل تسليم الواجبات','Taux de remise')+': '+submissionRate+'%</p>')+
             students.map(s=>{
               const submitted=submittedByStudent.get(s.student_id)||0;
