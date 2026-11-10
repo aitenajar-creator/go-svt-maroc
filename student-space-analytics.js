@@ -97,7 +97,7 @@
       const quizId = String(a.quizId || '');
       if (!quizId || !Array.isArray(a.mistakes)) return;
       a.mistakes.forEach(m => {
-        const question = String(m && m.question || '').replace(/\\s+/g, ' ').trim();
+        const question = String(m && m.question || '').replace(/\s+/g, ' ').trim();
         const key = quizId + '|' + (question.toLocaleLowerCase() || '__unknown__');
         if (!groups.has(key)) groups.set(key, { quizId, question, errors: 0, lastDate: 0, scores: [] });
         const group = groups.get(key);
