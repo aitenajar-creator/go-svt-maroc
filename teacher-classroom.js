@@ -572,7 +572,14 @@
         const field=document.querySelector('[data-reply-for="'+CSS.escape(id)+'"]');
         const body=field?field.value.trim():'';
         const {error}=await client.from('teacher_question_messages').insert({question_id:id,sender_id:user.id,body});if(error)throw error;
-        const {error:updateError}=await client.from('teacher_questions').update({status:'answered'}).eq('id',id);if(updateError)throw updateError;
+        const activeProfile=window.StudentAccount&&window.StudentAccount.getProfile?window.StudentAccount.getProfile():null;
+        if(activeProfile&&activeProfile.role==='student'){
+          const {error:statusError}=await client.rpc('gosvt_student_reopen_question',{p_question_id:id});
+          if(statusError)throw statusError;
+        } else {
+          const {error:statusError}=await client.from('teacher_questions').update({status:'answered'}).eq('id',id);
+          if(statusError)throw statusError;
+        }
         await renderThread(id);
         notice(tr('تم إرسال الرد.','Réponse envoyée.'));
       }
