@@ -627,6 +627,27 @@
     mountedFor=null;
     mount();
   }
+  function applySubmissionFilters(){
+    const host=document.getElementById('gs-cl-submission-cards');
+    if(!host)return;
+    const assignment=document.getElementById('gs-cl-submission-assignment');
+    const status=document.getElementById('gs-cl-submission-status');
+    const assignmentId=assignment?assignment.value:'all';
+    const state=status?status.value:'all';
+    const cards=Array.from(host.querySelectorAll('[data-submission-card="true"]'));
+    let visible=0;
+    cards.forEach(card=>{
+      const assignmentMatch=assignmentId==='all'||card.dataset.assignmentId===assignmentId;
+      const statusMatch=state==='all'||(state==='reviewed'?card.dataset.reviewed==='true':card.dataset.reviewed!=='true');
+      card.hidden=!(assignmentMatch&&statusMatch);
+      if(!card.hidden)visible++;
+    });
+    const message=document.getElementById('gs-cl-submission-filter-status');
+    if(message)message.textContent=tr('الإجابات المعروضة: '+visible+' من '+cards.length,'Réponses affichées : '+visible+' sur '+cards.length);
+  }
+  document.addEventListener('change',e=>{
+    if(e.target&&(e.target.id==='gs-cl-submission-assignment'||e.target.id==='gs-cl-submission-status'))applySubmissionFilters();
+  });
   function applyRosterFilters(){
     const host=document.getElementById('gs-cl-roster');
     if(!host)return;
