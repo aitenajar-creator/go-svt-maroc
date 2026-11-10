@@ -1462,7 +1462,7 @@
         const items = [...data.studyPlan].sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
         const rows = items.map(item => {
             const date = String(item.date || '');
-            const overdue = !item.completed && /^\\d{4}-\\d{2}-\\d{2}$/.test(date) && date < todayKey;
+            const overdue = !item.completed && /^\d{4}-\d{2}-\d{2}$/.test(date) && date < todayKey;
             const dueToday = !item.completed && date === todayKey;
             const status = item.completed
                 ? (lang() === 'ar' ? 'مكتملة' : 'Terminée')
