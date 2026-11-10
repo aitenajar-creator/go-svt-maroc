@@ -60,7 +60,7 @@
 
   function panelShell(role) {
     return `<section id="gs-classroom" aria-labelledby="gs-cl-title">
-      <div class="gs-cl-head"><div><h3 id="gs-cl-title">🎓 ${tr('فضاء الأستاذ والتواصل','Espace enseignant et échanges')}</h3><p class="gs-cl-muted">${tr('متابعة تعليمية داخل الأقسام المسندة فقط.','Suivi pédagogique limité aux classes autorisées.')}</p></div><span class="gs-cl-tag">${role === 'admin' ? tr('مدير المنصة','Administrateur') : role === 'teacher' ? tr('أستاذ','Enseignant') : tr('تلميذ','Élève')}</span></div>
+      <div class="gs-cl-head"><div><h3 id="gs-cl-title">🎓 ${tr('فضاء الأستاذ والتواصل','Espace enseignant et échanges')}</h3><p class="gs-cl-muted">${tr('متابعة تعليمية داخل الأقسام المسندة فقط.','Suivi pédagogique limité aux classes autorisées.')}</p></div><div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><span class="gs-cl-tag">${role === 'admin' ? tr('مدير المنصة','Administrateur') : role === 'teacher' ? tr('أستاذ','Enseignant') : tr('تلميذ','Élève')}</span><button type="button" class="gs-cl-secondary" data-action="refresh-panel">${tr('تحديث البيانات','Actualiser les données')}</button></div></div>
       <div id="gs-cl-content"><p class="gs-cl-muted">${tr('جارٍ تحميل فضاء القسم...','Chargement de l’espace classe...')}</p></div>
     </section>`;
   }
@@ -284,7 +284,9 @@
     busy=true;button.disabled=true;
     try {
       const user=await currentUser();if(!user)throw new Error(tr('يرجى تسجيل الدخول.','Veuillez vous connecter.'));
-      if(action==='join'){
+      if(action==='refresh-panel'){
+        await refreshPanel();
+      } else if(action==='join'){
         const code=document.getElementById('gs-cl-code').value.trim();
         const {error}=await client.rpc('gosvt_join_teacher_class',{p_join_code:code});if(error)throw error;
         notice(tr('تم الانضمام إلى القسم بنجاح.','Vous avez rejoint la classe.'));
