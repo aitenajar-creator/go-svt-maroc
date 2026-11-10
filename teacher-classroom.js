@@ -7,7 +7,7 @@
   if (!client) return;
   const rootId = 'student-space-content';
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const ar = () => document.documentElement.lang !== 'fr' && (window.currentLang === 'ar' || document.documentElement.dir === 'rtl');
+  const ar = () => (typeof currentLang !== 'undefined' ? currentLang === 'ar' : document.documentElement.dir === 'rtl');
   const tr = (a, f) => ar() ? a : f;
   const tracks = {
     TC: [['TCS','الجذع المشترك العلمي'],['TCL','الجذع المشترك الأدبي']],
