@@ -386,7 +386,7 @@
             '</div>'+
             classAnalyticsHtml+
             (submissionRate===null?'':'<p class="gs-cl-muted">'+tr('معدل تسليم الواجبات','Taux de remise')+': '+submissionRate+'%</p>')+
-            '<label for="gs-cl-roster-search">'+tr('البحث عن تلميذ بالاسم أو المسلك','Rechercher un élève par nom ou filière')+'</label><input id="gs-cl-roster-search" type="search" autocomplete="off" placeholder="'+tr('اكتب اسم التلميذ أو المستوى أو المسلك...','Saisissez un nom, un niveau ou une filière...')+'"><div class="gs-cl-head" style="justify-content:flex-start;margin:.5rem 0" role="group" aria-label="'+tr('تصفية التلاميذ','Filtrer les élèves')+'"><button type="button" class="gs-cl-secondary" data-roster-filter="all" aria-pressed="true">'+tr('جميع التلاميذ','Tous les élèves')+'</button><button type="button" class="gs-cl-secondary" data-roster-filter="followup" aria-pressed="false">'+tr('يحتاجون إلى متابعة','À suivre')+'</button></div><p id="gs-cl-roster-search-status" class="gs-cl-muted" role="status" aria-live="polite"></p>'+
+            '<label for="gs-cl-roster-search">'+tr('البحث عن تلميذ بالاسم أو المسلك','Rechercher un élève par nom ou filière')+'</label><input id="gs-cl-roster-search" type="search" autocomplete="off" placeholder="'+tr('اكتب اسم التلميذ أو المستوى أو المسلك...','Saisissez un nom, un niveau ou une filière...')+'"><div class="gs-cl-head" style="justify-content:flex-start;margin:.5rem 0" role="group" aria-label="'+tr('تصفية التلاميذ','Filtrer les élèves')+'"><button type="button" class="gs-cl-secondary" data-roster-filter="all" aria-pressed="true">'+tr('جميع التلاميذ','Tous les élèves')+'</button><button type="button" class="gs-cl-secondary" data-roster-filter="followup" aria-pressed="false">'+tr('يحتاجون إلى متابعة','À suivre')+'</button></div><label for="gs-cl-roster-sort">'+tr('ترتيب القائمة','Trier la liste')+'</label><select id="gs-cl-roster-sort"><option value="default">'+tr('الترتيب الأصلي','Ordre initial')+'</option><option value="followup">'+tr('الأكثر حاجة إلى المتابعة','Priorité au suivi')+'</option><option value="score">'+tr('أقل متوسط نتائج أولاً','Résultats les plus faibles d’abord')+'</option><option value="name">'+tr('الاسم أبجدياً','Nom par ordre alphabétique')+'</option></select><p id="gs-cl-roster-search-status" class="gs-cl-muted" role="status" aria-live="polite"></p>'+
             students.map(s=>{
               const submitted=submittedByStudent.get(s.student_id)||0;
               const overdue=overdueByStudent.get(s.student_id)||0;
@@ -396,7 +396,7 @@
               if(s.average_score!=null&&Number(s.average_score)<50)reasons.push(tr('متوسط النتائج أقل من 50%','Moyenne des résultats inférieure à 50 %'));
               if((Number(s.completed_lessons)||0)===0)reasons.push(tr('لم يسجل دروساً مكتملة بعد','Aucune leçon terminée enregistrée'));
               const needsFollowUp=reasons.length>0;
-              return '<article class="gs-cl-row" data-student-card="true" data-follow-up="'+(needsFollowUp?'true':'false')+'"><strong>'+esc(s.display_name)+'</strong>'+(needsFollowUp?'<p class="gs-cl-muted">'+tr('متابعة تربوية مقترحة','Suivi pédagogique suggéré')+'</p><ul>'+reasons.map(reason=>'<li>'+esc(reason)+'</li>').join('')+'</ul>':'')+
+              return '<article class="gs-cl-row" data-student-card="true" data-follow-up="'+(needsFollowUp?'true':'false')+'" data-student-name="'+esc(s.display_name||'')+'" data-student-score="'+(s.average_score==null?'':Number(s.average_score))+'"><strong>'+esc(s.display_name)+'</strong>'+(needsFollowUp?'<p class="gs-cl-muted">'+tr('متابعة تربوية مقترحة','Suivi pédagogique suggéré')+'</p><ul>'+reasons.map(reason=>'<li>'+esc(reason)+'</li>').join('')+'</ul>':'')+
                 '<p class="gs-cl-muted">'+esc(s.study_level||'')+' · '+esc(s.study_track||'')+' · '+tr('تاريخ الانضمام','Inscrit le')+' '+(s.joined_at?esc(new Date(s.joined_at).toLocaleDateString(ar()?'ar-MA':'fr-FR')):'—')+'</p>'+
                 '<p>'+tr('الدروس المكتملة','Leçons terminées')+': <strong>'+(Number(s.completed_lessons)||0)+'</strong> · '+tr('محاولات الاختبار','Tentatives')+': <strong>'+(Number(s.quiz_attempts)||0)+'</strong> · '+tr('متوسط النتائج','Moyenne')+': <strong>'+(s.average_score==null?'—':esc(s.average_score)+'%')+'</strong></p>'+
                 '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+'<div class="gs-cl-head"><button type="button" class="gs-cl-secondary" data-action="student-notes" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('ملاحظات الأستاذ الخاصة','Notes pédagogiques privées')+'</button><button type="button" class="gs-cl-secondary" data-action="open-support-plan" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('خطة الدعم الفردية','Plan de soutien individuel')+'</button><button type="button" class="gs-cl-secondary" data-action="student-report" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('التقرير التربوي','Rapport pédagogique')+'</button></div><div id="gs-cl-notes-'+esc(s.student_id)+'"></div><div id="gs-cl-support-'+esc(s.student_id)+'"></div><div id="gs-cl-report-'+esc(s.student_id)+'"></div></article>';
@@ -636,6 +636,30 @@
   }
   document.addEventListener('input',e=>{
     if(e.target&&e.target.id==='gs-cl-roster-search')applyRosterFilters();
+  });
+  document.addEventListener('change',e=>{
+    if(!e.target||e.target.id!=='gs-cl-roster-sort')return;
+    const host=document.getElementById('gs-cl-roster');
+    if(!host)return;
+    const cards=Array.from(host.querySelectorAll('[data-student-card="true"]'));
+    const mode=e.target.value;
+    cards.sort((a,b)=>{
+      if(mode==='followup'){
+        const priority=Number(b.dataset.followUp==='true')-Number(a.dataset.followUp==='true');
+        if(priority)return priority;
+      }
+      if(mode==='score'){
+        const av=a.dataset.studentScore===''?Infinity:Number(a.dataset.studentScore);
+        const bv=b.dataset.studentScore===''?Infinity:Number(b.dataset.studentScore);
+        if(av!==bv)return av-bv;
+      }
+      if(mode==='name')return (a.dataset.studentName||'').localeCompare(b.dataset.studentName||'',ar()?'ar':'fr',{sensitivity:'base'});
+      return Number(a.dataset.originalOrder||0)-Number(b.dataset.originalOrder||0);
+    });
+    cards.forEach((card,index)=>{
+      if(!card.dataset.originalOrder)card.dataset.originalOrder=String(index);
+      host.appendChild(card);
+    });
   });
   document.addEventListener('click',e=>{
     const filter=e.target.closest&&e.target.closest('#gs-cl-roster [data-roster-filter]');
