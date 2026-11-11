@@ -176,7 +176,7 @@
       (m.status !== 'suspended' ? '<button class="reject" data-suspend-member="' + escapeHtml(m.user_id) + '">تعليق</button>' : '') + '</span></div>'
     ).join('') || '<div class="tc-state">لا توجد طلبات.</div>';
     $('tc-admin-resources').innerHTML = (docs.data || []).map(r =>
-      '<div class="tc-admin-row"><span><b>' + escapeHtml(r.title) + '</b><br>' + escapeHtml(r.file_name) + '</span><span>' + escapeHtml(r.status) + '</span><span><button data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'نشر' : 'إخفاء') + '</button></span></div>'
+      '<div class="tc-admin-row"><span><b>' + escapeHtml(r.title) + '</b><br>' + escapeHtml(r.file_name) + '</span><span>' + escapeHtml(r.status) + '</span><span><button data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'نشر' : 'إخفاء') + '</button><button class="danger" data-admin-delete="' + escapeHtml(r.id) + '">حذف نهائياً</button></span></div>'
     ).join('') || '<div class="tc-state">لا توجد موارد.</div>';
   }
   async function handleAuth(e) {
