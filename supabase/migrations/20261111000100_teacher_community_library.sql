@@ -23,6 +23,8 @@ as $fn$
     where a.user_id = (select auth.uid())
   );
 $fn$;
+revoke all on function public.gosvt_teacher_community_is_admin() from public;
+grant execute on function public.gosvt_teacher_community_is_admin() to authenticated;
 
 create table if not exists public.teacher_community_members (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -47,6 +49,8 @@ as $fn$
     where m.user_id = (select auth.uid()) and m.status = 'approved'
   );
 $fn$;
+revoke all on function public.gosvt_teacher_community_is_approved_member() from public;
+grant execute on function public.gosvt_teacher_community_is_approved_member() to authenticated;
 
 create table if not exists public.teacher_community_resources (
   id uuid primary key default gen_random_uuid(),
