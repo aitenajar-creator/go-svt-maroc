@@ -279,8 +279,8 @@
       $('tc-library-state').textContent='إعداد الاتصال غير متاح. تحقق من تحميل إعداد Supabase.';
       return;
     }
-    // Dedicated browser session key keeps teacher-community sign-in separate from the existing student-space session.
-    // Auth identities still belong to the same Supabase project; a truly separate identity directory requires a second project.
+    // This portal connects to its own Supabase project, separate from student and legacy teacher accounts.
+    // Its independent Auth project permits the same email address to register a distinct community account.
     client=window.supabase.createClient(config.url,config.publishableKey,{auth:{
       storageKey:'gosvt_teacher_community_auth_v1',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true
     }});
