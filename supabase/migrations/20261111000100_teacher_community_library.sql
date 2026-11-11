@@ -17,12 +17,12 @@ create or replace function public.gosvt_teacher_community_is_admin()
 returns boolean
 language sql stable security definer
 set search_path = public
-as $
+as $fn$
   select exists (
     select 1 from public.teacher_community_admins a
     where a.user_id = (select auth.uid())
   );
-$;
+$fn$;
 
 create table if not exists public.teacher_community_members (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -41,12 +41,12 @@ create or replace function public.gosvt_teacher_community_is_approved_member()
 returns boolean
 language sql stable security definer
 set search_path = public
-as $
+as $fn$
   select exists (
     select 1 from public.teacher_community_members m
     where m.user_id = (select auth.uid()) and m.status = 'approved'
   );
-$;
+$fn$;
 
 create table if not exists public.teacher_community_resources (
   id uuid primary key default gen_random_uuid(),
