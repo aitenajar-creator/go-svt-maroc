@@ -239,6 +239,14 @@
         const id=b.dataset.hideResource, r=await findResource(id);
         const {error}=await client.from('teacher_community_resources').update({status:r.status==='hidden'?'published':'hidden',updated_at:new Date().toISOString()}).eq('id',id);
         if(error) throw error; await Promise.all([loadAdmin(),loadLibrary()]);
+      } else if (b.dataset.adminDelete) {
+        const id=b.dataset.adminDelete, r=await findResource(id);
+        if (!window.confirm('هل تريد حذف هذه الوثيقة من المجتمع نهائياً؟')) return;
+        const removed=await client.storage.from('teacher-community').remove([r.storage_path]);
+        if(removed.error) throw removed.error;
+        const {error}=await client.from('teacher_community_resources').delete().eq('id',id);
+        if(error) throw error;
+        await Promise.all([loadAdmin(),loadLibrary(),loadMyResources()]);
       }
     } catch(err) { alert(err.message || 'تعذر تنفيذ العملية.'); }
   }
@@ -257,7 +265,6 @@
     document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x===b));['mine','pending','admin'].forEach(p=>$( 'tc-'+p+'-panel').hidden=p!==b.dataset.panel);}));
     $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin)loadAdmin();});
     $('tc-lang').addEventListener('click',()=>{lang=lang==='ar'?'fr':'ar';document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';$('tc-lang').textContent=lang==='ar'?'Français':'العربية';});
-    $('tc-dashboard').addEventListener('click',e=>{if(e.target.closest('[data-download],[data-delete],[data-toggle-share]'))resourceAction(e);});
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b)return;
