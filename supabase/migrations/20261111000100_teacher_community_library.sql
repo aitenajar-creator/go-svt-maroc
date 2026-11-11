@@ -1,19 +1,28 @@
 -- GO SVT Maroc — Independent teacher community and shared pedagogical library.
--- Additive migration: does not alter existing student, teacher-classroom or admin tables.
+-- Install in a NEW, dedicated Supabase project for teacher-community authentication and storage.
 -- Run once in Supabase SQL Editor after reviewing the project backup.
 
 create extension if not exists pgcrypto;
+
+-- This project has its own teacher-community administrators.
+-- Add the owner's auth user id to this table after the owner registers in this project.
+create table if not exists public.teacher_community_admins (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+alter table public.teacher_community_admins enable row level security;
+revoke all on public.teacher_community_admins from anon, authenticated;
 
 create or replace function public.gosvt_teacher_community_is_admin()
 returns boolean
 language sql stable security definer
 set search_path = public
-as $$
+as $
   select exists (
-    select 1 from public.profiles p
-    where p.id = (select auth.uid()) and p.role = 'admin'
+    select 1 from public.teacher_community_admins a
+    where a.user_id = (select auth.uid())
   );
-$$;
+$;
 
 create table if not exists public.teacher_community_members (
   user_id uuid primary key references auth.users(id) on delete cascade,
