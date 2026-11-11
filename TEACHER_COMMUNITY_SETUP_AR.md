@@ -22,6 +22,7 @@
 2. انسخ ونفّذ الملف `supabase/migrations/20261111000100_teacher_community_library.sql` كاملاً.
 3. ينشئ السكربت جدول المشرفين والأعضاء والموارد، وسياسات RLS، وbucket خاصاً باسم `teacher-community`.
 4. لا تنفّذ هذا الملف في مشروع Supabase الحالي الخاص بالتلاميذ.
+5. بعد تنفيذ ملف الإنشاء الأساسي (مرة واحدة)، نفّذ ملف التقوية الأمنية `supabase/migrations/20261111000200_teacher_community_storage_read_hardening.sql` في SQL Editor للمشروع الجديد نفسه. هذا الملف يحدّث سياسة قراءة Storage حتى لا يتمكن من تنزيل الملفات إلا صاحبها أو المدير أو عضو مقبول عندما يكون الملف منشوراً ومشتركاً.
 
 ## 4. تعيين حسابك مديراً لمجتمع الأساتذة
 1. افتح صفحة `https://gosvtmaroc.com/teacher-community.html`.
