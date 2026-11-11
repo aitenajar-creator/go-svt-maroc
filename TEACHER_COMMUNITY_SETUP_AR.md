@@ -14,8 +14,8 @@
 ## 2. إعداد Auth
 في المشروع الجديد:
 - Authentication → Providers → Email: فعّل البريد الإلكتروني.
-- Authentication → URL Configuration: اجعل Site URL عنوان صفحة `teacher-community.html` على موقع GO SVT Maroc.
-- أضف رابط `https://gosvtmaroc.com/teacher-community.html` إلى Redirect URLs (وأضف رابط المعاينة إن احتجته).
+- Authentication → URL Configuration: اجعل Site URL هو `https://gosvtmaroc.com`.
+- أضف `https://gosvtmaroc.com/teacher-community.html` إلى Redirect URLs (وأضف رابط المعاينة إن احتجته).
 
 ## 3. إنشاء الجداول والتخزين
 1. افتح SQL Editor في مشروع الأساتذة الجديد.
