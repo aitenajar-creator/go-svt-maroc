@@ -12,7 +12,7 @@
   const icons = {pdf:'📕',doc:'📘',docx:'📘',ppt:'📊',pptx:'📊',xls:'📗',xlsx:'📗',odt:'📘',odp:'📊',jpg:'🖼️',jpeg:'🖼️',png:'🖼️',webp:'🖼️',zip:'🗜️',txt:'📄'};
   const allowed = new Set(['pdf','doc','docx','ppt','pptx','xls','xlsx','odt','odp','jpg','jpeg','png','webp','txt','zip']);
   const MAX_FILE = 50 * 1024 * 1024;
-  let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [], lang = 'ar';
+  let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -264,7 +264,6 @@
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
     document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x===b));['mine','pending','admin'].forEach(p=>$( 'tc-'+p+'-panel').hidden=p!==b.dataset.panel);}));
     $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin)loadAdmin();});
-    $('tc-lang').addEventListener('click',()=>{lang=lang==='ar'?'fr':'ar';document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';$('tc-lang').textContent=lang==='ar'?'Français':'العربية';});
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b)return;
