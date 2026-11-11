@@ -84,12 +84,12 @@
     if (error && error.name !== 'AuthSessionMissingError') throw error;
     user = data && data.user || null; member = null; isAdmin = false;
     if (user) {
-      const profile = await client.from('profiles').select('role').eq('id', user.id).maybeSingle();
-      isAdmin = !!(profile.data && profile.data.role === 'admin');
+      const adminCheck = await client.rpc('gosvt_teacher_community_is_admin');
+      if (adminCheck.error) throw adminCheck.error;
+      isAdmin = adminCheck.data === true;
       if (!isAdmin) member = await ensureMember();
       else {
-        const m = await client.from('teacher_community_members').select('*').eq('user_id', user.id).maybeSingle();
-        member = m.data || { display_name: user.email, status: 'approved' };
+        member = { display_name: user.user_metadata?.teacher_display_name || user.email, status: 'approved' };
       }
     }
     setSignedInUI();
