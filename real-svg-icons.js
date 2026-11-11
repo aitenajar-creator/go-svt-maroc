@@ -71,7 +71,7 @@
     });
     (root||document).querySelectorAll('#gs-classroom button[data-action]').forEach(el=>{
       if(el.dataset.gsIconDone)return;
-      const action=el.dataset.action;const name=action==='refresh-panel'?'refresh':action==='download-report'?'download':action==='thread'||action==='ask'?'message':action==='join'||action==='create-class'?'users':action.includes('search')?'search':action.includes('delete')?'shield':action.includes('report')?'chart':action.includes('question')?'message':action.includes('review')?'calendar':'check';
+      const action=el.dataset.action;const actionIcons={'refresh-panel':'refresh','download-report':'download','thread':'messageReply','ask':'send','join':'userPlus','create-class':'users','roster':'usersRound','filter-inbox':'filter','toggle-pin':'pin','submit-assignment':'send','create-assignment':'clipboardCheck','create-announcement':'megaphone','create-session':'calendarPlus','grade-submission':'checkCircle','reply':'messageReply','export-class-report':'fileText','student-notes':'note','open-support-plan':'heart','student-report':'chart','print-student-report':'fileText','save-support-plan':'checkCircle','edit-student-note':'pencilLine','delete-student-note':'trash','save-student-note':'checkCircle','update-student-note':'pencilLine'};const name=actionIcons[action]||(action.includes('search')?'search':action.includes('delete')?'trash':action.includes('report')?'chart':action.includes('question')?'message':action.includes('review')?'calendar':'check');
       addIcon(el,name);el.dataset.gsIconDone='1';
     });
   }
