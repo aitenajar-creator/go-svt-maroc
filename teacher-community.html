@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#116b56">
+  <title>مجتمع الأساتذة | GO SVT Maroc</title>
+  <meta name="description" content="فضاء مستقل لتبادل الموارد التربوية والمهنية بين أساتذة علوم الحياة والأرض.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="teacher-community.css">
+</head>
+<body>
+  <header class="tc-header">
+    <a class="tc-brand" href="index.html"><span class="tc-brand-mark">🌿</span><span><strong>GO SVT Maroc</strong><small>مجتمع الأساتذة</small></span></a>
+    <nav><a href="#library">المكتبة المشتركة</a><a href="#contribute">مشاركة مورد</a><a href="index.html">الموقع الرئيسي</a></nav>
+    <div class="tc-header-actions"><button id="tc-lang" class="tc-ghost" type="button">Français</button><button id="tc-account" class="tc-account" type="button">دخول الأساتذة</button></div>
+  </header>
+
+  <main>
+    <section class="tc-hero">
+      <div class="tc-hero-copy">
+        <span class="tc-kicker">COMMUNAUTÉ DES ENSEIGNANTS · SVT</span>
+        <h1>نتقاسم المعرفة،<br><em>ونرتقي بالممارسة التربوية.</em></h1>
+        <p>فضاء مهني للأساتذة لتبادل الدروس والعروض والجذاذات والفروض والوثائق التربوية، في مكتبة واحدة منظمة وآمنة.</p>
+        <div class="tc-hero-actions"><button id="tc-hero-join" class="tc-primary" type="button">انضم إلى مجتمع الأساتذة <span>←</span></button><a class="tc-secondary" href="#library">اكتشف المكتبة</a></div>
+        <div class="tc-trust"><span>✓ حساب مستقل للمجتمع</span><span>✓ مشاركة بين الأساتذة</span><span>✓ إشراف المدير</span></div>
+      </div>
+      <div class="tc-hero-art" aria-hidden="true"><div class="tc-art-glow"></div><div class="tc-art-card tc-art-card-a"><span>📊</span><b>عروض تربوية</b><small>PPT · PPTX</small></div><div class="tc-art-card tc-art-card-b"><span>📘</span><b>موارد SVT</b><small>PDF · DOCX</small></div><div class="tc-art-orbit">🧬</div><div class="tc-art-caption">SAVOIR · PARTAGE · INNOVATION</div></div>
+    </section>
+
+    <section class="tc-benefits">
+      <article><span>📚</span><div><b>مكتبة مشتركة</b><small>موارد يشاركها مدير المنصة والأساتذة.</small></div></article>
+      <article><span>📤</span><div><b>مساهماتك المهنية</b><small>ارفع ملفاتك ونظمها وشاركها.</small></div></article>
+      <article><span>🔒</span><div><b>مجتمع محمي</b><small>الدخول والتحميل للأعضاء المقبولين فقط.</small></div></article>
+      <article><span>🤝</span><div><b>تعاون تربوي</b><small>استفد من خبرات زملائك ومواردهم.</small></div></article>
+    </section>
+
+    <section id="library" class="tc-section">
+      <div class="tc-section-heading"><div><span class="tc-kicker">RESSOURCES PARTAGÉES</span><h2>المكتبة التربوية المشتركة</h2><p>تصفح الموارد التي نشرها المدير والأساتذة الأعضاء.</p></div><div class="tc-library-tools"><input id="tc-search" type="search" placeholder="ابحث عن وثيقة أو موضوع..."><select id="tc-category"><option value="">كل التصنيفات</option><option value="curriculum">المناهج والتوجيهات</option><option value="lesson">الدروس والجذاذات</option><option value="presentation">العروض التقديمية</option><option value="assessment">الفروض والتقويم</option><option value="exam">الامتحانات</option><option value="correction">التصحيح</option><option value="planning">التخطيط السنوي</option><option value="professional">وثائق مهنية</option><option value="training">التكوين المستمر</option><option value="other">موارد أخرى</option></select></div></div>
+      <div id="tc-library-state" class="tc-state">سجّل الدخول إلى مجتمع الأساتذة للاطلاع على الموارد المشتركة.</div>
+      <div id="tc-resource-grid" class="tc-resource-grid"></div>
+    </section>
+
+    <section id="contribute" class="tc-contribute">
+      <div><span class="tc-kicker">CONTRIBUER</span><h2>موردك قد يفيد زميلاً آخر</h2><p>شارك عرضاً أو جذاذة أو فرضاً أو مرجعاً علمياً، وساهم في إثراء المكتبة المهنية المشتركة.</p><button id="tc-upload-open" class="tc-primary" type="button">＋ مشاركة ملف</button></div>
+      <div class="tc-file-types"><span>PDF</span><span>DOCX</span><span>PPTX</span><span>XLSX</span><span>ODT</span><span>ODP</span><small>حتى 50 MB للملف الواحد</small></div>
+    </section>
+
+    <section id="tc-dashboard" class="tc-dashboard" hidden>
+      <div class="tc-dashboard-head"><div><span class="tc-kicker">ESPACE PERSONNEL</span><h2>مساحتي المهنية</h2><p id="tc-member-label"></p></div><button id="tc-logout" class="tc-ghost" type="button">تسجيل الخروج</button></div>
+      <div class="tc-dashboard-tabs"><button class="active" data-panel="mine">ملفاتي</button><button data-panel="pending">حالة العضوية</button><button id="tc-admin-tab" data-panel="admin" hidden>إدارة المجتمع</button></div>
+      <div id="tc-mine-panel"><div id="tc-my-resources" class="tc-resource-grid"></div></div>
+      <div id="tc-pending-panel" hidden><div id="tc-membership-status" class="tc-state"></div></div>
+      <div id="tc-admin-panel" hidden><div class="tc-admin-grid"><div><h3>طلبات الانضمام</h3><div id="tc-admin-members"></div></div><div><h3>إدارة الموارد</h3><div id="tc-admin-resources"></div></div></div></div>
+    </section>
+  </main>
+
+  <footer class="tc-footer"><b>GO SVT Maroc</b><span>مجتمع مهني للتعاون وتبادل موارد علوم الحياة والأرض.</span><a href="index.html">العودة إلى الموقع الرئيسي</a></footer>
+
+  <dialog id="tc-auth-dialog" class="tc-dialog"><form method="dialog"><button class="tc-dialog-close" aria-label="إغلاق">×</button></form><div class="tc-dialog-inner"><span class="tc-kicker">ESPACE ENSEIGNANT</span><h2 id="tc-auth-title">الانضمام إلى مجتمع الأساتذة</h2><div class="tc-auth-tabs"><button type="button" class="active" data-auth-view="login">دخول</button><button type="button" data-auth-view="register">تسجيل جديد</button></div><form id="tc-auth-form"><div id="tc-register-fields" hidden><label>الاسم الكامل<input id="tc-name" autocomplete="name" minlength="2" maxlength="100"></label><label>الصفة المهنية<input id="tc-title" placeholder="أستاذ علوم الحياة والأرض"></label><label>المؤسسة (اختياري)<input id="tc-school"></label></div><label>البريد الإلكتروني<input id="tc-email" type="email" autocomplete="email" required></label><label>كلمة المرور<input id="tc-password" type="password" autocomplete="current-password" minlength="8" required></label><p id="tc-auth-message" class="tc-message" role="alert"></p><button id="tc-auth-submit" class="tc-primary" type="submit">دخول</button></form><p class="tc-dialog-note">تُراجع طلبات الانضمام قبل إتاحة مكتبة الملفات. لا تشارك كلمة مرورك مع أي شخص.</p></div></dialog>
+
+  <dialog id="tc-upload-dialog" class="tc-dialog"><form method="dialog"><button class="tc-dialog-close" aria-label="إغلاق">×</button></form><div class="tc-dialog-inner"><span class="tc-kicker">PARTAGE DE DOCUMENT</span><h2>مشاركة مورد تربوي</h2><form id="tc-upload-form"><label>عنوان الوثيقة<input id="tc-file-title" maxlength="180" required></label><label>وصف مختصر<textarea id="tc-file-description" maxlength="3000" rows="3"></textarea></label><label>التصنيف<select id="tc-file-category" required><option value="lesson">الدروس والجذاذات</option><option value="presentation">العروض التقديمية</option><option value="assessment">الفروض والتقويم</option><option value="exam">الامتحانات</option><option value="correction">التصحيح</option><option value="curriculum">المناهج والتوجيهات</option><option value="planning">التخطيط السنوي</option><option value="professional">وثائق مهنية</option><option value="training">التكوين المستمر</option><option value="other">أخرى</option></select></label><label class="tc-file-picker">اختر ملفاً<input id="tc-file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.odt,.odp,.jpg,.jpeg,.png,.webp,.txt,.zip" required><small id="tc-file-hint">PDF وWord وPowerPoint وExcel وغيرها · الحد الأقصى 50 MB</small></label><label class="tc-check"><input id="tc-file-share" type="checkbox" checked> مشاركة الملف مع جميع أعضاء المجتمع المقبولين</label><p id="tc-upload-message" class="tc-message" role="alert"></p><button id="tc-upload-submit" class="tc-primary" type="submit">رفع وحفظ الوثيقة</button></form></div></dialog>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="teacher-community.js"></script>
+</body>
+</html>
