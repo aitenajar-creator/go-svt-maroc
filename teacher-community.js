@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const config = window.GoSVTSupabasePublicConfig;
+  const config = window.GoSVTTeacherSupabaseConfig;
   const $ = id => document.getElementById(id);
   const text = (id, value) => { const el = $(id); if (el) el.textContent = value; };
   const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
