@@ -15,7 +15,7 @@
   <header class="tc-header">
     <a class="tc-brand" href="index.html"><span class="tc-brand-mark">🌿</span><span><strong>GO SVT Maroc</strong><small>مجتمع الأساتذة</small></span></a>
     <nav><a href="#library">المكتبة المشتركة</a><a href="#contribute">مشاركة مورد</a><a href="index.html">الموقع الرئيسي</a></nav>
-    <div class="tc-header-actions"><button id="tc-account" class="tc-account" type="button">دخول الأساتذة</button></div>
+    <div class="tc-header-actions"><button id="tc-invite-friends" class="tc-invite" type="button" aria-label="دعوة الأصدقاء إلى مجتمع الأساتذة">🤝 دعوة الأصدقاء</button><button id="tc-account" class="tc-account" type="button">دخول الأساتذة</button></div>
   </header>
 
   <main>
@@ -65,5 +65,39 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="teacher-community-config.js"></script>
   <script src="teacher-community.js"></script>
+  <style>
+    .tc-invite{border:1px solid #cfe3d8;border-radius:12px;padding:10px 15px;background:#edf7f1;color:#17634f;font:700 13px Cairo,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+    .tc-invite:hover{background:#dcefe4}
+    .tc-invite:focus-visible{outline:3px solid #d9a94f;outline-offset:3px}
+    @media(max-width:560px){.tc-header-actions{gap:6px}.tc-invite{padding:8px 9px;font-size:10px}}
+  </style>
+  <script>
+    (function(){
+      const inviteButton = document.getElementById('tc-invite-friends');
+      if (!inviteButton) return;
+      inviteButton.addEventListener('click', async function(){
+        const inviteUrl = new URL('teacher-community.html', window.location.href).href;
+        const inviteData = {
+          title: 'مجتمع الأساتذة | GO SVT Maroc',
+          text: 'أدعوك للانضمام إلى مجتمع الأساتذة في GO SVT Maroc، فضاء لتبادل الموارد والدروس والوثائق التربوية.',
+          url: inviteUrl
+        };
+        try {
+          if (navigator.share) {
+            await navigator.share(inviteData);
+          } else if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(inviteUrl);
+            window.alert('تم نسخ رابط مجتمع الأساتذة. أرسله إلى أصدقائك وزملائك.');
+          } else {
+            window.prompt('انسخ رابط مجتمع الأساتذة وأرسله إلى أصدقائك:', inviteUrl);
+          }
+        } catch (error) {
+          if (error && error.name !== 'AbortError') {
+            window.prompt('انسخ رابط مجتمع الأساتذة وأرسله إلى أصدقائك:', inviteUrl);
+          }
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
