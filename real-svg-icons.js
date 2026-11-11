@@ -25,11 +25,20 @@
     usersRound:'<path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M20 8v6M23 11h-6"/>',
     award:'<circle cx="12" cy="8" r="6"/><path d="m8.2 13-1.2 9 5-3 5 3-1.2-9"/>',
     search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
-    settings:'<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.6-1.4-2.4 1.4-1.1a8 8 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.6 1.4 2.4-1.4 1.1a8 8 0 0 1 0 2Z"/>'
+    settings:'<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.6-1.4-2.4 1.4-1.1a8 8 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.6 1.4 2.4-1.4 1.1a8 8 0 0 1 0 2Z"/>',
+    flask:'<path d="M9 3h6M10 3v6l-5.5 9.2A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.8L14 9V3"/><path d="M8 15h8"/>',
+    atom:'<circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(30 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)"/>',
+    leaf:'<path d="M20 4c-8 0-14 3-14 10a6 6 0 0 0 6 6c7 0 10-8 8-16Z"/><path d="M4 21c3-6 7-9 13-12"/>',
+    dna:'<path d="M7 3c0 6 10 12 10 18M17 3C17 9 7 15 7 21M8 6h8M6 10h12M6 14h12M8 18h8"/>',
+    testtube:'<path d="M9 3h6M10 3v11a4 4 0 1 0 4 0V3"/><path d="M10 15h4"/>',
+    brain:'<path d="M12 18V5a3 3 0 0 0-5.8-1A4 4 0 0 0 4 11a4 4 0 0 0 3 7h5ZM12 18V5a3 3 0 0 1 5.8-1A4 4 0 0 1 20 11a4 4 0 0 1-3 7h-5Z"/>',
+    clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    shield:'<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'
   };
   const svg = name => '<svg class="gs-svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(paths[name]||paths.book)+'</svg>';
   const tabIcons={dashboard:'chart',progress:'target',history:'clipboard',mistakes:'microscope',favorites:'heart',motivation:'trophy',planner:'calendar',notes:'note'};
-  const emojiMap={'📚':'book','📖':'book','✏️':'pencil','📝':'clipboard','🌍':'globe','📊':'chart','🎯':'target','⭐':'award','🏅':'trophy','🏆':'trophy','🗓️':'calendar','🗒':'note','🔥':'flame','✅':'check','🌱':'microscope','🧩':'target','⚡':'target','🎓':'users','💬':'message','📢':'bell','🔬':'microscope','🔄':'refresh','🔍':'search','⚙️':'settings'};
+  const emojiMap={'📚':'book','📖':'book','✏️':'pencil','📝':'clipboard','📋':'clipboard','🌍':'globe','🌐':'globe','📊':'chart','📈':'chart','🎯':'target','⭐':'award','🏅':'award','🏆':'trophy','🗓️':'calendar','📅':'calendar','🗒':'note','🔥':'flame','✅':'check','🌱':'leaf','🌿':'leaf','🧩':'target','⚡':'target','🎓':'users','👥':'users','💬':'message','📢':'bell','🔔':'bell','🔬':'microscope','🧪':'testtube','⚗️':'flask','🧬':'dna','⚛️':'atom','🧠':'brain','🔄':'refresh','🔍':'search','⚙️':'settings','⏱️':'clock','🛡️':'shield','✉️':'mail'};
   function addIcon(el,name,where){if(!el||el.querySelector(':scope > .gs-svg-icon'))return;const wrap=document.createElement('span');wrap.innerHTML=svg(name);const node=wrap.firstChild;if(where==='after')el.appendChild(node);else el.insertBefore(node,el.firstChild);}
   function decorate(root){
     (root||document).querySelectorAll('.feature-icon').forEach((el,i)=>{el.textContent='';el.appendChild(document.createRange().createContextualFragment(svg(['book','pencil','clipboard','globe'][i%4])));});
@@ -49,6 +58,12 @@
       else if(/مراجعة|révision|séance/i.test(raw))name='calendar';
       else if(/تقرير|rapport|نتائج|résultat/i.test(raw))name='chart';
       else if(/إعداد|paramètre/i.test(raw))name='settings';
+      else if(/مختبر|تجربة|laboratoire|expérience/i.test(raw))name='flask';
+      else if(/وراثة|جين|adn|génétique/i.test(raw))name='dna';
+      else if(/خلية|خلايا|cellule/i.test(raw))name='atom';
+      else if(/نبات|بيئة|écologie|plante/i.test(raw))name='leaf';
+      else if(/دماغ|عصب|cerveau|nerveux/i.test(raw))name='brain';
+      else if(/وقت|مدة|وقت|temps|durée/i.test(raw))name='clock';
       else if(/بحث|recherche/i.test(raw))name='search';
       else {const emoji=Object.keys(emojiMap).find(e=>raw.startsWith(e));if(emoji)name=emojiMap[emoji];}
       el.innerHTML=el.innerHTML.replace(/^(?:\s|🎓|💬|📚|📢|🗓️)+/u,'');
@@ -56,7 +71,7 @@
     });
     (root||document).querySelectorAll('#gs-classroom button[data-action]').forEach(el=>{
       if(el.dataset.gsIconDone)return;
-      const action=el.dataset.action;const name=action==='refresh-panel'?'refresh':action==='download-report'?'download':action==='thread'||action==='ask'?'message':action==='join'||action==='create-class'?'users':'check';
+      const action=el.dataset.action;const name=action==='refresh-panel'?'refresh':action==='download-report'?'download':action==='thread'||action==='ask'?'message':action==='join'||action==='create-class'?'users':action.includes('search')?'search':action.includes('delete')?'shield':action.includes('report')?'chart':action.includes('question')?'message':action.includes('review')?'calendar':'check';
       addIcon(el,name);el.dataset.gsIconDone='1';
     });
   }
