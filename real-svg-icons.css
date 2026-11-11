@@ -1,0 +1,13 @@
+/* Real SVG icon system — shared visual language for student and teacher spaces */
+.gs-svg-icon{display:inline-block;width:1.2em;height:1.2em;flex:0 0 1.2em;vertical-align:-.22em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.feature-icon .gs-svg-icon{width:32px;height:32px;color:#176b4b}
+.space-tab .gs-svg-icon{margin-inline-end:.45rem}
+.stat-icon .gs-svg-icon{width:25px;height:25px;color:#176b4b}
+.gs-path-icon .gs-svg-icon{width:23px;height:23px;color:#176b4b}
+.gs-badge-icon .gs-svg-icon{width:25px;height:25px;color:#b88626}
+.streak-icon .gs-svg-icon{width:27px;height:27px;color:#d97706}
+#gs-classroom h3 .gs-svg-icon{color:#238052}
+#gs-classroom .gs-cl-head h3 .gs-svg-icon{color:inherit}
+#gs-classroom button .gs-svg-icon{margin-inline-end:.4rem}
+#gs-classroom h3 .gs-svg-icon{width:1.25em;height:1.25em}
+html.gs-dark .feature-icon .gs-svg-icon,html.gs-dark .stat-icon .gs-svg-icon{color:#8bd5a7}
