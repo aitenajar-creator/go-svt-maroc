@@ -5,12 +5,6 @@
   'use strict';
   const SUPABASE_URL = 'https://faztvkeyrxvmjzzfuyiu.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_qtKVH-L5ewYNd-0je_7YtA_yMOdgrKb';
-  // Public browser configuration is also used by the isolated teacher-community portal.
-  // The publishable key is safe for client use; all data access remains protected by RLS.
-  window.GoSVTSupabasePublicConfig = Object.freeze({ url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY });
-  // The teacher community creates its own Supabase client with a dedicated auth storage key.
-  // Do not initialize the existing student-space client on that standalone page.
-  if (document.body && document.body.dataset.teacherCommunity === 'true') return;
   if (!window.supabase || typeof window.supabase.createClient !== 'function') {
     console.error('[GoSVT] Supabase JS library did not load.');
     window.GoSVTAuthConfigError = 'تعذر تحميل مكتبة الاتصال بـ Supabase.';
