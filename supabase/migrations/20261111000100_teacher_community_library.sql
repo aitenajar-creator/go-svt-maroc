@@ -104,7 +104,10 @@ with check (
   owner_id = (select auth.uid())
   and (
     public.gosvt_teacher_community_is_admin()
-    or public.gosvt_teacher_community_is_approved_member()
+    or (
+      public.gosvt_teacher_community_is_approved_member()
+      and (storage.foldername(storage_path))[1] = (select auth.uid())::text
+    )
   )
 );
 
@@ -112,7 +115,13 @@ drop policy if exists teacher_community_resource_update_owner_or_admin on public
 create policy teacher_community_resource_update_owner_or_admin
 on public.teacher_community_resources for update to authenticated
 using (owner_id = (select auth.uid()) or public.gosvt_teacher_community_is_admin())
-with check (owner_id = (select auth.uid()) or public.gosvt_teacher_community_is_admin());
+with check (
+  (owner_id = (select auth.uid()) or public.gosvt_teacher_community_is_admin())
+  and (
+    public.gosvt_teacher_community_is_admin()
+    or (storage.foldername(storage_path))[1] = (select auth.uid())::text
+  )
+);
 
 drop policy if exists teacher_community_resource_delete_owner_or_admin on public.teacher_community_resources;
 create policy teacher_community_resource_delete_owner_or_admin
