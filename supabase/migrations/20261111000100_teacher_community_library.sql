@@ -15,17 +15,6 @@ as $$
   );
 $$;
 
-create or replace function public.gosvt_teacher_community_is_approved_member()
-returns boolean
-language sql stable security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.teacher_community_members m
-    where m.user_id = (select auth.uid()) and m.status = 'approved'
-  );
-$$;
-
 create table if not exists public.teacher_community_members (
   user_id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null check (char_length(trim(display_name)) between 2 and 100),
@@ -38,6 +27,17 @@ create table if not exists public.teacher_community_members (
 
 create index if not exists teacher_community_members_status_idx
   on public.teacher_community_members(status, created_at desc);
+
+create or replace function public.gosvt_teacher_community_is_approved_member()
+returns boolean
+language sql stable security definer
+set search_path = public
+as $
+  select exists (
+    select 1 from public.teacher_community_members m
+    where m.user_id = (select auth.uid()) and m.status = 'approved'
+  );
+$;
 
 create table if not exists public.teacher_community_resources (
   id uuid primary key default gen_random_uuid(),
