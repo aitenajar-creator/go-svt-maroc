@@ -127,8 +127,13 @@
     const prevRenderCard = renderCard;
     renderCard = function (path, badgeText) {
         const html = prevRenderCard(path, badgeText);
-        const i = html.lastIndexOf('</div>');
-        return i === -1 ? html : html.slice(0, i) + toolsHtml(path) + html.slice(i);
+        // Put the original four quick-action icons inside the existing side rail.
+        // This keeps them horizontally aligned beside the PDF page, not below it.
+        const cardClose = html.lastIndexOf('</div>');
+        if (cardClose < 0) return html;
+        const actionsClose = html.lastIndexOf('</div>', cardClose - 1);
+        if (actionsClose < 0) return html.slice(0, cardClose) + toolsHtml(path) + html.slice(cardClose);
+        return html.slice(0, actionsClose) + toolsHtml(path) + html.slice(actionsClose);
     };
 
     // ---------- المفضلة ----------
