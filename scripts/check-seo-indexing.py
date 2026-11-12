@@ -24,12 +24,14 @@ for name in ("admin.html", "teacher-community.html", "test-runner.html"):
         errors.append(f"Missing expected page: {name}")
         continue
     html = page.read_text(encoding="utf-8")
-    if not re.search(
-        r'<meta\s+name=["\']robots["\']\s+content=["\']noindex\s*,\s*nofollow["\']',
+    match = re.search(
+        r'<meta\s+name=["\']robots["\']\s+content=["\']([^"\']+)["\']',
         html,
         re.IGNORECASE,
-    ):
-        errors.append(f"{name}: private page must be noindex, nofollow")
+    )
+    directives = {item.strip().lower() for item in match.group(1).split(",")} if match else set()
+    if not {"noindex", "nofollow"}.issubset(directives):
+        errors.append(f"{name}: private page must include noindex and nofollow")
 
 if errors:
     print("SEO/indexing checks failed:")
