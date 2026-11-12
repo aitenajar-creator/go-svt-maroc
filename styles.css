@@ -2004,3 +2004,202 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
         min-width: 0 !important;
     }
 }
+
+
+/* Unified visual system for every published file type.
+   Preview stays on the left and file details/actions stay on the right. */
+.content-card.file-resource-card {
+    position: relative !important;
+    isolation: isolate !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: .65rem !important;
+    min-width: 0 !important;
+    min-height: 360px !important;
+    padding: 1rem !important;
+    overflow: hidden !important;
+    border: 1px solid #d7e6dc !important;
+    border-inline-start: 5px solid #2c5f2d !important;
+    border-radius: 24px !important;
+    background: rgba(255,255,255,.94) !important;
+    box-shadow: 0 8px 26px rgba(34,73,48,.07) !important;
+}
+.content-card.file-resource-card::before { content: none !important; display: none !important; }
+.content-card.file-resource-card > .level-badge,
+.content-card.file-resource-card > .new-badge {
+    position: relative !important;
+    z-index: 2 !important;
+    align-self: flex-start !important;
+    margin: 0 !important;
+}
+.content-card.file-resource-card .file-card-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) !important;
+    grid-template-areas: "preview details" !important;
+    align-items: stretch !important;
+    gap: .8rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+}
+.content-card.file-resource-card .file-preview-panel,
+.content-card.file-resource-card .file-info-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    border: 1px solid #cbded2 !important;
+    border-radius: 20px !important;
+    background: #fff !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+    grid-area: preview !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+    background: #f0f4f2 !important;
+}
+.content-card.file-resource-card .file-info-panel {
+    grid-area: details !important;
+    align-items: stretch !important;
+    gap: .7rem !important;
+    padding: 1rem !important;
+    text-align: start !important;
+}
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 300px !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #f0f4f2 !important;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    object-position: top center !important;
+    background: #fff !important;
+}
+.content-card.file-resource-card .file-preview-panel .file-thumbnail {
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .6rem !important;
+}
+.content-card.file-resource-card .file-preview-panel .file-thumbnail span { font-size: 5rem !important; }
+.content-card.file-resource-card .file-preview-panel .file-thumbnail small {
+    color: #718078 !important;
+    font-weight: 700 !important;
+    letter-spacing: .08em !important;
+}
+.content-card.file-resource-card .file-info-panel > h3,
+.content-card.file-resource-card .file-info-panel > .file-name {
+    position: static !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.content-card.file-resource-card .file-info-panel > h3 {
+    color: #214b36 !important;
+    font-size: 1.15rem !important;
+    line-height: 1.5 !important;
+}
+.content-card.file-resource-card .file-info-panel > .file-name {
+    color: #89958e !important;
+    font-size: .9rem !important;
+    line-height: 1.5 !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: .6rem !important;
+    width: 100% !important;
+    margin: .15rem 0 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
+.content-card.file-resource-card .file-info-panel > .card-actions .download-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 76px !important;
+    margin: 0 !important;
+    padding: .7rem .5rem !important;
+    border-radius: 16px !important;
+    text-align: center !important;
+    overflow-wrap: anywhere !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .35rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+    padding-top: .65rem !important;
+    border-top: 1px solid #e6eee8 !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool {
+    display: inline-flex !important;
+    flex: 1 1 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    padding: .25rem !important;
+    font-size: 1.05rem !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .content-card.file-resource-card { grid-column: 1 / -1 !important; }
+    .content-card.file-resource-card { padding: .55rem !important; border-radius: 16px !important; }
+    .content-card.file-resource-card .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+        grid-template-areas: "preview details" !important;
+        gap: .45rem !important;
+    }
+    .content-card.file-resource-card .file-preview-panel,
+    .content-card.file-resource-card .file-info-panel { border-radius: 12px !important; }
+    .content-card.file-resource-card .file-preview-panel > .content-card-thumbnail { min-height: 210px !important; }
+    .content-card.file-resource-card .file-info-panel { gap: .5rem !important; padding: .55rem !important; }
+    .content-card.file-resource-card .file-info-panel > h3 { font-size: .82rem !important; line-height: 1.4 !important; }
+    .content-card.file-resource-card .file-info-panel > .file-name { font-size: .66rem !important; }
+    .content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
+    .content-card.file-resource-card .file-info-panel > .card-actions .download-btn {
+        min-height: 42px !important; padding: .35rem .2rem !important; font-size: .7rem !important;
+    }
+    .content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool { min-height: 34px !important; font-size: .88rem !important; }
+}
+@media (max-width: 360px) {
+    .content-card.file-resource-card .file-info-panel { padding: .4rem !important; }
+    .content-card.file-resource-card .file-info-panel > h3 { font-size: .74rem !important; }
+    .content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
+    .content-card.file-resource-card .file-info-panel > .card-actions .download-btn { font-size: .62rem !important; }
+}
