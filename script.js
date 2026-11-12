@@ -321,26 +321,34 @@ async function runSearch(query) {
     const results = document.getElementById('gs-search-results');
     if (!results) return;
     const words = normalizeText(query).split(/\s+/).filter(Boolean);
+    const category = document.getElementById('gs-search-category')?.value || '';
+    const level = document.getElementById('gs-search-level')?.value || '';
+    const language = document.getElementById('gs-search-language')?.value || '';
 
-    if (words.length === 0) {
-        results.innerHTML = `<p class="gs-search-hint">${t('اكتب اسم درس أو تمرين أو امتحان...', 'Tapez le nom d’un cours, d’un exercice ou d’un examen...')}</p>`;
+    if (words.length === 0 && !category && !level && !language) {
+        results.innerHTML = `<p class="gs-search-hint">${t('اكتب اسم درس أو اختر نوع المورد أو المستوى أو اللغة...', 'Saisissez un titre ou choisissez un type, un niveau ou une langue...')}</p>`;
         return;
     }
     try {
         const all = await loadManifest();
         const matches = all.filter(p => {
             if (isHiddenDuplicateCourseCopy(p)) return false;
-            const hay = normalizeText(p);
-            return words.every(w => hay.includes(w));
+            const normalizedPath = normalizeText(p);
+            if (words.length && !words.every(w => normalizedPath.includes(w))) return false;
+            if (category && !p.toLowerCase().includes('/' + category + '/')) return false;
+            if (level && !p.toLowerCase().includes('/' + level.toLowerCase() + '/')) return false;
+            if (language && !p.toLowerCase().includes('/' + language + '/')) return false;
+            return true;
         });
         if (matches.length === 0) {
-            results.innerHTML = `<p class="gs-search-hint">${t('لا توجد نتائج', 'Aucun résultat')}</p>`;
+            results.innerHTML = `<p class="gs-search-hint">${t('لا توجد نتائج مطابقة لهذه الاختيارات', 'Aucun résultat pour ces critères')}</p>`;
             return;
         }
         const more = matches.length > 60
-            ? `<p class="gs-search-hint">${t('دقّق البحث لعرض نتائج أخرى', 'Précisez la recherche pour voir plus de résultats')}</p>`
+            ? `<p class="gs-search-hint">${t('توجد نتائج إضافية؛ دقّق البحث لتضييق النتائج', 'Il existe d’autres résultats ; affinez les critères')}</p>`
             : '';
-        results.innerHTML = matches.slice(0, 60).map(p => renderCard(p, describePath(p))).join('') + more;
+        results.innerHTML = `<p class="gs-search-count">${t('عدد النتائج:', 'Résultats :')} ${matches.length}</p>` +
+            matches.slice(0, 60).map(p => renderCard(p, describePath(p))).join('') + more;
     } catch (error) {
         results.innerHTML = `<p class="gs-search-hint">${t('تعذر البحث حالياً', 'Recherche indisponible')}</p>`;
     }
@@ -408,6 +416,28 @@ function buildUI() {
                 <input type="search" id="gs-search-input" autocomplete="off">
                 <button type="button" class="gs-close" aria-label="Fermer">✕</button>
             </div>
+            <div class="gs-search-filters" role="group" aria-label="Search filters">
+                <select id="gs-search-category" aria-label="Type de ressource">
+                    <option value="">${t('كل الموارد', 'Tous les types')}</option>
+                    <option value="cours">${t('الدروس', 'Cours')}</option>
+                    <option value="exercices">${t('التمارين', 'Exercices')}</option>
+                    <option value="examens">${t('الامتحانات', 'Examens')}</option>
+                    <option value="fiches">${t('الملخصات', 'Fiches')}</option>
+                    <option value="documents">${t('الوثائق', 'Documents')}</option>
+                    <option value="ressources">${t('الموارد', 'Ressources')}</option>
+                </select>
+                <select id="gs-search-level" aria-label="Niveau scolaire">
+                    <option value="">${t('كل المستويات', 'Tous les niveaux')}</option>
+                    <option value="TC">TC</option>
+                    <option value="1BAC">1BAC</option>
+                    <option value="2BAC">2BAC</option>
+                </select>
+                <select id="gs-search-language" aria-label="Langue">
+                    <option value="">${t('كل اللغات', 'Toutes les langues')}</option>
+                    <option value="francais">${t('الفرنسية', 'Français')}</option>
+                    <option value="arabe">${t('العربية', 'Arabe')}</option>
+                </select>
+            </div>
             <div id="gs-search-results"></div>
         </div>`;
     document.body.appendChild(search);
@@ -447,6 +477,12 @@ function buildUI() {
     document.getElementById('gs-search-input').addEventListener('input', function () {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => runSearch(this.value), 150);
+    });
+    ['gs-search-category', 'gs-search-level', 'gs-search-language'].forEach(id => {
+        const control = document.getElementById(id);
+        if (control) control.addEventListener('change', () => {
+            runSearch(document.getElementById('gs-search-input')?.value || '');
+        });
     });
 
     refreshUiTexts();
