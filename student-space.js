@@ -1596,6 +1596,69 @@
         }));
     }
 
+
+    async function renderManagerStudentRegistry(container) {
+        const fr = document.documentElement.lang === 'fr';
+        const tr = (ar, french) => fr ? french : ar;
+        container.innerHTML = `
+          <div class="student-space gs-manager-space">
+            <section class="gs-manager-hero">
+              <div><span class="gs-manager-kicker">GO SVT MAROC · ADMIN</span>
+                <h3>${tr('فضاء مدير مساحتي','Espace gestionnaire de Mon espace')}</h3>
+                <p>${tr('متابعة حسابات التلاميذ المسجلين ومستوياتهم ومسالكهم الدراسية.','Suivi des comptes élèves inscrits, de leurs niveaux et filières.')}</p>
+              </div><span class="gs-manager-icon" aria-hidden="true">🎓</span>
+            </section>
+            <section class="gs-manager-card">
+              <div class="gs-manager-heading"><div><h4>${tr('التلاميذ المسجلون','Élèves inscrits')}</h4>
+                <p>${tr('هذه البيانات خاصة بحساب المدير فقط.','Ces informations sont réservées au compte gestionnaire.')}</p></div>
+                <button type="button" class="gs-manager-refresh" id="gs-manager-refresh">↻ ${tr('تحديث','Actualiser')}</button>
+              </div>
+              <div class="gs-manager-stats"><div><strong id="gs-manager-count">—</strong><span>${tr('إجمالي التلاميذ','Total élèves')}</span></div><div><strong id="gs-manager-shown">—</strong><span>${tr('نتائج معروضة','Résultats affichés')}</span></div></div>
+              <div class="gs-manager-tools"><input id="gs-manager-search" type="search" placeholder="${tr('ابحث بالاسم أو البريد الإلكتروني','Rechercher par nom ou e-mail')}" aria-label="${tr('البحث عن تلميذ','Rechercher un élève')}">
+                <select id="gs-manager-level" aria-label="${tr('تصفية حسب المستوى','Filtrer par niveau')}">
+                  <option value="">${tr('جميع المستويات','Tous les niveaux')}</option><option value="TC">TC — ${tr('الجذع المشترك','Tronc commun')}</option><option value="1BAC">1BAC — ${tr('الأولى باكالوريا','1ère Bac')}</option><option value="2BAC">2BAC — ${tr('الثانية باكالوريا','2ème Bac')}</option>
+                </select></div>
+              <p class="gs-manager-status" id="gs-manager-status" aria-live="polite">${tr('جارٍ تحميل القائمة…','Chargement de la liste…')}</p>
+              <div class="gs-manager-list" id="gs-manager-list"></div>
+            </section>
+          </div>`;
+        const list=container.querySelector('#gs-manager-list'), status=container.querySelector('#gs-manager-status');
+        const search=container.querySelector('#gs-manager-search'), levelFilter=container.querySelector('#gs-manager-level');
+        let students=[];
+        const levelNames={TC:tr('الجذع المشترك','Tronc commun'),'1BAC':tr('الأولى باكالوريا','1ère Bac'),'2BAC':tr('الثانية باكالوريا','2ème Bac')};
+        const trackNames={TCS:tr('الجذع المشترك العلمي','Tronc commun scientifique'),TCL:tr('الجذع المشترك الأدبي','Tronc commun lettres'), '1BACSE':tr('العلوم التجريبية','Sciences expérimentales'),'1BACSM':tr('العلوم الرياضية','Sciences mathématiques'),'1BACL':tr('الآداب','Lettres'),'2BACSVT':tr('علوم الحياة والأرض','Sciences de la vie et de la Terre'),'2BACSP':tr('العلوم الفيزيائية','Sciences physiques'),'2BACSM':tr('العلوم الرياضية','Sciences mathématiques')};
+        function render(){
+          const q=search.value.trim().toLocaleLowerCase(), lv=levelFilter.value;
+          const rows=students.filter(s=>(!lv||s.study_level===lv)&&(!q||[s.display_name,s.email].some(v=>String(v||'').toLocaleLowerCase().includes(q))));
+          container.querySelector('#gs-manager-count').textContent=String(students.length);
+          container.querySelector('#gs-manager-shown').textContent=String(rows.length);
+          list.replaceChildren();
+          if(!rows.length){const p=document.createElement('p');p.className='gs-manager-empty';p.textContent=students.length?tr('لا توجد نتائج مطابقة.','Aucun résultat correspondant.'):tr('لا يوجد تلاميذ مسجلون بعد.','Aucun élève inscrit pour le moment.');list.append(p);return;}
+          rows.forEach(s=>{
+            const card=document.createElement('article');card.className='gs-manager-student';
+            const identity=document.createElement('div');identity.className='gs-manager-identity';
+            const name=document.createElement('strong');name.textContent=s.display_name||tr('دون اسم','Sans nom');
+            const email=document.createElement('a');email.href='mailto:'+encodeURIComponent(s.email||'');email.textContent=s.email||'—';
+            const date=document.createElement('small');const d=s.registered_at?new Date(s.registered_at):null;date.textContent=tr('تاريخ التسجيل: ','Inscription : ')+(d&&!Number.isNaN(d.getTime())?d.toLocaleString(fr?'fr-FR':'ar-MA'):'—');
+            identity.append(name,email,date);
+            const academic=document.createElement('div');academic.className='gs-manager-academic';
+            const lv=document.createElement('span');lv.textContent=levelNames[s.study_level]||s.study_level||tr('مستوى غير محدد','Niveau non renseigné');
+            const track=document.createElement('span');track.textContent=trackNames[s.study_track]||s.study_track||tr('مسلك غير محدد','Filière non renseignée');
+            const verified=document.createElement('small');verified.className=s.email_confirmed?'is-confirmed':'is-pending';verified.textContent=s.email_confirmed?tr('البريد مؤكد','E-mail confirmé'):tr('بانتظار تأكيد البريد','E-mail à confirmer');
+            academic.append(lv,track,verified);card.append(identity,academic);list.append(card);
+          });
+        }
+        async function load(){
+          status.textContent=tr('جارٍ تحميل القائمة…','Chargement de la liste…');
+          const {data,error}=await window.supabaseClient.rpc('gosvt_admin_student_registry');
+          if(error){status.textContent=tr('تعذر تحميل القائمة: ','Impossible de charger la liste : ')+error.message;return;}
+          students=Array.isArray(data)?data:[];status.textContent='';render();
+        }
+        search.addEventListener('input',render);levelFilter.addEventListener('change',render);
+        container.querySelector('#gs-manager-refresh').addEventListener('click',load);
+        await load();
+    }
+
     function renderStudentSpace() {
         const container = document.getElementById('student-space-content');
         if (!container) return;
@@ -1609,12 +1672,14 @@
         const activeProfile = window.StudentAccount && window.StudentAccount.getProfile
             ? window.StudentAccount.getProfile()
             : null;
-        if (activeProfile && (activeProfile.role === 'admin' || activeProfile.role === 'teacher')) {
+        if (activeProfile && activeProfile.role === 'admin') {
+            renderManagerStudentRegistry(container);
+            return;
+        }
+        if (activeProfile && activeProfile.role === 'teacher') {
             const isArabic = document.documentElement.dir === 'rtl';
             container.innerHTML = '<div class="student-space" role="status"><p>' +
-                (isArabic
-                    ? 'فضاء الأستاذ والإدارة — يتم تحميل أدوات المتابعة والصلاحيات.'
-                    : 'Espace enseignant et administration — chargement des outils de suivi et des accès.') +
+                (isArabic ? 'فضاء الأستاذ — أدوات التدبير التربوي متاحة من مساحة الأستاذ.' : 'Espace enseignant — les outils pédagogiques sont disponibles dans votre espace enseignant.') +
                 '</p></div>';
             return;
         }
