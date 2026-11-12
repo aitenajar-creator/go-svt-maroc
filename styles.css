@@ -1913,3 +1913,36 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
         grid-template-columns: minmax(104px, .9fr) minmax(0, 1.35fr) !important;
     }
 }
+
+
+/* Fix PDF previews after moving the thumbnail inside the dedicated panel.
+   Older card-wide preview overlays targeted the former direct-child layout
+   and must not wash out or cover the nested canvas. */
+.content-card.pdf-resource-card:has(.pdf-thumbnail)::before {
+    content: none !important;
+    display: none !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel {
+    position: relative !important;
+    z-index: 1 !important;
+    align-self: stretch !important;
+    overflow: visible !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail {
+    flex: 1 1 auto !important;
+    align-self: stretch !important;
+    min-height: 220px !important;
+    height: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail canvas {
+    flex: 0 0 auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+@media (max-width: 640px) {
+    .content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail {
+        min-height: 180px !important;
+    }
+}
