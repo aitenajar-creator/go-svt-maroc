@@ -33,6 +33,31 @@
     <meta property="og:image" content="https://gosvtmaroc.com/android-chrome-512x512.png">
     <meta name="twitter:card" content="summary">
     <meta name="google-site-verification" content="Kxm6gLss6ofrt40EVpdYN-mNSTrIofRRDotJ0uvy-Q8" />
+    <style>
+        .gs-founder{padding:4.5rem 0;background:linear-gradient(180deg,#f3f8f1 0%,#fff 100%)}
+        .gs-founder-card{display:grid;grid-template-columns:minmax(220px,.78fr) minmax(0,1.65fr);gap:clamp(1.5rem,4vw,4rem);align-items:center;max-width:1080px;margin:auto;padding:clamp(1.4rem,4vw,3.2rem);background:#fff;border:1px solid #e3ecdf;border-radius:26px;box-shadow:0 18px 55px rgba(36,82,42,.09);overflow:hidden}
+        .gs-founder-visual{min-height:320px;position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;border-radius:22px;background:radial-gradient(circle at 50% 35%,#e5f3dc 0 22%,transparent 23%),linear-gradient(145deg,#174d36,#39805a 58%,#a6c879);color:#fff;overflow:hidden}
+        .gs-founder-visual:before,.gs-founder-visual:after{content:"";position:absolute;border:1px solid rgba(255,255,255,.24);border-radius:50%;width:245px;height:245px}
+        .gs-founder-visual:after{width:190px;height:190px}
+        .gs-founder-orbit{position:absolute;top:22px;right:24px;font-size:2.2rem;opacity:.9}
+        .gs-founder-avatar{z-index:1;width:142px;height:142px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.7);font-size:5.2rem;box-shadow:0 12px 35px rgba(0,0,0,.16)}
+        .gs-founder-tag{z-index:1;margin-top:1.4rem;padding:.4rem .9rem;border:1px solid rgba(255,255,255,.45);border-radius:99px;font-size:.75rem;letter-spacing:.12em;font-weight:700}
+        .gs-founder-copy{min-width:0}
+        .gs-founder-kicker{display:inline-block;color:#52804a;background:#edf5e9;padding:.35rem .8rem;border-radius:99px;font-size:.85rem;font-weight:700}
+        .gs-founder-copy h2{margin:.8rem 0 .25rem;color:#245a36;font-size:clamp(1.7rem,3vw,2.35rem)}
+        .gs-founder-copy h3{margin:0;color:#263d2d;font-size:1.35rem}
+        .gs-founder-role{margin:.15rem 0 1rem;color:#62805e;font-weight:700}
+        .gs-founder-copy>p:not(.gs-founder-role){color:#58665a;line-height:2;margin:.75rem 0}
+        .gs-founder-vision{display:flex;gap:1rem;align-items:flex-start;margin-top:1.35rem;padding:1rem 1.1rem;border-inline-start:4px solid #80a95d;background:#f5f9f2;border-radius:12px}
+        .gs-founder-vision>span{font-size:1.7rem}
+        .gs-founder-vision strong{color:#315f38}
+        .gs-founder-vision p{margin:.2rem 0 0;color:#58665a;line-height:1.8}
+        .gs-founder-signature{margin-top:1.35rem;color:#315f38;font-weight:700;letter-spacing:.03em}
+        .gs-founder-signature span{color:#9ab77a;padding:0 .3rem}
+        @media(max-width:700px){.gs-founder{padding:2.5rem 0}.gs-founder-card{grid-template-columns:1fr}.gs-founder-visual{min-height:220px}.gs-founder-avatar{width:112px;height:112px;font-size:4rem}.gs-founder-visual:before{width:190px;height:190px}.gs-founder-visual:after{width:150px;height:150px}}
+        html[dir="ltr"] .gs-founder-copy{text-align:left}
+        html[dir="rtl"] .gs-founder-copy{text-align:right}
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -126,6 +151,33 @@
                     <div class="content-grid" id="latest-content"></div>
                 </div>
             </div>
+            <section class="gs-founder" aria-labelledby="gs-founder-title">
+                <div class="container">
+                    <div class="gs-founder-card">
+                        <div class="gs-founder-visual" aria-hidden="true">
+                            <div class="gs-founder-orbit">🔬</div>
+                            <div class="gs-founder-avatar">👨‍🏫</div>
+                            <span class="gs-founder-tag">GO SVT MAROC</span>
+                        </div>
+                        <div class="gs-founder-copy">
+                            <span class="gs-founder-kicker" data-lang-ar="رسالة تربوية ورؤية رقمية" data-lang-fr="Engagement pédagogique et vision numérique">رسالة تربوية ورؤية رقمية</span>
+                            <h2 id="gs-founder-title" data-lang-ar="عن صاحب الموقع" data-lang-fr="À propos du fondateur">عن صاحب الموقع</h2>
+                            <h3 data-lang-ar="الأستاذ عبد الحق أيت النجار" data-lang-fr="M. Abdelhaq Ait Enajar">الأستاذ عبد الحق أيت النجار</h3>
+                            <p class="gs-founder-role" data-lang-ar="أستاذ التعليم الثانوي التأهيلي" data-lang-fr="Professeur de l’enseignement secondaire qualifiant">أستاذ التعليم الثانوي التأهيلي</p>
+                            <p data-lang-ar="مؤسس منصة GO SVT Maroc، وهي مبادرة تربوية رقمية تهدف إلى تطوير تعلم وتعليم علوم الحياة والأرض بالمغرب، من خلال توفير موارد تعليمية منظمة ومتاحة للتلاميذ والأساتذة." data-lang-fr="Fondateur de GO SVT Maroc, une initiative éducative numérique qui vise à enrichir l’apprentissage et l’enseignement des Sciences de la Vie et de la Terre au Maroc, en mettant à disposition des ressources pédagogiques structurées pour les élèves et les enseignants.">مؤسس منصة GO SVT Maroc، وهي مبادرة تربوية رقمية تهدف إلى تطوير تعلم وتعليم علوم الحياة والأرض بالمغرب، من خلال توفير موارد تعليمية منظمة ومتاحة للتلاميذ والأساتذة.</p>
+                            <p data-lang-ar="جاءت فكرة المنصة انطلاقاً من الرغبة في توظيف التكنولوجيا لخدمة المدرسة، وجمع الدروس والتمارين والامتحانات والموارد التربوية في فضاء واحد يساعد على التعلم الذاتي وتبادل الخبرات." data-lang-fr="La plateforme est née de la volonté de mettre le numérique au service de l’école, en réunissant cours, exercices, examens et ressources pédagogiques dans un espace qui encourage l’autonomie et le partage des pratiques.">جاءت فكرة المنصة انطلاقاً من الرغبة في توظيف التكنولوجيا لخدمة المدرسة، وجمع الدروس والتمارين والامتحانات والموارد التربوية في فضاء واحد يساعد على التعلم الذاتي وتبادل الخبرات.</p>
+                            <div class="gs-founder-vision">
+                                <span aria-hidden="true">🌱</span>
+                                <div>
+                                    <strong data-lang-ar="رؤيتنا" data-lang-fr="Notre vision">رؤيتنا</strong>
+                                    <p data-lang-ar="تعليم رقمي حديث، متاح للجميع، يجعل تعلم علوم الحياة والأرض أكثر تفاعلاً وفعالية." data-lang-fr="Un enseignement numérique moderne et accessible à tous, pour rendre l’apprentissage des SVT plus interactif et plus efficace.">تعليم رقمي حديث، متاح للجميع، يجعل تعلم علوم الحياة والأرض أكثر تفاعلاً وفعالية.</p>
+                                </div>
+                            </div>
+                            <div class="gs-founder-signature">Abdelhaq Ait Enajar <span>·</span> GO SVT Maroc</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </section>
 
         <!-- Cours -->
