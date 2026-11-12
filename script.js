@@ -175,7 +175,7 @@ function renderCard(path, badgeText) {
             ? `<div class="content-card-thumbnail"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy"></div>`
             : `<div class="content-card-thumbnail file-thumbnail" aria-hidden="true"><span>${getFileIcon(ext)}</span></div>`;
     return `
-        <div class="content-card">
+        <div class="content-card${ext === 'pdf' ? ' pdf-resource-card' : '' }">
             <span class="level-badge">${escapeHtml(badgeText)}</span>${newBadge}
             ${thumbnail}
             <h3>${escapeHtml(getFileTitle(fileName))}</h3>
