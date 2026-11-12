@@ -1250,3 +1250,142 @@ html[dir="rtl"] .header-actions {
         font-size: .74rem;
     }
 }
+
+
+/* Final spacious PDF card: enlarge the document area and keep the action
+   rail alongside it. The rail swaps sides with the selected interface language. */
+.content-card.pdf-resource-card {
+    display: grid !important;
+    direction: ltr !important;
+    grid-template-columns: minmax(150px, 30%) minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+    grid-template-areas:
+        "badge badge"
+        "title preview"
+        "filename preview"
+        "actions preview" !important;
+    align-items: stretch !important;
+    gap: .7rem !important;
+    min-height: 440px !important;
+    padding: 1rem !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 30%) !important;
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions" !important;
+}
+.content-card.pdf-resource-card > .level-badge {
+    grid-area: badge !important;
+    justify-self: start;
+    align-self: start;
+}
+.content-card.pdf-resource-card > .new-badge {
+    grid-area: badge !important;
+    justify-self: end;
+    align-self: start;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    grid-area: preview !important;
+    position: relative !important;
+    inset: auto !important;
+    align-self: stretch !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 390px !important;
+    margin: 0 !important;
+    padding: .5rem !important;
+    overflow: hidden !important;
+    border: 1px solid #cbd5da !important;
+    border-radius: 12px !important;
+    background: #e9eef1 !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    background: #fff !important;
+}
+.content-card.pdf-resource-card > h3 {
+    grid-area: title !important;
+    align-self: end;
+    width: 100%;
+    margin: 0 !important;
+    overflow-wrap: anywhere;
+}
+.content-card.pdf-resource-card > .file-name {
+    grid-area: filename !important;
+    align-self: start;
+    width: 100%;
+    margin: 0 !important;
+    overflow-wrap: anywhere;
+}
+.content-card.pdf-resource-card > .card-actions {
+    grid-area: actions !important;
+    align-self: end !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center;
+    gap: .65rem;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: .6rem !important;
+}
+.content-card.pdf-resource-card > .card-actions .preview-btn,
+.content-card.pdf-resource-card > .card-actions .download-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    margin: 0 !important;
+    white-space: normal;
+    font-size: .9rem;
+}
+
+/* Keep homepage resource cards in a horizontal multi-column grid on desktop
+   and tablet; use a single column only when the screen is genuinely narrow. */
+#latest-content.content-grid,
+.content-grid#latest-content {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)) !important;
+    align-items: stretch;
+    gap: 1.25rem !important;
+}
+@media (min-width: 600px) and (max-width: 900px) {
+    #latest-content.content-grid,
+    .content-grid#latest-content {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card,
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 112px !important;
+        grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+        grid-template-areas:
+            "badge badge"
+            "preview title"
+            "preview filename"
+            "preview actions" !important;
+        min-height: 300px !important;
+        padding: .65rem !important;
+        gap: .45rem !important;
+    }
+    .content-card.pdf-resource-card > .pdf-thumbnail {
+        min-height: 250px !important;
+    }
+    .content-card.pdf-resource-card > .card-actions .preview-btn,
+    .content-card.pdf-resource-card > .card-actions .download-btn {
+        min-height: 40px;
+        padding: .35rem .25rem;
+        font-size: .72rem;
+    }
+}
