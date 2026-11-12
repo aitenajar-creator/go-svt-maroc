@@ -1666,3 +1666,52 @@ html[dir="rtl"] .content-card.pdf-resource-card {
         font-size: .82rem !important;
     }
 }
+
+
+/* Give the PDF page approximately 90% of the card width while retaining
+   the preview/download rail and the original horizontal study-tool row. */
+.content-card.pdf-resource-card {
+    grid-template-columns: minmax(92px, 10%) minmax(0, 1fr) !important;
+    gap: .45rem !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) minmax(92px, 10%) !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    min-width: 0 !important;
+    width: 100% !important;
+    justify-self: stretch !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+.content-card.pdf-resource-card > .card-actions {
+    min-width: 0 !important;
+    padding: .1rem !important;
+}
+.content-card.pdf-resource-card > .card-actions .preview-btn,
+.content-card.pdf-resource-card > .card-actions .download-btn {
+    padding: .35rem .15rem !important;
+    font-size: .76rem !important;
+    overflow-wrap: anywhere !important;
+}
+.content-card.pdf-resource-card > .gs-tools {
+    gap: .12rem !important;
+}
+.content-card.pdf-resource-card > .gs-tools > .gs-tool {
+    min-width: 0 !important;
+    padding-inline: 0 !important;
+}
+@media (max-width: 599px) {
+    /* Preserve usable controls on narrow screens; desktop/tablet use ~90% preview. */
+    .content-card.pdf-resource-card,
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 100px !important;
+        gap: .4rem !important;
+    }
+    .content-card.pdf-resource-card > .card-actions .preview-btn,
+    .content-card.pdf-resource-card > .card-actions .download-btn {
+        font-size: .7rem !important;
+    }
+}
