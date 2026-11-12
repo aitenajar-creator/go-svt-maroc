@@ -220,13 +220,30 @@ async function renderFirstPdfPage(container) {
     try {
         const pdfjs = await loadPdfJs();
         const url = buildFileUrl(container.dataset.path);
-        // Try the normal worker first. If the browser/CDN blocks the worker,
-        // retry in PDF.js' main-thread mode so the preview can still render.
+        // First use PDF.js' normal streaming/range transport.
+        // Some static hosts or PDF files with hybrid cross-reference tables
+        // can fail through partial responses, so retry with a complete download.
         try {
             pdf = await pdfjs.getDocument({ url, withCredentials: false }).promise;
-        } catch (workerError) {
-            console.warn('PDF worker preview failed; retrying without worker:', workerError);
-            pdf = await pdfjs.getDocument({ url, withCredentials: false, disableWorker: true }).promise;
+        } catch (initialError) {
+            console.warn('PDF preview standard loading failed; retrying with full-file loading:', initialError);
+            try {
+                pdf = await pdfjs.getDocument({
+                    url,
+                    withCredentials: false,
+                    disableRange: true,
+                    disableStream: true
+                }).promise;
+            } catch (fullFileError) {
+                console.warn('PDF preview full-file loading failed; retrying without worker:', fullFileError);
+                pdf = await pdfjs.getDocument({
+                    url,
+                    withCredentials: false,
+                    disableRange: true,
+                    disableStream: true,
+                    disableWorker: true
+                }).promise;
+            }
         }
         const page = await pdf.getPage(1);
         const base = page.getViewport({ scale: 1 });
