@@ -1401,26 +1401,46 @@ html[dir="rtl"] .content-card.pdf-resource-card {
     flex: 0 1 auto !important;
 }
 
-/* Keep the original quick-action icons in one horizontal row in the PDF side rail. */
-.content-card.pdf-resource-card > .card-actions > .gs-tools {
+/* Keep the original study tools in their own horizontal row beside the PDF preview.
+   They remain a direct child of the card, as in the original rendering structure. */
+.content-card.pdf-resource-card {
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto !important;
+    grid-template-areas:
+        "badge badge"
+        "title preview"
+        "filename preview"
+        "actions preview"
+        "tools preview" !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions"
+        "preview tools" !important;
+}
+.content-card.pdf-resource-card > .gs-tools {
+    grid-area: tools !important;
+    align-self: start !important;
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: .25rem !important;
+    gap: .3rem !important;
     width: 100% !important;
-    margin: .1rem 0 0 !important;
-    padding: .25rem 0 0 !important;
-    border-top: 1px solid #d4e0e4;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: .2rem 0 0 !important;
 }
-.content-card.pdf-resource-card > .card-actions > .gs-tools > .gs-tool {
+.content-card.pdf-resource-card > .gs-tools > .gs-tool {
     display: inline-flex !important;
     flex: 1 1 0 !important;
     align-items: center !important;
     justify-content: center !important;
     min-width: 0 !important;
-    min-height: 34px !important;
+    min-height: 36px !important;
     margin: 0 !important;
     padding: .15rem 0 !important;
     border: 1px solid #d7e1e5 !important;
@@ -1430,12 +1450,22 @@ html[dir="rtl"] .content-card.pdf-resource-card {
     line-height: 1 !important;
     cursor: pointer;
 }
-.content-card.pdf-resource-card > .card-actions > .gs-tools > .gs-tool.on {
+.content-card.pdf-resource-card > .gs-tools > .gs-tool.on {
     background: #e5f4e9 !important;
     border-color: #77ad86 !important;
 }
 @media (max-width: 599px) {
-    .content-card.pdf-resource-card > .card-actions > .gs-tools > .gs-tool {
+    .content-card.pdf-resource-card,
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-rows: auto minmax(0, 1fr) auto auto auto !important;
+        grid-template-areas:
+            "badge badge"
+            "preview title"
+            "preview filename"
+            "preview actions"
+            "preview tools" !important;
+    }
+    .content-card.pdf-resource-card > .gs-tools > .gs-tool {
         min-height: 30px !important;
         font-size: .88rem !important;
     }
