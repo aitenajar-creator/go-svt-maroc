@@ -49,6 +49,78 @@
     dashboard.hidden = false;
     await loadResources();
   }
+  let studentRegistry = [];
+
+  function levelLabel(level) {
+    return ({ TC: 'الجذع المشترك', '1BAC': 'الأولى باكالوريا', '2BAC': 'الثانية باكالوريا' })[level] || level || 'غير محدد';
+  }
+  function trackLabel(track) {
+    return ({
+      TCS: 'الجذع المشترك العلمي', TCL: 'الجذع المشترك الأدبي',
+      '1BACSE': 'العلوم التجريبية', '1BACSM': 'العلوم الرياضية', '1BACL': 'الآداب',
+      '2BACSVT': 'علوم الحياة والأرض', '2BACSP': 'العلوم الفيزيائية', '2BACSM': 'العلوم الرياضية'
+    })[track] || track || 'غير محدد';
+  }
+  function renderStudents() {
+    const list = $('student-list');
+    if (!list) return;
+    const query = String($('student-search').value || '').trim().toLocaleLowerCase();
+    const level = $('student-level-filter').value;
+    const rows = studentRegistry.filter(student => {
+      const matchesQuery = !query || [student.display_name, student.email].some(value => String(value || '').toLocaleLowerCase().includes(query));
+      return matchesQuery && (!level || student.study_level === level);
+    });
+    $('student-count').textContent = String(studentRegistry.length);
+    $('student-visible-count').textContent = rows.length + ' تلميذاً معروضاً';
+    list.replaceChildren();
+    if (!rows.length) {
+      const empty = document.createElement('p');
+      empty.className = 'muted';
+      empty.textContent = studentRegistry.length ? 'لا توجد نتائج مطابقة للبحث.' : 'لا يوجد تلاميذ مسجلون بعد.';
+      list.append(empty);
+      return;
+    }
+    rows.forEach(student => {
+      const row = document.createElement('article');
+      row.className = 'student-row';
+      const info = document.createElement('div');
+      info.className = 'student-main';
+      const name = document.createElement('strong');
+      name.textContent = student.display_name || 'دون اسم';
+      const email = document.createElement('a');
+      email.href = 'mailto:' + student.email;
+      email.textContent = student.email || 'بريد غير متوفر';
+      const date = document.createElement('small');
+      const registered = student.registered_at ? new Date(student.registered_at) : null;
+      date.textContent = 'تاريخ التسجيل: ' + (registered && !Number.isNaN(registered.getTime()) ? registered.toLocaleString('ar-MA') : 'غير متوفر');
+      info.append(name, email, date);
+      const academic = document.createElement('div');
+      academic.className = 'student-academic';
+      const level = document.createElement('span');
+      level.textContent = levelLabel(student.study_level);
+      const track = document.createElement('span');
+      track.textContent = trackLabel(student.study_track);
+      const status = document.createElement('small');
+      status.className = student.email_confirmed ? 'confirmed' : 'unconfirmed';
+      status.textContent = student.email_confirmed ? 'البريد مؤكد' : 'بانتظار تأكيد البريد';
+      academic.append(level, track, status);
+      row.append(info, academic);
+      list.append(row);
+    });
+  }
+  async function loadStudents() {
+    const list = $('student-list');
+    if (!list) return;
+    list.innerHTML = '<p class="muted">جاري تحميل قائمة التلاميذ...</p>';
+    const { data, error } = await client.rpc('gosvt_admin_student_registry');
+    if (error) {
+      list.textContent = 'تعذر تحميل التلاميذ: ' + error.message + ' — تحقق من تنفيذ تحديث قاعدة البيانات.';
+      return;
+    }
+    studentRegistry = Array.isArray(data) ? data : [];
+    renderStudents();
+  }
+
   async function loadResources() {
     const list = $('resource-list');
     list.innerHTML = '<p class="muted">جاري تحميل المحتوى...</p>';
@@ -134,6 +206,9 @@
     finally { button.disabled = false; $('upload-progress').hidden = true; }
   });
   $('refresh-btn').addEventListener('click', loadResources);
+  $('student-refresh-btn').addEventListener('click', loadStudents);
+  $('student-search').addEventListener('input', renderStudents);
+  $('student-level-filter').addEventListener('change', renderStudents);
   $('signout-btn').addEventListener('click', async () => {
     await client.auth.signOut();
     currentUser = null; dashboard.hidden = true; loginPanel.hidden = false;
