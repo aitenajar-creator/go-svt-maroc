@@ -1717,6 +1717,18 @@ html[dir="rtl"] .content-card.pdf-resource-card {
 }
 
 
+/* Reset the legacy outer PDF grid: the inner layout now owns the two panels. */
+.content-card.pdf-resource-card {
+    display: block !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: none !important;
+    grid-template-areas: none !important;
+    min-height: 0 !important;
+}
+.content-card.pdf-resource-card > .level-badge,
+.content-card.pdf-resource-card > .new-badge {
+    grid-area: auto !important;
+}
 /* PDF resource cards: a wider card with two distinct, adjacent panels.
    The document keeps its complete page proportions; the information panel
    contains metadata, preview/download actions and the original study tools. */
