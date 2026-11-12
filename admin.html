@@ -38,10 +38,23 @@
         <button id="signout-btn" class="quiet-btn" type="button">تسجيل الخروج</button>
       </div>
       <div class="stats-grid">
+        <article class="stat-card"><span>🎓</span><strong id="student-count">—</strong><small>تلميذاً مسجلاً</small></article>
         <article class="stat-card"><span>📚</span><strong id="resource-count">—</strong><small>ملفاً منشوراً عبر الإدارة</small></article>
         <article class="stat-card"><span>☁️</span><strong>Supabase</strong><small>التخزين السحابي</small></article>
         <article class="stat-card"><span>🛡️</span><strong>مدير فقط</strong><small>صلاحيات الرفع والتعديل والحذف</small></article>
       </div>
+
+      <section class="panel">
+        <div class="section-heading"><div><p class="eyebrow">STUDENT REGISTRY</p><h2>إدارة التلاميذ المسجلين</h2><p class="muted">قائمة خاصة بالمدير تشمل بيانات التسجيل والمستوى والمسلك الدراسي.</p></div><button id="student-refresh-btn" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="student-tools">
+          <input id="student-search" type="search" placeholder="ابحث بالاسم أو البريد الإلكتروني" aria-label="البحث عن تلميذ">
+          <select id="student-level-filter" aria-label="تصفية حسب المستوى">
+            <option value="">جميع المستويات</option><option value="TC">TC — الجذع المشترك</option><option value="1BAC">1BAC — الأولى باكالوريا</option><option value="2BAC">2BAC — الثانية باكالوريا</option>
+          </select>
+        </div>
+        <p id="student-visible-count" class="muted" aria-live="polite"></p>
+        <div id="student-list" class="student-list"><p class="muted">جاري تحميل قائمة التلاميذ...</p></div>
+      </section>
 
       <section class="panel">
         <div class="section-heading"><div><p class="eyebrow">CONTENT PUBLISHER</p><h2>إضافة محتوى جديد</h2></div><span class="heading-icon">📤</span></div>
@@ -69,6 +82,6 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="admin.js?v=20261112-2"></script>
+  <script src="admin.js?v=20261112-3"></script>
 </body>
 </html>
