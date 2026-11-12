@@ -418,24 +418,24 @@ function buildUI() {
             </div>
             <div class="gs-search-filters" role="group" aria-label="Search filters">
                 <select id="gs-search-category" aria-label="Type de ressource">
-                    <option value="">\${t('كل الموارد', 'Tous les types')}</option>
-                    <option value="cours">\${t('الدروس', 'Cours')}</option>
-                    <option value="exercices">\${t('التمارين', 'Exercices')}</option>
-                    <option value="examens">\${t('الامتحانات', 'Examens')}</option>
-                    <option value="fiches">\${t('الملخصات', 'Fiches')}</option>
-                    <option value="documents">\${t('الوثائق', 'Documents')}</option>
-                    <option value="ressources">\${t('الموارد', 'Ressources')}</option>
+                    <option value="">${t('كل الموارد', 'Tous les types')}</option>
+                    <option value="cours">${t('الدروس', 'Cours')}</option>
+                    <option value="exercices">${t('التمارين', 'Exercices')}</option>
+                    <option value="examens">${t('الامتحانات', 'Examens')}</option>
+                    <option value="fiches">${t('الملخصات', 'Fiches')}</option>
+                    <option value="documents">${t('الوثائق', 'Documents')}</option>
+                    <option value="ressources">${t('الموارد', 'Ressources')}</option>
                 </select>
                 <select id="gs-search-level" aria-label="Niveau scolaire">
-                    <option value="">\${t('كل المستويات', 'Tous les niveaux')}</option>
+                    <option value="">${t('كل المستويات', 'Tous les niveaux')}</option>
                     <option value="TC">TC</option>
                     <option value="1BAC">1BAC</option>
                     <option value="2BAC">2BAC</option>
                 </select>
                 <select id="gs-search-language" aria-label="Langue">
-                    <option value="">\${t('كل اللغات', 'Toutes les langues')}</option>
-                    <option value="francais">\${t('الفرنسية', 'Français')}</option>
-                    <option value="arabe">\${t('العربية', 'Arabe')}</option>
+                    <option value="">${t('كل اللغات', 'Toutes les langues')}</option>
+                    <option value="francais">${t('الفرنسية', 'Français')}</option>
+                    <option value="arabe">${t('العربية', 'Arabe')}</option>
                 </select>
             </div>
             <div id="gs-search-results"></div>
