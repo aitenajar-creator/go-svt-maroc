@@ -1470,3 +1470,27 @@ html[dir="rtl"] .content-card.pdf-resource-card {
         font-size: .88rem !important;
     }
 }
+
+/* Widen the PDF preview area so the visible page can use more of the card.
+   Keep the existing action rail and its horizontal study icons beside it. */
+.content-card.pdf-resource-card {
+    grid-template-columns: minmax(118px, 22%) minmax(0, 1fr) !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) minmax(118px, 22%) !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card,
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 100px !important;
+    }
+}
