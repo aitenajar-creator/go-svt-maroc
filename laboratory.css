@@ -55,3 +55,22 @@
 .geo-a{background:#e5c38a}.geo-b{background:#b8cf9c}.geo-c{background:#d89c72}.geo-d{background:#8ca8b7}
 .gs-geology-explanation{margin:17px 0 10px;padding:15px 17px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.9}
 @media(max-width:600px){.gs-geology-choice{flex:1;padding:9px 10px;font-size:.85rem}.gs-geology-visual{padding:6px}.gs-geology-legend{justify-content:flex-start}}
+
+/* Relative dating challenge */
+.gs-relative-card{display:grid;grid-template-columns:1fr 1fr;gap:22px;background:#fff;border:1px solid #e0ebe3;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d}
+.gs-relative-visual{background:#f0f5ed;border-radius:17px;padding:16px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.gs-relative-visual svg{width:100%;height:auto;display:block}
+.geo-intrusion{background:#8b6b9e}
+.gs-relative-legend{display:flex;flex-wrap:wrap;gap:9px 14px;justify-content:center;padding-top:13px;color:#5f7162;font-size:.78rem}
+.gs-relative-legend>span{display:flex;align-items:center;gap:6px}
+.gs-relative-task{align-self:center}
+.gs-relative-task h3{color:#28573b;font-size:1.25rem;margin:.8rem 0}
+.gs-relative-task>p{color:#65796b;line-height:1.9}
+.gs-relative-options{display:grid;gap:9px;margin:16px 0}
+.gs-relative-options button{border:1px solid #d5e4d7;background:#f7faf7;color:#365d43;border-radius:12px;padding:12px 14px;text-align:start;font:inherit;font-weight:700;cursor:pointer}
+.gs-relative-options button:disabled{cursor:default;opacity:1}
+.gs-relative-options button.is-correct{background:#e1f2e3;border-color:#83bd91;color:#235e38}
+.gs-relative-options button.is-wrong{background:#fff0e9;border-color:#d9a08b;color:#8a3f2d}
+.gs-relative-options button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
+.gs-relative-feedback{padding:13px 15px;border-radius:11px;background:#f0f7f1;border-inline-start:4px solid #67956c;color:#496b54;line-height:1.9;min-height:54px}
+@media(max-width:760px){.gs-relative-card{grid-template-columns:1fr}}
