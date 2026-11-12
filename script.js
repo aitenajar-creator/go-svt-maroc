@@ -172,36 +172,25 @@ function renderCard(path, badgeText) {
     const thumbnail = ext === 'pdf'
         ? `<div class="content-card-thumbnail pdf-thumbnail" data-pdf-thumbnail data-path="${safePath}" aria-label="${t('معاينة الصفحة الأولى', 'Aperçu de la première page')}"><span class="thumbnail-loading">${t('جاري إعداد المعاينة...', 'Préparation de l’aperçu...')}</span></div>`
         : ['jpg','jpeg','png','gif','webp'].includes(ext)
-            ? `<div class="content-card-thumbnail"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy"></div>`
-            : `<div class="content-card-thumbnail file-thumbnail" aria-hidden="true"><span>${getFileIcon(ext)}</span></div>`;
+            ? `<div class="content-card-thumbnail image-thumbnail"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy"></div>`
+            : `<div class="content-card-thumbnail file-thumbnail" aria-label="${t('نوع الملف', 'Type de fichier')}"><span>${getFileIcon(ext)}</span><small>${escapeHtml(ext.toUpperCase() || 'FILE')}</small></div>`;
     return `
-        <div class="content-card${ext === 'pdf' ? ' pdf-resource-card' : '' }">
+        <div class="content-card file-resource-card${ext === 'pdf' ? ' pdf-resource-card' : ''}">
             <span class="level-badge">${escapeHtml(badgeText)}</span>${newBadge}
-            ${ext === 'pdf' ? `
-                <div class="pdf-card-layout">
-                    <div class="pdf-preview-panel">${thumbnail}</div>
-                    <div class="pdf-info-panel">
-                        <h3>${escapeHtml(getFileTitle(fileName))}</h3>
-                        <p class="file-name">${escapeHtml(fileName)}</p>
-                        <div class="card-actions">
-                            ${previewBtn}
-                            <a href="${buildFileUrl(path)}" download class="download-btn" data-path="${safePath}">📥 ${t('تحميل', 'Télécharger')}</a>
-                        </div>
-                        <!--PDF_TOOLS_SLOT-->
+            <div class="file-card-layout">
+                <div class="file-preview-panel">${thumbnail}</div>
+                <div class="file-info-panel">
+                    <h3>${escapeHtml(getFileTitle(fileName))}</h3>
+                    <p class="file-name">${escapeHtml(fileName)}</p>
+                    <div class="card-actions">
+                        ${previewBtn}
+                        <a href="${buildFileUrl(path)}" download class="download-btn" data-path="${safePath}">📥 ${t('تحميل', 'Télécharger')}</a>
                     </div>
+                    <!--FILE_TOOLS_SLOT-->
                 </div>
-            ` : `
-                ${thumbnail}
-                <h3>${escapeHtml(getFileTitle(fileName))}</h3>
-                <p class="file-name">${escapeHtml(fileName)}</p>
-                <div class="card-actions">
-                    ${previewBtn}
-                    <a href="${buildFileUrl(path)}" download class="download-btn" data-path="${safePath}">📥 ${t('تحميل', 'Télécharger')}</a>
-                </div>
-            `}
+            </div>
         </div>`;
 }
-
 
 /* Lazy first-page previews for published PDF resources. */
 let pdfJsPromise = null;
