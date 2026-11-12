@@ -162,3 +162,16 @@
 .gs-pollution-detail,.gs-pollution-feedback{margin:13px 0 20px;padding:15px 17px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:68px}
 .gs-pollution-types button:focus-visible,.gs-pollution-actions button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
 @media(max-width:620px){.gs-pollution-types{grid-template-columns:1fr}.gs-pollution-types button{min-height:76px;flex-direction:row;justify-content:center}}
+
+/* Water cycle learning activity */
+.gs-watercycle-card{background:#fff;border:1px solid #dce8ee;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d}
+.gs-watercycle-flow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:18px;background:linear-gradient(135deg,#eef7fb,#f5f8f0);border-radius:18px}
+.gs-watercycle-flow button,.gs-watercycle-secondary button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:78px;padding:13px 16px;border:1px solid #d5e5e9;border-radius:15px;background:#fff;color:#315b69;font:inherit;cursor:pointer}
+.gs-watercycle-flow button{flex-direction:column;min-width:120px}
+.gs-watercycle-flow button span,.gs-watercycle-secondary button span{font-size:1.7rem}
+.gs-watercycle-flow button.is-active,.gs-watercycle-secondary button.is-active{background:#e4f2f5;border:2px solid #5592a2}
+.gs-watercycle-arrow{font-size:1.4rem;color:#5a8993}
+.gs-watercycle-secondary{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:13px}
+.gs-watercycle-detail{margin:16px 0;padding:16px 18px;border-inline-start:4px solid #5592a2;background:#eef7f8;border-radius:10px;color:#416b76;line-height:1.95;min-height:72px}
+.gs-watercycle-flow button:focus-visible,.gs-watercycle-secondary button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
+@media(max-width:620px){.gs-watercycle-flow{gap:7px}.gs-watercycle-flow button{min-width:calc(50% - 18px);flex:1}.gs-watercycle-arrow{display:none}.gs-watercycle-secondary button{flex:1 1 100%}}
