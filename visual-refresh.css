@@ -149,3 +149,116 @@ body{background:#f4f8f5}
  .lang-switcher{padding:.35rem .65rem}
  .main-nav>ul{grid-template-columns:1fr 1fr}
 }
+
+
+/* Responsive header layout: keep branding, navigation and actions readable. */
+.header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+}
+.header .container{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  column-gap:clamp(.75rem,1.8vw,1.5rem);
+  row-gap:.65rem;
+}
+.header .logo{
+  flex:0 0 auto;
+  min-width:max-content;
+}
+.header .main-nav{
+  flex:1 1 520px;
+  min-width:0;
+}
+.header .main-nav>ul{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:.25rem .45rem;
+}
+.header .main-nav>ul>li{
+  min-width:0;
+}
+.header .main-nav>ul>li>a,
+.header .main-nav .nav-more-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:38px;
+  padding:.4rem .7rem;
+  white-space:nowrap;
+  font-size:.92rem;
+}
+.header .header-actions{
+  flex:0 0 auto;
+  margin-inline-start:auto;
+}
+.header .main-nav .nav-submenu{
+  z-index:1002;
+}
+@media(max-width:900px) and (min-width:769px){
+  .header .container{
+    justify-content:center;
+  }
+  .header .logo{
+    margin-inline-end:auto;
+  }
+  .header .header-actions{
+    margin-inline-start:0;
+  }
+  .header .main-nav{
+    order:3;
+    flex:1 0 100%;
+    width:100%;
+  }
+  .header .main-nav>ul{
+    justify-content:center;
+  }
+}
+@media(max-width:768px){
+  .header .container{
+    flex-wrap:nowrap;
+    justify-content:space-between;
+    gap:.5rem;
+  }
+  .header .logo{
+    min-width:0;
+  }
+  .header .logo h1{
+    font-size:clamp(1.05rem,4.6vw,1.45rem);
+    line-height:1.25;
+  }
+  .header .logo p{
+    font-size:clamp(.68rem,2.8vw,.82rem);
+  }
+  .header .header-actions{
+    margin-inline-start:0;
+    gap:.45rem;
+  }
+  .header .lang-switcher{
+    padding:.4rem .65rem;
+    font-size:.8rem;
+  }
+  .header .main-nav{
+    max-height:calc(100dvh - 82px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  .header .main-nav.active>ul{
+    align-items:stretch;
+    gap:.35rem;
+  }
+  .header .main-nav.active>ul>li,
+  .header .main-nav.active>ul>li>a,
+  .header .main-nav.active .nav-more-btn{
+    width:100%;
+  }
+}
+@media(max-width:360px){
+  .header .logo h1{font-size:1rem}
+  .header .logo p{font-size:.65rem}
+  .header .lang-switcher{padding:.35rem .5rem}
+}
