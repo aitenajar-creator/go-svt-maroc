@@ -177,3 +177,23 @@
 @media(max-width:620px){.gs-watercycle-flow{gap:7px}.gs-watercycle-flow button{min-width:calc(50% - 18px);flex:1}.gs-watercycle-arrow{display:none}.gs-watercycle-secondary button{flex:1 1 100%}}
 
 html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
+
+/* Sustainable water management decision activity */
+.gs-water-management-card{background:#fff;border:1px solid #dce8ee;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d}
+.gs-water-management-intro{display:flex;align-items:center;gap:14px;padding:14px 17px;background:#eef7f8;border-radius:15px;color:#416b76;line-height:1.9}
+.gs-water-management-intro>span{font-size:2rem}
+.gs-water-management-intro p{margin:0}
+.gs-water-management-card h3{margin:19px 0 12px;color:#315b69}
+.gs-water-measures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.gs-water-measures label{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:8px;padding:14px;border:1px solid #d5e5e9;border-radius:14px;background:#f9fcfc;color:#315b69;cursor:pointer}
+.gs-water-measures label:has(input:checked){background:#eaf5f1;border:2px solid #63977e}
+.gs-water-measures input{width:18px;height:18px;accent-color:#39805e}
+.gs-water-measures label>span{font-size:1.35rem}
+.gs-water-measures strong{font-size:.96rem}
+.gs-water-measures small{grid-column:2/4;color:#648078;line-height:1.6}
+.gs-water-management-controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.gs-water-management-controls button{padding:11px 18px;border:1px solid #4f8c77;border-radius:999px;background:#eaf5f1;color:#315b50;font:inherit;font-weight:600;cursor:pointer}
+.gs-water-management-controls button+button{background:#fff;border-color:#d5e5e9;color:#526d70}
+.gs-water-management-feedback{padding:16px 18px;border-inline-start:4px solid #63977e;background:#f0f7f3;border-radius:10px;color:#416b58;line-height:1.95;min-height:72px}
+.gs-water-management-controls button:focus-visible,.gs-water-measures label:focus-within{outline:3px solid #e3bd62;outline-offset:3px}
+@media(max-width:620px){.gs-water-measures{grid-template-columns:1fr}.gs-water-measures label{grid-template-columns:auto auto 1fr}}
