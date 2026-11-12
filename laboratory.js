@@ -5,9 +5,9 @@ const dict={
  chloroplast:{ar:['البلاستيدة الخضراء','تحتوي على اليخضور وتتم داخلها عملية التركيب الضوئي.','توجد البلاستيدات الخضراء في الخلايا النباتية الخضراء وبعض الطحالب.'],fr:['Chloroplaste','Contient la chlorophylle et constitue le siège de la photosynthèse.','Les chloroplastes se trouvent dans les cellules végétales chlorophylliennes et certaines algues.']},
  mitochondria:{ar:['الميتوكندريا','تساهم في إنتاج الطاقة القابلة للاستعمال من طرف الخلية عبر التنفس الخلوي.','توجد الميتوكندريا في الخلايا النباتية والحيوانية.'],fr:['Mitochondrie','Participe à la production d’énergie utilisable par la cellule grâce à la respiration cellulaire.','Les mitochondries existent dans les cellules végétales et animales.']}
 };
-let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null;
+let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -176,6 +176,30 @@ document.querySelectorAll('[data-pressure]').forEach(btn=>btn.addEventListener('
  selectedPressure=btn.dataset.pressure;
  document.querySelectorAll('[data-pressure]').forEach(b=>b.classList.toggle('is-active',b===btn));
  showPressure(selectedPressure);
+}));
+
+
+const pollutionTexts={
+ water:{ar:'من مصادر تلوث الماء تصريف المياه العادمة دون معالجة وتسرب بعض المواد الكيميائية. قد تتأثر الكائنات المائية وجودة الماء، وقد يختل التوازن البيئي.',fr:'Les rejets d’eaux usées non traitées et certaines fuites de produits chimiques peuvent polluer l’eau. Les organismes aquatiques et la qualité de l’eau peuvent être affectés, ainsi que l’équilibre écologique.'},
+ soil:{ar:'قد ينتج تلوث التربة عن تراكم النفايات أو الاستخدام غير الملائم لبعض المواد الكيميائية. ويمكن أن تتأثر خصوبة التربة والكائنات التي تعيش فيها وانتقال الملوثات إلى النباتات.',fr:'L’accumulation de déchets et l’usage inadapté de certains produits chimiques peuvent polluer le sol. La fertilité, les organismes du sol et le transfert de contaminants vers les plantes peuvent être affectés.'},
+ air:{ar:'تساهم بعض الانبعاثات الناتجة عن النقل والصناعة وحرق الوقود والنفايات في تلوث الهواء، وقد تؤثر في صحة الكائنات والنباتات والأنظمة البيئية.',fr:'Certaines émissions liées aux transports, aux activités industrielles et à la combustion de carburants ou de déchets contribuent à la pollution de l’air et peuvent affecter les organismes et les écosystèmes.'}
+};
+const pollutionActionTexts={
+ waste:{ar:'يساعد فرز النفايات ومعالجتها على تقليل تراكمها في الطبيعة، واسترجاع بعض المواد، والحد من تسرب الملوثات إلى الأوساط البيئية.',fr:'Le tri et le traitement des déchets réduisent leur accumulation dans la nature, permettent de récupérer certaines matières et limitent la dispersion de polluants.'},
+ water:{ar:'تساهم معالجة المياه العادمة قبل تصريفها في إزالة جزء من الملوثات وتقليل الضغط على الأنهار والبحيرات والموارد المائية.',fr:'Le traitement des eaux usées avant leur rejet élimine une partie des polluants et réduit la pression sur les rivières, les lacs et les ressources en eau.'},
+ plants:{ar:'يساعد الحفاظ على الغطاء النباتي في حماية التربة من الانجراف، وتوفير موائل للكائنات، ودعم استقرار الأنظمة البيئية.',fr:'La protection de la couverture végétale aide à limiter l’érosion des sols, fournit des habitats aux organismes et soutient la stabilité des écosystèmes.'}
+};
+function showPollution(key){const t=pollutionTexts[key];if(t)$('pollution-impact').textContent=t[lang];}
+function showPollutionAction(key){const t=pollutionActionTexts[key];if(t)$('pollution-action-feedback').textContent=t[lang];}
+document.querySelectorAll('[data-pollution]').forEach(btn=>btn.addEventListener('click',()=>{
+ selectedPollution=btn.dataset.pollution;
+ document.querySelectorAll('[data-pollution]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ showPollution(selectedPollution);
+}));
+document.querySelectorAll('[data-pollution-action]').forEach(btn=>btn.addEventListener('click',()=>{
+ selectedPollutionAction=btn.dataset.pollutionAction;
+ document.querySelectorAll('[data-pollution-action]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ showPollutionAction(selectedPollutionAction);
 }));
 
 })();
