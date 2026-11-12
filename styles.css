@@ -1400,3 +1400,43 @@ html[dir="rtl"] .content-card.pdf-resource-card {
     max-height: 100% !important;
     flex: 0 1 auto !important;
 }
+
+/* Keep the original quick-action icons in one horizontal row in the PDF side rail. */
+.content-card.pdf-resource-card > .card-actions > .gs-tools {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .25rem !important;
+    width: 100% !important;
+    margin: .1rem 0 0 !important;
+    padding: .25rem 0 0 !important;
+    border-top: 1px solid #d4e0e4;
+}
+.content-card.pdf-resource-card > .card-actions > .gs-tools > .gs-tool {
+    display: inline-flex !important;
+    flex: 1 1 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 34px !important;
+    margin: 0 !important;
+    padding: .15rem 0 !important;
+    border: 1px solid #d7e1e5 !important;
+    border-radius: 7px !important;
+    background: #fff !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    cursor: pointer;
+}
+.content-card.pdf-resource-card > .card-actions > .gs-tools > .gs-tool.on {
+    background: #e5f4e9 !important;
+    border-color: #77ad86 !important;
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card > .card-actions > .gs-tools > .gs-tool {
+        min-height: 30px !important;
+        font-size: .88rem !important;
+    }
+}
