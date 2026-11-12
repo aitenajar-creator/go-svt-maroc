@@ -5,7 +5,7 @@ const dict={
  chloroplast:{ar:['البلاستيدة الخضراء','تحتوي على اليخضور وتتم داخلها عملية التركيب الضوئي.','توجد البلاستيدات الخضراء في الخلايا النباتية الخضراء وبعض الطحالب.'],fr:['Chloroplaste','Contient la chlorophylle et constitue le siège de la photosynthèse.','Les chloroplastes se trouvent dans les cellules végétales chlorophylliennes et certaines algues.']},
  mitochondria:{ar:['الميتوكندريا','تساهم في إنتاج الطاقة القابلة للاستعمال من طرف الخلية عبر التنفس الخلوي.','توجد الميتوكندريا في الخلايا النباتية والحيوانية.'],fr:['Mitochondrie','Participe à la production d’énergie utilisable par la cellule grâce à la respiration cellulaire.','Les mitochondries existent dans les cellules végétales et animales.']}
 };
-let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null;
+let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null;
 const $=id=>document.getElementById(id);
 function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
@@ -152,6 +152,30 @@ document.querySelectorAll('[data-foodweb]').forEach(btn=>btn.addEventListener('c
  selectedFoodWeb=btn.dataset.foodweb;
  document.querySelectorAll('[data-foodweb]').forEach(b=>b.classList.toggle('is-active',b===btn));
  showFoodWeb(selectedFoodWeb);
+}));
+
+
+const habitatTexts={
+ forest:{ar:'الغابة وسط يضم أشجاراً وشجيرات وفطريات وطيوراً وحشرات وثدييات، وتتأثر مكوناته بتوفر الماء والضوء ونوعية التربة.',fr:'La forêt abrite des arbres, arbustes, champignons, oiseaux, insectes et mammifères. Ses composantes dépendent notamment de l’eau, de la lumière et du sol.'},
+ wetland:{ar:'تتميز المناطق الرطبة بتوفر الماء، وتوفر موائل للطيور والبرمائيات والنباتات المائية واللافقاريات. وهي مهمة لتنقية المياه وتخفيف الفيضانات.',fr:'Les zones humides sont caractérisées par la présence d’eau. Elles accueillent des oiseaux, amphibiens, plantes aquatiques et invertébrés ; elles contribuent aussi à filtrer l’eau et à atténuer les crues.'},
+ desert:{ar:'تتميز الأوساط الصحراوية بندرة الماء وتغير درجات الحرارة، وتعيش فيها نباتات وحيوانات متكيفة مع الجفاف مثل بعض الزواحف والحشرات والنباتات المقاومة للعطش.',fr:'Les milieux désertiques connaissent une faible disponibilité en eau et de fortes variations de température. Des plantes, reptiles et insectes adaptés à la sécheresse y vivent.'}
+};
+const pressureTexts={
+ pollution:{ar:'قد يغير التلوث جودة الماء أو الهواء أو التربة، ويسبب تراجع بعض الأنواع الحساسة، كما يمكن أن تنتقل بعض الملوثات عبر الشبكات الغذائية.',fr:'La pollution peut altérer la qualité de l’eau, de l’air ou du sol, réduire certaines espèces sensibles et permettre à des contaminants de circuler dans les réseaux alimentaires.'},
+ habitat:{ar:'قد يؤدي تجزؤ الموائل أو تدميرها إلى تقليص المساحة المتاحة للكائنات وعزل جماعاتها، فيصعب عليها الحصول على الغذاء والتكاثر والانتشار.',fr:'La fragmentation ou la destruction des habitats réduit l’espace disponible et isole les populations, rendant plus difficiles l’alimentation, la reproduction et la dispersion.'},
+ climate:{ar:'يمكن لتغير الحرارة والتساقطات أن يغير توزيع الأنواع ومواعيد نشاطها وتوفر الماء والغذاء، وقد تضطر بعض الأنواع إلى الانتقال أو تتراجع أعدادها.',fr:'Les changements de température et de précipitations peuvent modifier la répartition des espèces, leurs périodes d’activité et les ressources disponibles. Certaines espèces doivent se déplacer ou peuvent décliner.'}
+};
+function showHabitat(key){const t=habitatTexts[key];if(t)$('habitat-description').textContent=t[lang];}
+function showPressure(key){const t=pressureTexts[key];if(t)$('pressure-description').textContent=t[lang];}
+document.querySelectorAll('[data-habitat]').forEach(btn=>btn.addEventListener('click',()=>{
+ selectedHabitat=btn.dataset.habitat;
+ document.querySelectorAll('[data-habitat]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ showHabitat(selectedHabitat);
+}));
+document.querySelectorAll('[data-pressure]').forEach(btn=>btn.addEventListener('click',()=>{
+ selectedPressure=btn.dataset.pressure;
+ document.querySelectorAll('[data-pressure]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ showPressure(selectedPressure);
 }));
 
 })();
