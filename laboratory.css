@@ -136,3 +136,16 @@
 .gs-foodweb-grid button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
 .gs-foodweb-detail{margin:16px 0;padding:15px 17px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:70px}
 @media(max-width:620px){.gs-foodweb-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gs-foodweb-grid button{min-height:72px}}
+
+/* Biodiversity observatory activity */
+.gs-biodiv-card{background:#fff;border:1px solid #e0ebe3;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d}
+.gs-biodiv-card h3{margin:16px 0 12px;color:#315b3e}
+.gs-biodiv-habitats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.gs-biodiv-habitats button{display:flex;flex-direction:column;align-items:center;gap:7px;min-height:110px;padding:13px;border:1px solid #d9e6d8;border-radius:15px;background:#f8fbf7;color:#365d43;font:inherit;cursor:pointer}
+.gs-biodiv-habitats button span{font-size:1.9rem}
+.gs-biodiv-habitats button.is-active,.gs-biodiv-pressures button.is-active{background:#e7f3e7;border:2px solid #67956c}
+.gs-biodiv-pressures{display:flex;flex-wrap:wrap;gap:9px}
+.gs-biodiv-pressures button{padding:10px 17px;border:1px solid #d9e6d8;border-radius:999px;background:#f8fbf7;color:#365d43;font:inherit;cursor:pointer}
+.gs-biodiv-detail{margin:13px 0 20px;padding:15px 17px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:65px}
+.gs-biodiv-habitats button:focus-visible,.gs-biodiv-pressures button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
+@media(max-width:620px){.gs-biodiv-habitats{grid-template-columns:1fr}.gs-biodiv-habitats button{min-height:78px;flex-direction:row;justify-content:center}}
