@@ -1494,3 +1494,72 @@ html[dir="rtl"] .content-card.pdf-resource-card {
         grid-template-columns: minmax(0, 1fr) 100px !important;
     }
 }
+
+/* Full-width PDF preview: the document frame occupies the entire card width.
+   Keep the original action icons unchanged and in one horizontal row below it. */
+.content-card.pdf-resource-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto auto !important;
+    grid-template-areas:
+        "badge"
+        "title"
+        "filename"
+        "preview"
+        "actions"
+        "tools" !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+        "badge"
+        "title"
+        "filename"
+        "preview"
+        "actions"
+        "tools" !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    grid-area: preview !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 460px !important;
+    height: auto !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+}
+.content-card.pdf-resource-card > h3 { grid-area: title !important; }
+.content-card.pdf-resource-card > .file-name { grid-area: filename !important; }
+.content-card.pdf-resource-card > .card-actions {
+    grid-area: actions !important;
+    width: 100% !important;
+}
+.content-card.pdf-resource-card > .gs-tools {
+    grid-area: tools !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: .4rem !important;
+}
+.content-card.pdf-resource-card > .gs-tools > .gs-tool {
+    flex: 0 0 auto !important;
+    min-width: 42px !important;
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card > .pdf-thumbnail {
+        min-height: 340px !important;
+    }
+}
