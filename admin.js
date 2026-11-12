@@ -127,7 +127,7 @@
         await client.storage.from('site-content').remove([path]);
         throw insertError;
       }
-      uploadForm.reset();
+      $('upload-form').reset();
       message(uploadMessage, 'تم رفع الملف وحفظ بياناته بنجاح. سيظهر في مكتبة الإدارة.', 'success');
       await loadResources();
     } catch (error) { message(uploadMessage, error.message || 'تعذر رفع الملف.', 'error'); }
