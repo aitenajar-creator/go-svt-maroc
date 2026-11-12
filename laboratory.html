@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261112-3">
+<link rel="stylesheet" href="laboratory.css?v=20261112-4">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -106,12 +106,46 @@
    <p class="gs-photo-note" data-ar="هذا نموذج مبسط لوراثة مندلية لصفة واحدة مع سيادة تامة، ويفترض تكافؤ احتمالات الأمشاج والإخصاب. الصفات الحقيقية قد تتأثر بعدة مورثات والبيئة." data-fr="Modèle mendélien simplifié d’un seul caractère à dominance complète, supposant des probabilités égales pour les gamètes et la fécondation. Les caractères réels peuvent dépendre de plusieurs gènes et de l’environnement.">هذا نموذج مبسط لوراثة مندلية لصفة واحدة مع سيادة تامة، ويفترض تكافؤ احتمالات الأمشاج والإخصاب. الصفات الحقيقية قد تتأثر بعدة مورثات والبيئة.</p>
   </div>
  </section>
+ <section class="gs-lab-section" id="geology-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 05" data-fr="EXPÉRIENCE 05">التجربة 05</span><h2 data-ar="مختبر الطبقات والبنيات الجيولوجية" data-fr="Laboratoire des strates et structures géologiques">مختبر الطبقات والبنيات الجيولوجية</h2><p data-ar="اختر بنية جيولوجية ولاحظ كيف تتغير الطبقات بفعل الترسيب والتشوهات التكتونية." data-fr="Choisissez une structure géologique et observez comment les couches évoluent sous l’effet de la sédimentation et des déformations tectoniques.">اختر بنية جيولوجية ولاحظ كيف تتغير الطبقات بفعل الترسيب والتشوهات التكتونية.</p></div><span class="gs-lab-number">05</span></div>
+  <div class="gs-geology-card">
+   <div class="gs-geology-tabs" role="group" aria-label="اختيار البنية الجيولوجية">
+    <button type="button" class="gs-geology-choice is-active" data-geology="horizontal" data-ar="طبقات أفقية" data-fr="Couches horizontales" aria-pressed="true">طبقات أفقية</button>
+    <button type="button" class="gs-geology-choice" data-geology="fold" data-ar="طية" data-fr="Pli" aria-pressed="false">طية</button>
+    <button type="button" class="gs-geology-choice" data-geology="fault" data-ar="فالق" data-fr="Faille" aria-pressed="false">فالق</button>
+   </div>
+   <div class="gs-geology-visual">
+    <svg viewBox="0 0 640 340" role="img" aria-label="مقطع جيولوجي تعليمي لطبقات صخرية">
+     <g data-geo-scene="horizontal">
+      <path d="M30 60H610V125H30Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/><path d="M30 125H610V190H30Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/><path d="M30 190H610V255H30Z" fill="#d89c72" stroke="#fff" stroke-width="2"/><path d="M30 255H610V320H30Z" fill="#8ca8b7" stroke="#fff" stroke-width="2"/>
+      <g fill="#4d5148" font-size="15" font-weight="700"><text x="45" y="98">A</text><text x="45" y="164">B</text><text x="45" y="230">C</text><text x="45" y="296">D</text></g>
+     </g>
+     <g data-geo-scene="fold" hidden>
+      <path d="M30 60 Q160 60 240 130 Q320 200 400 130 Q480 60 610 60 L610 115 Q480 115 400 185 Q320 255 240 185 Q160 115 30 115Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/>
+      <path d="M30 115 Q160 115 240 185 Q320 255 400 185 Q480 115 610 115 L610 170 Q480 170 400 240 Q320 310 240 240 Q160 170 30 170Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/>
+      <path d="M30 170 Q160 170 240 240 Q320 310 400 240 Q480 170 610 170 L610 225 Q480 225 400 295 Q320 365 240 295 Q160 225 30 225Z" fill="#d89c72" stroke="#fff" stroke-width="2"/>
+      <path d="M30 225 Q160 225 240 295 Q320 365 400 295 Q480 225 610 225 L610 340H30Z" fill="#8ca8b7" stroke="#fff" stroke-width="2"/>
+      <path d="M320 25V310" stroke="#596d60" stroke-dasharray="7 7" stroke-width="2"/><text x="330" y="35" fill="#435b49" font-size="14">Axe du pli</text>
+     </g>
+     <g data-geo-scene="fault" hidden>
+      <path d="M30 60H330L450 125H610V190H450L330 125H30Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/>
+      <path d="M30 125H330L450 190H610V255H450L330 190H30Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/>
+      <path d="M30 190H330L450 255H610V320H450L330 255H30Z" fill="#d89c72" stroke="#fff" stroke-width="2"/>
+      <path d="M330 20L450 330" stroke="#394f43" stroke-width="5" stroke-dasharray="9 6"/><path d="M430 145l-2 24 18-16" fill="none" stroke="#394f43" stroke-width="4"/>
+     </g>
+    </svg>
+    <div class="gs-geology-legend"><span><i class="geo-swatch geo-a"></i><span data-ar="طبقة A (أحدث)" data-fr="Couche A (plus récente)">طبقة A (أحدث)</span></span><span><i class="geo-swatch geo-b"></i><span data-ar="طبقة B" data-fr="Couche B">طبقة B</span></span><span><i class="geo-swatch geo-c"></i><span data-ar="طبقة C" data-fr="Couche C">طبقة C</span></span><span><i class="geo-swatch geo-d"></i><span data-ar="طبقة D (أقدم)" data-fr="Couche D (plus ancienne)">طبقة D (أقدم)</span></span></div>
+   </div>
+   <div class="gs-geology-explanation" id="geo-explanation" aria-live="polite">في الطبقات الأفقية غير المشوهة، تكون الطبقات السفلى أقدم من الطبقات العليا وفق مبدأ التراكب.</div>
+   <p class="gs-photo-note" data-ar="رسوم تخطيطية تعليمية وليست مقاطع جيولوجية بمقياس حقيقي. تحديد العمر النسبي يتطلب مراعاة السياق الجيولوجي والعلاقات بين الطبقات." data-fr="Schémas pédagogiques non à l’échelle. La datation relative nécessite de tenir compte du contexte géologique et des relations entre les couches.">رسوم تخطيطية تعليمية وليست مقاطع جيولوجية بمقياس حقيقي. تحديد العمر النسبي يتطلب مراعاة السياق الجيولوجي والعلاقات بين الطبقات.</p>
+  </div>
+ </section>
  <section class="gs-lab-section gs-lab-quiz" id="lab-quiz">
-  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 05" data-fr="EXPÉRIENCE 05">التجربة 05</span><h2 data-ar="اختبر معلوماتك" data-fr="Testez vos connaissances">اختبر معلوماتك</h2><p data-ar="سؤال قصير لترسيخ ما تعلمته حول الخلية." data-fr="Une courte question pour consolider vos connaissances sur la cellule.">سؤال قصير لترسيخ ما تعلمته حول الخلية.</p></div><span class="gs-lab-number">05</span></div>
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 05" data-fr="EXPÉRIENCE 05">التجربة 05</span><h2 data-ar="اختبر معلوماتك" data-fr="Testez vos connaissances">اختبر معلوماتك</h2><p data-ar="سؤال قصير لترسيخ ما تعلمته حول الخلية." data-fr="Une courte question pour consolider vos connaissances sur la cellule.">سؤال قصير لترسيخ ما تعلمته حول الخلية.</p></div><span class="gs-lab-number">06</span></div>
   <div class="gs-quiz-card"><h3 data-ar="ما المكوّن الذي يحتوي على المادة الوراثية في الخلية حقيقية النواة؟" data-fr="Quel constituant contient le matériel génétique dans une cellule eucaryote ?">ما المكوّن الذي يحتوي على المادة الوراثية في الخلية حقيقية النواة؟</h3><div class="gs-quiz-options"><button type="button" data-answer="wrong" data-ar="الفجوة" data-fr="La vacuole">الفجوة</button><button type="button" data-answer="correct" data-ar="النواة" data-fr="Le noyau">النواة</button><button type="button" data-answer="wrong" data-ar="الجدار الخلوي" data-fr="La paroi">الجدار الخلوي</button></div><p id="lab-quiz-feedback" class="gs-quiz-feedback" aria-live="polite" data-ar="اختر إجابتك." data-fr="Choisissez votre réponse.">اختر إجابتك.</p></div>
  </section>
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261112-3" defer></script>
+<script src="laboratory.js?v=20261112-4" defer></script>
 </body></html>
