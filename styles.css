@@ -1715,3 +1715,189 @@ html[dir="rtl"] .content-card.pdf-resource-card {
         font-size: .7rem !important;
     }
 }
+
+
+/* PDF resource cards: a wider card with two distinct, adjacent panels.
+   The document keeps its complete page proportions; the information panel
+   contains metadata, preview/download actions and the original study tools. */
+.content-grid > .content-card.pdf-resource-card {
+    grid-column: span 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 1rem !important;
+}
+.content-card.pdf-resource-card .pdf-card-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.8fr) minmax(220px, .9fr) !important;
+    grid-template-areas: "document details" !important;
+    align-items: stretch !important;
+    gap: .85rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    direction: ltr !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
+    grid-template-columns: minmax(220px, .9fr) minmax(0, 1.8fr) !important;
+    grid-template-areas: "details document" !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel {
+    grid-area: document !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 100% !important;
+    padding: .55rem !important;
+    overflow: hidden !important;
+    border: 1px solid #cbded2 !important;
+    border-radius: 14px !important;
+    background: #f1f5f2 !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail {
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail canvas {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    box-shadow: 0 2px 12px rgba(20, 48, 34, .13) !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel {
+    grid-area: details !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: .7rem !important;
+    min-width: 0 !important;
+    padding: .85rem !important;
+    border: 1px solid #cbded2 !important;
+    border-radius: 14px !important;
+    background: #fff !important;
+    direction: inherit !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > h3,
+.content-card.pdf-resource-card .pdf-info-panel > .file-name {
+    position: static !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > h3 {
+    color: #214b36 !important;
+    font-size: 1.02rem !important;
+    line-height: 1.55 !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .file-name {
+    color: #718078 !important;
+    font-size: .78rem !important;
+    line-height: 1.5 !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .card-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: .55rem !important;
+    width: 100% !important;
+    margin: .15rem 0 0 !important;
+    padding: 0 !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .card-actions .preview-btn,
+.content-card.pdf-resource-card .pdf-info-panel > .card-actions .download-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    padding: .5rem .4rem !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .gs-tools {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .25rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+    padding-top: .6rem !important;
+    border-top: 1px solid #e6eee8 !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .gs-tools > .gs-tool {
+    display: inline-flex !important;
+    flex: 1 1 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 38px !important;
+    padding: .2rem !important;
+    font-size: 1rem !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .content-card.pdf-resource-card {
+        grid-column: 1 / -1 !important;
+    }
+    .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(0, 1.55fr) minmax(112px, .85fr) !important;
+        gap: .45rem !important;
+    }
+    html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(112px, .85fr) minmax(0, 1.55fr) !important;
+    }
+    .content-card.pdf-resource-card .pdf-preview-panel,
+    .content-card.pdf-resource-card .pdf-info-panel {
+        padding: .45rem !important;
+        border-radius: 10px !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel {
+        gap: .5rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > h3 {
+        font-size: .82rem !important;
+        line-height: 1.4 !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > .file-name {
+        font-size: .66rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > .card-actions .preview-btn,
+    .content-card.pdf-resource-card .pdf-info-panel > .card-actions .download-btn {
+        min-height: 36px !important;
+        padding: .35rem .2rem !important;
+        font-size: .68rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > .gs-tools > .gs-tool {
+        min-height: 32px !important;
+        font-size: .88rem !important;
+    }
+}
+@media (max-width: 360px) {
+    .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(0, 1.35fr) minmax(104px, .9fr) !important;
+    }
+    html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(104px, .9fr) minmax(0, 1.35fr) !important;
+    }
+}
