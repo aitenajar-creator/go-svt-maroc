@@ -74,3 +74,18 @@
 .gs-relative-options button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
 .gs-relative-feedback{padding:13px 15px;border-radius:11px;background:#f0f7f1;border-inline-start:4px solid #67956c;color:#496b54;line-height:1.9;min-height:54px}
 @media(max-width:760px){.gs-relative-card{grid-template-columns:1fr}}
+
+/* Rock cycle learning station */
+.gs-rock-cycle-card{background:#fff;border:1px solid #e0ebe3;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d}
+.gs-rock-cycle-diagram{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;padding:18px 8px;background:linear-gradient(145deg,#f0f5ed,#f8f5ed);border-radius:17px}
+.gs-rock-node{min-width:112px;min-height:94px;padding:13px 12px;border-radius:15px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;text-align:center;color:#314d3b;border:1px solid #ffffffb8;box-shadow:0 5px 14px #263b2a12}
+.gs-rock-node span{font-size:.72rem;font-weight:900;opacity:.7}
+.gs-rock-node strong{font-size:.88rem;line-height:1.5}
+.rock-magma{background:#e9b5a0}.rock-igneous{background:#aeb9ae}.rock-sediment{background:#e8d6a6}.rock-sedimentary{background:#c6d8ae}.rock-metamorphic{background:#c8b6d4}
+.gs-rock-arrow{font-size:1.5rem;color:#6d8c72;font-weight:900}
+.gs-rock-processes{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin:19px 0}
+.gs-rock-processes button{border:1px solid #d5e4d7;background:#f7faf7;color:#365d43;border-radius:999px;padding:10px 15px;font:inherit;font-weight:750;cursor:pointer}
+.gs-rock-processes button.is-active{background:#2f7048;border-color:#2f7048;color:#fff}
+.gs-rock-processes button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
+.gs-rock-explanation{padding:15px 17px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:62px}
+@media(max-width:620px){.gs-rock-cycle-diagram{gap:6px}.gs-rock-node{min-width:calc(50% - 14px);min-height:78px}.gs-rock-arrow{font-size:1.1rem}.gs-rock-processes button{flex:1 1 42%;font-size:.86rem}}
