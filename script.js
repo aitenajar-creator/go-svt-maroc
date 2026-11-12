@@ -227,14 +227,21 @@ function loadPdfJs() {
 async function renderFirstPdfPage(container) {
     if (!container || container.dataset.rendered === 'true' || container.dataset.loading === 'true') return;
     container.dataset.loading = 'true';
+    let pdf = null;
     try {
         const pdfjs = await loadPdfJs();
-        const pdf = await pdfjs.getDocument({ url: buildFileUrl(container.dataset.path), withCredentials: false }).promise;
+        const url = buildFileUrl(container.dataset.path);
+        // Try the normal worker first. If the browser/CDN blocks the worker,
+        // retry in PDF.js' main-thread mode so the preview can still render.
+        try {
+            pdf = await pdfjs.getDocument({ url, withCredentials: false }).promise;
+        } catch (workerError) {
+            console.warn('PDF worker preview failed; retrying without worker:', workerError);
+            pdf = await pdfjs.getDocument({ url, withCredentials: false, disableWorker: true }).promise;
+        }
         const page = await pdf.getPage(1);
         const base = page.getViewport({ scale: 1 });
         const cssWidth = Math.max(container.clientWidth || 0, 260);
-        // A compact preview is much faster to rasterize; CSS still displays it
-        // at the full panel width without changing the PDF page proportions.
         const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
         const renderScale = Math.min(1.6, Math.max(1, (cssWidth * pixelRatio) / base.width));
         const viewport = page.getViewport({ scale: renderScale });
@@ -244,41 +251,59 @@ async function renderFirstPdfPage(container) {
         canvas.style.width = '100%';
         canvas.style.height = 'auto';
         canvas.style.display = 'block';
-        await page.render({ canvasContext: canvas.getContext('2d', { alpha: false }), viewport }).promise;
+        const context = canvas.getContext('2d', { alpha: false });
+        if (!context) throw new Error('Canvas 2D context unavailable');
+        await page.render({ canvasContext: context, viewport }).promise;
         container.replaceChildren(canvas);
         container.dataset.rendered = 'true';
         page.cleanup();
-        await pdf.destroy();
     } catch (error) {
         console.warn('PDF thumbnail unavailable:', container.dataset.path, error);
         container.innerHTML = `<span class="thumbnail-fallback">${t('المعاينة غير متاحة لهذا الملف', 'Aperçu indisponible pour ce fichier')}</span>`;
         container.dataset.rendered = 'true';
     } finally {
+        if (pdf) {
+            try { await pdf.destroy(); } catch (cleanupError) { /* ignore cleanup errors */ }
+        }
         delete container.dataset.loading;
+    }
+}
+
+// Render a small number of PDFs concurrently. This avoids saturating the
+// browser with simultaneous downloads while ensuring hidden tabs and cards
+// are not left waiting forever for an IntersectionObserver notification.
+const pdfThumbnailQueue = [];
+let pdfThumbnailActive = 0;
+const PDF_THUMBNAIL_CONCURRENCY = 2;
+function queuePdfThumbnail(container) {
+    if (!container || container.dataset.rendered === 'true' || container.dataset.queued === 'true') return;
+    container.dataset.queued = 'true';
+    const rect = container.getBoundingClientRect();
+    const distance = rect.top < 0 ? Math.abs(rect.top) : Math.max(0, rect.top - window.innerHeight);
+    pdfThumbnailQueue.push({ container, distance });
+    pdfThumbnailQueue.sort((a, b) => a.distance - b.distance);
+    processPdfThumbnailQueue();
+}
+function processPdfThumbnailQueue() {
+    while (pdfThumbnailActive < PDF_THUMBNAIL_CONCURRENCY && pdfThumbnailQueue.length) {
+        const item = pdfThumbnailQueue.shift();
+        const node = item.container;
+        delete node.dataset.queued;
+        if (!node.isConnected || node.dataset.rendered === 'true') continue;
+        pdfThumbnailActive++;
+        renderFirstPdfPage(node).finally(() => {
+            pdfThumbnailActive--;
+            processPdfThumbnailQueue();
+        });
     }
 }
 function observePdfThumbnails(root = document) {
     const nodes = root.querySelectorAll('[data-pdf-thumbnail]');
     if (!nodes.length) return;
-    // Start downloading PDF.js as soon as the cards are inserted, rather than
-    // waiting until a thumbnail is already close to the viewport.
+    // Do not rely on IntersectionObserver: content tabs can be hidden when
+    // inserted, which may prevent their preview callbacks from firing.
     loadPdfJs().catch(error => console.warn('PDF preview engine unavailable:', error));
-    if (!('IntersectionObserver' in window)) {
-        nodes.forEach(node => renderFirstPdfPage(node));
-        return;
-    }
-    if (!pdfThumbnailObserver) {
-        pdfThumbnailObserver = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) return;
-                pdfThumbnailObserver.unobserve(entry.target);
-                renderFirstPdfPage(entry.target);
-            });
-        }, { rootMargin: '1400px 0px', threshold: 0.01 });
-    }
-    nodes.forEach(node => {
-        if (node.dataset.rendered !== 'true') pdfThumbnailObserver.observe(node);
-    });
+    nodes.forEach(queuePdfThumbnail);
 }
 
 // تحديد الشعبة من بنية مسار الملف، بما في ذلك مجلدات الامتحانات.
