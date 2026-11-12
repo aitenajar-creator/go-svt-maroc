@@ -35,7 +35,7 @@ jobs:
         run: |
           git ls-files -z -- '*.json' | python3 -c '
           import json, pathlib, sys
-          paths = [p.decode() for p in sys.stdin.buffer.read().split(b"\\0") if p and p.decode() != "content.json"]
+          paths = [p.decode() for p in sys.stdin.buffer.read().split(bytes([0])) if p and p.decode() != "content.json"]
           for name in paths:
               with pathlib.Path(name).open(encoding="utf-8") as f:
                   json.load(f)
