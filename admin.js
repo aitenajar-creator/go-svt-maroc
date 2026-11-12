@@ -48,6 +48,7 @@
     loginPanel.hidden = true;
     dashboard.hidden = false;
     await loadResources();
+    await loadFounderProfile();
   }
   async function loadResources() {
     const list = $('resource-list');
@@ -132,6 +133,55 @@
       await loadResources();
     } catch (error) { message(uploadMessage, error.message || 'تعذر رفع الملف.', 'error'); }
     finally { button.disabled = false; $('upload-progress').hidden = true; }
+  });
+  const founderFields = {
+    name_ar:'founder-name-ar', name_fr:'founder-name-fr',
+    role_ar:'founder-role-ar', role_fr:'founder-role-fr',
+    bio_ar:'founder-bio-ar', bio_fr:'founder-bio-fr',
+    vision_ar:'founder-vision-ar', vision_fr:'founder-vision-fr'
+  };
+  let currentPortraitPath = null;
+  async function loadFounderProfile() {
+    const {data,error}=await client.from('site_founder_profile').select('*').eq('id','main').maybeSingle();
+    if(error) { message($('founder-message'),'تعذر تحميل النبذة: '+error.message,'error'); return; }
+    if(!data) return;
+    Object.entries(founderFields).forEach(([key,id])=>{ $(id).value=data[key] || ''; });
+    currentPortraitPath=data.portrait_path || null;
+    if(currentPortraitPath) {
+      const url=publicUrl(currentPortraitPath);
+      $('founder-photo-preview').src=url; $('founder-photo-preview').hidden=false;
+    }
+  }
+  $('founder-form').addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(!currentUser) return;
+    const button=$('founder-save'); button.disabled=true;
+    message($('founder-message'),'جارٍ حفظ التعديلات...');
+    let uploadedPath=null;
+    try {
+      const photo=$('founder-photo').files[0];
+      if(photo) {
+        if(!['image/jpeg','image/png','image/webp'].includes(photo.type) || photo.size>5*1024*1024)
+          throw new Error('الصورة يجب أن تكون JPG أو PNG أو WebP وألا يتجاوز حجمها 5MB.');
+        uploadedPath='founder/'+crypto.randomUUID()+'-'+safeName(photo.name);
+        const {error}=await client.storage.from('site-content').upload(uploadedPath,photo,{contentType:photo.type,upsert:false});
+        if(error) throw error;
+      }
+      const row={id:'main',updated_by:currentUser.id,updated_at:new Date().toISOString()};
+      Object.entries(founderFields).forEach(([key,id])=>{row[key]=$(id).value.trim();});
+      row.portrait_path=uploadedPath || currentPortraitPath;
+      const {error}=await client.from('site_founder_profile').upsert(row,{onConflict:'id'});
+      if(error) {
+        if(uploadedPath) await client.storage.from('site-content').remove([uploadedPath]);
+        throw error;
+      }
+      if(uploadedPath && currentPortraitPath) await client.storage.from('site-content').remove([currentPortraitPath]);
+      currentPortraitPath=row.portrait_path;
+      if(currentPortraitPath){$('founder-photo-preview').src=publicUrl(currentPortraitPath);$('founder-photo-preview').hidden=false;}
+      $('founder-photo').value='';
+      message($('founder-message'),'تم حفظ النبذة والصورة بنجاح. ستظهر التعديلات في الصفحة الرئيسية بعد تحديثها.','success');
+    } catch(error) { message($('founder-message'),error.message || 'تعذر حفظ النبذة.','error'); }
+    finally { button.disabled=false; }
   });
   $('refresh-btn').addEventListener('click', loadResources);
   $('signout-btn').addEventListener('click', async () => {
