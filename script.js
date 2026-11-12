@@ -416,6 +416,28 @@ function buildUI() {
                 <input type="search" id="gs-search-input" autocomplete="off">
                 <button type="button" class="gs-close" aria-label="Fermer">✕</button>
             </div>
+            <div class="gs-search-filters" role="group" aria-label="Search filters">
+                <select id="gs-search-category" aria-label="Type de ressource">
+                    <option value="">\${t('كل الموارد', 'Tous les types')}</option>
+                    <option value="cours">\${t('الدروس', 'Cours')}</option>
+                    <option value="exercices">\${t('التمارين', 'Exercices')}</option>
+                    <option value="examens">\${t('الامتحانات', 'Examens')}</option>
+                    <option value="fiches">\${t('الملخصات', 'Fiches')}</option>
+                    <option value="documents">\${t('الوثائق', 'Documents')}</option>
+                    <option value="ressources">\${t('الموارد', 'Ressources')}</option>
+                </select>
+                <select id="gs-search-level" aria-label="Niveau scolaire">
+                    <option value="">\${t('كل المستويات', 'Tous les niveaux')}</option>
+                    <option value="TC">TC</option>
+                    <option value="1BAC">1BAC</option>
+                    <option value="2BAC">2BAC</option>
+                </select>
+                <select id="gs-search-language" aria-label="Langue">
+                    <option value="">\${t('كل اللغات', 'Toutes les langues')}</option>
+                    <option value="francais">\${t('الفرنسية', 'Français')}</option>
+                    <option value="arabe">\${t('العربية', 'Arabe')}</option>
+                </select>
+            </div>
             <div id="gs-search-results"></div>
         </div>`;
     document.body.appendChild(search);
@@ -455,6 +477,12 @@ function buildUI() {
     document.getElementById('gs-search-input').addEventListener('input', function () {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => runSearch(this.value), 150);
+    });
+    ['gs-search-category', 'gs-search-level', 'gs-search-language'].forEach(id => {
+        const control = document.getElementById(id);
+        if (control) control.addEventListener('change', () => {
+            runSearch(document.getElementById('gs-search-input')?.value || '');
+        });
     });
 
     refreshUiTexts();
