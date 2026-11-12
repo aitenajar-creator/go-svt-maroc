@@ -760,3 +760,29 @@ html.gs-dark #student-space-content .gs-pa-review {
     background: #34794b;
     color: #fff;
 }
+
+
+/* Private manager registry inside the authenticated Mon espace account */
+.gs-manager-space{max-width:1100px;margin:0 auto;padding:12px 0 30px}
+.gs-manager-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:26px;border-radius:22px;background:linear-gradient(125deg,#153f36,#24745a);color:#fff;margin-bottom:20px;box-shadow:0 12px 32px rgba(20,65,52,.16)}
+.gs-manager-kicker{font-size:.72rem;letter-spacing:.12em;font-weight:800;opacity:.8}
+.gs-manager-hero h3{color:#fff;margin:8px 0;font-size:1.55rem}
+.gs-manager-hero p{margin:0;opacity:.88}
+.gs-manager-icon{font-size:3rem;background:rgba(255,255,255,.13);border-radius:18px;padding:12px}
+.gs-manager-card{background:var(--card-bg,#fff);border:1px solid rgba(100,130,120,.2);border-radius:20px;padding:22px;box-shadow:0 8px 24px rgba(30,60,50,.07)}
+.gs-manager-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.gs-manager-heading h4{margin:0 0 5px;font-size:1.2rem}.gs-manager-heading p{margin:0;color:var(--text-muted,#718078);font-size:.9rem}
+.gs-manager-refresh{border:0;border-radius:12px;padding:10px 15px;background:#e7f3ed;color:#18543e;font-weight:700;cursor:pointer}
+.gs-manager-stats{display:flex;gap:12px;margin:20px 0}
+.gs-manager-stats>div{flex:1;padding:14px;border-radius:14px;background:rgba(45,120,85,.08);display:flex;flex-direction:column;gap:3px}
+.gs-manager-stats strong{font-size:1.6rem;color:#23734f}.gs-manager-stats span,.gs-manager-status{font-size:.86rem;color:var(--text-muted,#718078)}
+.gs-manager-tools{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin:14px 0}
+.gs-manager-tools input,.gs-manager-tools select{width:100%;min-width:0;padding:12px;border:1px solid #d7e2dc;border-radius:12px;background:var(--card-bg,#fff);color:inherit;font:inherit}
+.gs-manager-list{display:grid;gap:10px}
+.gs-manager-student{display:flex;justify-content:space-between;gap:18px;padding:15px;border:1px solid rgba(110,140,125,.2);border-radius:14px}
+.gs-manager-identity,.gs-manager-academic{display:flex;flex-direction:column;gap:5px;min-width:0}
+.gs-manager-identity a{overflow-wrap:anywhere;color:#287653}.gs-manager-student small{font-size:.78rem;color:var(--text-muted,#718078)}
+.gs-manager-academic{align-items:flex-end;text-align:end}.gs-manager-academic span{font-weight:700;font-size:.9rem}
+.gs-manager-academic .is-confirmed{color:#23834e}.gs-manager-academic .is-pending{color:#a36b16}
+.gs-manager-empty{padding:18px;text-align:center;color:var(--text-muted,#718078)}
+@media(max-width:650px){.gs-manager-hero{padding:18px}.gs-manager-hero h3{font-size:1.2rem}.gs-manager-icon{font-size:2rem}.gs-manager-tools{grid-template-columns:1fr}.gs-manager-student{flex-direction:column}.gs-manager-academic{align-items:flex-start;text-align:start}.gs-manager-heading{align-items:flex-start}}
