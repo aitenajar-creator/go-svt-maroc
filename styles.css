@@ -2203,3 +2203,71 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
     .content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
     .content-card.file-resource-card .file-info-panel > .card-actions .download-btn { font-size: .62rem !important; }
 }
+
+
+/* Match grouped lessons/exercises to the exact same grid geometry as summaries.
+   The group becomes a full-width section; its inner grid inherits the same
+   column algorithm, while each resource card spans two grid tracks just like
+   the reference summary cards. */
+.content-grid > .track-content-group {
+    grid-column: 1 / -1 !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.content-grid > .track-content-group > .track-content-heading {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 1rem !important;
+    padding: .85rem 1rem !important;
+    border: 1px solid #d7e6dc !important;
+    border-inline-start: 4px solid #2c5f2d !important;
+    border-radius: 14px !important;
+    background: #f5f8f5 !important;
+    color: #214b36 !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
+    text-align: start !important;
+    box-sizing: border-box !important;
+}
+.content-grid > .track-content-group > .content-grid {
+    display: grid !important;
+    /* Exact same column sizing and spacing used by the summaries grid. */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 245px), 1fr)) !important;
+    align-items: stretch !important;
+    gap: 1.1rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.content-grid > .files-count {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    margin: 0 0 .25rem !important;
+}
+.content-grid > .content-card.file-resource-card,
+.content-grid > .track-content-group .content-card.file-resource-card {
+    grid-column: span 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .track-content-group > .content-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: .65rem !important;
+    }
+    .content-grid > .content-card.file-resource-card,
+    .content-grid > .track-content-group .content-card.file-resource-card {
+        grid-column: 1 / -1 !important;
+    }
+}
+@media (max-width: 360px) {
+    .content-grid > .track-content-group > .content-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
