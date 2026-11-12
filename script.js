@@ -217,9 +217,9 @@ async function renderFirstPdfPage(container) {
         const pdf = await pdfjs.getDocument({ url: buildFileUrl(container.dataset.path), withCredentials: false }).promise;
         const page = await pdf.getPage(1);
         const base = page.getViewport({ scale: 1 });
-        const cssWidth = Math.max(container.clientWidth || 0, 480);
-        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2.5);
-        const renderScale = Math.min(3.5, Math.max(1, (cssWidth * pixelRatio) / base.width));
+        const cssWidth = Math.max(container.clientWidth || 0, 260);
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.6);
+        const renderScale = Math.min(2.2, Math.max(1, (cssWidth * pixelRatio) / base.width));
         const viewport = page.getViewport({ scale: renderScale });
         const canvas = document.createElement('canvas');
         canvas.width = Math.ceil(viewport.width);
@@ -254,7 +254,7 @@ function observePdfThumbnails(root = document) {
                 pdfThumbnailObserver.unobserve(entry.target);
                 renderFirstPdfPage(entry.target);
             });
-        }, { rootMargin: '220px 0px' });
+        }, { rootMargin: '700px 0px', threshold: 0.01 });
     }
     nodes.forEach(node => {
         if (node.dataset.rendered !== 'true') pdfThumbnailObserver.observe(node);
