@@ -127,6 +127,9 @@
     const prevRenderCard = renderCard;
     renderCard = function (path, badgeText) {
         const html = prevRenderCard(path, badgeText);
+        if (html.includes('<!--PDF_TOOLS_SLOT-->')) {
+            return html.replace('<!--PDF_TOOLS_SLOT-->', toolsHtml(path));
+        }
         const i = html.lastIndexOf('</div>');
         return i === -1 ? html : html.slice(0, i) + toolsHtml(path) + html.slice(i);
     };

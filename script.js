@@ -177,13 +177,28 @@ function renderCard(path, badgeText) {
     return `
         <div class="content-card${ext === 'pdf' ? ' pdf-resource-card' : '' }">
             <span class="level-badge">${escapeHtml(badgeText)}</span>${newBadge}
-            ${thumbnail}
-            <h3>${escapeHtml(getFileTitle(fileName))}</h3>
-            <p class="file-name">${escapeHtml(fileName)}</p>
-            <div class="card-actions">
-                ${previewBtn}
-                <a href="${buildFileUrl(path)}" download class="download-btn" data-path="${safePath}">📥 ${t('تحميل', 'Télécharger')}</a>
-            </div>
+            ${ext === 'pdf' ? `
+                <div class="pdf-card-layout">
+                    <div class="pdf-preview-panel">${thumbnail}</div>
+                    <div class="pdf-info-panel">
+                        <h3>${escapeHtml(getFileTitle(fileName))}</h3>
+                        <p class="file-name">${escapeHtml(fileName)}</p>
+                        <div class="card-actions">
+                            ${previewBtn}
+                            <a href="${buildFileUrl(path)}" download class="download-btn" data-path="${safePath}">📥 ${t('تحميل', 'Télécharger')}</a>
+                        </div>
+                        <!--PDF_TOOLS_SLOT-->
+                    </div>
+                </div>
+            ` : `
+                ${thumbnail}
+                <h3>${escapeHtml(getFileTitle(fileName))}</h3>
+                <p class="file-name">${escapeHtml(fileName)}</p>
+                <div class="card-actions">
+                    ${previewBtn}
+                    <a href="${buildFileUrl(path)}" download class="download-btn" data-path="${safePath}">📥 ${t('تحميل', 'Télécharger')}</a>
+                </div>
+            `}
         </div>`;
 }
 
