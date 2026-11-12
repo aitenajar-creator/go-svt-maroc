@@ -104,6 +104,11 @@
     const button = $('upload-btn'); button.disabled = true;
     $('upload-progress').hidden = false; message(uploadMessage, 'جارٍ رفع الملف...');
     const category = $('category').value;
+    if (['cours','exercices','examens','fiches','resumes'].includes(category) &&
+        (!$('language').value || !$('study-level').value)) {
+      button.disabled = false; $('upload-progress').hidden = true;
+      return message(uploadMessage, 'يرجى تحديد اللغة والمستوى لهذا القسم.', 'error');
+    }
     const path = category + '/' + crypto.randomUUID() + '-' + safeName(file.name);
     try {
       const { error: uploadError } = await client.storage.from('site-content').upload(path, file, { contentType: file.type, upsert: false });
