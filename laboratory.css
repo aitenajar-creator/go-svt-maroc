@@ -125,3 +125,14 @@
 .gs-balance-controls button{border:0;border-radius:999px;padding:10px 17px;background:#2f7048;color:#fff;font:inherit;font-weight:750;cursor:pointer}
 .gs-balance-result{padding:16px 18px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:76px}
 @media(max-width:760px){.gs-balance-species{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-balance-species button:last-child{grid-column:span 2;min-height:95px}}
+
+/* Interactive food web explorer */
+.gs-foodweb-card{background:#fff;border:1px solid #e0ebe3;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d}
+.gs-foodweb-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:16px;background:linear-gradient(145deg,#eef6ed,#f8f5ed);border-radius:17px}
+.gs-foodweb-grid button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:85px;padding:12px;border:1px solid #d9e6d8;border-radius:14px;background:#fff;color:#365d43;font:inherit;cursor:pointer}
+.gs-foodweb-grid button>span{font-size:1.65rem}
+.gs-foodweb-grid button strong{font-size:.9rem}
+.gs-foodweb-grid button.is-active{background:#e7f3e7;border:2px solid #67956c;box-shadow:0 4px 12px #315b3e14}
+.gs-foodweb-grid button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
+.gs-foodweb-detail{margin:16px 0;padding:15px 17px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:70px}
+@media(max-width:620px){.gs-foodweb-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gs-foodweb-grid button{min-height:72px}}

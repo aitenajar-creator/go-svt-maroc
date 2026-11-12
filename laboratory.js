@@ -5,9 +5,9 @@ const dict={
  chloroplast:{ar:['البلاستيدة الخضراء','تحتوي على اليخضور وتتم داخلها عملية التركيب الضوئي.','توجد البلاستيدات الخضراء في الخلايا النباتية الخضراء وبعض الطحالب.'],fr:['Chloroplaste','Contient la chlorophylle et constitue le siège de la photosynthèse.','Les chloroplastes se trouvent dans les cellules végétales chlorophylliennes et certaines algues.']},
  mitochondria:{ar:['الميتوكندريا','تساهم في إنتاج الطاقة القابلة للاستعمال من طرف الخلية عبر التنفس الخلوي.','توجد الميتوكندريا في الخلايا النباتية والحيوانية.'],fr:['Mitochondrie','Participe à la production d’énergie utilisable par la cellule grâce à la respiration cellulaire.','Les mitochondries existent dans les cellules végétales et animales.']}
 };
-let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null;
+let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -133,5 +133,25 @@ $('balance-reset').addEventListener('click',()=>{
  document.querySelectorAll('[data-balance-species]').forEach(b=>{b.classList.remove('is-removed');b.setAttribute('aria-pressed','false');});
  $('balance-result').textContent=lang==='ar'?'أُعيد النظام إلى حالته الأصلية. اختر كائناً لمحاكاة اختفائه.':'Le système est réinitialisé. Choisissez une espèce pour simuler sa disparition.';
 });
+
+
+const foodWebTexts={
+ plants:{ar:'تُعد النباتات منتجات؛ تصنع مادتها العضوية بالتركيب الضوئي. قد تتغذى عليها الحشرات والأرانب، كما توفر البذور غذاءً لبعض الطيور.',fr:'Les plantes sont des producteurs : elles fabriquent leur matière organique par photosynthèse. Les insectes et les lapins peuvent les consommer ; leurs graines nourrissent aussi certains oiseaux.'},
+ seeds:{ar:'تتغذى بعض الطيور والأرانب على البذور، وهي مورد غذائي مهم في هذا النموذج.',fr:'Certains oiseaux et lapins consomment les graines, une ressource alimentaire importante dans ce modèle.'},
+ insects:{ar:'تتغذى الحشرات على أجزاء من النباتات. وقد تفترسها الضفادع وبعض الطيور.',fr:'Les insectes consomment des parties des plantes. Ils peuvent être mangés par les grenouilles et certains oiseaux.'},
+ rabbits:{ar:'تتغذى الأرانب على النباتات والبذور، وقد تفترسها الأفاعي والجوارح.',fr:'Les lapins mangent des plantes et des graines ; ils peuvent être des proies pour les serpents et les rapaces.'},
+ frogs:{ar:'تتغذى الضفادع على بعض الحشرات، وقد تكون غذاءً للأفاعي والجوارح.',fr:'Les grenouilles mangent certains insectes et peuvent être consommées par les serpents et les rapaces.'},
+ birds:{ar:'تتغذى بعض الطيور على البذور والحشرات، وقد تفترسها الجوارح.',fr:'Certains oiseaux mangent des graines et des insectes ; ils peuvent être des proies pour les rapaces.'},
+ snakes:{ar:'قد تتغذى الأفاعي على الأرانب والضفادع، ويمكن أن تفترسها بعض الجوارح.',fr:'Les serpents peuvent manger des lapins et des grenouilles ; certains rapaces peuvent les capturer.'},
+ hawks:{ar:'تُعد الجوارح مستهلكات عليا في هذا النموذج، وتتغذى على كائنات مثل الطيور والأفاعي والأرانب.',fr:'Les rapaces sont des consommateurs supérieurs dans ce modèle. Ils peuvent se nourrir d’oiseaux, de serpents et de lapins.'}
+};
+function showFoodWeb(key){
+ const t=foodWebTexts[key];if(t)$('foodweb-detail').textContent=t[lang];
+}
+document.querySelectorAll('[data-foodweb]').forEach(btn=>btn.addEventListener('click',()=>{
+ selectedFoodWeb=btn.dataset.foodweb;
+ document.querySelectorAll('[data-foodweb]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ showFoodWeb(selectedFoodWeb);
+}));
 
 })();
