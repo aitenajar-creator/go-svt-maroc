@@ -43,6 +43,22 @@
         <article class="stat-card"><span>🛡️</span><strong>مدير فقط</strong><small>صلاحيات الرفع والتعديل والحذف</small></article>
       </div>
 
+      <section class="panel" id="founder-editor">
+        <div class="section-heading"><div><p class="eyebrow">FOUNDER PROFILE</p><h2>تعديل نبذة صاحب الموقع</h2><p class="muted">هذه المعلومات تظهر للزوار في الصفحة الرئيسية.</p></div><span class="heading-icon">👨‍🏫</span></div>
+        <form id="founder-form" class="upload-grid">
+          <div class="field"><label for="founder-name-ar">الاسم بالعربية</label><input id="founder-name-ar" maxlength="120" required></div>
+          <div class="field"><label for="founder-name-fr">Nom en français</label><input id="founder-name-fr" maxlength="120" required></div>
+          <div class="field"><label for="founder-role-ar">الصفة المهنية بالعربية</label><input id="founder-role-ar" maxlength="180" required></div>
+          <div class="field"><label for="founder-role-fr">Fonction en français</label><input id="founder-role-fr" maxlength="180" required></div>
+          <div class="field wide"><label for="founder-bio-ar">النبذة بالعربية</label><textarea id="founder-bio-ar" rows="5" maxlength="3000" required></textarea></div>
+          <div class="field wide"><label for="founder-bio-fr">Biographie en français</label><textarea id="founder-bio-fr" rows="5" maxlength="3000" required></textarea></div>
+          <div class="field"><label for="founder-vision-ar">الرؤية بالعربية</label><textarea id="founder-vision-ar" rows="3" maxlength="800" required></textarea></div>
+          <div class="field"><label for="founder-vision-fr">Vision en français</label><textarea id="founder-vision-fr" rows="3" maxlength="800" required></textarea></div>
+          <div class="field wide"><label for="founder-photo">الصورة الشخصية (JPG / PNG / WebP، حتى 5MB)</label><input id="founder-photo" type="file" accept="image/jpeg,image/png,image/webp"><small class="muted">اختياري؛ يمكنك تركه فارغاً للاحتفاظ بالصورة الحالية.</small><img id="founder-photo-preview" alt="معاينة الصورة الشخصية" hidden style="max-width:180px;max-height:180px;object-fit:cover;border-radius:16px"></div>
+          <div class="field wide"><button id="founder-save" class="primary-btn" type="submit">حفظ ونشر التعديلات</button></div>
+        </form>
+        <p id="founder-message" class="message" role="status"></p>
+      </section>
       <section class="panel">
         <div class="section-heading"><div><p class="eyebrow">CONTENT PUBLISHER</p><h2>إضافة محتوى جديد</h2></div><span class="heading-icon">📤</span></div>
         <form id="upload-form" class="upload-grid">
@@ -69,6 +85,6 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="admin.js?v=20261112-3"></script>
+  <script src="admin.js?v=20261112-4"></script>
 </body>
 </html>
