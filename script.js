@@ -233,8 +233,10 @@ async function renderFirstPdfPage(container) {
         const page = await pdf.getPage(1);
         const base = page.getViewport({ scale: 1 });
         const cssWidth = Math.max(container.clientWidth || 0, 260);
-        const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.6);
-        const renderScale = Math.min(2.2, Math.max(1, (cssWidth * pixelRatio) / base.width));
+        // A compact preview is much faster to rasterize; CSS still displays it
+        // at the full panel width without changing the PDF page proportions.
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
+        const renderScale = Math.min(1.6, Math.max(1, (cssWidth * pixelRatio) / base.width));
         const viewport = page.getViewport({ scale: renderScale });
         const canvas = document.createElement('canvas');
         canvas.width = Math.ceil(viewport.width);
@@ -258,6 +260,9 @@ async function renderFirstPdfPage(container) {
 function observePdfThumbnails(root = document) {
     const nodes = root.querySelectorAll('[data-pdf-thumbnail]');
     if (!nodes.length) return;
+    // Start downloading PDF.js as soon as the cards are inserted, rather than
+    // waiting until a thumbnail is already close to the viewport.
+    loadPdfJs().catch(error => console.warn('PDF preview engine unavailable:', error));
     if (!('IntersectionObserver' in window)) {
         nodes.forEach(node => renderFirstPdfPage(node));
         return;
@@ -269,7 +274,7 @@ function observePdfThumbnails(root = document) {
                 pdfThumbnailObserver.unobserve(entry.target);
                 renderFirstPdfPage(entry.target);
             });
-        }, { rootMargin: '700px 0px', threshold: 0.01 });
+        }, { rootMargin: '1400px 0px', threshold: 0.01 });
     }
     nodes.forEach(node => {
         if (node.dataset.rendered !== 'true') pdfThumbnailObserver.observe(node);
