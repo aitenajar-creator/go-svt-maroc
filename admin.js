@@ -96,6 +96,7 @@
   });
   $('upload-form').addEventListener('submit', async event => {
     event.preventDefault();
+    const uploadForm = event.currentTarget;
     if (!currentUser) return;
     const file = $('resource-file').files[0];
     if (!file) return message(uploadMessage, 'اختر ملفاً أولاً.', 'error');
@@ -126,7 +127,7 @@
         await client.storage.from('site-content').remove([path]);
         throw insertError;
       }
-      event.currentTarget.reset();
+      uploadForm.reset();
       message(uploadMessage, 'تم رفع الملف وحفظ بياناته بنجاح. سيظهر في مكتبة الإدارة.', 'success');
       await loadResources();
     } catch (error) { message(uploadMessage, error.message || 'تعذر رفع الملف.', 'error'); }
