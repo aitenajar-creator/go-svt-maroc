@@ -5,9 +5,9 @@ const dict={
  chloroplast:{ar:['البلاستيدة الخضراء','تحتوي على اليخضور وتتم داخلها عملية التركيب الضوئي.','توجد البلاستيدات الخضراء في الخلايا النباتية الخضراء وبعض الطحالب.'],fr:['Chloroplaste','Contient la chlorophylle et constitue le siège de la photosynthèse.','Les chloroplastes se trouvent dans les cellules végétales chlorophylliennes et certaines algues.']},
  mitochondria:{ar:['الميتوكندريا','تساهم في إنتاج الطاقة القابلة للاستعمال من طرف الخلية عبر التنفس الخلوي.','توجد الميتوكندريا في الخلايا النباتية والحيوانية.'],fr:['Mitochondrie','Participe à la production d’énergie utilisable par la cellule grâce à la respiration cellulaire.','Les mitochondries existent dans les cellules végétales et animales.']}
 };
-let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null;
+let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -200,6 +200,22 @@ document.querySelectorAll('[data-pollution-action]').forEach(btn=>btn.addEventLi
  selectedPollutionAction=btn.dataset.pollutionAction;
  document.querySelectorAll('[data-pollution-action]').forEach(b=>b.classList.toggle('is-active',b===btn));
  showPollutionAction(selectedPollutionAction);
+}));
+
+
+const waterCycleTexts={
+ evaporation:{ar:'تسخّن أشعة الشمس المياه السطحية، فيتحول جزء منها إلى بخار ماء يصعد نحو الغلاف الجوي.',fr:'L’énergie solaire réchauffe les eaux de surface. Une partie se transforme en vapeur d’eau qui monte dans l’atmosphère.'},
+ transpiration:{ar:'تطلق النباتات بخار الماء إلى الجو عبر أوراقها، وتسمى هذه العملية بالنتح. ويساهم النتح مع التبخر في انتقال الماء إلى الغلاف الجوي.',fr:'Les plantes libèrent de la vapeur d’eau dans l’air par leurs feuilles : c’est la transpiration. Avec l’évaporation, elle contribue au transfert de l’eau vers l’atmosphère.'},
+ condensation:{ar:'عندما يبرد الهواء الرطب، يتكاثف بخار الماء حول جسيمات دقيقة، فتتشكل قطرات صغيرة أو بلورات جليدية تكوّن السحب.',fr:'Lorsque l’air humide se refroidit, la vapeur d’eau se condense autour de fines particules et forme de petites gouttelettes ou des cristaux de glace constituant les nuages.'},
+ precipitation:{ar:'عندما تكبر قطرات الماء أو بلورات الجليد داخل السحب وتصبح ثقيلة، تسقط على شكل مطر أو ثلج أو برد حسب الظروف الجوية.',fr:'Lorsque les gouttelettes ou les cristaux de glace deviennent suffisamment lourds dans les nuages, ils tombent sous forme de pluie, de neige ou de grêle selon les conditions météorologiques.'},
+ infiltration:{ar:'يتسرب جزء من مياه التساقطات داخل التربة، وقد يصل إلى المياه الجوفية، بينما يجري جزء آخر فوق السطح نحو الأودية والأنهار والبحيرات.',fr:'Une partie des précipitations s’infiltre dans le sol et peut alimenter les eaux souterraines. Une autre partie ruisselle vers les oueds, les rivières et les lacs.'},
+ collection:{ar:'تتجمع المياه في المحيطات والبحار والأنهار والبحيرات والمياه الجوفية، ثم تواصل الدورة من جديد بفعل الطاقة الشمسية.',fr:'L’eau s’accumule dans les océans, les mers, les rivières, les lacs et les nappes souterraines. Le cycle se poursuit ensuite grâce à l’énergie solaire.'}
+};
+function showWaterCycle(key){const t=waterCycleTexts[key];if(t)$('watercycle-detail').textContent=t[lang];}
+document.querySelectorAll('[data-watercycle]').forEach(btn=>btn.addEventListener('click',()=>{
+ selectedWaterCycle=btn.dataset.watercycle;
+ document.querySelectorAll('[data-watercycle]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ showWaterCycle(selectedWaterCycle);
 }));
 
 })();
