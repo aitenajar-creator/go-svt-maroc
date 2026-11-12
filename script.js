@@ -50,7 +50,12 @@ function escapeHtml(text) {
 function getExt(name) { const m = /\.([^./]+)$/.exec(name); return m ? m[1].toLowerCase() : ''; }
 function getFileTitle(filename) { return filename.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '); }
 function getFileIcon(ext) { return FILE_ICONS[ext] || '📄'; }
-function buildFileUrl(path) { return path.split('/').map(encodeURIComponent).join('/'); }
+const cloudContentUrls = new Map();
+function buildFileUrl(path) {
+    const cloud = cloudContentUrls.get(path);
+    if (cloud) return cloud;
+    return path.split('/').map(encodeURIComponent).join('/');
+}
 function isMobile() { return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768; }
 
 function normalizeText(s) {
@@ -80,8 +85,29 @@ function loadManifest() {
                 if (!response.ok) throw new Error(`content.json introuvable (${response.status})`);
                 return response.json();
             })
-            .then(paths => {
+            .then(async paths => {
                 const files = paths.filter(isContentFile);
+                // Add resources uploaded from the owner dashboard; existing repository files remain untouched.
+                if (window.supabaseClient) {
+                    const { data, error } = await window.supabaseClient
+                        .from('site_content_items')
+                        .select('id,category,language,study_level,study_track,file_name,storage_path')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+                    (data || []).forEach(item => {
+                        const category = item.category === 'resumes' ? 'fiches' : item.category;
+                        const parts = [category];
+                        if (['cours','exercices','examens','fiches'].includes(category)) {
+                            parts.push(item.language || 'francais', item.study_level || 'TC');
+                            if (item.study_track) parts.push(item.study_track);
+                        }
+                        parts.push('__cloud', item.id, item.file_name);
+                        const virtualPath = '/' + parts.join('/');
+                        const publicUrl = window.supabaseClient.storage.from('site-content').getPublicUrl(item.storage_path).data.publicUrl;
+                        cloudContentUrls.set(virtualPath, publicUrl);
+                        files.push(virtualPath);
+                    });
+                }
                 trackNewFiles(files);
                 return files;
             })
