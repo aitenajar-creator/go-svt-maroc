@@ -149,3 +149,16 @@
 .gs-biodiv-detail{margin:13px 0 20px;padding:15px 17px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:65px}
 .gs-biodiv-habitats button:focus-visible,.gs-biodiv-pressures button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
 @media(max-width:620px){.gs-biodiv-habitats{grid-template-columns:1fr}.gs-biodiv-habitats button{min-height:78px;flex-direction:row;justify-content:center}}
+
+/* Environmental pollution lab */
+.gs-pollution-card{background:#fff;border:1px solid #e0ebe3;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d}
+.gs-pollution-card h3{margin:16px 0 12px;color:#315b3e}
+.gs-pollution-types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.gs-pollution-types button{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:110px;padding:13px;border:1px solid #d9e6d8;border-radius:15px;background:#f8fbf7;color:#365d43;font:inherit;cursor:pointer}
+.gs-pollution-types button span{font-size:1.9rem}
+.gs-pollution-types button.is-active,.gs-pollution-actions button.is-active{background:#e7f3e7;border:2px solid #67956c}
+.gs-pollution-actions{display:flex;flex-wrap:wrap;gap:9px}
+.gs-pollution-actions button{padding:10px 15px;border:1px solid #d9e6d8;border-radius:999px;background:#f8fbf7;color:#365d43;font:inherit;cursor:pointer}
+.gs-pollution-detail,.gs-pollution-feedback{margin:13px 0 20px;padding:15px 17px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:68px}
+.gs-pollution-types button:focus-visible,.gs-pollution-actions button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
+@media(max-width:620px){.gs-pollution-types{grid-template-columns:1fr}.gs-pollution-types button{min-height:76px;flex-direction:row;justify-content:center}}
