@@ -149,12 +149,16 @@ function isNew(path) {
     return d && (Date.now() - d) < CONFIG.NEW_DAYS * 86400000;
 }
 
+function isCloudInternalSegment(segment) {
+    return segment === '__cloud' || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(segment));
+}
+
 function describePath(path) {
     const [type, subject, ...rest] = path.split('/').slice(1, -1);
     const labels = [];
     if (SECTION_NAMES[type]) labels.push(SECTION_NAMES[type][currentLang]);
     if (subject) labels.push(SUBJECT_NAMES[subject] || subject);
-    return labels.concat(rest).join(' · ');
+    return labels.concat(rest.filter(segment => !isCloudInternalSegment(segment))).join(' · ');
 }
 
 function renderCard(path, badgeText) {
@@ -254,7 +258,7 @@ async function loadContentFromManifest(type, subject, level) {
             if (track && relativeParts.includes(track.key)) {
                 relativeParts.splice(relativeParts.indexOf(track.key), 1);
             }
-            const sub = relativeParts.filter(Boolean).join(' / ');
+            const sub = relativeParts.filter(part => part && !isCloudInternalSegment(part)).join(' / ');
             return renderCard(path, sub ? `${level} - ${sub}` : level);
         }).join('');
 
