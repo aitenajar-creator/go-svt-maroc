@@ -8,7 +8,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATIONS = ROOT / "supabase" / "migrations"
 CREATE = re.compile(
-    r"create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?public\\.([a-zA-Z_][a-zA-Z0-9_]*)",
+    r"create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-zA-Z_][a-zA-Z0-9_]*)",
     re.IGNORECASE,
 )
 failures = []
@@ -19,19 +19,19 @@ for migration in sorted(MIGRATIONS.glob("*.sql")):
     for match in CREATE.finditer(sql):
         table = match.group(1)
         checked += 1
-        table_ref = rf"public\\.{re.escape(table)}\\b"
+        table_ref = rf"public\.{re.escape(table)}\b"
         has_rls = re.search(
-            rf"alter\\s+table\\s+{table_ref}\\s+enable\\s+row\\s+level\\s+security",
+            rf"alter\s+table\s+{table_ref}\s+enable\s+row\s+level\s+security",
             sql,
             re.IGNORECASE,
         )
         has_policy = re.search(
-            rf"create\\s+policy\\s+[\\s\\S]*?\\bon\\s+{table_ref}",
+            rf"create\s+policy\s+[\s\S]*?\bon\s+{table_ref}",
             sql,
             re.IGNORECASE,
         )
         explicitly_revoked = re.search(
-            rf"revoke\\s+all\\s+on\\s+{table_ref}\\s+from\\s+anon\\s*,\\s*authenticated",
+            rf"revoke\s+all\s+on\s+{table_ref}\s+from\s+anon\s*,\s*authenticated",
             sql,
             re.IGNORECASE,
         )
@@ -44,7 +44,7 @@ for migration in sorted(MIGRATIONS.glob("*.sql")):
 
 if failures:
     print("RLS migration coverage check failed:")
-    print("\\n".join(f"- {item}" for item in failures))
+    print("\n".join(f"- {item}" for item in failures))
     sys.exit(1)
 
 print(f"RLS migration coverage check passed for {checked} public tables.")
