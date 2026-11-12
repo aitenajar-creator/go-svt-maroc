@@ -172,7 +172,7 @@ function renderCard(path, badgeText) {
     const thumbnail = ext === 'pdf'
         ? `<div class="content-card-thumbnail pdf-thumbnail" data-pdf-thumbnail data-path="${safePath}" aria-label="${t('معاينة الصفحة الأولى', 'Aperçu de la première page')}"><span class="thumbnail-loading">${t('جاري إعداد المعاينة...', 'Préparation de l’aperçu...')}</span></div>`
         : ['jpg','jpeg','png','gif','webp'].includes(ext)
-            ? `<div class="content-card-thumbnail image-thumbnail"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy"></div>`
+            ? `<div class="content-card-thumbnail image-thumbnail"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy" decoding="async"></div>`
             : `<div class="content-card-thumbnail file-thumbnail" aria-label="${t('نوع الملف', 'Type de fichier')}"><span>${getFileIcon(ext)}</span><small>${escapeHtml(ext.toUpperCase() || 'FILE')}</small></div>`;
     return `
         <div class="content-card file-resource-card${ext === 'pdf' ? ' pdf-resource-card' : ''}">
@@ -230,6 +230,9 @@ async function renderFirstPdfPage(container) {
         }
         const page = await pdf.getPage(1);
         const base = page.getViewport({ scale: 1 });
+        // Preserve the PDF page's real proportions so the card height follows
+        // the preview image instead of a fixed-height placeholder.
+        container.style.aspectRatio = `${base.width} / ${base.height}`;
         const cssWidth = Math.max(container.clientWidth || 0, 260);
         const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
         const renderScale = Math.min(1.6, Math.max(1, (cssWidth * pixelRatio) / base.width));
