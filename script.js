@@ -169,10 +169,15 @@ function renderCard(path, badgeText) {
     const previewBtn = PREVIEWABLE.includes(ext)
         ? `<button type="button" class="preview-btn" data-path="${safePath}">👁️ ${t('معاينة', 'Aperçu')}</button>`
         : '';
+    const thumbnail = ext === 'pdf'
+        ? `<div class="content-card-thumbnail pdf-thumbnail" data-pdf-thumbnail data-path="${safePath}" aria-label="${t('معاينة الصفحة الأولى', 'Aperçu de la première page')}"><span class="thumbnail-loading">${t('جاري إعداد المعاينة...', 'Préparation de l’aperçu...')}</span></div>`
+        : ['jpg','jpeg','png','gif','webp'].includes(ext)
+            ? `<div class="content-card-thumbnail"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy"></div>`
+            : `<div class="content-card-thumbnail file-thumbnail" aria-hidden="true"><span>${getFileIcon(ext)}</span></div>`;
     return `
         <div class="content-card">
             <span class="level-badge">${escapeHtml(badgeText)}</span>${newBadge}
-            <div class="file-icon">${getFileIcon(ext)}</div>
+            ${thumbnail}
             <h3>${escapeHtml(getFileTitle(fileName))}</h3>
             <p class="file-name">${escapeHtml(fileName)}</p>
             <div class="card-actions">
@@ -180,6 +185,74 @@ function renderCard(path, badgeText) {
                 <a href="${buildFileUrl(path)}" download class="download-btn" data-path="${safePath}">📥 ${t('تحميل', 'Télécharger')}</a>
             </div>
         </div>`;
+}
+
+
+/* Lazy first-page previews for published PDF resources. */
+let pdfJsPromise = null;
+let pdfThumbnailObserver = null;
+function loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfJsPromise) {
+        pdfJsPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+            script.async = true;
+            script.onload = () => {
+                if (!window.pdfjsLib) { reject(new Error('PDF.js unavailable')); return; }
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+                resolve(window.pdfjsLib);
+            };
+            script.onerror = () => reject(new Error('PDF preview library failed to load'));
+            document.head.appendChild(script);
+        }).catch(error => { pdfJsPromise = null; throw error; });
+    }
+    return pdfJsPromise;
+}
+async function renderFirstPdfPage(container) {
+    if (!container || container.dataset.rendered === 'true' || container.dataset.loading === 'true') return;
+    container.dataset.loading = 'true';
+    try {
+        const pdfjs = await loadPdfJs();
+        const pdf = await pdfjs.getDocument({ url: buildFileUrl(container.dataset.path), withCredentials: false }).promise;
+        const page = await pdf.getPage(1);
+        const base = page.getViewport({ scale: 1 });
+        const viewport = page.getViewport({ scale: Math.min(1.2, 280 / base.width) });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        await page.render({ canvasContext: canvas.getContext('2d', { alpha: false }), viewport }).promise;
+        container.replaceChildren(canvas);
+        container.dataset.rendered = 'true';
+        page.cleanup();
+        await pdf.destroy();
+    } catch (error) {
+        console.warn('PDF thumbnail unavailable:', container.dataset.path, error);
+        container.innerHTML = `<span class="thumbnail-fallback">${t('المعاينة غير متاحة لهذا الملف', 'Aperçu indisponible pour ce fichier')}</span>`;
+        container.dataset.rendered = 'true';
+    } finally {
+        delete container.dataset.loading;
+    }
+}
+function observePdfThumbnails(root = document) {
+    const nodes = root.querySelectorAll('[data-pdf-thumbnail]');
+    if (!nodes.length) return;
+    if (!('IntersectionObserver' in window)) {
+        nodes.forEach(node => renderFirstPdfPage(node));
+        return;
+    }
+    if (!pdfThumbnailObserver) {
+        pdfThumbnailObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                pdfThumbnailObserver.unobserve(entry.target);
+                renderFirstPdfPage(entry.target);
+            });
+        }, { rootMargin: '220px 0px' });
+    }
+    nodes.forEach(node => {
+        if (node.dataset.rendered !== 'true') pdfThumbnailObserver.observe(node);
+    });
 }
 
 // تحديد الشعبة من بنية مسار الملف، بما في ذلك مجلدات الامتحانات.
@@ -264,6 +337,7 @@ async function loadContentFromManifest(type, subject, level) {
 
         if (!hasTrackGroups) {
             container.innerHTML = count + renderFiles(files);
+            observePdfThumbnails(container);
             return;
         }
 
@@ -278,6 +352,7 @@ async function loadContentFromManifest(type, subject, level) {
                 : t('ملفات مشتركة بين الشعب', 'Ressources communes');
             return `<section class="track-content-group"><h3 class="track-content-heading">${escapeHtml(heading)}</h3><div class="content-grid">${renderFiles(group.files)}</div></section>`;
         }).join('');
+        observePdfThumbnails(container);
     } catch (error) {
         console.error('Error loading content:', error);
         if (container.dataset.requestId === requestId) {
@@ -349,6 +424,7 @@ async function runSearch(query) {
             : '';
         results.innerHTML = `<p class="gs-search-count">${t('عدد النتائج:', 'Résultats :')} ${matches.length}</p>` +
             matches.slice(0, 60).map(p => renderCard(p, describePath(p))).join('') + more;
+        observePdfThumbnails(results);
     } catch (error) {
         results.innerHTML = `<p class="gs-search-hint">${t('تعذر البحث حالياً', 'Recherche indisponible')}</p>`;
     }
