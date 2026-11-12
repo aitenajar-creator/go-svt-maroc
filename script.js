@@ -217,10 +217,16 @@ async function renderFirstPdfPage(container) {
         const pdf = await pdfjs.getDocument({ url: buildFileUrl(container.dataset.path), withCredentials: false }).promise;
         const page = await pdf.getPage(1);
         const base = page.getViewport({ scale: 1 });
-        const viewport = page.getViewport({ scale: Math.min(1.2, 280 / base.width) });
+        const cssWidth = Math.max(container.clientWidth || 0, 480);
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2.5);
+        const renderScale = Math.min(3.5, Math.max(1, (cssWidth * pixelRatio) / base.width));
+        const viewport = page.getViewport({ scale: renderScale });
         const canvas = document.createElement('canvas');
         canvas.width = Math.ceil(viewport.width);
         canvas.height = Math.ceil(viewport.height);
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        canvas.style.display = 'block';
         await page.render({ canvasContext: canvas.getContext('2d', { alpha: false }), viewport }).promise;
         container.replaceChildren(canvas);
         container.dataset.rendered = 'true';
