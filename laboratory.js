@@ -218,4 +218,37 @@ document.querySelectorAll('[data-watercycle]').forEach(btn=>btn.addEventListener
  showWaterCycle(selectedWaterCycle);
 }));
 
+
+const waterMeasureExplanations={
+ leaks:{ar:'إصلاح التسربات يقلل فقد الماء قبل وصوله إلى المستهلك، ويُعد من التدابير المباشرة لتحسين كفاءة شبكة التوزيع.',fr:'La réparation des fuites réduit les pertes avant que l’eau n’arrive aux usagers. C’est une mesure directe pour améliorer l’efficacité du réseau.'},
+ irrigation:{ar:'يساعد الري الموضعي، عند تصميمه وصيانته بشكل جيد، على إيصال الماء إلى منطقة الجذور وتقليل الضياع بالتبخر والجريان السطحي.',fr:'Lorsqu’elle est bien conçue et entretenue, l’irrigation localisée apporte l’eau près des racines et peut limiter les pertes par évaporation et ruissellement.'},
+ reuse:{ar:'يمكن إعادة استعمال المياه العادمة المعالجة في استعمالات مناسبة، بعد التحقق من جودتها واحترام المعايير الصحية والبيئية.',fr:'Les eaux usées traitées peuvent être réutilisées pour des usages adaptés, après vérification de leur qualité et respect des normes sanitaires et environnementales.'},
+ wetlands:{ar:'تحافظ حماية المناطق الرطبة على موائل غنية بالتنوع البيولوجي وتدعم وظائف طبيعية مثل تخزين المياه مؤقتاً وترشيحها.',fr:'La protection des zones humides préserve des habitats riches en biodiversité et soutient des fonctions naturelles comme le stockage temporaire et la filtration de l’eau.'},
+ groundwater:{ar:'تتطلب حماية المياه الجوفية مراقبة الضخ لتجنب الاستغلال المفرط، ومنع تسرب الملوثات إلى التربة والطبقات المائية.',fr:'La protection des nappes nécessite de surveiller les prélèvements pour éviter la surexploitation et de prévenir l’infiltration de polluants.'},
+ awareness:{ar:'تساعد التوعية على تقليل الاستهلاك غير الضروري وتغيير السلوك اليومي، وتكون أكثر فعالية عندما ترافقها بنية تحتية وصيانة وتدبير جيد.',fr:'La sensibilisation peut réduire les usages évitables et faire évoluer les habitudes. Elle est plus efficace lorsqu’elle s’accompagne d’infrastructures, d’entretien et d’une bonne gestion.'}
+};
+const recommendedWaterMeasures=new Set(['leaks','irrigation','reuse','wetlands','groundwater','awareness']);
+function evaluateWaterMeasures(){
+ const selected=[...document.querySelectorAll('[data-water-measure]:checked')].map(x=>x.dataset.waterMeasure);
+ const box=$('water-management-feedback');
+ if(!selected.length){box.textContent=lang==='ar'?'لم تختر أي تدبير بعد. اختر إجراءً واحداً على الأقل ثم أعد التقييم.':'Aucune mesure sélectionnée. Choisissez au moins une action puis relancez l’évaluation.';return;}
+ const names={
+ leaks:{ar:'إصلاح التسربات',fr:'Réparer les fuites'},
+ irrigation:{ar:'الري الموضعي',fr:'Irrigation localisée'},
+ reuse:{ar:'إعادة استعمال المياه المعالجة',fr:'Réutilisation des eaux traitées'},
+ wetlands:{ar:'حماية المناطق الرطبة',fr:'Protection des zones humides'},
+ groundwater:{ar:'حماية المياه الجوفية',fr:'Protection des nappes'},
+ awareness:{ar:'التوعية وترشيد الاستهلاك',fr:'Sensibilisation et économies d’eau'}
+ };
+ const title=lang==='ar'?'التدابير المختارة: ':'Mesures choisies : ';
+ const detail=selected.map(k=>names[k][lang]+'. '+waterMeasureExplanations[k][lang]).join(' ');
+ const coverage=selected.length>=4?(lang==='ar'?'اختيارات متنوعة تغطي كفاءة التوزيع والطلب وحماية الأنظمة الطبيعية.':'Vos choix couvrent plusieurs dimensions : efficacité de distribution, demande et protection des milieux naturels.'):(lang==='ar'?'يمكن تعزيز خطتك بدمج تدابير تقنية وسلوكية وبيئية.':'Vous pouvez renforcer votre plan en combinant des mesures techniques, comportementales et écologiques.');
+ box.textContent=title+selected.map(k=>names[k][lang]).join('، ')+'. '+detail+' '+coverage;
+}
+$('water-management-evaluate').addEventListener('click',evaluateWaterMeasures);
+$('water-management-reset').addEventListener('click',()=>{
+ document.querySelectorAll('[data-water-measure]').forEach(x=>x.checked=false);
+ $('water-management-feedback').textContent=lang==='ar'?'حدد التدابير التي تراها مناسبة، ثم اضغط على تقييم اختياراتي.':'Sélectionnez les mesures qui vous semblent adaptées, puis cliquez sur Évaluer mes choix.';
+});
+
 })();
