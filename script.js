@@ -321,26 +321,34 @@ async function runSearch(query) {
     const results = document.getElementById('gs-search-results');
     if (!results) return;
     const words = normalizeText(query).split(/\s+/).filter(Boolean);
+    const category = document.getElementById('gs-search-category')?.value || '';
+    const level = document.getElementById('gs-search-level')?.value || '';
+    const language = document.getElementById('gs-search-language')?.value || '';
 
-    if (words.length === 0) {
-        results.innerHTML = `<p class="gs-search-hint">${t('اكتب اسم درس أو تمرين أو امتحان...', 'Tapez le nom d’un cours, d’un exercice ou d’un examen...')}</p>`;
+    if (words.length === 0 && !category && !level && !language) {
+        results.innerHTML = `<p class="gs-search-hint">${t('اكتب اسم درس أو اختر نوع المورد أو المستوى أو اللغة...', 'Saisissez un titre ou choisissez un type, un niveau ou une langue...')}</p>`;
         return;
     }
     try {
         const all = await loadManifest();
         const matches = all.filter(p => {
             if (isHiddenDuplicateCourseCopy(p)) return false;
-            const hay = normalizeText(p);
-            return words.every(w => hay.includes(w));
+            const normalizedPath = normalizeText(p);
+            if (words.length && !words.every(w => normalizedPath.includes(w))) return false;
+            if (category && !p.toLowerCase().includes('/' + category + '/')) return false;
+            if (level && !p.toLowerCase().includes('/' + level.toLowerCase() + '/')) return false;
+            if (language && !p.toLowerCase().includes('/' + language + '/')) return false;
+            return true;
         });
         if (matches.length === 0) {
-            results.innerHTML = `<p class="gs-search-hint">${t('لا توجد نتائج', 'Aucun résultat')}</p>`;
+            results.innerHTML = `<p class="gs-search-hint">${t('لا توجد نتائج مطابقة لهذه الاختيارات', 'Aucun résultat pour ces critères')}</p>`;
             return;
         }
         const more = matches.length > 60
-            ? `<p class="gs-search-hint">${t('دقّق البحث لعرض نتائج أخرى', 'Précisez la recherche pour voir plus de résultats')}</p>`
+            ? `<p class="gs-search-hint">${t('توجد نتائج إضافية؛ دقّق البحث لتضييق النتائج', 'Il existe d’autres résultats ; affinez les critères')}</p>`
             : '';
-        results.innerHTML = matches.slice(0, 60).map(p => renderCard(p, describePath(p))).join('') + more;
+        results.innerHTML = `<p class="gs-search-count">${t('عدد النتائج:', 'Résultats :')} ${matches.length}</p>` +
+            matches.slice(0, 60).map(p => renderCard(p, describePath(p))).join('') + more;
     } catch (error) {
         results.innerHTML = `<p class="gs-search-hint">${t('تعذر البحث حالياً', 'Recherche indisponible')}</p>`;
     }
