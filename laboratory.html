@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261112-1">
+<link rel="stylesheet" href="laboratory.css?v=20261112-2">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -67,12 +67,35 @@
    <div class="gs-cell-legend"><span><i class="legend-wall"></i><b data-ar="الجدار الخلوي" data-fr="Paroi">الجدار الخلوي</b></span><span><i class="legend-nucleus"></i><b data-ar="النواة" data-fr="Noyau">النواة</b></span><span><i class="legend-vacuole"></i><b data-ar="الفجوة" data-fr="Vacuole">الفجوة</b></span><span><i class="legend-chloro"></i><b data-ar="البلاستيدة" data-fr="Chloroplaste">البلاستيدة</b></span></div>
   </div>
  </section>
+ <section class="gs-lab-section" id="photosynthesis-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 03" data-fr="EXPÉRIENCE 03">التجربة 03</span><h2 data-ar="محاكاة التركيب الضوئي" data-fr="Simulation de la photosynthèse">محاكاة التركيب الضوئي</h2><p data-ar="غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط." data-fr="Modifiez l’intensité lumineuse et la concentration en dioxyde de carbone pour observer leur effet, de façon simplifiée.">غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط.</p></div><span class="gs-lab-number">03</span></div>
+  <div class="gs-photo-card">
+   <div class="gs-photo-visual">
+    <svg viewBox="0 0 420 300" role="img" aria-label="رسم توضيحي لنبات أخضر تحت أشعة الشمس">
+     <defs><linearGradient id="leafGrad" x1="0" x2="1"><stop offset="0" stop-color="#8fcf76"/><stop offset="1" stop-color="#327d4a"/></linearGradient></defs>
+     <circle cx="330" cy="65" r="34" fill="#f5cb62"/><g stroke="#f5cb62" stroke-width="5" stroke-linecap="round"><path d="M330 14v-9M330 125v-9M279 65h-10M390 65h-10M294 29l-8-8M374 109l-8-8M366 29l8-8M294 101l-8 8"/></g>
+     <path d="M208 266Q205 190 211 115" stroke="#397b4b" stroke-width="11" fill="none" stroke-linecap="round"/>
+     <path d="M208 191Q112 89 72 155Q103 225 208 205Z" fill="url(#leafGrad)" stroke="#28683d" stroke-width="4"/><path d="M207 203Q132 166 88 157M210 153Q259 64 327 102Q318 176 210 165Z" fill="url(#leafGrad)" stroke="#28683d" stroke-width="4"/><path d="M208 199Q148 178 91 158M211 163Q263 122 315 107" stroke="#d7efb8" stroke-width="3" fill="none"/>
+     <path d="M130 270h160" stroke="#9b7654" stroke-width="12" stroke-linecap="round"/>
+     <g class="photo-oxygen"><circle cx="90" cy="75" r="8" fill="#8ed8ed"/><circle cx="65" cy="48" r="5" fill="#8ed8ed"/><circle cx="270" cy="35" r="7" fill="#8ed8ed"/></g>
+     <g fill="#4d9cc0" font-size="14" font-weight="700"><text x="20" y="25">CO₂</text><text x="350" y="160">O₂</text></g>
+    </svg>
+    <div class="gs-photo-equation" dir="ltr">6CO₂ + 6H₂O + lumière → C₆H₁₂O₆ + 6O₂</div>
+   </div>
+   <div class="gs-photo-controls">
+    <div class="gs-photo-control"><label for="lab-light"><span data-ar="شدة الإضاءة" data-fr="Intensité lumineuse">شدة الإضاءة</span><strong id="lab-light-value">60%</strong></label><input id="lab-light" type="range" min="0" max="100" value="60"><div class="gs-photo-scale"><span data-ar="ضعيفة" data-fr="Faible">ضعيفة</span><span data-ar="قوية" data-fr="Forte">قوية</span></div></div>
+    <div class="gs-photo-control"><label for="lab-co2"><span data-ar="توفر CO₂" data-fr="Disponibilité du CO₂">توفر CO₂</span><strong id="lab-co2-value">60%</strong></label><input id="lab-co2" type="range" min="0" max="100" value="60"><div class="gs-photo-scale"><span data-ar="منخفض" data-fr="Faible">منخفض</span><span data-ar="مرتفع" data-fr="Élevé">مرتفع</span></div></div>
+    <div class="gs-photo-result"><div class="gs-photo-result-head"><span data-ar="مؤشر النشاط التمثيلي التقريبي" data-fr="Indice approximatif d’activité photosynthétique">مؤشر النشاط التمثيلي التقريبي</span><strong id="lab-photo-rate">60%</strong></div><div class="gs-photo-meter"><span id="lab-photo-meter-fill" style="width:60%"></span></div><p id="lab-photo-explanation" aria-live="polite">في هذا النموذج المبسط، يتحدد النشاط بالعامل الأقل توفراً بين الضوء وCO₂.</p></div>
+    <p class="gs-photo-note" data-ar="نموذج تعليمي نوعي مبسط، وليس قياساً تجريبياً أو معادلة كمية دقيقة. عوامل أخرى مثل درجة الحرارة والماء تؤثر أيضاً في التركيب الضوئي." data-fr="Modèle pédagogique qualitatif simplifié, et non une mesure expérimentale quantitative. D’autres facteurs, comme la température et l’eau, influencent aussi la photosynthèse.">نموذج تعليمي نوعي مبسط، وليس قياساً تجريبياً أو معادلة كمية دقيقة. عوامل أخرى مثل درجة الحرارة والماء تؤثر أيضاً في التركيب الضوئي.</p>
+   </div>
+  </div>
+ </section>
  <section class="gs-lab-section gs-lab-quiz" id="lab-quiz">
-  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 03" data-fr="EXPÉRIENCE 03">التجربة 03</span><h2 data-ar="اختبر معلوماتك" data-fr="Testez vos connaissances">اختبر معلوماتك</h2><p data-ar="سؤال قصير لترسيخ ما تعلمته حول الخلية." data-fr="Une courte question pour consolider vos connaissances sur la cellule.">سؤال قصير لترسيخ ما تعلمته حول الخلية.</p></div><span class="gs-lab-number">03</span></div>
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 04" data-fr="EXPÉRIENCE 04">التجربة 04</span><h2 data-ar="اختبر معلوماتك" data-fr="Testez vos connaissances">اختبر معلوماتك</h2><p data-ar="سؤال قصير لترسيخ ما تعلمته حول الخلية." data-fr="Une courte question pour consolider vos connaissances sur la cellule.">سؤال قصير لترسيخ ما تعلمته حول الخلية.</p></div><span class="gs-lab-number">04</span></div>
   <div class="gs-quiz-card"><h3 data-ar="ما المكوّن الذي يحتوي على المادة الوراثية في الخلية حقيقية النواة؟" data-fr="Quel constituant contient le matériel génétique dans une cellule eucaryote ?">ما المكوّن الذي يحتوي على المادة الوراثية في الخلية حقيقية النواة؟</h3><div class="gs-quiz-options"><button type="button" data-answer="wrong" data-ar="الفجوة" data-fr="La vacuole">الفجوة</button><button type="button" data-answer="correct" data-ar="النواة" data-fr="Le noyau">النواة</button><button type="button" data-answer="wrong" data-ar="الجدار الخلوي" data-fr="La paroi">الجدار الخلوي</button></div><p id="lab-quiz-feedback" class="gs-quiz-feedback" aria-live="polite" data-ar="اختر إجابتك." data-fr="Choisissez votre réponse.">اختر إجابتك.</p></div>
  </section>
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261112-1" defer></script>
+<script src="laboratory.js?v=20261112-2" defer></script>
 </body></html>

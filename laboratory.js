@@ -7,8 +7,21 @@ const dict={
 };
 let lang='ar',cell='plant';
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
+
+function updatePhotosynthesis(){
+ const light=Number($('lab-light').value),co2=Number($('lab-co2').value);
+ const rate=Math.min(light,co2);
+ $('lab-light-value').textContent=light+'%';$('lab-co2-value').textContent=co2+'%';
+ $('lab-photo-rate').textContent=rate+'%';$('lab-photo-meter-fill').style.width=rate+'%';
+ $('lab-photo-explanation').textContent=lang==='ar'
+  ?(rate===0?'أحد العاملين غير متوفر تقريباً؛ يكون النشاط التمثيلي ضعيفاً جداً في هذا النموذج.':light<co2?'الإضاءة هي العامل الأقل توفراً هنا؛ زيادتها قد ترفع النشاط ما دامت العوامل الأخرى ملائمة.':co2<light?'توفر CO₂ هو العامل الأقل هنا؛ زيادته قد ترفع النشاط ما دامت العوامل الأخرى ملائمة.':'الضوء وCO₂ متساويان في هذا النموذج؛ قد تصبح عوامل أخرى محدِّدة للنشاط.')
+  :(rate===0?'L’un des facteurs est presque absent : l’activité est très faible dans ce modèle.':light<co2?'La lumière est le facteur le moins disponible ; l’augmenter peut accroître l’activité si les autres conditions sont favorables.':co2<light?'Le CO₂ est le facteur le moins disponible ; l’augmenter peut accroître l’activité si les autres conditions sont favorables.':'La lumière et le CO₂ sont équivalents dans ce modèle ; d’autres facteurs peuvent devenir limitants.');
+}
+$('lab-light').addEventListener('input',updatePhotosynthesis);
+$('lab-co2').addEventListener('input',updatePhotosynthesis);
+
 $('lab-language').addEventListener('click',()=>setLang(lang==='ar'?'fr':'ar'));
 $('lab-menu').addEventListener('click',()=>{const nav=document.querySelector('.gs-lab-page .main-nav');nav.classList.toggle('active');});
 $('lab-zoom').addEventListener('input',e=>{const n=Number(e.target.value);$('lab-zoom-label').textContent='×'+n;$('micro-specimen').style.transform='scale('+Math.max(1,n/100)+')';});
