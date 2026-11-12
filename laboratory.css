@@ -110,3 +110,18 @@
 .gs-eco-bars i b{height:100%;display:block;min-width:2px;border-radius:99px;background:linear-gradient(90deg,#80b47e,#367a4b)}
 .gs-eco-bars strong{font-variant-numeric:tabular-nums;text-align:end}
 @media(max-width:700px){.gs-eco-chain{gap:6px}.gs-eco-level{min-width:calc(50% - 18px);min-height:112px}.gs-eco-arrow{font-size:1.1rem}.gs-eco-bars>div{grid-template-columns:100px minmax(45px,1fr) 55px;font-size:.74rem}}
+
+/* Ecosystem balance challenge */
+.gs-balance-card{background:#fff;border:1px solid #e0ebe3;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d}
+.gs-balance-species{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}
+.gs-balance-species button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:125px;padding:12px 8px;border:1px solid #d9e6d8;border-radius:15px;background:#f8fbf7;color:#365d43;font:inherit;cursor:pointer;text-align:center}
+.gs-balance-species button>span{font-size:1.9rem}
+.gs-balance-species button strong{font-size:.9rem}
+.gs-balance-species button small{font-size:.76rem;color:#718474}
+.gs-balance-species button.is-removed{background:#fff0e9;border:2px dashed #c47c63;opacity:.75}
+.gs-balance-species button:focus-visible,.gs-balance-controls button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
+.gs-balance-controls{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:18px 0}
+.gs-balance-controls p{margin:0;color:#65796b;line-height:1.8}
+.gs-balance-controls button{border:0;border-radius:999px;padding:10px 17px;background:#2f7048;color:#fff;font:inherit;font-weight:750;cursor:pointer}
+.gs-balance-result{padding:16px 18px;border-inline-start:4px solid #67956c;background:#f0f7f1;border-radius:10px;color:#496b54;line-height:1.95;min-height:76px}
+@media(max-width:760px){.gs-balance-species{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-balance-species button:last-child{grid-column:span 2;min-height:95px}}
