@@ -175,3 +175,5 @@
 .gs-watercycle-detail{margin:16px 0;padding:16px 18px;border-inline-start:4px solid #5592a2;background:#eef7f8;border-radius:10px;color:#416b76;line-height:1.95;min-height:72px}
 .gs-watercycle-flow button:focus-visible,.gs-watercycle-secondary button:focus-visible{outline:3px solid #e3bd62;outline-offset:3px}
 @media(max-width:620px){.gs-watercycle-flow{gap:7px}.gs-watercycle-flow button{min-width:calc(50% - 18px);flex:1}.gs-watercycle-arrow{display:none}.gs-watercycle-secondary button{flex:1 1 100%}}
+
+html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
