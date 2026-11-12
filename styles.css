@@ -2271,3 +2271,41 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
         grid-template-columns: 1fr !important;
     }
 }
+
+
+/* Let the preview's real aspect ratio determine the card height. */
+.content-card.file-resource-card {
+    min-height: 0 !important;
+}
+.content-card.file-resource-card .file-card-layout {
+    align-items: stretch !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+    align-self: start !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail {
+    flex: 0 0 auto !important;
+    align-self: start !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: auto;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail {
+    width: 100% !important;
+    aspect-ratio: auto;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
+}
+@media (max-width: 640px) {
+    .content-card.file-resource-card .file-preview-panel > .content-card-thumbnail {
+        min-height: 0 !important;
+    }
+}
