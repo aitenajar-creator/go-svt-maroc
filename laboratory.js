@@ -69,4 +69,13 @@ setGeology('horizontal');
 ['gen-parent-one','gen-parent-two'].forEach(id=>$(id).addEventListener('change',updateGenetics));
 updateGenetics();
 document.querySelectorAll('.gs-quiz-options button').forEach(btn=>btn.addEventListener('click',()=>{const ok=btn.dataset.answer==='correct';document.querySelectorAll('.gs-quiz-options button').forEach(b=>{b.disabled=true;if(b.dataset.answer==='correct')b.classList.add('is-correct');else if(b===btn)b.classList.add('is-wrong');});$('lab-quiz-feedback').textContent=ok?(lang==='ar'?'إجابة صحيحة! أحسنت. النواة تحتوي على المادة الوراثية.':'Bonne réponse ! Le noyau contient le matériel génétique.'):(lang==='ar'?'ليست الإجابة الصحيحة. راجع الاختيار المميز بالأخضر.':'Ce n’est pas la bonne réponse. Consultez la réponse en vert.');}));
+const relativeButtons=document.querySelectorAll('[data-relative-answer]');
+relativeButtons.forEach(btn=>btn.addEventListener('click',()=>{
+ relativeButtons.forEach(b=>{b.disabled=true;b.classList.toggle('is-correct',b.dataset.relativeAnswer==='intrusion');b.classList.toggle('is-wrong',b===btn&&b.dataset.relativeAnswer!=='intrusion');});
+ const correct=btn.dataset.relativeAnswer==='intrusion';
+ $('relative-feedback').textContent=lang==='ar'
+  ?(correct?'إجابة صحيحة! التداخل الناري أحدث من الطبقات لأنه يخترقها ويقطع استمراريتها.':'ليست الإجابة الصحيحة. تذكّر أن البنية التي تقطع طبقات موجودة تكون أحدث منها.')
+  :(correct?'Bonne réponse ! L’intrusion est plus récente que les couches puisqu’elle les recoupe.':'Ce n’est pas la bonne réponse. Une structure qui recoupe des couches déjà présentes est plus récente qu’elles.');
+}));
+
 })();
