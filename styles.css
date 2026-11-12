@@ -1035,3 +1035,87 @@ html[dir="rtl"] .header-actions {
     }
 }
 
+/* Horizontal PDF card: document preview on the left, actions beside it. */
+.content-card:has(> .pdf-thumbnail) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(118px, 34%);
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions";
+    align-items: start;
+    column-gap: .8rem;
+    row-gap: .5rem;
+    min-height: 245px;
+    padding: .85rem;
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge {
+    grid-area: badge;
+    justify-self: start;
+}
+.content-card:has(> .pdf-thumbnail) > .new-badge {
+    grid-area: badge;
+    justify-self: end;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+    grid-area: preview;
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
+    min-height: 205px;
+    margin: 0;
+    padding: .35rem;
+}
+.content-card:has(> .pdf-thumbnail) > h3 {
+    grid-area: title;
+    align-self: end;
+    width: 100%;
+    font-size: .98rem;
+    line-height: 1.35;
+}
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    grid-area: filename;
+    width: 100%;
+    font-size: .78rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    grid-area: actions;
+    align-self: end;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    width: 100%;
+    min-height: 39px;
+    padding: .45rem .35rem;
+    font-size: .82rem;
+    white-space: nowrap;
+}
+@media (max-width: 480px) {
+    .content-card:has(> .pdf-thumbnail) {
+        grid-template-columns: minmax(0, 1fr) 108px;
+        column-gap: .55rem;
+        min-height: 220px;
+        padding: .7rem;
+    }
+    .content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+        min-height: 180px;
+    }
+    .content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+    .content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+        min-height: 36px;
+        font-size: .75rem;
+    }
+}
+
