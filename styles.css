@@ -1160,3 +1160,93 @@ html[dir="rtl"] .header-actions {
     }
 }
 
+
+
+/* Explicit PDF card layout: keep the action rail beside the preview.
+   Grid follows the document direction: rail on inline-end (right in LTR,
+   left in RTL), without relying on the :has() selector for activation. */
+.content-card.pdf-resource-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(124px, 32%) !important;
+    grid-template-rows: auto auto auto minmax(76px, 1fr) !important;
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions" !important;
+    align-items: stretch !important;
+    column-gap: .75rem !important;
+    row-gap: .45rem !important;
+    min-height: 230px !important;
+    padding: .8rem !important;
+    direction: inherit;
+}
+.content-card.pdf-resource-card > .level-badge {
+    grid-area: badge !important;
+    justify-self: start;
+    align-self: start;
+}
+.content-card.pdf-resource-card > .new-badge {
+    grid-area: badge !important;
+    justify-self: end;
+    align-self: start;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    grid-area: preview !important;
+    position: relative !important;
+    inset: auto !important;
+    align-self: stretch !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 190px !important;
+    margin: 0 !important;
+    padding: .35rem !important;
+}
+.content-card.pdf-resource-card > h3 {
+    grid-area: title !important;
+    align-self: end;
+    width: 100%;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.content-card.pdf-resource-card > .file-name {
+    grid-area: filename !important;
+    align-self: start;
+    width: 100%;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.content-card.pdf-resource-card > .card-actions {
+    grid-area: actions !important;
+    align-self: end !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center;
+    gap: .5rem;
+    width: 100% !important;
+    margin: 0 !important;
+}
+.content-card.pdf-resource-card > .card-actions .preview-btn,
+.content-card.pdf-resource-card > .card-actions .download-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    margin: 0;
+    white-space: normal;
+}
+@media (max-width: 480px) {
+    .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 108px !important;
+        min-height: 205px !important;
+        column-gap: .5rem !important;
+        padding: .65rem !important;
+    }
+    .content-card.pdf-resource-card > .pdf-thumbnail {
+        min-height: 165px !important;
+    }
+    .content-card.pdf-resource-card > .card-actions .preview-btn,
+    .content-card.pdf-resource-card > .card-actions .download-btn {
+        min-height: 36px;
+        font-size: .74rem;
+    }
+}
