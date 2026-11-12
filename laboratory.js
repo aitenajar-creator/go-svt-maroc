@@ -78,4 +78,18 @@ relativeButtons.forEach(btn=>btn.addEventListener('click',()=>{
   :(correct?'Bonne réponse ! L’intrusion est plus récente que les couches puisqu’elle les recoupe.':'Ce n’est pas la bonne réponse. Une structure qui recoupe des couches déjà présentes est plus récente qu’elles.');
 }));
 
+
+const rockDescriptions={
+ cooling:{ar:'عندما تبرد الصهارة أو الحمم وتتبلور، تتشكل الصخور النارية. يختلف نسيجها حسب سرعة التبريد ومكانه.',fr:'Lorsque le magma ou la lave refroidit et cristallise, des roches magmatiques se forment. Leur texture dépend notamment de la vitesse et du lieu du refroidissement.'},
+ weathering:{ar:'تفكك التجوية الصخور في مكانها، ثم تنقل التعرية الفتات بواسطة الماء أو الرياح أو الجليد، فتتكون رواسب.',fr:'L’altération désagrège les roches sur place, puis l’érosion transporte les débris par l’eau, le vent ou la glace et produit des sédiments.'},
+ sedimentation:{ar:'تتراكم الرواسب ثم تتعرض للانضغاط والتلاحم، فتتحول تدريجياً إلى صخور رسوبية.',fr:'Les sédiments s’accumulent, se compactent et se cimentent progressivement pour former des roches sédimentaires.'},
+ metamorphism:{ar:'تتغير الصخور بفعل الضغط والحرارة والسوائل دون انصهار كلي، فتتشكل صخور متحولة.',fr:'La pression, la température et les fluides transforment les roches sans fusion complète : des roches métamorphiques se forment.'},
+ melting:{ar:'قد تنصهر الصخور عند ظروف حرارية مناسبة، فتنتج صهارة يمكن أن تبرد لاحقاً وتكوّن صخوراً نارية.',fr:'Dans des conditions thermiques suffisantes, les roches peuvent fondre et produire un magma qui pourra ensuite refroidir et former des roches magmatiques.'}
+};
+document.querySelectorAll('[data-rock-process]').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('[data-rock-process]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ const process=rockDescriptions[btn.dataset.rockProcess];
+ $('rock-process-explanation').textContent=process[lang];
+}));
+
 })();
