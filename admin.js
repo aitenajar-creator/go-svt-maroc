@@ -47,7 +47,7 @@
     if (!await verifyAdmin(user)) { showDenied(); return; }
     loginPanel.hidden = true;
     dashboard.hidden = false;
-    await loadResources();
+    await Promise.all([loadResources(), loadStudents()]);
   }
   let studentRegistry = [];
 
