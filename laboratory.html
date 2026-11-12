@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261112-2">
+<link rel="stylesheet" href="laboratory.css?v=20261112-3">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -90,12 +90,28 @@
    </div>
   </div>
  </section>
+ <section class="gs-lab-section" id="genetics-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 04" data-fr="EXPÉRIENCE 04">التجربة 04</span><h2 data-ar="مختبر الوراثة ومربع بانيت" data-fr="Laboratoire de génétique et carré de Punnett">مختبر الوراثة ومربع بانيت</h2><p data-ar="غيّر النمط الوراثي للأبوين، ثم اكتشف التراكيب الوراثية المحتملة للأبناء في مثال تعليمي لصفة واحدة." data-fr="Modifiez les génotypes des parents et découvrez les génotypes possibles des descendants dans un exemple pédagogique portant sur un seul caractère.">غيّر النمط الوراثي للأبوين، ثم اكتشف التراكيب الوراثية المحتملة للأبناء في مثال تعليمي لصفة واحدة.</p></div><span class="gs-lab-number">04</span></div>
+  <div class="gs-genetics-card">
+   <div class="gs-genetics-controls">
+    <div class="gs-genetics-parent"><label for="gen-parent-one" data-ar="النمط الوراثي للأب الأول" data-fr="Génotype du parent 1">النمط الوراثي للأب الأول</label><select id="gen-parent-one"><option value="Aa" selected>Aa — متغاير الزيجوت</option><option value="AA">AA — متماثل سائد</option><option value="aa">aa — متماثل متنحٍ</option></select></div>
+    <div class="gs-genetics-cross">×</div>
+    <div class="gs-genetics-parent"><label for="gen-parent-two" data-ar="النمط الوراثي للأب الثاني" data-fr="Génotype du parent 2">النمط الوراثي للأب الثاني</label><select id="gen-parent-two"><option value="Aa" selected>Aa — متغاير الزيجوت</option><option value="AA">AA — متماثل سائد</option><option value="aa">aa — متماثل متنحٍ</option></select></div>
+   </div>
+   <div class="gs-punnett-wrap"><h3 data-ar="مربع بانيت" data-fr="Carré de Punnett">مربع بانيت</h3><p data-ar="الأمشاج الممكنة لكل أب تظهر أعلى المربع وعلى جانبه." data-fr="Les gamètes possibles de chaque parent apparaissent en haut et sur le côté du carré.">الأمشاج الممكنة لكل أب تظهر أعلى المربع وعلى جانبه.</p>
+    <table class="gs-punnett" aria-label="مربع بانيت"><thead><tr><th>×</th><th id="gen-col-one">A</th><th id="gen-col-two">a</th></tr></thead><tbody><tr><th id="gen-row-one">A</th><td id="gen-result-0">AA</td><td id="gen-result-1">Aa</td></tr><tr><th id="gen-row-two">a</th><td id="gen-result-2">Aa</td><td id="gen-result-3">aa</td></tr></tbody></table>
+   </div>
+   <div class="gs-genetics-results"><div><span data-ar="احتمال الصفة السائدة" data-fr="Probabilité du phénotype dominant">احتمال الصفة السائدة</span><strong id="gen-dominant">75%</strong></div><div><span data-ar="احتمال الصفة المتنحية" data-fr="Probabilité du phénotype récessif">احتمال الصفة المتنحية</span><strong id="gen-recessive">25%</strong></div><div><span data-ar="النسبة الجينية" data-fr="Proportion génotypique">النسبة الجينية</span><strong id="gen-ratio">1 AA : 2 Aa : 1 aa</strong></div></div>
+   <p class="gs-genetics-explain" id="gen-explanation" aria-live="polite">في هذا التزاوج، تكون ثلاثة أرباع النتائج حاملة للمظهر السائد وربعها للمظهر المتنحي، وفق فرضية السيادة التامة.</p>
+   <p class="gs-photo-note" data-ar="هذا نموذج مبسط لوراثة مندلية لصفة واحدة مع سيادة تامة، ويفترض تكافؤ احتمالات الأمشاج والإخصاب. الصفات الحقيقية قد تتأثر بعدة مورثات والبيئة." data-fr="Modèle mendélien simplifié d’un seul caractère à dominance complète, supposant des probabilités égales pour les gamètes et la fécondation. Les caractères réels peuvent dépendre de plusieurs gènes et de l’environnement.">هذا نموذج مبسط لوراثة مندلية لصفة واحدة مع سيادة تامة، ويفترض تكافؤ احتمالات الأمشاج والإخصاب. الصفات الحقيقية قد تتأثر بعدة مورثات والبيئة.</p>
+  </div>
+ </section>
  <section class="gs-lab-section gs-lab-quiz" id="lab-quiz">
-  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 04" data-fr="EXPÉRIENCE 04">التجربة 04</span><h2 data-ar="اختبر معلوماتك" data-fr="Testez vos connaissances">اختبر معلوماتك</h2><p data-ar="سؤال قصير لترسيخ ما تعلمته حول الخلية." data-fr="Une courte question pour consolider vos connaissances sur la cellule.">سؤال قصير لترسيخ ما تعلمته حول الخلية.</p></div><span class="gs-lab-number">04</span></div>
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 04" data-fr="EXPÉRIENCE 04">التجربة 05</span><h2 data-ar="اختبر معلوماتك" data-fr="Testez vos connaissances">اختبر معلوماتك</h2><p data-ar="سؤال قصير لترسيخ ما تعلمته حول الخلية." data-fr="Une courte question pour consolider vos connaissances sur la cellule.">سؤال قصير لترسيخ ما تعلمته حول الخلية.</p></div><span class="gs-lab-number">05</span></div>
   <div class="gs-quiz-card"><h3 data-ar="ما المكوّن الذي يحتوي على المادة الوراثية في الخلية حقيقية النواة؟" data-fr="Quel constituant contient le matériel génétique dans une cellule eucaryote ?">ما المكوّن الذي يحتوي على المادة الوراثية في الخلية حقيقية النواة؟</h3><div class="gs-quiz-options"><button type="button" data-answer="wrong" data-ar="الفجوة" data-fr="La vacuole">الفجوة</button><button type="button" data-answer="correct" data-ar="النواة" data-fr="Le noyau">النواة</button><button type="button" data-answer="wrong" data-ar="الجدار الخلوي" data-fr="La paroi">الجدار الخلوي</button></div><p id="lab-quiz-feedback" class="gs-quiz-feedback" aria-live="polite" data-ar="اختر إجابتك." data-fr="Choisissez votre réponse.">اختر إجابتك.</p></div>
  </section>
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261112-2" defer></script>
+<script src="laboratory.js?v=20261112-3" defer></script>
 </body></html>
