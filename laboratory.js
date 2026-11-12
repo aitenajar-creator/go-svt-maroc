@@ -5,9 +5,9 @@ const dict={
  chloroplast:{ar:['البلاستيدة الخضراء','تحتوي على اليخضور وتتم داخلها عملية التركيب الضوئي.','توجد البلاستيدات الخضراء في الخلايا النباتية الخضراء وبعض الطحالب.'],fr:['Chloroplaste','Contient la chlorophylle et constitue le siège de la photosynthèse.','Les chloroplastes se trouvent dans les cellules végétales chlorophylliennes et certaines algues.']},
  mitochondria:{ar:['الميتوكندريا','تساهم في إنتاج الطاقة القابلة للاستعمال من طرف الخلية عبر التنفس الخلوي.','توجد الميتوكندريا في الخلايا النباتية والحيوانية.'],fr:['Mitochondrie','Participe à la production d’énergie utilisable par la cellule grâce à la respiration cellulaire.','Les mitochondries existent dans les cellules végétales et animales.']}
 };
-let lang='ar',cell='plant',selectedRockProcess=null;
+let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer';
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -94,6 +94,23 @@ document.querySelectorAll('[data-rock-process]').forEach(btn=>btn.addEventListen
  selectedRockProcess=btn.dataset.rockProcess;
  document.querySelectorAll('[data-rock-process]').forEach(b=>b.classList.toggle('is-active',b===btn));
  showRockProcess(selectedRockProcess);
+}));
+
+
+const ecoTexts={
+ producer:{ar:'المنتِجات، مثل النباتات الخضراء، تصنع المادة العضوية بعملية التركيب الضوئي، وتشكل نقطة انطلاق كثير من السلاسل الغذائية.',fr:'Les producteurs, comme les plantes vertes, fabriquent de la matière organique par photosynthèse et constituent le point de départ de nombreuses chaînes alimentaires.'},
+ primary:{ar:'المستهلك الأولي يتغذى مباشرة على المنتجات. في هذا المثال تتغذى الجرادة على النبات.',fr:'Le consommateur primaire se nourrit directement des producteurs. Dans cet exemple, le criquet mange la plante.'},
+ secondary:{ar:'المستهلك الثانوي يتغذى على المستهلك الأولي. هنا يتغذى الضفدع على الجرادة.',fr:'Le consommateur secondaire se nourrit du consommateur primaire. Ici, la grenouille mange le criquet.'},
+ tertiary:{ar:'المستهلك الأعلى يتغذى على مستهلكات أخرى. في هذا المثال تتغذى الأفعى على الضفدع، وقد تتداخل سلاسل متعددة في شبكة غذائية.',fr:'Le consommateur supérieur se nourrit d’autres consommateurs. Dans cet exemple, le serpent mange la grenouille ; plusieurs chaînes peuvent s’entrecroiser en réseau alimentaire.'}
+};
+function showEcoLevel(key){
+ const detail=ecoTexts[key];
+ if(detail)$('eco-level-detail').textContent=detail[lang];
+}
+document.querySelectorAll('[data-eco-level]').forEach(btn=>btn.addEventListener('click',()=>{
+ selectedEcoLevel=btn.dataset.ecoLevel;
+ document.querySelectorAll('[data-eco-level]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ showEcoLevel(selectedEcoLevel);
 }));
 
 })();
