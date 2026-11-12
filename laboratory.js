@@ -5,9 +5,9 @@ const dict={
  chloroplast:{ar:['البلاستيدة الخضراء','تحتوي على اليخضور وتتم داخلها عملية التركيب الضوئي.','توجد البلاستيدات الخضراء في الخلايا النباتية الخضراء وبعض الطحالب.'],fr:['Chloroplaste','Contient la chlorophylle et constitue le siège de la photosynthèse.','Les chloroplastes se trouvent dans les cellules végétales chlorophylliennes et certaines algues.']},
  mitochondria:{ar:['الميتوكندريا','تساهم في إنتاج الطاقة القابلة للاستعمال من طرف الخلية عبر التنفس الخلوي.','توجد الميتوكندريا في الخلايا النباتية والحيوانية.'],fr:['Mitochondrie','Participe à la production d’énergie utilisable par la cellule grâce à la respiration cellulaire.','Les mitochondries existent dans les cellules végétales et animales.']}
 };
-let lang='ar',cell='plant';
+let lang='ar',cell='plant',selectedRockProcess=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -86,10 +86,14 @@ const rockDescriptions={
  metamorphism:{ar:'تتغير الصخور بفعل الضغط والحرارة والسوائل دون انصهار كلي، فتتشكل صخور متحولة.',fr:'La pression, la température et les fluides transforment les roches sans fusion complète : des roches métamorphiques se forment.'},
  melting:{ar:'قد تنصهر الصخور عند ظروف حرارية مناسبة، فتنتج صهارة يمكن أن تبرد لاحقاً وتكوّن صخوراً نارية.',fr:'Dans des conditions thermiques suffisantes, les roches peuvent fondre et produire un magma qui pourra ensuite refroidir et former des roches magmatiques.'}
 };
+function showRockProcess(key){
+ const process=rockDescriptions[key];
+ if(process)$('rock-process-explanation').textContent=process[lang];
+}
 document.querySelectorAll('[data-rock-process]').forEach(btn=>btn.addEventListener('click',()=>{
+ selectedRockProcess=btn.dataset.rockProcess;
  document.querySelectorAll('[data-rock-process]').forEach(b=>b.classList.toggle('is-active',b===btn));
- const process=rockDescriptions[btn.dataset.rockProcess];
- $('rock-process-explanation').textContent=process[lang];
+ showRockProcess(selectedRockProcess);
 }));
 
 })();
