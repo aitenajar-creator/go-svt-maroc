@@ -45,6 +45,9 @@ jobs:
       - name: Verify RLS coverage in database migrations
         run: python3 scripts/check-migration-rls.py
 
+      - name: Verify SEO metadata and private-page indexing
+        run: python3 scripts/check-seo-indexing.py
+
       - name: Verify teacher community security policies
         run: python3 scripts/check-teacher-community-security.py
 
