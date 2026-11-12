@@ -18,6 +18,13 @@
   ]);
   const categoryLabels = {cours:'الدروس',exercices:'التمارين',examens:'الامتحانات',fiches:'الجذاذات',resumes:'الملخصات',documents:'الوثائق',ressources:'الموارد',divers:'متفرقات'};
   let currentUser = null;
+  let uploadInProgress = false;
+
+  async function getFileSha256(file) {
+    const bytes = await file.arrayBuffer();
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+  }
 
   function message(node, text, kind) {
     node.textContent = text || '';
@@ -98,28 +105,46 @@
   $('upload-form').addEventListener('submit', async event => {
     event.preventDefault();
     const uploadForm = event.currentTarget;
-    if (!currentUser) return;
+    if (!currentUser || uploadInProgress) return;
     const file = $('resource-file').files[0];
     if (!file) return message(uploadMessage, 'اختر ملفاً أولاً.', 'error');
     if (file.size > MAX_FILE_SIZE) return message(uploadMessage, 'حجم الملف يتجاوز 50MB.', 'error');
     if (!ALLOWED.has(file.type)) return message(uploadMessage, 'نوع الملف غير مسموح به.', 'error');
-    const button = $('upload-btn'); button.disabled = true;
-    $('upload-progress').hidden = false; message(uploadMessage, 'جارٍ رفع الملف...');
+    const button = $('upload-btn');
+    uploadInProgress = true;
+    button.disabled = true;
+    $('upload-progress').hidden = false; message(uploadMessage, 'جارٍ التحقق من الملف...');
     const category = $('category').value;
     if (['cours','exercices','examens','fiches','resumes'].includes(category) &&
         (!$('language').value || !$('study-level').value)) {
-      button.disabled = false; $('upload-progress').hidden = true;
+      uploadInProgress = false; button.disabled = false; $('upload-progress').hidden = true;
       return message(uploadMessage, 'يرجى تحديد اللغة والمستوى لهذا القسم.', 'error');
     }
     const path = category + '/' + crypto.randomUUID() + '-' + safeName(file.name);
     try {
+      const fileSha256 = await getFileSha256(file);
+      let duplicateQuery = client.from('site_content_items').select('id').eq('category', category).eq('file_sha256', fileSha256);
+      const language = $('language').value || null;
+      const studyLevel = $('study-level').value || null;
+      const studyTrack = $('study-track').value || null;
+      duplicateQuery = language === null ? duplicateQuery.is('language', null) : duplicateQuery.eq('language', language);
+      duplicateQuery = studyLevel === null ? duplicateQuery.is('study_level', null) : duplicateQuery.eq('study_level', studyLevel);
+      duplicateQuery = studyTrack === null ? duplicateQuery.is('study_track', null) : duplicateQuery.eq('study_track', studyTrack);
+      const { data: duplicates, error: duplicateError } = await duplicateQuery.limit(1);
+      if (duplicateError) throw duplicateError;
+      if (duplicates && duplicates.length) {
+        message(uploadMessage, 'هذا الملف سبق نشره في القسم والتصنيف نفسيهما. لم تتم إعادة رفعه.', 'error');
+        return;
+      }
+      message(uploadMessage, 'جارٍ رفع الملف...');
       const { error: uploadError } = await client.storage.from('site-content').upload(path, file, { contentType: file.type, upsert: false });
       if (uploadError) throw uploadError;
       const row = {
         title: $('resource-title').value.trim(), category,
-        language: $('language').value || null,
-        study_level: $('study-level').value || null,
-        study_track: $('study-track').value || null,
+        language,
+        study_level: studyLevel,
+        study_track: studyTrack,
+        file_sha256: fileSha256,
         storage_path: path, file_name: file.name, mime_type: file.type,
         size_bytes: file.size, created_by: currentUser.id
       };
@@ -132,7 +157,7 @@
       message(uploadMessage, 'تم رفع الملف وحفظ بياناته بنجاح. سيظهر في مكتبة الإدارة.', 'success');
       await loadResources();
     } catch (error) { message(uploadMessage, error.message || 'تعذر رفع الملف.', 'error'); }
-    finally { button.disabled = false; $('upload-progress').hidden = true; }
+    finally { uploadInProgress = false; button.disabled = false; $('upload-progress').hidden = true; }
   });
   const founderFields = {
     name_ar:'founder-name-ar', name_fr:'founder-name-fr',
