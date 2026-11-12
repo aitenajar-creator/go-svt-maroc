@@ -134,4 +134,20 @@ $('balance-reset').addEventListener('click',()=>{
  $('balance-result').textContent=lang==='ar'?'أُعيد النظام إلى حالته الأصلية. اختر كائناً لمحاكاة اختفائه.':'Le système est réinitialisé. Choisissez une espèce pour simuler sa disparition.';
 });
 
+
+const foodWebTexts={
+ plants:{ar:'تُعد النباتات منتجات؛ تصنع مادتها العضوية بالتركيب الضوئي. قد تتغذى عليها الحشرات والأرانب، كما توفر البذور غذاءً لبعض الطيور.',fr:'Les plantes sont des producteurs : elles fabriquent leur matière organique par photosynthèse. Les insectes et les lapins peuvent les consommer ; leurs graines nourrissent aussi certains oiseaux.'},
+ seeds:{ar:'تتغذى بعض الطيور والأرانب على البذور، وهي مورد غذائي مهم في هذا النموذج.',fr:'Certains oiseaux et lapins consomment les graines, une ressource alimentaire importante dans ce modèle.'},
+ insects:{ar:'تتغذى الحشرات على أجزاء من النباتات. وقد تفترسها الضفادع وبعض الطيور.',fr:'Les insectes consomment des parties des plantes. Ils peuvent être mangés par les grenouilles et certains oiseaux.'},
+ rabbits:{ar:'تتغذى الأرانب على النباتات والبذور، وقد تفترسها الأفاعي والجوارح.',fr:'Les lapins mangent des plantes et des graines ; ils peuvent être des proies pour les serpents et les rapaces.'},
+ frogs:{ar:'تتغذى الضفادع على بعض الحشرات، وقد تكون غذاءً للأفاعي والجوارح.',fr:'Les grenouilles mangent certains insectes et peuvent être consommées par les serpents et les rapaces.'},
+ birds:{ar:'تتغذى بعض الطيور على البذور والحشرات، وقد تفترسها الجوارح.',fr:'Certains oiseaux mangent des graines et des insectes ; ils peuvent être des proies pour les rapaces.'},
+ snakes:{ar:'قد تتغذى الأفاعي على الأرانب والضفادع، ويمكن أن تفترسها بعض الجوارح.',fr:'Les serpents peuvent manger des lapins et des grenouilles ; certains rapaces peuvent les capturer.'},
+ hawks:{ar:'تُعد الجوارح مستهلكات عليا في هذا النموذج، وتتغذى على كائنات مثل الطيور والأفاعي والأرانب.',fr:'Les rapaces sont des consommateurs supérieurs dans ce modèle. Ils peuvent se nourrir d’oiseaux, de serpents et de lapins.'}
+};
+document.querySelectorAll('[data-foodweb]').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('[data-foodweb]').forEach(b=>b.classList.toggle('is-active',b===btn));
+ const t=foodWebTexts[btn.dataset.foodweb];if(t)$('foodweb-detail').textContent=t[lang];
+}));
+
 })();
