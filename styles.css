@@ -916,3 +916,122 @@ html[dir="rtl"] .header-actions {
     }
 }
 
+/* Final PDF preview layout: natural page ratio, high-resolution canvas,
+   and two equally visible actions below the document. */
+.content-card:has(> .pdf-thumbnail) {
+    position: relative;
+    isolation: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .45rem;
+    min-height: 0;
+    overflow: hidden;
+    padding: 1rem;
+}
+.content-card:has(> .pdf-thumbnail)::before {
+    content: none !important;
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge,
+.content-card:has(> .pdf-thumbnail) > .new-badge,
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name,
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    position: relative;
+    z-index: auto;
+    align-self: flex-start;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: .25rem 0 .5rem;
+    padding: .5rem;
+    overflow: hidden;
+    border: 1px solid #cbd5da;
+    border-radius: 10px;
+    background: #e9eef1;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+    box-shadow: 0 1px 5px rgba(15,35,45,.12);
+}
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    background: transparent;
+    box-shadow: none;
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: .65rem;
+    width: 100%;
+    margin: .35rem 0 0;
+    padding: .6rem;
+    border: 1px solid #d4e0e4;
+    border-radius: 11px;
+    background: #f7fafb;
+    box-shadow: none;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: .6rem .5rem;
+    border: 1px solid #125d78;
+    border-radius: 9px;
+    color: #fff;
+    background: #126783;
+    font-size: .92rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+    white-space: normal;
+    cursor: pointer;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    border-color: #176642;
+    background: #18764d;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn:hover,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn:hover {
+    filter: brightness(.9);
+    text-decoration: none;
+}
+@media (max-width: 600px) {
+    .content-card:has(> .pdf-thumbnail) {
+        padding: .8rem;
+    }
+    .content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+    .content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+        min-height: 42px;
+        font-size: .84rem;
+    }
+}
+
