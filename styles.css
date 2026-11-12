@@ -1946,3 +1946,61 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
         min-height: 180px !important;
     }
 }
+
+
+/* Final PDF card layout correction: keep the preview panel genuinely wide
+   on narrow screens instead of allowing its grid track to collapse. */
+.content-card.pdf-resource-card .pdf-card-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) !important;
+    grid-template-areas: "document details" !important;
+    align-items: stretch !important;
+    gap: .65rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel {
+    grid-area: document !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel {
+    grid-area: details !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail {
+    display: block !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail canvas {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .content-card.pdf-resource-card {
+        grid-column: 1 / -1 !important;
+    }
+    .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) !important;
+        grid-template-areas: "document details" !important;
+        gap: .5rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-preview-panel,
+    .content-card.pdf-resource-card .pdf-info-panel {
+        min-width: 0 !important;
+        padding: .4rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > .card-actions {
+        min-width: 0 !important;
+    }
+}
