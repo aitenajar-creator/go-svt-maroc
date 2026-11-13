@@ -1381,3 +1381,34 @@ body{background:#f4f8f5}
 #student-space .gs-anatomy-figure [data-organ-system="skeletal"].is-highlighted{filter:drop-shadow(0 0 7px rgba(165,132,78,.8))}
 #student-space .gs-anatomy-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:560px){#student-space .gs-anatomy-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Interactive photosynthesis factors experiment */
+#student-space .gs-photosynthesis-experiment{margin:1.25rem 0;padding:clamp(1rem,2.5vw,1.5rem);border:1px solid #dce9dc;border-radius:20px;background:linear-gradient(145deg,#f2f9ed,#fff 72%);box-shadow:0 8px 22px rgba(43,94,48,.055)}
+#student-space .gs-experiment-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+#student-space .gs-experiment-heading h3{margin:.3rem 0;color:#326c43;font-size:clamp(1.1rem,2.2vw,1.45rem)}
+#student-space .gs-experiment-heading p{margin:0;color:#6e806f;font-size:.86rem;line-height:1.7}
+#student-space .gs-experiment-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}
+#student-space .gs-experiment-controls{display:grid;gap:.8rem;padding:.9rem;border:1px solid #e0ebdc;border-radius:14px;background:rgba(255,255,255,.85)}
+#student-space .gs-experiment-control{display:grid;gap:.35rem;color:#405f45}
+#student-space .gs-experiment-control>span{display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+#student-space .gs-experiment-control b{font-size:.84rem}
+#student-space .gs-experiment-control output{min-width:52px;color:#287444;font-size:.8rem;font-weight:850;text-align:end}
+#student-space .gs-experiment-control input{width:100%;accent-color:#398b56;cursor:pointer}
+#student-space .gs-experiment-control small{color:#879487;font-size:.7rem}
+#student-space .gs-experiment-reset{justify-self:start;padding:.55rem .8rem;border:1px solid #cfe0cd;border-radius:9px;background:#f1f7ee;color:#356b42;font:inherit;font-size:.77rem;font-weight:750;cursor:pointer}
+#student-space .gs-experiment-result{display:flex;flex-direction:column;justify-content:center;gap:.8rem;padding:1rem;border:1px solid #e0ebdc;border-radius:14px;background:#fff}
+#student-space .gs-experiment-result-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;color:#637765;font-size:.8rem}
+#student-space .gs-experiment-result-top strong{color:#287444;font-size:1.6rem;font-variant-numeric:tabular-nums}
+#student-space .gs-experiment-meter{height:13px;overflow:hidden;border-radius:99px;background:#e8eee5}
+#student-space .gs-experiment-meter span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#a6ce72,#368b55);transition:width .2s ease}
+#student-space .gs-experiment-gauges{display:grid;gap:.4rem}
+#student-space .gs-experiment-gauges>div{display:flex;justify-content:space-between;gap:.5rem;padding:.4rem .55rem;border-radius:8px;background:#f4f8f1;color:#6c7c6a;font-size:.75rem}
+#student-space .gs-experiment-gauges b{color:#386c42;font-variant-numeric:tabular-nums}
+#student-space .gs-experiment-limiter{padding:.7rem;border-inline-start:4px solid #d6a64b;border-radius:9px;background:#fff8e9}
+#student-space .gs-experiment-limiter strong{color:#8a672b;font-size:.76rem}
+#student-space .gs-experiment-limiter p{margin:.25rem 0 0;color:#765a2c;font-weight:850}
+#student-space .gs-experiment-explain{margin:0;color:#647866;font-size:.76rem;line-height:1.7}
+#student-space .gs-experiment-note{margin:.75rem 0 0;color:#819080;font-size:.7rem;line-height:1.65}
+@media(max-width:680px){#student-space .gs-experiment-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){#student-space .gs-experiment-meter span{transition:none}}
