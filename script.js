@@ -172,7 +172,7 @@ function renderCard(path, badgeText) {
     const thumbnail = ext === 'pdf'
         ? `<div class="content-card-thumbnail pdf-thumbnail" data-pdf-thumbnail data-path="${safePath}" aria-label="${t('معاينة الصفحة الأولى', 'Aperçu de la première page')}"><span class="thumbnail-loading">${t('جاري إعداد المعاينة...', 'Préparation de l’aperçu...')}</span></div>`
         : ['jpg','jpeg','png','gif','webp'].includes(ext)
-            ? `<div class="content-card-thumbnail image-thumbnail"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy" decoding="async"></div>`
+            ? `<div class="content-card-thumbnail image-thumbnail" data-preview-path="${safePath}" role="button" tabindex="0" aria-label="${t('فتح معاينة الصورة', 'Ouvrir l’aperçu de l’image')}"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy" decoding="async"><span class="image-thumbnail-hint">${t('اضغط لمعاينة الصورة', 'Cliquer pour agrandir')}</span></div>`
             : `<div class="content-card-thumbnail file-thumbnail" aria-label="${t('نوع الملف', 'Type de fichier')}"><span>${getFileIcon(ext)}</span><small>${escapeHtml(ext.toUpperCase() || 'FILE')}</small></div>`;
     return `
         <div class="content-card file-resource-card${ext === 'pdf' ? ' pdf-resource-card' : ''}">
@@ -536,7 +536,11 @@ function openPreview(path) {
             : url;
         body.innerHTML = `<iframe src="${src}" title="PDF"></iframe>`;
     } else {
-        body.innerHTML = `<img src="${url}" alt="">`;
+        body.innerHTML = `<img src="${url}" alt="${escapeHtml(getFileTitle(path.split('/').pop()))}" decoding="async">`;
+        const previewImage = body.querySelector('img');
+        if (previewImage) previewImage.addEventListener('error', function() {
+            body.textContent = t('تعذر تحميل الصورة. تحقق من توفر الملف ثم أعد المحاولة.', 'Impossible de charger cette image. Vérifiez que le fichier est disponible puis réessayez.');
+        }, { once: true });
     }
     openModal('gs-preview');
     trackEvent('apercu', path);
@@ -810,7 +814,25 @@ function setupContactForm() {
 }
 
 // ---------- أحداث عامة ----------
+document.addEventListener('error', e => {
+    const image = e.target;
+    if (!image || image.tagName !== 'IMG' || !image.closest('.image-thumbnail[data-preview-path]')) return;
+    const thumbnail = image.closest('.image-thumbnail[data-preview-path]');
+    const fallback = document.createElement('span');
+    fallback.className = 'image-thumbnail-fallback';
+    fallback.setAttribute('role', 'status');
+    fallback.textContent = t('تعذر تحميل معاينة الصورة', 'Aperçu de l’image indisponible');
+    thumbnail.replaceChildren(fallback);
+    thumbnail.removeAttribute('data-preview-path');
+    thumbnail.removeAttribute('role');
+    thumbnail.removeAttribute('tabindex');
+    thumbnail.removeAttribute('aria-label');
+}, true);
+
 document.addEventListener('click', e => {
+    const imagePreview = e.target.closest('.image-thumbnail[data-preview-path]');
+    if (imagePreview) { openPreview(imagePreview.dataset.previewPath); return; }
+
     const previewBtn = e.target.closest('.preview-btn');
     if (previewBtn) { openPreview(previewBtn.dataset.path); return; }
 
@@ -824,6 +846,11 @@ document.addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.matches('.image-thumbnail[data-preview-path]')) {
+        e.preventDefault();
+        openPreview(e.target.dataset.previewPath);
+        return;
+    }
     if (e.key === 'Escape') {
         const open = document.querySelectorAll('.gs-modal:not([hidden])');
         if (open.length) closeModal(open[open.length - 1]);
