@@ -276,7 +276,7 @@
         const s = quizState;
         const total = s.order.length;
         const q = s.quiz.questions[s.order[s.index]];
-        const image = q.image ? `<img class="gs-quiz-img" src="${escapeHtml(encodeURI(q.image))}" alt="">` : '';
+        const image = q.image ? `<img class="gs-quiz-img" src="${escapeHtml(encodeURI(q.image))}" alt="${escapeHtml(q.question)}" loading="eager" decoding="async" referrerpolicy="no-referrer">` : '';
         quizBody().innerHTML = `
             <div class="gs-quiz-progress"><span style="width:${Math.round(s.index / total * 100)}%"></span></div>
             <p class="gs-quiz-count">${t('السؤال', 'Question')} ${s.index + 1} / ${total}</p>
@@ -288,6 +288,16 @@
             </div>
             <div class="gs-quiz-feedback" dir="auto" hidden></div>
             <div class="gs-quiz-nav"><button type="button" class="gs-btn gs-btn-main gs-quiz-next" hidden></button></div>`;
+        const quizImage = quizBody().querySelector('.gs-quiz-img');
+        if (quizImage) {
+            quizImage.addEventListener('error', function() {
+                const fallback = document.createElement('p');
+                fallback.className = 'gs-quiz-image-fallback';
+                fallback.setAttribute('role', 'status');
+                fallback.textContent = t('تعذر تحميل صورة هذا السؤال؛ يمكنك متابعة الإجابة.', 'Image indisponible pour cette question ; vous pouvez continuer.');
+                quizImage.replaceWith(fallback);
+            }, { once: true });
+        }
     }
 
     function answer(choice) {
