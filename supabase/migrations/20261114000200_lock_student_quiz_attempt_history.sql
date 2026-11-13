@@ -6,14 +6,15 @@ drop policy if exists student_quiz_attempts_update_own
 drop policy if exists student_quiz_attempts_delete_own
   on public.student_quiz_attempts;
 
-revoke update, delete on table public.student_quiz_attempts
+-- Remove all table-level capabilities first, including unused TRUNCATE,
+-- REFERENCES and TRIGGER privileges, then restore only required operations.
+revoke all privileges on table public.student_quiz_attempts
 from authenticated;
+
+grant select on table public.student_quiz_attempts to authenticated;
 
 -- Restrict inserts to the payload produced by GoSVTCloud.syncQuizAttempts.
 -- The primary key and created_at remain database-generated.
-revoke insert on table public.student_quiz_attempts
-from authenticated;
-
 grant insert (
   student_id,
   attempt_id,
