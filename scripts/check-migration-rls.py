@@ -315,6 +315,42 @@ else:
             failures.append(f"Postgres default privileges: anonymous access to future {object_type} must be revoked")
 
 
+# Foreign-key columns used by joins and referential actions stay indexed.
+fk_index_migration = MIGRATIONS / "20261113001500_add_missing_foreign_key_indexes.sql"
+if not fk_index_migration.is_file():
+    failures.append("Missing indexes for uncovered foreign-key columns")
+else:
+    fk_index_sql = fk_index_migration.read_text(encoding="utf-8").lower()
+    required_fk_indexes = (
+        ("class_students", "enrolled_by"),
+        ("class_teachers", "assigned_by"),
+        ("classes", "created_by"),
+        ("exercises", "created_by"),
+        ("role_change_requests", "requested_by"),
+        ("role_change_requests", "reviewed_by"),
+        ("role_change_requests", "target_user_id"),
+        ("security_audit_log", "actor_id"),
+        ("site_content_items", "created_by"),
+        ("site_founder_profile", "updated_by"),
+        ("student_submissions", "graded_by"),
+        ("teacher_announcements", "class_id"),
+        ("teacher_announcements", "created_by"),
+        ("teacher_assignments", "created_by"),
+        ("teacher_question_messages", "sender_id"),
+        ("teacher_review_sessions", "class_id"),
+        ("teacher_review_sessions", "created_by"),
+        ("teacher_student_notes", "teacher_id"),
+        ("teacher_student_support_plans", "teacher_id"),
+    )
+    for table, column in required_fk_indexes:
+        if not re.search(
+            rf"create\\s+index\\s+if\\s+not\\s+exists\\s+\\w+\\s+on\\s+public\\.{table}\\s*\\(\\s*{column}\\s*\\)",
+            fk_index_sql,
+        ):
+            failures.append(f"Foreign key {table}.{column}: supporting index must exist")
+            break
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
