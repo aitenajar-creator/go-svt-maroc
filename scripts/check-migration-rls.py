@@ -107,12 +107,12 @@ if not update_migration.is_file():
 else:
     update_sql = update_migration.read_text(encoding="utf-8").lower()
     required_statements = (
-        r"revoke\\s+update\\s+on\\s+public\\.teacher_questions\\s+from\\s+authenticated",
-        r"revoke\\s+update\\s*\\(\\s*id\\s*,\\s*class_id\\s*,\\s*student_id\\s*,\\s*subject\\s*,\\s*body\\s*,\\s*created_at\\s*\\)\\s+on\\s+public\\.teacher_questions\\s+from\\s+authenticated",
-        r"grant\\s+update\\s*\\(\\s*status\\s*,\\s*updated_at\\s*\\)\\s+on\\s+public\\.teacher_questions\\s+to\\s+authenticated",
-        r"revoke\\s+update\\s+on\\s+public\\.teacher_assignment_submissions\\s+from\\s+authenticated",
-        r"revoke\\s+update\\s*\\(\\s*id\\s*,\\s*assignment_id\\s*,\\s*student_id\\s*,\\s*answer\\s*,\\s*submitted_at\\s*\\)\\s+on\\s+public\\.teacher_assignment_submissions\\s+from\\s+authenticated",
-        r"grant\\s+update\\s*\\(\\s*score\\s*,\\s*feedback\\s*,\\s*reviewed_at\\s*\\)\\s+on\\s+public\\.teacher_assignment_submissions\\s+to\\s+authenticated",
+        r"revoke\s+update\s+on\s+public\.teacher_questions\s+from\s+authenticated",
+        r"revoke\s+update\s*\(\s*id\s*,\s*class_id\s*,\s*student_id\s*,\s*subject\s*,\s*body\s*,\s*created_at\s*\)\s+on\s+public\.teacher_questions\s+from\s+authenticated",
+        r"grant\s+update\s*\(\s*status\s*,\s*updated_at\s*\)\s+on\s+public\.teacher_questions\s+to\s+authenticated",
+        r"revoke\s+update\s+on\s+public\.teacher_assignment_submissions\s+from\s+authenticated",
+        r"revoke\s+update\s*\(\s*id\s*,\s*assignment_id\s*,\s*student_id\s*,\s*answer\s*,\s*submitted_at\s*\)\s+on\s+public\.teacher_assignment_submissions\s+from\s+authenticated",
+        r"grant\s+update\s*\(\s*score\s*,\s*feedback\s*,\s*reviewed_at\s*\)\s+on\s+public\.teacher_assignment_submissions\s+to\s+authenticated",
     )
     for statement in required_statements:
         if not re.search(statement, update_sql):
