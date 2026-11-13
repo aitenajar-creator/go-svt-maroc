@@ -1611,6 +1611,15 @@
     // ============================================
     // 8. QUIZ HISTORY (سجل التقييمات)
     // ============================================
+    function getQuizDisplayName(quizId) {
+        const labels = {
+            'human-systems-atlas': {ar:'أطلس أجهزة جسم الإنسان',fr:'Atlas des systèmes du corps humain'},
+            'cell-photosynthesis-revision': {ar:'تحدي الخلية والتركيب الضوئي',fr:'Défi cellule et photosynthèse'}
+        };
+        const entry = labels[String(quizId || '')];
+        return entry ? entry[lang()] : escapeHtml(quizId || '');
+    }
+
     function renderHistory() {
         const profileData = getProfileData(currentProfileId);
         const results = profileData.quizResults || [];
@@ -1634,7 +1643,7 @@
             html += `
                 <div class="history-item ${isBest ? 'best' : ''}">
                     <div class="history-info">
-                        <span class="history-quiz">${escapeHtml(r.quizId)}</span>
+                        <span class="history-quiz">${getQuizDisplayName(r.quizId)}</span>
                         <span class="history-date">${new Date(r.date).toLocaleDateString()}</span>
                     </div>
                     <div class="history-score">
@@ -1688,7 +1697,7 @@
             html += `
                 <div class="mistake-quiz-group">
                     <div class="mistake-quiz-header">
-                        <span>Quiz: ${escapeHtml(quizId)}</span>
+                        <span>${getQuizDisplayName(quizId)}</span>
                         <button class="btn-retry-mistakes" data-quiz-id="${escapeHtml(quizId)}">${t('retryMistakes')}</button>
                     </div>
                     <div class="gs-mistake-progress">
@@ -1701,7 +1710,7 @@
                         <div class="mistake-item">
                             <div class="mistake-question">${escapeHtml(mistake.question || 'Question')}</div>
                             <div class="mistake-details">
-                                <span class="mistake-quiz">${escapeHtml(mistake.quizId)}</span>
+                                <span class="mistake-quiz">${getQuizDisplayName(mistake.quizId)}</span>
                                 <span class="mistake-date">${new Date(mistake.date).toLocaleDateString()}</span>
                             </div>
                             <div class="mistake-answers">
