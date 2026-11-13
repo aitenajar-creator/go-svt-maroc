@@ -59,11 +59,18 @@ else:
     ):
         failures.append("Student submissions: INSERT must be limited to assignment_id, student_id and answer")
 
-    if not re.search(
-        r"revoke\s+insert\s*\(\s*id\s*,\s*score\s*,\s*feedback\s*,\s*submitted_at\s*,\s*reviewed_at\s*\)\s+on\s+public\.teacher_assignment_submissions\s+from\s+authenticated",
-        grading_sql,
-    ):
-        failures.append("Student submissions: sensitive/teacher-owned column INSERT grants must be revoked")
+    # Legacy column-level grants need a separately versioned follow-up migration:
+    # editing an already-applied migration file would not re-run on deployed projects.
+    column_revoke_migration = MIGRATIONS / "20261113000200_revoke_legacy_submission_column_grants.sql"
+    if not column_revoke_migration.is_file():
+        failures.append("Missing separately versioned submission column-grant revocation migration")
+    else:
+        column_sql = column_revoke_migration.read_text(encoding="utf-8").lower()
+        if not re.search(
+            r"revoke\s+insert\s*\(\s*id\s*,\s*score\s*,\s*feedback\s*,\s*submitted_at\s*,\s*reviewed_at\s*\)\s+on\s+public\.teacher_assignment_submissions\s+from\s+authenticated",
+            column_sql,
+        ):
+            failures.append("Student submissions: follow-up migration must revoke legacy sensitive column INSERT grants")
 
 if failures:
     print("RLS migration coverage check failed:")
