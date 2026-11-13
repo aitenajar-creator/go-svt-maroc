@@ -98,6 +98,7 @@ begin
     join public.teacher_assignments a on a.id = s.assignment_id
     where a.class_id = p_class_id
       and s.student_id = p_student_id
+      and s.score is not null
     group by s.submitted_at::date
     order by s.submitted_at::date desc
     limit 24
