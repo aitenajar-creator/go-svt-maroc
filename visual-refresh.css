@@ -1280,3 +1280,29 @@ body{background:#f4f8f5}
 #student-space .gs-science-media-card:focus-visible{outline:3px solid #d4ad55;outline-offset:3px}
 @media(max-width:650px){#student-space .gs-science-media-grid{grid-template-columns:1fr}#student-space .gs-science-media-heading{align-items:flex-start}}
 @media(prefers-reduced-motion:reduce){#student-space .gs-science-media-card{transition:none!important}}
+
+
+/* Interactive SVT memory cards */
+#student-space .gs-memory-deck{margin:1.25rem 0;padding:clamp(1rem,2.6vw,1.55rem);border:1px solid #e5dfef;border-radius:21px;background:linear-gradient(145deg,#f7f4fc,#fff 72%);box-shadow:0 8px 22px rgba(75,55,112,.055)}
+#student-space .gs-memory-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+#student-space .gs-memory-heading h3{margin:.3rem 0;color:#514078;font-size:clamp(1.1rem,2.2vw,1.45rem)}
+#student-space .gs-memory-heading p{margin:0;color:#777087;font-size:.85rem;line-height:1.75}
+#student-space .gs-memory-heading>span{display:grid;place-items:center;flex:0 0 50px;width:50px;height:50px;border-radius:15px;background:#eee8f8;font-size:1.7rem}
+#student-space .gs-memory-card{max-width:780px;margin:0 auto;padding:clamp(1rem,3vw,1.5rem);border:1px solid #e8e1f1;border-radius:17px;background:linear-gradient(160deg,#fff,#fbf9ff);box-shadow:0 7px 20px rgba(78,60,112,.06)}
+#student-space .gs-memory-card-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;color:#756b8b;font-size:.78rem;font-weight:850}
+#student-space .gs-memory-category{padding:.3rem .6rem;border-radius:20px;background:#f0ebf8;color:#65518c}
+#student-space .gs-memory-art{display:grid;place-items:center;min-height:125px;margin:.9rem 0;border-radius:13px;background:radial-gradient(circle at center,#f2edfb,#faf8fd 68%)}
+#student-space .gs-memory-art-icon{font-size:3.5rem;filter:drop-shadow(0 5px 8px rgba(80,65,110,.14))}
+#student-space .gs-memory-question{min-height:3.2em;margin:.7rem 0;color:#40365a;text-align:center;font-size:clamp(1rem,2vw,1.2rem);line-height:1.8}
+#student-space .gs-memory-answer{margin:.8rem 0;padding:1rem;border-inline-start:4px solid #8a72b5;border-radius:11px;background:#f1edf8;color:#54466f;text-align:start;line-height:1.85}
+#student-space .gs-memory-actions{display:flex;align-items:center;justify-content:space-between;gap:.7rem;margin-top:1rem}
+#student-space .gs-memory-actions>div{display:flex;gap:.45rem}
+#student-space .gs-memory-actions button{min-height:40px;padding:.55rem .85rem;border:1px solid #ded5eb;border-radius:10px;background:#fff;color:#5e4b7d;font:inherit;font-size:.82rem;font-weight:800;cursor:pointer}
+#student-space .gs-memory-actions .gs-memory-reveal{border-color:#715a9b;background:#715a9b;color:#fff}
+#student-space .gs-memory-actions button:disabled{opacity:.4;cursor:not-allowed}
+#student-space .gs-memory-progress{height:6px;margin-top:1rem;overflow:hidden;border-radius:9px;background:#ece7f3}
+#student-space .gs-memory-progress>span{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ad98d0,#70579b);transition:width .2s ease}
+#student-space .gs-memory-tip{margin:.8rem 0 0;color:#81788e;text-align:center;font-size:.76rem;line-height:1.65}
+#student-space .gs-memory-actions button:focus-visible{outline:3px solid #d7ad55;outline-offset:3px}
+@media(max-width:480px){#student-space .gs-memory-actions{align-items:stretch;flex-direction:column}#student-space .gs-memory-actions>div{justify-content:flex-end}#student-space .gs-memory-actions .gs-memory-reveal{width:100%}}
+@media(prefers-reduced-motion:reduce){#student-space .gs-memory-progress>span{transition:none!important}}
