@@ -137,11 +137,26 @@
     $('tc-my-resources').innerHTML = data && data.length ? data.map(r => resourceCard(r,true)).join('') : '<div class="tc-state">لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.</div>';
   }
   async function downloadResource(id) {
-    const r = resources.find(x => x.id === id) || await findResource(id);
-    if (!r) throw new Error('لم يتم العثور على الملف.');
-    const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90, { download: r.file_name });
-    if (error) throw error;
-    window.open(data.signedUrl, '_blank', 'noopener');
+    // Open the tab during the original click gesture; browsers may block window.open
+    // when it is called only after the asynchronous signed-URL request completes.
+    const downloadTab = window.open('about:blank', '_blank');
+    if (downloadTab) {
+      try { downloadTab.opener = null; } catch (_) {}
+      try { downloadTab.document.title = 'جارٍ تجهيز التنزيل…'; } catch (_) {}
+    }
+    try {
+      const r = resources.find(x => x.id === id) || await findResource(id);
+      if (!r) throw new Error('لم يتم العثور على الملف.');
+      const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90, { download: r.file_name });
+      if (error) throw error;
+      if (!downloadTab || downloadTab.closed) {
+        throw new Error('منع المتصفح فتح نافذة التنزيل. اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة.');
+      }
+      downloadTab.location.replace(data.signedUrl);
+    } catch (err) {
+      if (downloadTab && !downloadTab.closed) downloadTab.close();
+      throw err;
+    }
   }
   async function findResource(id) {
     const { data, error } = await client.from('teacher_community_resources').select('*').eq('id',id).maybeSingle();
