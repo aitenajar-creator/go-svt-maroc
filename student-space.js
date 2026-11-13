@@ -2103,17 +2103,20 @@
 
         container.innerHTML = html;
         loadScientificMediaImages(container);
-        container.addEventListener('click', function(event) {
-            const jump = event.target.closest('[data-study-anchor]');
-            if (!jump || !container.contains(jump)) return;
-            const target = container.querySelector('#' + jump.dataset.studyAnchor);
-            if (target) {
-                const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
-                target.setAttribute('tabindex','-1');
-                target.focus({preventScroll:true});
-            }
-        });
+        if (container.dataset.gsStudyJumpsBound !== 'true') {
+            container.dataset.gsStudyJumpsBound = 'true';
+            container.addEventListener('click', function(event) {
+                const jump = event.target.closest('[data-study-anchor]');
+                if (!jump || !container.contains(jump)) return;
+                const target = container.querySelector('#' + jump.dataset.studyAnchor);
+                if (target) {
+                    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
+                    target.setAttribute('tabindex','-1');
+                    target.focus({preventScroll:true});
+                }
+            });
+        }
         const experimentRoot = container.querySelector('.gs-photosynthesis-experiment');
         if (experimentRoot) {
             const inputs = Array.from(experimentRoot.querySelectorAll('[data-experiment-input]'));
