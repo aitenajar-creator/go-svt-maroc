@@ -904,3 +904,69 @@ body{background:#f4f8f5}
   #student-space .best-badge{font-size:.66rem}
 }
 @media(prefers-reduced-motion:reduce){#student-space .history-item{transition:none!important}}
+
+
+/* Student mistake review — visual clarity without changing quiz behavior */
+#student-space .mistakes-list{
+  display:grid;gap:1.15rem;padding:clamp(.85rem,2.4vw,1.5rem);
+  border:1px solid #e3eee7;border-radius:20px;
+  background:linear-gradient(155deg,#fff 0%,#f5faf6 100%);
+}
+#student-space .mistake-quiz-group{
+  overflow:hidden;border:1px solid #dce9e0;border-radius:17px;
+  background:#fff;box-shadow:0 6px 18px rgba(25,75,49,.055);
+}
+#student-space .mistake-quiz-header{
+  display:flex;align-items:center;justify-content:space-between;gap:.8rem;
+  padding:1rem 1.1rem;color:#194f37;font-weight:850;
+  background:linear-gradient(100deg,#eaf6ed,#f5faf6);
+  border-bottom:1px solid #e0ece4;
+}
+#student-space .mistake-quiz-header>span{min-width:0;overflow-wrap:anywhere}
+#student-space .btn-retry-mistakes{
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  min-height:40px;padding:.55rem .9rem;border:1px solid #b9d9c4;border-radius:11px;
+  background:#fff;color:#176b49;font-weight:800;cursor:pointer;
+  transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+#student-space .btn-retry-mistakes:before{content:"";width:17px;height:17px;flex:0 0 17px;background:center/contain no-repeat;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23176b49' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 7v5h-5M4 17v-5h5'/%3E%3Cpath d='M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3'/%3E%3C/svg%3E")}
+#student-space .btn-retry-mistakes:hover{background:#eaf6ed;transform:translateY(-1px);box-shadow:0 5px 12px rgba(25,75,49,.1)}
+#student-space .gs-mistake-progress{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:.6rem;
+  padding:.9rem 1rem;background:#fbfdfb;border-bottom:1px solid #edf2ee;
+}
+#student-space .gs-mistake-progress>span{
+  display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;min-width:0;
+  padding:.55rem .65rem;border:1px solid #e7eee8;border-radius:10px;
+  background:#fff;color:#617568;font-size:.82rem;
+}
+#student-space .gs-mistake-progress strong{color:#205d40;font-size:.95rem;font-variant-numeric:tabular-nums}
+#student-space .mistake-item{
+  position:relative;margin:.75rem;padding:1rem 1rem 1rem 1.15rem;
+  border:1px solid #f0dfd9;border-inline-start:4px solid #d97861;border-radius:14px;
+  background:linear-gradient(110deg,#fff9f7,#fff 75%);
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+#student-space .mistake-item:hover{border-color:#e6b6a8;box-shadow:0 7px 17px rgba(125,65,48,.07)}
+#student-space .mistake-question{margin-bottom:.6rem;color:#273d31;font-weight:850;line-height:1.65;overflow-wrap:anywhere}
+#student-space .mistake-details{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem;color:#77877d;font-size:.76rem}
+#student-space .mistake-quiz{padding:.25rem .5rem;border-radius:7px;background:#edf5ef;color:#426a50;font-weight:750}
+#student-space .mistake-answers{display:grid;gap:.5rem}
+#student-space .mistake-wrong,#student-space .mistake-correct{
+  display:flex;align-items:flex-start;gap:.5rem;padding:.65rem .75rem;border-radius:10px;
+  line-height:1.55;overflow-wrap:anywhere;font-size:.88rem;
+}
+#student-space .mistake-wrong{border:1px solid #f1d8d1;background:#fff0ec;color:#984b3b}
+#student-space .mistake-correct{border:1px solid #d6eadb;background:#eff9f1;color:#236443}
+#student-space .btn-retry-mistakes:focus-visible{outline:3px solid #d9b65c;outline-offset:3px}
+@media(max-width:560px){
+  #student-space .mistake-quiz-header{align-items:flex-start;flex-direction:column}
+  #student-space .btn-retry-mistakes{width:100%}
+  #student-space .gs-mistake-progress{grid-template-columns:repeat(2,minmax(0,1fr));padding:.7rem}
+  #student-space .mistake-item{margin:.6rem;padding:.8rem}
+  #student-space .mistake-details{align-items:flex-start;flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+  #student-space .mistake-item,#student-space .btn-retry-mistakes{transition:none!important}
+}
