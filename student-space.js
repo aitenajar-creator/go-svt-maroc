@@ -1205,11 +1205,69 @@
         const icons=['🔬','🍃','🩸','❤️','🫁','🦴'];
         return `<section class="gs-science-media" aria-labelledby="gs-science-media-title">
           <div class="gs-science-media-heading"><div><span class="gs-eyebrow">OPEN SCIENCE · MEDIA COLLECTION</span>
-            <h3 id="gs-science-media-title">${fr?'Bibliothèque de photographies scientifiques':'مكتبة الصور العلمية الحقيقية'}</h3>
-            <p>${fr?'Explorez des photographies et micrographies issues des collections Wikimedia Commons. Vérifiez la licence et le crédit de chaque fichier avant toute réutilisation.':'اكتشف صوراً فوتوغرافية ومجهرية من مجموعات ويكيميديا كومنز. تحقق من ترخيص كل صورة واسم صاحبها قبل إعادة استخدامها.'}</p></div><span class="gs-science-media-mark" aria-hidden="true">📷</span></div>
-          <div class="gs-science-media-grid">${topics.map((topic,i)=>`<a class="gs-science-media-card" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=${encodeURIComponent(topic[2])}" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-icon" aria-hidden="true">${icons[i]}</span><span class="gs-science-media-copy"><strong>${topic[0]}</strong><small>${topic[1]}</small><em>${fr?'Voir les images libres':'استكشاف الصور المتاحة'} <span aria-hidden="true">↗</span></em></span></a>`).join('')}</div>
-          <p class="gs-science-media-license">${fr?'Les fichiers peuvent avoir des licences différentes (CC BY, CC BY-SA, domaine public, etc.). Consultez toujours la page de chaque image pour respecter les conditions de réutilisation.':'تختلف تراخيص الملفات (CC BY وCC BY-SA والملكية العامة وغيرها). راجع صفحة كل صورة لمعرفة شروط الاستخدام ونسب العمل إلى صاحبه.'}</p>
+            <h3 id="gs-science-media-title">${fr?'Photographies scientifiques avec crédits':'صور علمية حقيقية مع توثيق مصادرها'}</h3>
+            <p>${fr?'Images chargées depuis Wikimedia Commons avec auteur, licence et lien vers la fiche originale.':'صور تُحمّل مباشرة من ويكيميديا كومنز مع إظهار صاحب الصورة وترخيصها ورابط الملف الأصلي.'}</p></div><span class="gs-science-media-mark" aria-hidden="true">📷</span></div>
+          <div class="gs-science-media-grid">${topics.map((topic,i)=>`<a class="gs-science-media-card" data-science-search="${escapeHtml(topic[2])}" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=${encodeURIComponent(topic[2])}" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo" aria-hidden="true"><span>${icons[i]}</span><small>${fr?'Chargement…':'جارٍ تحميل الصورة…'}</small></span><span class="gs-science-media-copy"><strong>${topic[0]}</strong><small>${topic[1]}</small><em>${fr?'Explorer la collection':'استكشاف المجموعة'} <span aria-hidden="true">↗</span></em><small class="gs-science-media-credit">${fr?'Source et licence affichées après chargement':'سيظهر المصدر والترخيص بعد التحميل'}</small></span></a>`).join('')}</div>
+          <p class="gs-science-media-license">${fr?'Les métadonnées de licence proviennent de la fiche Wikimedia Commons de chaque fichier. Respectez les conditions indiquées avant toute réutilisation.':'تُستخرج بيانات الترخيص من صفحة كل ملف على ويكيميديا كومنز. يجب احترام شروط الترخيص قبل إعادة استخدام أي صورة.'}</p>
         </section>`;
+    }
+
+    async function loadScientificMediaImages(root) {
+        const cards = root.querySelectorAll('.gs-science-media-card[data-science-search]');
+        const fr = lang() === 'fr';
+        await Promise.all(Array.from(cards).map(async function(card) {
+            const query = card.getAttribute('data-science-search') || '';
+            const photo = card.querySelector('.gs-science-media-photo');
+            const credit = card.querySelector('.gs-science-media-credit');
+            if (!photo || !query) return;
+            try {
+                const params = new URLSearchParams({
+                    action: 'query', format: 'json', origin: '*',
+                    generator: 'search', gsrnamespace: '6',
+                    gsrsearch: query + ' filetype:bitmap', gsrlimit: '1',
+                    prop: 'imageinfo', iiprop: 'url|extmetadata', iiurlwidth: '640'
+                });
+                const response = await fetch('https://commons.wikimedia.org/w/api.php?' + params.toString(), {
+                    headers: { Accept: 'application/json' }
+                });
+                if (!response.ok) throw new Error('Wikimedia request failed');
+                const payload = await response.json();
+                const page = payload && payload.query && payload.query.pages
+                    ? Object.values(payload.query.pages)[0] : null;
+                const info = page && Array.isArray(page.imageinfo) ? page.imageinfo[0] : null;
+                if (!info || !info.thumburl || !info.descriptionurl) throw new Error('No image result');
+                const imageUrl = new URL(info.thumburl);
+                const pageUrl = new URL(info.descriptionurl);
+                if (imageUrl.hostname !== 'upload.wikimedia.org' || pageUrl.hostname !== 'commons.wikimedia.org') {
+                    throw new Error('Unexpected Wikimedia URL');
+                }
+                const meta = info.extmetadata || {};
+                const plain = function(value) {
+                    const raw = value && (value.value || value);
+                    return String(raw || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ')
+                        .replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/gi, "'")
+                        .replace(/\s+/g, ' ').trim();
+                };
+                const license = plain(meta.LicenseShortName) || (fr ? 'Licence à vérifier' : 'يجب التحقق من الترخيص');
+                const author = plain(meta.Artist) || plain(meta.Credit) || (fr ? 'Auteur non indiqué' : 'المؤلف غير محدد');
+                const img = document.createElement('img');
+                img.src = imageUrl.href;
+                img.alt = page.title || (fr ? 'Photographie scientifique' : 'صورة علمية');
+                img.loading = 'lazy';
+                img.decoding = 'async';
+                img.referrerPolicy = 'no-referrer';
+                photo.replaceChildren(img);
+                card.href = pageUrl.href;
+                card.setAttribute('aria-label', (page.title || '') + ' — ' + license);
+                if (credit) credit.textContent = (fr ? '© ' : '© ') + author + ' · ' + license;
+            } catch (error) {
+                if (credit) credit.textContent = fr
+                    ? 'Aperçu indisponible · ouvrir la recherche Wikimedia'
+                    : 'تعذر تحميل المعاينة · افتح بحث ويكيميديا';
+                const note = photo.querySelector('small');
+                if (note) note.textContent = fr ? 'Aperçu indisponible' : 'المعاينة غير متاحة حالياً';
+            }
+        }));
     }
 
     function renderScienceMemoryCards() {
@@ -1937,6 +1995,7 @@
         `;
 
         container.innerHTML = html;
+        loadScientificMediaImages(container);
         const cellFacts = {
             nucleus: [lang()==='fr'?'Noyau':'النواة', lang()==='fr'?'Le noyau contient l’information génétique (ADN) et participe au contrôle des activités cellulaires.':'تحتوي النواة على المعلومة الوراثية (ADN)، وتساهم في تنظيم أنشطة الخلية.'],
             chloroplast: [lang()==='fr'?'Chloroplaste':'البلاستيدة الخضراء', lang()==='fr'?'Les chloroplastes contiennent la chlorophylle et réalisent la photosynthèse grâce à l’énergie lumineuse.':'تحتوي البلاستيدات الخضراء على اليخضور، وتنجز عملية التركيب الضوئي باستعمال الطاقة الضوئية.'],
