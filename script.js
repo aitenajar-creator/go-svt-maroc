@@ -5,7 +5,7 @@
 const CONFIG = {
     MANIFEST_URL: 'content.json',
     FORMSPREE_URL: '',   // ضع رابط Formspree هنا، مثال: 'https://formspree.io/f/abcdwxyz'
-    CONTACT_EMAIL: '',   // بريد احتياطي (اختياري)
+    CONTACT_EMAIL: 'aitenajar@gmail.com',   // يفتح رسالة جاهزة إذا لم تُفعّل خدمة Formspree
     NEW_DAYS: 7          // عدد أيام ظهور شارة "جديد"
 };
 
