@@ -72,6 +72,33 @@ else:
         ):
             failures.append("Student submissions: follow-up migration must revoke legacy sensitive column INSERT grants")
 
+
+# Classroom authorization helpers are SECURITY DEFINER and must not be callable
+# by PUBLIC/anon; authenticated RLS policies and RPCs retain explicit access.
+helper_migration = MIGRATIONS / "20261113000300_restrict_class_helper_function_execution.sql"
+if not helper_migration.is_file():
+    failures.append("Missing classroom helper-function execution restriction migration")
+else:
+    helper_sql = helper_migration.read_text(encoding="utf-8").lower()
+    helper_signatures = (
+        "gosvt_is_teacher_or_admin()",
+        "gosvt_is_admin()",
+        "gosvt_can_manage_class(uuid)",
+        "gosvt_can_access_class(uuid)",
+    )
+    for signature in helper_signatures:
+        escaped = re.escape(signature)
+        if not re.search(
+            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.{escaped}\\s+from\\s+public\\s*,\\s*anon",
+            helper_sql,
+        ):
+            failures.append(f"Classroom helper {signature}: PUBLIC and anon execution must be revoked")
+        if not re.search(
+            rf"grant\\s+execute\\s+on\\s+function\\s+public\\.{escaped}\\s+to\\s+authenticated",
+            helper_sql,
+        ):
+            failures.append(f"Classroom helper {signature}: authenticated execution must remain granted")
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
