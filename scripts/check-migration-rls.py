@@ -290,6 +290,18 @@ else:
             failures.append(f"Anonymous table grants: public SELECT must remain on {table}")
 
 
+sequence_grants_migration = MIGRATIONS / "20261113001300_revoke_anonymous_sequence_grants.sql"
+if not sequence_grants_migration.is_file():
+    failures.append("Missing anonymous sequence-grants restriction migration")
+else:
+    sequence_grants_sql = sequence_grants_migration.read_text(encoding="utf-8").lower()
+    if not re.search(
+        r"revoke\\s+all\\s+privileges\\s+on\\s+all\\s+sequences\\s+in\\s+schema\\s+public\\s+from\\s+anon",
+        sequence_grants_sql,
+    ):
+        failures.append("Anonymous sequence grants: all legacy sequence privileges must be revoked")
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
