@@ -1987,7 +1987,11 @@
               <div><span class="gs-manager-kicker">GO SVT MAROC · ADMIN</span>
                 <h3>${tr('فضاء مدير مساحتي','Espace gestionnaire de Mon espace')}</h3>
                 <p>${tr('متابعة حسابات التلاميذ المسجلين ومستوياتهم ومسالكهم الدراسية.','Suivi des comptes élèves inscrits, de leurs niveaux et filières.')}</p>
-              </div><span class="gs-manager-icon" aria-hidden="true">🎓</span>
+              </div>
+              <div class="gs-manager-account-actions" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <span class="gs-manager-icon" aria-hidden="true">🎓</span>
+                <button type="button" class="gs-manager-logout" id="gs-manager-logout" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border:1px solid #d97757;border-radius:12px;background:#fff7f3;color:#9b341d;font:700 14px inherit;cursor:pointer;white-space:nowrap">🚪 ${tr('تسجيل الخروج','Se déconnecter')}</button>
+              </div>
             </section>
             <section class="gs-manager-card">
               <div class="gs-manager-heading"><div><h4>${tr('التلاميذ المسجلون','Élèves inscrits')}</h4>
@@ -2003,6 +2007,24 @@
               <div class="gs-manager-list" id="gs-manager-list"></div>
             </section>
           </div>`;
+        const logoutButton = container.querySelector('#gs-manager-logout');
+        if (logoutButton) logoutButton.addEventListener('click', async () => {
+          logoutButton.disabled = true;
+          logoutButton.textContent = tr('جارٍ تسجيل الخروج…','Déconnexion…');
+          try {
+            const account = window.StudentAccount;
+            if (account && typeof account.logout === 'function') {
+              await account.logout();
+            } else if (window.supabaseClient) {
+              const { error } = await window.supabaseClient.auth.signOut();
+              if (error) throw error;
+            }
+          } catch (error) {
+            console.error('[GoSVT] Manager sign out failed:', error);
+            logoutButton.disabled = false;
+            logoutButton.textContent = '🚪 ' + tr('إعادة المحاولة','Réessayer');
+          }
+        });
         const list=container.querySelector('#gs-manager-list'), status=container.querySelector('#gs-manager-status');
         const search=container.querySelector('#gs-manager-search'), levelFilter=container.querySelector('#gs-manager-level');
         let students=[];
