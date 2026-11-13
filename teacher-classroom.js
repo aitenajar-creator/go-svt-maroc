@@ -590,7 +590,7 @@
         const note=field?field.value.trim():'';
         const note_type=typeField?typeField.value:'other';
         if(!note)throw new Error(tr('لا يمكن حفظ ملاحظة فارغة.','La note ne peut pas être vide.'));
-        const {error}=await client.from('teacher_student_notes').update({note,note_type,updated_at:new Date().toISOString()}).eq('id',id);
+        const {error}=await client.from('teacher_student_notes').update({note,note_type}).eq('id',id);
         if(error)throw error;
         notice(tr('تم تحديث الملاحظة.','Note mise à jour.'));
         const card=button.closest('[data-note-card]');
