@@ -1129,3 +1129,48 @@ body{background:#f4f8f5}
 }
 @media(max-width:380px){#student-space .gs-cell-controls{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){#student-space .gs-cell-part{transition:none!important}}
+
+
+/* Photosynthesis interactive learning lab */
+#student-space .gs-photo-lab{margin:1.25rem 0;padding:clamp(1rem,2.6vw,1.6rem);border:1px solid #d7e9d9;border-radius:21px;background:linear-gradient(145deg,#f4faf1,#fff 68%);box-shadow:0 9px 24px rgba(23,79,46,.065)}
+#student-space .gs-photo-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+#student-space .gs-photo-heading h3{margin:.3rem 0;color:#20583a;font-size:clamp(1.15rem,2.2vw,1.55rem)}
+#student-space .gs-photo-heading p{margin:0;color:#6b7f70;line-height:1.75}
+#student-space .gs-photo-badge{display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;border-radius:16px;background:#fff4d5;font-size:1.8rem}
+#student-space .gs-photo-scene{position:relative;min-height:245px;display:grid;place-items:center;overflow:hidden;border:1px solid #e0ecd9;border-radius:17px;background:radial-gradient(ellipse at center,#fff 0,#eff8e8 68%,#e5f1dc 100%)}
+#student-space .gs-photo-leaf{width:min(52%,340px);z-index:1;filter:drop-shadow(0 9px 12px rgba(39,102,57,.16))}
+#student-space .gs-photo-leaf svg{display:block;width:100%;height:auto}
+#student-space .gs-photo-sun{position:absolute;top:12px;left:16%;font-size:2.3rem;filter:drop-shadow(0 0 12px rgba(239,183,54,.45))}
+#student-space .gs-photo-flow{position:absolute;z-index:2;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:65px;padding:.4rem .55rem;border:1px solid rgba(255,255,255,.9);border-radius:12px;background:rgba(255,255,255,.88);box-shadow:0 4px 12px rgba(40,80,48,.1);font-size:.8rem;color:#315d3e}
+#student-space .gs-photo-flow span{font-size:1.2rem}
+#student-space .gs-photo-flow b{font-size:.82rem}
+#student-space .gs-photo-flow small{font-size:.65rem;color:#718174;text-align:center}
+#student-space .gs-flow-water{left:4%;bottom:13%}
+#student-space .gs-flow-co2{right:4%;top:16%}
+#student-space .gs-flow-light{left:42%;top:5%}
+#student-space .gs-flow-sugar{right:4%;bottom:12%}
+#student-space .gs-flow-o2{left:5%;top:19%}
+#student-space .gs-photo-stage-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.5rem;margin:1rem 0}
+#student-space .gs-photo-stage{display:flex;align-items:center;justify-content:flex-start;gap:.45rem;min-height:58px;padding:.55rem .6rem;border:1px solid #e0eae2;border-radius:11px;background:#fff;color:#47634e;text-align:start;font:inherit;font-size:.82rem;font-weight:750;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
+#student-space .gs-photo-stage span{display:grid;place-items:center;flex:0 0 27px;width:27px;height:27px;border-radius:8px;background:#edf5ef;color:#28764c;font-size:.7rem;font-weight:900}
+#student-space .gs-photo-stage:hover{transform:translateY(-2px);border-color:#a8ceb3}
+#student-space .gs-photo-stage.is-active{border-color:#68a87d;background:#eaf6ed;color:#175b39;box-shadow:inset 0 0 0 1px rgba(40,124,80,.12)}
+#student-space .gs-photo-stage.is-active span{background:#28784d;color:#fff}
+#student-space .gs-photo-explanation{min-height:84px;padding:1rem 1.1rem;border-inline-start:4px solid #32905b;border-radius:12px;background:#edf7ef}
+#student-space .gs-photo-fact-title{display:block;color:#205b3c;font-size:1rem;font-weight:900}
+#student-space .gs-photo-fact-text{margin:.45rem 0 0;color:#496452;line-height:1.85}
+#student-space .gs-photo-equation{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem;margin-top:.85rem;padding:.8rem 1rem;border:1px dashed #b8d4bd;border-radius:12px;background:#fbfefb}
+#student-space .gs-photo-equation span{color:#6b7f70;font-size:.8rem;font-weight:750}
+#student-space .gs-photo-equation strong{color:#236441;font-size:clamp(.8rem,1.7vw,1rem);direction:ltr;unicode-bidi:embed}
+#student-space .gs-photo-note{margin:.7rem 0 0;color:#839187;font-size:.76rem;line-height:1.6}
+#student-space .gs-photo-stage:focus-visible{outline:3px solid #d6ad50;outline-offset:3px}
+#student-space .gs-photo-pulse .gs-photo-leaf{animation:gsLeafPulse .55s ease}
+@keyframes gsLeafPulse{50%{transform:scale(1.045);filter:drop-shadow(0 0 17px rgba(80,157,81,.35))}}
+#student-space .gs-photo-scene[data-active-stage="light"] .gs-photo-sun{filter:drop-shadow(0 0 18px rgba(238,178,39,.8))}
+#student-space .gs-photo-scene[data-active-stage="water"] .gs-flow-water,
+#student-space .gs-photo-scene[data-active-stage="co2"] .gs-flow-co2,
+#student-space .gs-photo-scene[data-active-stage="sugar"] .gs-flow-sugar,
+#student-space .gs-photo-scene[data-active-stage="oxygen"] .gs-flow-o2{border-color:#65ad7c;background:#eaf8ed;box-shadow:0 0 0 3px rgba(76,153,94,.14)}
+@media(max-width:760px){#student-space .gs-photo-stage-list{grid-template-columns:repeat(2,minmax(0,1fr))}#student-space .gs-photo-scene{min-height:220px}#student-space .gs-photo-leaf{width:58%}}
+@media(max-width:420px){#student-space .gs-photo-stage-list{grid-template-columns:1fr}#student-space .gs-photo-scene{min-height:205px}#student-space .gs-photo-flow{min-width:53px;padding:.3rem;font-size:.72rem}#student-space .gs-photo-flow small{font-size:.58rem}}
+@media(prefers-reduced-motion:reduce){#student-space .gs-photo-stage{transition:none!important}#student-space .gs-photo-pulse .gs-photo-leaf{animation:none!important}}
