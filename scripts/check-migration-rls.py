@@ -461,13 +461,8 @@ if not classroom_grants_migration.is_file():
     failures.append("Missing teacher classroom least-privilege table-grants migration")
 else:
     classroom_grants_sql = classroom_grants_migration.read_text(encoding="utf-8").lower()
-    for privilege in ("truncate", "references", "trigger"):
-        if not re.search(
-            rf"revoke\\s+{privilege}\\s*,\\s*references\\s*,\\s*trigger|revoke\\s+truncate\\s*,\\s*references\\s*,\\s*trigger",
-            classroom_grants_sql,
-        ):
-            failures.append(f"Teacher classroom tables: {privilege.upper()} must be revoked from authenticated")
-            break
+    if "revoke truncate, references, trigger" not in classroom_grants_sql:
+        failures.append("Teacher classroom tables: TRUNCATE, REFERENCES and TRIGGER must be revoked from authenticated")
     for statement in (
         "revoke insert, update on public.teacher_class_students from authenticated",
         "revoke update, delete on public.teacher_question_messages from authenticated",
