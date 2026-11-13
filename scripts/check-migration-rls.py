@@ -202,7 +202,7 @@ else:
     internal_functions = ('"current_role"()', 'handle_new_user()')
     for signature in internal_functions:
         if not re.search(
-            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.{re.escape(signature)}\\s+from\\s+public\\s*,\\s*anon\\s*,\\s*authenticated",
+            rf"revoke\s+all\s+on\s+function\s+public\\.{re.escape(signature)}\s+from\s+public\s*,\s*anon\s*,\s*authenticated",
             legacy_rpc_sql,
         ):
             failures.append(f"Internal SECURITY DEFINER function {signature}: client EXECUTE must be revoked")
@@ -223,12 +223,12 @@ else:
     for signature in authenticated_functions:
         escaped = re.escape(signature)
         if not re.search(
-            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.{escaped}\\s+from\\s+public\\s*,\\s*anon",
+            rf"revoke\s+all\s+on\s+function\s+public\\.{escaped}\s+from\s+public\s*,\s*anon",
             legacy_rpc_sql,
         ):
             failures.append(f"Legacy SECURITY DEFINER RPC {signature}: PUBLIC/anon EXECUTE must be revoked")
         if not re.search(
-            rf"grant\\s+execute\\s+on\\s+function\\s+public\\.{escaped}\\s+to\\s+authenticated",
+            rf"grant\s+execute\s+on\s+function\s+public\\.{escaped}\s+to\s+authenticated",
             legacy_rpc_sql,
         ):
             failures.append(f"Legacy SECURITY DEFINER RPC {signature}: authenticated EXECUTE must remain granted")
