@@ -303,12 +303,18 @@
       finally { if (btn && btn.isConnected) btn.disabled = false; }
     });
   }
-  function logout() { if (client) client.auth.signOut().catch(e => console.error('[GoSVT] Sign out:', e)); }
+  function logout() {
+    if (!client) return Promise.resolve();
+    return client.auth.signOut().catch(err => {
+      console.error('[GoSVT] Sign out:', err);
+      throw err;
+    });
+  }
   function renderBar() {
     if (!user) return '';
     return `<div class="gs-acc-wrap"><div class="gs-acc-bar"><div class="gs-acc-who">👤 <strong>${esc(profile && profile.display_name || user.email)}</strong><small>${esc(user.email)}</small></div><div class="gs-acc-actions"><button type="button" class="gs-acc-btn gs-acc-chpw">🔑 ${L('تغيير كلمة المرور','Changer le mot de passe')}</button><button type="button" class="gs-acc-btn gs-acc-logout">🚪 ${L('تسجيل الخروج','Se déconnecter')}</button></div></div><form class="gs-acc-panel" id="gs-chpw-form" hidden novalidate>${field('gs-c-new',L('كلمة المرور الجديدة','Nouveau mot de passe'),'password','minlength="8" required')}${field('gs-c-new2',L('تأكيد كلمة المرور','Confirmer'),'password','required')}<p class="gs-auth-msg" role="alert"></p><button type="submit" class="gs-auth-submit">${L('حفظ','Enregistrer')}</button></form></div>`;
   }
-  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.gs-acc-logout')) logout(); const b=e.target.closest&&e.target.closest('.gs-acc-chpw'); if(b){const p=document.getElementById('gs-chpw-form');if(p)p.hidden=!p.hidden;} });
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.gs-acc-logout')) logout().catch(() => {}); const b=e.target.closest&&e.target.closest('.gs-acc-chpw'); if(b){const p=document.getElementById('gs-chpw-form');if(p)p.hidden=!p.hidden;} });
   document.addEventListener('submit', async e => { if(e.target.id!=='gs-chpw-form')return; e.preventDefault(); const f=e.target, p=f.querySelector('#gs-c-new').value, p2=f.querySelector('#gs-c-new2').value; if(p.length<8)return msg(f,L('كلمة المرور يجب أن تتكون من 8 أحرف على الأقل.','8 caractères minimum.')); if(p!==p2)return msg(f,L('كلمتا المرور غير متطابقتين.','Les mots de passe ne correspondent pas.')); const b=f.querySelector('button'); b.disabled=true; try{const {error}=await client.auth.updateUser({password:p});if(error)throw error;f.reset();msg(f,L('تم تغيير كلمة المرور.','Mot de passe modifié.'));}catch(err){msg(f,errorText(err));}finally{b.disabled=false;} });
   function initAuth() {
     if (!client) { ready = true; emit(); return; }
