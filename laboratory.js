@@ -48,13 +48,13 @@ async function loadCommonsPhotos(){
   const frame=card.querySelector('.lab-photo-frame'),credit=card.querySelector('.lab-photo-credit');
   if(!frame)return;
   try{
-   const params=new URLSearchParams({action:'query',format:'json',origin:'*',generator:'search',gsrnamespace:'6',gsrsearch:card.dataset.commonsQuery+' filetype:bitmap',gsrlimit:'1',prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:'900'});
+   const params=new URLSearchParams({action:'query',format:'json',origin:'*',generator:'search',gsrnamespace:'6',gsrsearch:card.dataset.commonsQuery+' filetype:bitmap',gsrlimit:'5',prop:'imageinfo',iiprop:'url|extmetadata|size|mime',iiurlwidth:'900'});
    const response=await fetch('https://commons.wikimedia.org/w/api.php?'+params.toString(),{headers:{Accept:'application/json'}});
    if(!response.ok)throw new Error('Commons request failed');
    const payload=await response.json();
-   const page=payload&&payload.query&&payload.query.pages?Object.values(payload.query.pages)[0]:null;
-   const info=page&&Array.isArray(page.imageinfo)?page.imageinfo[0]:null;
-   if(!info||!info.thumburl||!info.descriptionurl)throw new Error('No Commons image found');
+   const candidates=payload&&payload.query&&payload.query.pages?Object.values(payload.query.pages).map(candidate=>({page:candidate,info:candidate&&Array.isArray(candidate.imageinfo)?candidate.imageinfo[0]:null})).filter(item=>item.info&&item.info.thumburl&&item.info.descriptionurl&&/^image\\/(jpeg|png|webp|gif|tiff)$/i.test(item.info.mime||'')&&Number(item.info.width)>=320&&Number(item.info.height)>=200).sort((a,b)=>(Number(b.info.width)*Number(b.info.height))-(Number(a.info.width)*Number(a.info.height))):[];
+   const selected=candidates[0],page=selected&&selected.page,info=selected&&selected.info;
+   if(!info)throw new Error('No suitable raster image (minimum 320×200)');
    const imageUrl=new URL(info.thumburl),pageUrl=new URL(info.descriptionurl);
    if(imageUrl.hostname!=='upload.wikimedia.org'||pageUrl.hostname!=='commons.wikimedia.org')throw new Error('Unexpected image host');
    const meta=info.extmetadata||{};
