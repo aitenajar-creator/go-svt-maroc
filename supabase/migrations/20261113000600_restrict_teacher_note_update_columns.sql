@@ -3,7 +3,7 @@
 -- updated_at remains maintained by the existing BEFORE UPDATE trigger.
 revoke update on public.teacher_student_notes from authenticated;
 revoke update (
-  id, class_id, student_id, teacher_id, created_at, updated_at
+  id, class_id, student_id, teacher_id, note, note_type, created_at, updated_at
 ) on public.teacher_student_notes from authenticated;
 grant update (note, note_type)
 on public.teacher_student_notes
