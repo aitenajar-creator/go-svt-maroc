@@ -181,9 +181,9 @@ if not resource_delete_migration.is_file():
 else:
     resource_delete_sql = resource_delete_migration.read_text(encoding="utf-8").lower()
     resource_delete_patterns = (
-        r"add\\s+column\\s+if\\s+not\\s+exists\\s+is_deleted\\s+boolean\\s+not\\s+null\\s+default\\s+false",
-        r"create\\s+policy\\s+site_content_public_read[\\s\\S]*?using\\s*\\(\\s*is_deleted\\s*=\\s*false\\s*\\)",
-        r"create\\s+policy\\s+site_content_admin_read[\\s\\S]*?using\\s*\\(\\s*public\\.gosvt_is_site_admin\\(\\)\\s*\\)",
+        r"add\s+column\s+if\s+not\s+exists\s+is_deleted\s+boolean\s+not\s+null\s+default\s+false",
+        r"create\s+policy\s+site_content_public_read[\s\S]*?using\s*\(\s*is_deleted\s*=\s*false\s*\)",
+        r"create\s+policy\s+site_content_admin_read[\s\S]*?using\s*\(\s*public\.gosvt_is_site_admin\(\)\s*\)",
     )
     for pattern in resource_delete_patterns:
         if not re.search(pattern, resource_delete_sql):
