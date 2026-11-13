@@ -99,6 +99,26 @@ else:
         ):
             failures.append(f"Classroom helper {signature}: authenticated execution must remain granted")
 
+
+# Classroom UPDATE access is limited to the fields actually edited by the UI.
+update_migration = MIGRATIONS / "20261113000400_restrict_teacher_update_columns.sql"
+if not update_migration.is_file():
+    failures.append("Missing classroom least-privilege UPDATE migration")
+else:
+    update_sql = update_migration.read_text(encoding="utf-8").lower()
+    required_statements = (
+        r"revoke\\s+update\\s+on\\s+public\\.teacher_questions\\s+from\\s+authenticated",
+        r"revoke\\s+update\\s*\\(\\s*id\\s*,\\s*class_id\\s*,\\s*student_id\\s*,\\s*subject\\s*,\\s*body\\s*,\\s*created_at\\s*\\)\\s+on\\s+public\\.teacher_questions\\s+from\\s+authenticated",
+        r"grant\\s+update\\s*\\(\\s*status\\s*,\\s*updated_at\\s*\\)\\s+on\\s+public\\.teacher_questions\\s+to\\s+authenticated",
+        r"revoke\\s+update\\s+on\\s+public\\.teacher_assignment_submissions\\s+from\\s+authenticated",
+        r"revoke\\s+update\\s*\\(\\s*id\\s*,\\s*assignment_id\\s*,\\s*student_id\\s*,\\s*answer\\s*,\\s*submitted_at\\s*\\)\\s+on\\s+public\\.teacher_assignment_submissions\\s+from\\s+authenticated",
+        r"grant\\s+update\\s*\\(\\s*score\\s*,\\s*feedback\\s*,\\s*reviewed_at\\s*\\)\\s+on\\s+public\\.teacher_assignment_submissions\\s+to\\s+authenticated",
+    )
+    for statement in required_statements:
+        if not re.search(statement, update_sql):
+            failures.append("Classroom least-privilege UPDATE migration is missing a required column restriction or grant")
+            break
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
