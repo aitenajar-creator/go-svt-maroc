@@ -234,6 +234,46 @@ else:
             failures.append(f"Legacy SECURITY DEFINER RPC {signature}: authenticated EXECUTE must remain granted")
 
 
+# Role-change guard is trigger-only and must not be directly callable by API roles.
+role_trigger_migration = MIGRATIONS / "20261113001000_restrict_profile_role_trigger_execution.sql"
+if not role_trigger_migration.is_file():
+    failures.append("Missing profile role-trigger EXECUTE restriction migration")
+else:
+    role_trigger_sql = role_trigger_migration.read_text(encoding="utf-8").lower()
+    for grantee in ("public", "anon", "authenticated"):
+        if not re.search(
+            rf"revoke\s+all\s+on\s+function\s+public\.prevent_profile_role_change\(\)\s+from\s+{grantee}",
+            role_trigger_sql,
+        ):
+            failures.append(f"Profile role-change trigger function: EXECUTE must be revoked from {grantee}")
+            break
+
+# Community membership/admin helpers are RLS predicates, not anonymous RPCs.
+community_helper_migration = MIGRATIONS / "20261113001100_restrict_teacher_community_helper_execution.sql"
+if not community_helper_migration.is_file():
+    failures.append("Missing teacher-community helper EXECUTE restriction migration")
+else:
+    community_helper_sql = community_helper_migration.read_text(encoding="utf-8").lower()
+    for signature in (
+        "gosvt_teacher_community_is_admin()",
+        "gosvt_teacher_community_is_approved_member()",
+    ):
+        escaped = re.escape(signature)
+        if not re.search(
+            rf"revoke\s+all\s+on\s+function\s+public\.{escaped}\s+from\s+public",
+            community_helper_sql,
+        ) or not re.search(
+            rf"revoke\s+all\s+on\s+function\s+public\.{escaped}\s+from\s+anon",
+            community_helper_sql,
+        ):
+            failures.append(f"Teacher-community helper {signature}: PUBLIC/anon EXECUTE must be revoked")
+        if not re.search(
+            rf"grant\s+execute\s+on\s+function\s+public\.{escaped}\s+to\s+authenticated",
+            community_helper_sql,
+        ):
+            failures.append(f"Teacher-community helper {signature}: authenticated EXECUTE must remain granted")
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
