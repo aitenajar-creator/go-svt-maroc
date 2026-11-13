@@ -389,6 +389,7 @@ else:
         ("teacher_student_support_plans", "teacher_support_plans_insert"),
     ):
         if policy not in const_uid_sql or f"on public.{table}" not in const_uid_sql:
+            failures.append(f"Missing initplan policy rewrite: {table}.{policy}")
             break
     if const_uid_sql.count("(select auth.uid())") < 11:
         failures.append("Owner-policy auth.uid() calls must use statement-level SELECT")
