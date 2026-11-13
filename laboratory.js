@@ -7,18 +7,49 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
+
+async function loadCommonsPhotos(){
+ const cards=Array.from(document.querySelectorAll('.lab-real-photo[data-commons-query]'));
+ await Promise.all(cards.map(async card=>{
+  const frame=card.querySelector('.lab-photo-frame'),credit=card.querySelector('.lab-photo-credit');
+  if(!frame)return;
+  try{
+   const params=new URLSearchParams({action:'query',format:'json',origin:'*',generator:'search',gsrnamespace:'6',gsrsearch:card.dataset.commonsQuery+' filetype:bitmap',gsrlimit:'1',prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:'900'});
+   const response=await fetch('https://commons.wikimedia.org/w/api.php?'+params.toString(),{headers:{Accept:'application/json'}});
+   if(!response.ok)throw new Error('Commons request failed');
+   const payload=await response.json();
+   const page=payload&&payload.query&&payload.query.pages?Object.values(payload.query.pages)[0]:null;
+   const info=page&&Array.isArray(page.imageinfo)?page.imageinfo[0]:null;
+   if(!info||!info.thumburl||!info.descriptionurl)throw new Error('No Commons image found');
+   const imageUrl=new URL(info.thumburl),pageUrl=new URL(info.descriptionurl);
+   if(imageUrl.hostname!=='upload.wikimedia.org'||pageUrl.hostname!=='commons.wikimedia.org')throw new Error('Unexpected image host');
+   const meta=info.extmetadata||{};
+   const plain=value=>String(value&&(value.value||value)||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g,' ').trim();
+   const author=plain(meta.Artist)||plain(meta.Credit)||(lang==='ar'?'المؤلف غير محدد':'Auteur non indiqué');
+   const license=plain(meta.LicenseShortName)||(lang==='ar'?'الترخيص غير محدد':'Licence non indiquée');
+   const img=document.createElement('img');img.src=imageUrl.href;img.alt=page.title||'Photographie scientifique';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
+   frame.replaceChildren(img);card.href=pageUrl.href;card.setAttribute('aria-label',(page.title||'Photographie scientifique')+' — '+license);
+   if(credit)credit.textContent='© '+author+' · '+license;
+  }catch(error){
+   const note=frame.querySelector('small');
+   if(note)note.textContent=lang==='ar'?'تعذر تحميل الصورة؛ افتح بحث ويكيميديا':'Aperçu indisponible ; ouvrir la recherche Wikimedia';
+   if(credit)credit.textContent=lang==='ar'?'تعذر تحميل المصدر والترخيص':'Source et licence indisponibles';
+   console.warn('[GoSVT Lab] Commons photo unavailable:',error&&error.message);
+  }
+ }));
+}
 
 
 
 const geologyTexts={
  horizontal:{ar:'في الطبقات الأفقية غير المشوهة، تكون الطبقات السفلى أقدم من الطبقات العليا وفق مبدأ التراكب، إذا لم يحدث انقلاب أو اضطراب جيولوجي.',fr:'Dans une série horizontale non déformée, les couches inférieures sont plus anciennes que les couches supérieures selon le principe de superposition, en l’absence de renversement ou de perturbation.'},
- fold:{ar:'الطية انثناء في الطبقات الصخرية ناتج عن التشوه، غالباً بفعل قوى الضغط. يوضح الرسم انحناء الطبقات حول محور الطية.',fr:'Un pli est une courbure des couches rocheuses due à la déformation, souvent sous l’effet de contraintes compressives. Le schéma montre les couches qui se courbent autour d’un axe.'},
- fault:{ar:'الفالق كسر تصاحبه إزاحة نسبية للكتل الصخرية. يوضح الرسم انقطاع الطبقات واختلاف موضعها على جانبي مستوى الفالق.',fr:'Une faille est une fracture accompagnée d’un déplacement relatif des blocs rocheux. Le schéma montre la rupture et le décalage des couches de part et d’autre du plan de faille.'}
+ fold:{ar:'الطية انثناء في الطبقات الصخرية ناتج عن التشوه، غالباً بفعل قوى الضغط. تُظهر الصورة الميدانية انحناء الطبقات حول محور الطية.',fr:'Un pli est une courbure des couches rocheuses due à la déformation, souvent sous l’effet de contraintes compressives. La photographie de terrain montre les couches qui se courbent autour d’un axe.'},
+ fault:{ar:'الفالق كسر تصاحبه إزاحة نسبية للكتل الصخرية. تُظهر الصورة الميدانية انقطاع الطبقات واختلاف موضعها على جانبي مستوى الفالق.',fr:'Une faille est une fracture accompagnée d’un déplacement relatif des blocs rocheux. La photographie de terrain montre la rupture et le décalage des couches de part et d’autre du plan de faille.'}
 };
 function setGeology(type){
- document.querySelectorAll('[data-geo-scene]').forEach(g=>{g.hidden=g.dataset.geoScene!==type;});
+ document.querySelectorAll('[data-geo-photo]').forEach(photo=>{photo.hidden=photo.dataset.geoPhoto!==type;});
  document.querySelectorAll('.gs-geology-choice').forEach(b=>{const active=b.dataset.geology===type;b.classList.toggle('is-active',active);b.setAttribute('aria-pressed',String(active));});
  $('geo-explanation').textContent=geologyTexts[type][lang];
 }
@@ -63,7 +94,18 @@ $('lab-language').addEventListener('click',()=>setLang(lang==='ar'?'fr':'ar'));
 $('lab-menu').addEventListener('click',()=>{const nav=document.querySelector('.gs-lab-page .main-nav');nav.classList.toggle('active');});
 $('lab-zoom').addEventListener('input',e=>{const n=Number(e.target.value);$('lab-zoom-label').textContent='×'+n;$('micro-specimen').style.transform='scale('+Math.max(1,n/100)+')';});
 document.querySelectorAll('.gs-organelle-hit').forEach(btn=>btn.addEventListener('click',()=>showOrganelle(btn.dataset.organelle)));
-document.querySelectorAll('.gs-cell-type').forEach(btn=>btn.addEventListener('click',()=>{cell=btn.dataset.cell;document.querySelectorAll('.gs-cell-type').forEach(b=>{b.classList.toggle('is-active',b===btn);b.textContent=b.dataset[lang];});const drawing=$('gs-cell-drawing');drawing.classList.toggle('animal-cell',cell==='animal');const wall=drawing.querySelector('.cell-wall');wall.style.display=cell==='animal'?'none':'';drawing.querySelector('.cell-chloro').style.display=cell==='animal'?'none':'';drawing.querySelector('.cell-vacuole').style.opacity=cell==='animal'?'.25':'.8';drawing.querySelectorAll('.gs-organelle-hit').forEach(hit=>{hit.hidden=cell==='animal'&&['chloroplast','vacuole'].includes(hit.dataset.organelle);});if(cell==='animal'){ $('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'قارن بين الخلية النباتية والحيوانية من حيث البنيات المشتركة والمختلفة.':'Comparez les structures communes et spécifiques des deux types cellulaires.';}else showOrganelle('nucleus');}));
+document.querySelectorAll('.gs-cell-type').forEach(btn=>btn.addEventListener('click',()=>{
+ cell=btn.dataset.cell;
+ document.querySelectorAll('.gs-cell-type').forEach(b=>{b.classList.toggle('is-active',b===btn);b.textContent=b.dataset[lang];});
+ document.querySelectorAll('[data-cell-photo]').forEach(photo=>{photo.hidden=photo.dataset.cellPhoto!==cell;});
+ document.querySelectorAll('.gs-cell-plant-only').forEach(item=>{item.hidden=cell==='animal';});
+ document.querySelectorAll('.gs-organelle-hit').forEach(hit=>{hit.hidden=cell==='animal'&&['chloroplast','vacuole'].includes(hit.dataset.organelle);hit.textContent=({nucleus:lang==='ar'?'النواة':'Noyau',vacuole:lang==='ar'?'الفجوة':'Vacuole',chloroplast:lang==='ar'?'البلاستيدة الخضراء':'Chloroplaste',mitochondria:lang==='ar'?'الميتوكندريا':'Mitochondrie'})[hit.dataset.organelle];});
+ if(cell==='animal'){
+  $('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';
+  $('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';
+  $('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';
+ }else showOrganelle('nucleus');
+}));
 document.querySelectorAll('.gs-geology-choice').forEach(btn=>btn.addEventListener('click',()=>setGeology(btn.dataset.geology)));
 setGeology('horizontal');
 ['gen-parent-one','gen-parent-two'].forEach(id=>$(id).addEventListener('change',updateGenetics));
@@ -251,4 +293,5 @@ $('water-management-reset').addEventListener('click',()=>{
  $('water-management-feedback').textContent=lang==='ar'?'حدد التدابير التي تراها مناسبة، ثم اضغط على تقييم اختياراتي.':'Sélectionnez les mesures qui vous semblent adaptées, puis cliquez sur Évaluer mes choix.';
 });
 
+loadCommonsPhotos();
 })();
