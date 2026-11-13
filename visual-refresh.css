@@ -1412,3 +1412,27 @@ body{background:#f4f8f5}
 #student-space .gs-experiment-note{margin:.75rem 0 0;color:#819080;font-size:.7rem;line-height:1.65}
 @media(max-width:680px){#student-space .gs-experiment-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){#student-space .gs-experiment-meter span{transition:none}}
+
+
+/* Level-based learning routes */
+#student-space .gs-level-paths{margin:1.25rem 0;padding:clamp(1rem,2.5vw,1.5rem);border:1px solid #dce8e6;border-radius:20px;background:linear-gradient(145deg,#f1f8f7,#fff 70%)}
+#student-space .gs-level-paths-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+#student-space .gs-level-paths-heading h3{margin:.3rem 0;color:#285e5a;font-size:clamp(1.1rem,2.2vw,1.45rem)}
+#student-space .gs-level-paths-heading p{margin:0;color:#6d817d;font-size:.84rem;line-height:1.7}
+#student-space .gs-level-paths-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem}
+#student-space .gs-level-path-card{min-width:0;padding:.85rem;border:1px solid #e0eae7;border-radius:13px;background:#fff}
+#student-space .gs-level-path-card.is-current{border-color:#79b4a5;background:#f0f8f5;box-shadow:inset 0 0 0 1px rgba(57,132,111,.1)}
+#student-space .gs-level-path-top{display:flex;align-items:center;justify-content:space-between;gap:.4rem}
+#student-space .gs-level-path-top>span{display:grid;place-items:center;min-width:48px;height:28px;padding:0 .45rem;border-radius:8px;background:#e7f1ef;color:#326d64;font-size:.76rem;font-weight:850}
+#student-space .gs-level-path-top small{color:#39826f;font-size:.66rem;font-weight:800}
+#student-space .gs-level-path-card h4{margin:.65rem 0 .35rem;color:#315f58;font-size:.94rem}
+#student-space .gs-level-path-card>p{min-height:3.8em;margin:0;color:#71817d;font-size:.74rem;line-height:1.7}
+#student-space .gs-level-path-links{display:grid;gap:.35rem;margin-top:.65rem}
+#student-space .gs-level-path-links button{display:flex;align-items:center;gap:.35rem;padding:.42rem .5rem;border:1px solid #e6eeeb;border-radius:8px;background:#f8fbfa;color:#3f6e66;text-align:start;font:inherit;font-size:.72rem;cursor:pointer}
+#student-space .gs-level-path-links button:hover{border-color:#9bc9bd;background:#edf6f3}
+#student-space .gs-level-path-links button span{color:#579889}
+#student-space .gs-level-paths-note{margin:.8rem 0 0;color:#7a8985;font-size:.72rem;line-height:1.7}
+#student-space .gs-level-paths-note a{color:#287d70;font-weight:800;text-decoration:none}
+#student-space .gs-level-path-track{display:inline-block;margin-top:.45rem;padding:.3rem .55rem;border-radius:7px;background:#edf4f2;color:#5c756e;font-size:.68rem}
+#student-space [id$="-title"]{scroll-margin-top:5rem}
+@media(max-width:760px){#student-space .gs-level-paths-grid{grid-template-columns:1fr}#student-space .gs-level-path-card>p{min-height:0}}
