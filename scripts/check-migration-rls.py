@@ -60,7 +60,7 @@ else:
         failures.append("Student submissions: INSERT must be limited to assignment_id, student_id and answer")
 
     if not re.search(
-        r"revoke\\s+insert\\s*\\(\\s*id\\s*,\\s*score\\s*,\\s*feedback\\s*,\\s*submitted_at\\s*,\\s*reviewed_at\\s*\\)\\s+on\\s+public\\.teacher_assignment_submissions\\s+from\\s+authenticated",
+        r"revoke\s+insert\s*\(\s*id\s*,\s*score\s*,\s*feedback\s*,\s*submitted_at\s*,\s*reviewed_at\s*\)\s+on\s+public\.teacher_assignment_submissions\s+from\s+authenticated",
         grading_sql,
     ):
         failures.append("Student submissions: sensitive/teacher-owned column INSERT grants must be revoked")
