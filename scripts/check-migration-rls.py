@@ -166,7 +166,7 @@ else:
     duplicate_trigger_sql = duplicate_trigger_migration.read_text(encoding="utf-8").lower()
     for grantee in ("public", "anon", "authenticated"):
         if not re.search(
-            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.prevent_duplicate_site_content_upload\\(\\)\\s+from\\s+{grantee}",
+            rf"revoke\s+all\s+on\s+function\s+public\.prevent_duplicate_site_content_upload\(\)\s+from\s+{grantee}",
             duplicate_trigger_sql,
         ):
             failures.append(f"Duplicate-upload trigger function: EXECUTE must be revoked from {grantee}")
