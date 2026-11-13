@@ -1265,10 +1265,10 @@
         return `<section class="gs-microscope-lab" data-active-slide="onion" aria-labelledby="gs-microscope-title">
           <div class="gs-micro-heading"><div><span class="gs-eyebrow">GO SVT MAROC · VIRTUAL MICROSCOPE</span>
             <h3 id="gs-microscope-title">${fr?'Laboratoire du microscope':'مختبر المجهر الافتراضي'}</h3>
-            <p>${fr?'Choisissez une préparation et observez les structures représentées.':'اختر تحضيراً مجهرياً ولاحظ البنيات الممثلة في الرسم.'}</p></div><span aria-hidden="true">🔬</span></div>
+            <p>${fr?'Choisissez une préparation : la microphotographie réelle est affichée en priorité, avec un schéma pédagogique de secours.':'اختر تحضيراً مجهرياً: ستظهر الصورة المجهرية الحقيقية أولاً، مع الاحتفاظ بالرسم التوضيحي كبديل تعليمي.'}</p></div><span aria-hidden="true">🔬</span></div>
           <div class="gs-micro-layout">
             <div class="gs-micro-view"><div class="gs-micro-viewbar"><strong class="gs-micro-view-title">${first.name}</strong><div><button type="button" data-micro-zoom="out" aria-label="${fr?'Diminuer le zoom':'تصغير'}">−</button><span class="gs-micro-zoom-value">100%</span><button type="button" data-micro-zoom="in" aria-label="${fr?'Augmenter le zoom':'تكبير'}">+</button></div></div>
-              <div class="gs-micro-canvas"><div class="gs-micro-art">${first.svg}</div><span class="gs-micro-overlay">${fr?'Schéma pédagogique':'رسم تعليمي'}</span></div>
+              <div class="gs-micro-canvas"><div class="gs-micro-art">${first.svg}</div><span class="gs-micro-overlay">${fr?'Chargement de la microphotographie réelle…':'جارٍ تحميل الصورة المجهرية الحقيقية…'}</span></div>
               <div class="gs-micro-viewfoot"><span class="gs-micro-kind">${first.kind}</span><button type="button" class="gs-micro-label-toggle" aria-pressed="false">${fr?'Afficher les repères':'إظهار البيانات'}</button></div>
               <div class="gs-micro-real-sources" aria-label="${fr?'Microphotographies réelles':'صور مجهرية حقيقية'}">
                 <a class="gs-micro-source-card" data-micro-source="onion" data-science-search="onion epidermis cells light microscopy" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=onion%20epidermis%20cells%20light%20microscopy" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🧅</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
@@ -1282,7 +1282,7 @@
               <div class="gs-micro-observation"><strong>${fr?'À observer':'ماذا تلاحظ؟'}</strong><p class="gs-micro-observe-text">${first.observe}</p><p class="gs-micro-detail-text">${first.detail}</p></div>
             </div>
           </div>
-          <p class="gs-micro-disclaimer">${fr?'Les vues sont des schémas pédagogiques et non des microphotographies réelles. Elles servent à identifier les structures, pas à remplacer une observation au microscope.':'المشاهد رسوم تخطيطية تعليمية وليست صوراً مجهرية حقيقية. هدفها التعرف على البنيات ولا تعوض الملاحظة باستعمال مجهر حقيقي.'}</p>
+          <p class="gs-micro-disclaimer">${fr?'Les microphotographies réelles sont prioritaires. Le schéma pédagogique reste disponible si une image ne peut pas être chargée ; les crédits et licences sont affichés sous chaque source.':'تعرض الصور المجهرية الحقيقية بشكل أساسي. ويظل الرسم التوضيحي متاحاً إذا تعذر تحميل صورة؛ كما تظهر بيانات المصدر والترخيص أسفل كل صورة.'}</p>
         </section>`;
     }
 
@@ -1358,6 +1358,23 @@
                 img.decoding = 'async';
                 img.referrerPolicy = 'no-referrer';
                 photo.replaceChildren(img);
+                card.dataset.realImageUrl = imageUrl.href;
+                card.dataset.sourcePageUrl = pageUrl.href;
+                const microscope = card.closest('.gs-microscope-lab');
+                if (microscope && microscope.dataset.activeSlide === card.dataset.microSource) {
+                    const art = microscope.querySelector('.gs-micro-art');
+                    const overlay = microscope.querySelector('.gs-micro-overlay');
+                    if (art) {
+                        const preview = img.cloneNode();
+                        preview.style.width = '100%';
+                        preview.style.height = '100%';
+                        preview.style.objectFit = 'contain';
+                        preview.style.display = 'block';
+                        art.replaceChildren(preview);
+                        art.classList.add('is-real-photo');
+                    }
+                    if (overlay) overlay.textContent = fr ? 'Microphotographie réelle' : 'صورة مجهرية حقيقية';
+                }
                 card.href = pageUrl.href;
                 card.setAttribute('aria-label', (page.title || '') + ' — ' + license);
                 if (credit) credit.textContent = (fr ? '© ' : '© ') + author + ' · ' + license;
@@ -2216,7 +2233,24 @@
                     microscopeRoot.querySelector('.gs-micro-kind').textContent = slide.kind;
                     microscopeRoot.querySelector('.gs-micro-observe-text').textContent = slide.observe;
                     microscopeRoot.querySelector('.gs-micro-detail-text').textContent = slide.detail;
-                    microscopeRoot.querySelector('.gs-micro-art').innerHTML = slide.art;
+                    const art = microscopeRoot.querySelector('.gs-micro-art');
+                    const overlay = microscopeRoot.querySelector('.gs-micro-overlay');
+                    const sourceCard = Array.from(microscopeRoot.querySelectorAll('[data-micro-source]')).find(card => card.dataset.microSource === slideButton.dataset.microSlide);
+                    const sourceImage = sourceCard && sourceCard.querySelector('.gs-science-media-photo img');
+                    if (sourceImage && art) {
+                        const preview = sourceImage.cloneNode();
+                        preview.style.width = '100%';
+                        preview.style.height = '100%';
+                        preview.style.objectFit = 'contain';
+                        preview.style.display = 'block';
+                        art.replaceChildren(preview);
+                        art.classList.add('is-real-photo');
+                        if (overlay) overlay.textContent = lang()==='fr'?'Microphotographie réelle':'صورة مجهرية حقيقية';
+                    } else if (art) {
+                        art.innerHTML = slide.art;
+                        art.classList.remove('is-real-photo');
+                        if (overlay) overlay.textContent = lang()==='fr'?'Schéma pédagogique — aperçu de secours':'رسم توضيحي — معاينة بديلة';
+                    }
                 }
                 const zoomButton = event.target.closest('[data-micro-zoom]');
                 if (zoomButton) {
@@ -2231,7 +2265,7 @@
                     labelButton.setAttribute('aria-pressed', active ? 'true' : 'false');
                     microscopeRoot.classList.toggle('show-micro-labels', active);
                     const overlay = microscopeRoot.querySelector('.gs-micro-overlay');
-                    if (overlay) overlay.textContent = active ? microscopeCurrent.observe : (lang()==='fr'?'Schéma pédagogique':'رسم تعليمي');
+                    if (overlay) overlay.textContent = active ? microscopeCurrent.observe : (microscopeRoot.querySelector('.gs-micro-art') && microscopeRoot.querySelector('.gs-micro-art').classList.contains('is-real-photo') ? (lang()==='fr'?'Microphotographie réelle':'صورة مجهرية حقيقية') : (lang()==='fr'?'Schéma pédagogique':'رسم تعليمي'));
                     labelButton.textContent = lang()==='fr' ? (active?'Masquer les repères':'Afficher les repères') : (active?'إخفاء البيانات':'إظهار البيانات');
                 }
             });
