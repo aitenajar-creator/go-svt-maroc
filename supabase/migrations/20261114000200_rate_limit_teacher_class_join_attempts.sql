@@ -12,7 +12,8 @@ create index if not exists teacher_class_join_attempts_student_time_idx
   on public.teacher_class_join_attempts(student_id, attempted_at desc);
 
 alter table public.teacher_class_join_attempts enable row level security;
-revoke all on table public.teacher_class_join_attempts from public, anon, authenticated;
+revoke all on public.teacher_class_join_attempts from anon, authenticated;
+revoke all on public.teacher_class_join_attempts from public;
 
 create or replace function public.gosvt_join_teacher_class(p_join_code text)
 returns uuid
