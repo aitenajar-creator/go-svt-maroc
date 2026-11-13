@@ -346,7 +346,12 @@
         await refreshPanel();
       } else if(action==='join'){
         const code=document.getElementById('gs-cl-code').value.trim();
-        const {error}=await client.rpc('gosvt_join_teacher_class',{p_join_code:code});if(error)throw error;
+        const {data,error}=await client.rpc('gosvt_join_teacher_class',{p_join_code:code});
+        if(error){
+          if(String(error.message||'').includes('join_rate_limited'))throw new Error(tr('تجاوزت عدد المحاولات المسموح بها. حاول مجدداً بعد 15 دقيقة.','Trop de tentatives. Réessayez dans 15 minutes.'));
+          throw error;
+        }
+        if(!data)throw new Error(tr('رمز غير صحيح أو لا يطابق مستواك ومسلكك الدراسي.','Code invalide ou incompatible avec votre niveau et votre filière.'));
         notice(tr('تم الانضمام إلى القسم بنجاح.','Vous avez rejoint la classe.'));
         await refreshPanel();
       } else if(action==='ask'){
