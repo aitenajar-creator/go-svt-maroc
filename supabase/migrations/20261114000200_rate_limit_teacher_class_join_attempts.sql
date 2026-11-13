@@ -1,5 +1,5 @@
--- Limit repeated class-code guesses per authenticated student.
--- Failed code and study-track checks return NULL so their attempt records commit.
+-- Limit failed class-code guesses per authenticated student.
+-- Failed code and study-track checks return NULL so their attempt records commit; successful joins do not consume the allowance.
 -- A per-student advisory transaction lock makes the rolling-window check race-safe.
 
 create table if not exists public.teacher_class_join_attempts (
@@ -45,16 +45,13 @@ begin
   where student_id = v_student
     and attempted_at < now() - interval '24 hours';
 
-  insert into public.teacher_class_join_attempts(student_id)
-  values (v_student);
-
   select count(*)::integer
     into v_attempt_count
   from public.teacher_class_join_attempts
   where student_id = v_student
     and attempted_at >= now() - interval '15 minutes';
 
-  if v_attempt_count > 5 then
+  if v_attempt_count >= 5 then
     raise exception 'join_rate_limited';
   end if;
 
@@ -63,8 +60,9 @@ begin
   from public.teacher_classes c
   where c.join_code = upper(trim(coalesce(p_join_code, '')));
 
-  -- Return NULL (rather than raising) so the failed attempt is committed and counted.
+  -- Record only failed guesses; successful joins do not consume the failure allowance.
   if v_class_id is null then
+    insert into public.teacher_class_join_attempts(student_id) values (v_student);
     return null;
   end if;
 
@@ -74,6 +72,7 @@ begin
       and coalesce(u.raw_user_meta_data->>'study_level', '') = v_level
       and coalesce(u.raw_user_meta_data->>'study_track', '') = v_track
   ) then
+    insert into public.teacher_class_join_attempts(student_id) values (v_student);
     return null;
   end if;
 
