@@ -351,6 +351,26 @@ else:
             break
 
 
+# Remaining uncovered foreign-key columns in answer and teacher-feedback tables.
+remaining_fk_migration = MIGRATIONS / "20261113001600_add_remaining_foreign_key_indexes.sql"
+if not remaining_fk_migration.is_file():
+    failures.append("Missing remaining student-answer and teacher-feedback FK indexes")
+else:
+    remaining_fk_sql = remaining_fk_migration.read_text(encoding="utf-8").lower()
+    for table, column in (
+        ("student_answers", "question_id"),
+        ("teacher_assignment_submissions", "student_id"),
+        ("teacher_student_notes", "student_id"),
+        ("teacher_student_support_plans", "student_id"),
+    ):
+        if not re.search(
+            rf"create\s+index\s+if\s+not\s+exists\s+\w+\s+on\s+public\.{table}\s*\(\s*{column}\s*\)",
+            remaining_fk_sql,
+        ):
+            failures.append(f"Foreign key {table}.{column}: supporting index must exist")
+            break
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
