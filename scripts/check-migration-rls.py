@@ -364,7 +364,7 @@ else:
         ("teacher_student_support_plans", "student_id"),
     ):
         if not re.search(
-            rf"create\\s+index\\s+if\\s+not\\s+exists\\s+\\w+\\s+on\\s+public\\.{table}\\s*\\(\\s*{column}\\s*\\)",
+            rf"create\s+index\s+if\s+not\s+exists\s+\w+\s+on\s+public\.{table}\s*\(\s*{column}\s*\)",
             remaining_fk_sql,
         ):
             failures.append(f"Foreign key {table}.{column}: supporting index must exist")
