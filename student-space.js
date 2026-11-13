@@ -1121,6 +1121,53 @@
         </section>`;
     }
 
+    function renderHumanSystemsAtlas() {
+        const fr = lang() === 'fr';
+        const data = fr ? {
+          digestive:['Système digestif','Transforme les aliments en nutriments absorbables.','Bouche → œsophage → estomac → intestin grêle → gros intestin.','Les nutriments traversent la paroi de l’intestin grêle et rejoignent le sang.'],
+          respiratory:['Système respiratoire','Assure les échanges gazeux entre l’air et le sang.','Fosses nasales → trachée → bronches → bronchioles → alvéoles.','Au niveau des alvéoles, le dioxygène diffuse vers le sang et le CO₂ en sort.'],
+          circulatory:['Système circulatoire','Transporte les gaz, nutriments et autres substances dans l’organisme.','Cœur + artères + capillaires + veines.','Le cœur propulse le sang dans deux circuits complémentaires : pulmonaire et général.'],
+          nervous:['Système nerveux','Reçoit, traite et transmet les messages nerveux.','Encéphale + moelle épinière + nerfs.','Les organes sensoriels détectent les stimuli ; les centres nerveux élaborent des réponses.']
+        } : {
+          digestive:['الجهاز الهضمي','يحول الأغذية إلى مغذيات قابلة للامتصاص.','الفم ← المريء ← المعدة ← الأمعاء الدقيقة ← الأمعاء الغليظة.','تعبر المغذيات جدار الأمعاء الدقيقة لتصل إلى الدم.'],
+          respiratory:['الجهاز التنفسي','يضمن التبادلات الغازية بين الهواء والدم.','التجاويف الأنفية ← القصبة الهوائية ← الشعب ← القصيبات ← الأسناخ الرئوية.','على مستوى الأسناخ ينتشر الأكسجين نحو الدم ويغادره ثاني أكسيد الكربون.'],
+          circulatory:['الجهاز الدوري','ينقل الغازات والمغذيات ومواد أخرى داخل الجسم.','القلب + الشرايين + الشعيرات الدموية + الأوردة.','يدفع القلب الدم عبر دورتين متكاملتين: الدورة الرئوية والدورة العامة.'],
+          nervous:['الجهاز العصبي','يستقبل الرسائل العصبية ويعالجها وينقلها.','الدماغ + النخاع الشوكي + الأعصاب.','تلتقط الأعضاء الحسية المنبهات، وتعالج المراكز العصبية المعلومات وتعد الاستجابات.']
+        };
+        const names = fr ? ['Digestif','Respiratoire','Circulatoire','Nerveux'] : ['الهضمي','التنفسي','الدوري','العصبي'];
+        const icons = ['🥗','🫁','❤️','🧠'];
+        const keys = ['digestive','respiratory','circulatory','nervous'];
+        const initial = data.digestive;
+        return `<section class="gs-anatomy-atlas" aria-labelledby="gs-anatomy-title">
+          <div class="gs-anatomy-heading"><div><span class="gs-eyebrow">GO SVT MAROC · SCIENCE ATLAS</span>
+            <h3 id="gs-anatomy-title">${fr?'Atlas interactif du corps humain':'الأطلس التفاعلي لجسم الإنسان'}</h3>
+            <p>${fr?'Choisissez un système pour découvrir ses organes et ses fonctions.':'اختر جهازاً للتعرف على أعضائه ووظائفه.'}</p></div><span class="gs-anatomy-mark" aria-hidden="true">🧍</span></div>
+          <div class="gs-anatomy-figure" aria-hidden="true">
+            <svg viewBox="0 0 300 340" role="img">
+              <defs><linearGradient id="gsBodyGrad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9e9df"/><stop offset="1" stop-color="#a9cbb5"/></linearGradient></defs>
+              <circle cx="150" cy="45" r="29" fill="url(#gsBodyGrad)" stroke="#548a68" stroke-width="3"/>
+              <path d="M121 82Q105 88 91 104L67 178Q63 192 76 197Q88 201 94 186L112 137L109 218L99 303Q98 319 113 320Q127 320 130 305L150 231L170 305Q173 320 187 320Q202 319 201 303L191 218L188 137L206 186Q212 201 224 197Q237 192 233 178L209 104Q195 88 179 82Z" fill="url(#gsBodyGrad)" stroke="#548a68" stroke-width="3"/>
+              <path d="M150 77V219" stroke="#548a68" stroke-width="2" stroke-dasharray="4 5"/>
+              <g fill="#6d8fd0" stroke="#fff" stroke-width="2"><path d="M137 36Q150 20 163 36Q159 54 150 59Q141 54 137 36Z"/></g>
+              <g fill="#e98b85" stroke="#fff" stroke-width="2"><path d="M150 110C125 93 117 119 150 145C183 119 175 93 150 110Z"/></g>
+              <g fill="#83b8dc" stroke="#fff" stroke-width="2"><path d="M145 91Q119 83 119 119Q120 139 145 146Z"/><path d="M155 91Q181 83 181 119Q180 139 155 146Z"/></g>
+              <path d="M145 156Q132 162 140 183Q150 193 160 183Q168 162 155 156Z" fill="#dba56c" stroke="#fff" stroke-width="2"/>
+              <path d="M132 187Q150 178 168 187L166 209Q150 219 134 209Z" fill="#8dbd76" stroke="#fff" stroke-width="2"/>
+            </svg>
+            <span>${fr?'Schéma simplifié du corps humain':'رسم مبسط لجسم الإنسان'}</span>
+          </div>
+          <div class="gs-anatomy-tabs" role="group" aria-label="${fr?'Systèmes du corps':'أجهزة الجسم'}">
+            ${keys.map((key,i)=>`<button type="button" class="gs-anatomy-tab ${i===0?'is-active':''}" data-anatomy-system="${key}" aria-pressed="${i===0?'true':'false'}"><span>${icons[i]}</span><b>${names[i]}</b></button>`).join('')}
+          </div>
+          <div class="gs-anatomy-detail" aria-live="polite">
+            <h4 class="gs-anatomy-name">${initial[0]}</h4><p class="gs-anatomy-function">${initial[1]}</p>
+            <div class="gs-anatomy-info"><span>🔎 ${fr?'Principaux organes':'أهم المكونات'}</span><p class="gs-anatomy-organs">${initial[2]}</p></div>
+            <div class="gs-anatomy-info"><span>💡 ${fr?'À retenir':'معلومة أساسية'}</span><p class="gs-anatomy-fact">${initial[3]}</p></div>
+          </div>
+          <p class="gs-anatomy-note">${fr?'Illustration pédagogique schématique, non destinée au diagnostic médical.':'رسم تعليمي تخطيطي، وليس مرجعاً للتشخيص الطبي.'}</p>
+        </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -1170,6 +1217,7 @@
             </section>
             ${renderPlantCellExplorer()}
             ${renderPhotosynthesisLab()}
+            ${renderHumanSystemsAtlas()}
             <div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
                 <div class="gs-path-steps">
@@ -1857,6 +1905,26 @@
                 void scene.offsetWidth;
                 scene.classList.add('gs-photo-pulse');
             }
+        }));
+        const anatomyFacts = {
+          digestive: lang()==='fr'?['Système digestif','Transforme les aliments en nutriments absorbables.','Bouche → œsophage → estomac → intestin grêle → gros intestin.','Les nutriments traversent la paroi de l’intestin grêle et rejoignent le sang.']:['الجهاز الهضمي','يحول الأغذية إلى مغذيات قابلة للامتصاص.','الفم ← المريء ← المعدة ← الأمعاء الدقيقة ← الأمعاء الغليظة.','تعبر المغذيات جدار الأمعاء الدقيقة لتصل إلى الدم.'],
+          respiratory: lang()==='fr'?['Système respiratoire','Assure les échanges gazeux entre l’air et le sang.','Fosses nasales → trachée → bronches → bronchioles → alvéoles.','Au niveau des alvéoles, le dioxygène diffuse vers le sang et le CO₂ en sort.']:['الجهاز التنفسي','يضمن التبادلات الغازية بين الهواء والدم.','التجاويف الأنفية ← القصبة الهوائية ← الشعب ← القصيبات ← الأسناخ الرئوية.','على مستوى الأسناخ ينتشر الأكسجين نحو الدم ويغادره ثاني أكسيد الكربون.'],
+          circulatory: lang()==='fr'?['Système circulatoire','Transporte les gaz, nutriments et autres substances dans l’organisme.','Cœur + artères + capillaires + veines.','Le cœur propulse le sang dans deux circuits complémentaires : pulmonaire et général.']:['الجهاز الدوري','ينقل الغازات والمغذيات ومواد أخرى داخل الجسم.','القلب + الشرايين + الشعيرات الدموية + الأوردة.','يدفع القلب الدم عبر دورتين متكاملتين: الدورة الرئوية والدورة العامة.'],
+          nervous: lang()==='fr'?['Système nerveux','Reçoit, traite et transmet les messages nerveux.','Encéphale + moelle épinière + nerfs.','Les organes sensoriels détectent les stimuli ; les centres nerveux élaborent des réponses.']:['الجهاز العصبي','يستقبل الرسائل العصبية ويعالجها وينقلها.','الدماغ + النخاع الشوكي + الأعصاب.','تلتقط الأعضاء الحسية المنبهات، وتعالج المراكز العصبية المعلومات وتعد الاستجابات.']
+        };
+        container.querySelectorAll('.gs-anatomy-tab').forEach(button => button.addEventListener('click', function () {
+            const fact = anatomyFacts[this.dataset.anatomySystem];
+            if (!fact) return;
+            container.querySelectorAll('.gs-anatomy-tab').forEach(item => {
+                const active = item === this;
+                item.classList.toggle('is-active', active);
+                item.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            const fields = ['.gs-anatomy-name','.gs-anatomy-function','.gs-anatomy-organs','.gs-anatomy-fact'];
+            fields.forEach((selector,index) => {
+                const element = container.querySelector(selector);
+                if (element) element.textContent = fact[index];
+            });
         }));
         bindPlannerAndNotes(container);
         bindFavoritesPanel(container.querySelector('#panel-favorites'));
