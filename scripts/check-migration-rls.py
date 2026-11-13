@@ -89,12 +89,12 @@ else:
     for signature in helper_signatures:
         escaped = re.escape(signature)
         if not re.search(
-            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.{escaped}\\s+from\\s+public\\s*,\\s*anon",
+            rf"revoke\s+all\s+on\s+function\s+public\.{escaped}\s+from\s+public\s*,\s*anon",
             helper_sql,
         ):
             failures.append(f"Classroom helper {signature}: PUBLIC and anon execution must be revoked")
         if not re.search(
-            rf"grant\\s+execute\\s+on\\s+function\\s+public\\.{escaped}\\s+to\\s+authenticated",
+            rf"grant\s+execute\s+on\s+function\s+public\.{escaped}\s+to\s+authenticated",
             helper_sql,
         ):
             failures.append(f"Classroom helper {signature}: authenticated execution must remain granted")
