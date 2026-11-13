@@ -1057,22 +1057,18 @@
         return `<section class="gs-cell-lab" aria-labelledby="gs-cell-lab-title">
           <div class="gs-cell-lab-heading"><div><span class="gs-eyebrow">GO SVT MAROC · MINI LAB</span><h3 id="gs-cell-lab-title">${fr?'Explorez une cellule végétale':'استكشف الخلية النباتية'}</h3><p>${intro}</p></div><span class="gs-cell-lab-symbol" aria-hidden="true">🧫</span></div>
           <div class="gs-cell-lab-layout">
-            <div class="gs-cell-illustration" role="img" aria-label="${fr?'Schéma simplifié d’une cellule végétale':'رسم مبسط لخلية نباتية'}">
-              <svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs><linearGradient id="gsCellFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e9f8d9"/><stop offset="1" stop-color="#b8e2a5"/></linearGradient><linearGradient id="gsVacuole" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8f1ff"/><stop offset="1" stop-color="#8bc9e8"/></linearGradient></defs>
-                <rect x="28" y="35" width="464" height="260" rx="78" fill="#a8d18f" stroke="#39794b" stroke-width="12"/><rect x="43" y="50" width="434" height="230" rx="66" fill="url(#gsCellFill)" stroke="#f8fff2" stroke-width="5"/>
-                <path d="M178 90 Q260 55 346 100 Q390 130 375 220 Q330 264 215 245 Q158 213 178 90Z" fill="url(#gsVacuole)" stroke="#68a9cb" stroke-width="3"/>
-                <ellipse cx="128" cy="155" rx="43" ry="35" fill="#9c83d8" stroke="#604c9c" stroke-width="4"/><circle cx="140" cy="146" r="11" fill="#e8ddff"/>
-                <g fill="#4d9c60" stroke="#27683c" stroke-width="3"><ellipse cx="397" cy="94" rx="32" ry="16"/><ellipse cx="110" cy="235" rx="30" ry="14"/></g>
-                <g fill="none" stroke="#548d59" stroke-width="2" stroke-dasharray="5 5"><path d="M130 117L108 76H60"/><path d="M397 78L424 56H470"/><path d="M275 238L295 270H380"/><path d="M45 178L12 198"/></g>
-              </svg>
+            <div class="gs-cell-illustration" aria-label="${fr?'Photographie réelle de cellules végétales':'صورة حقيقية لخلايا نباتية'}">
+              <a class="gs-real-science-photo gs-cell-photo-card" data-science-search="plant cell light microscopy real micrograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=plant%20cell%20light%20microscopy%20real%20micrograph" target="_blank" rel="noopener noreferrer">
+                <span class="gs-science-media-photo"><span>🧫</span><small>${fr?'Chargement de la microphotographie…':'جارٍ تحميل الصورة المجهرية الحقيقية…'}</small></span>
+                <span class="gs-real-photo-credit"><strong>${fr?'Photographie microscopique réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span>
+              </a>
             </div>
             <div class="gs-cell-controls">
               ${Object.entries(names).map(([key,name],i)=>`<button type="button" class="gs-cell-part ${i===0?'is-active':''}" data-cell-part="${key}" aria-pressed="${i===0?'true':'false'}"><span>0${i+1}</span>${name}</button>`).join('')}
             </div>
           </div>
           <div class="gs-cell-fact" aria-live="polite"><strong class="gs-cell-fact-title">${names.nucleus}</strong><p class="gs-cell-fact-text">${facts.nucleus}</p></div>
-          <p class="gs-cell-note">${fr?'Schéma pédagogique simplifié, non à l’échelle.':'رسم تعليمي مبسط، وليس وفق مقياس حقيقي.'}</p>
+          <p class="gs-cell-note">${fr?'Photographie réelle de cellules végétales ; les légendes expliquent les structures.':'صورة حقيقية لخلايا نباتية، وتوضح البطاقات أسماء البنيات ووظائفها.'}</p>
         </section>`;
     }
 
@@ -1103,14 +1099,10 @@
           </div>
           <div class="gs-photo-scene">
             <div class="gs-photo-sun" aria-hidden="true">☀</div>
-            <div class="gs-photo-leaf" aria-hidden="true">
-              <svg viewBox="0 0 340 220" role="img" aria-label="${fr?'Feuille verte, lieu principal de la photosynthèse':'ورقة خضراء، مقر أساسي للتركيب الضوئي'}">
-                <defs><linearGradient id="gsLeafGrad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a8dc77"/><stop offset="1" stop-color="#267b48"/></linearGradient></defs>
-                <path d="M28 178C42 50 186 5 310 28C291 147 172 231 28 178Z" fill="url(#gsLeafGrad)" stroke="#246b40" stroke-width="5"/>
-                <path d="M31 179Q157 110 303 31M111 137L93 75M155 116L164 48M198 94L244 55M117 137L173 181M173 108L225 149M224 81L270 112" fill="none" stroke="#e3f5c8" stroke-width="4" stroke-linecap="round"/>
-                <g fill="#e9f8d8" opacity=".8"><circle cx="88" cy="139" r="5"/><circle cx="145" cy="83" r="4"/><circle cx="220" cy="66" r="5"/></g>
-              </svg>
-            </div>
+            <a class="gs-photo-leaf gs-real-science-photo gs-photo-leaf-card" data-science-search="green leaf macro photography leaf veins" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=green%20leaf%20macro%20photography%20leaf%20veins" target="_blank" rel="noopener noreferrer" aria-label="${fr?'Photographie réelle d’une feuille':'صورة حقيقية لورقة نباتية'}">
+              <span class="gs-science-media-photo"><span>🍃</span><small>${fr?'Chargement de la photographie…':'جارٍ تحميل الصورة الحقيقية…'}</small></span>
+              <span class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</span>
+            </a>
             <div class="gs-photo-flow gs-flow-water"><span>💧</span><b>H₂O</b><small>${fr?'Depuis les racines':'من الجذور'}</small></div>
             <div class="gs-photo-flow gs-flow-co2"><span>🌫️</span><b>CO₂</b><small>${fr?'Depuis l’air':'من الهواء'}</small></div>
             <div class="gs-photo-flow gs-flow-light"><span>☀️</span><b>${fr?'Lumière':'ضوء'}</b></div>
@@ -1122,7 +1114,7 @@
           </div>
           <div class="gs-photo-explanation" aria-live="polite"><strong class="gs-photo-fact-title">${stages[0][1]}</strong><p class="gs-photo-fact-text">${stages[0][2]}</p></div>
           <div class="gs-photo-equation"><span>${fr?'Équation simplifiée':'المعادلة الإجمالية المبسطة'}</span><strong>6 CO₂ + 6 H₂O + lumière → C₆H₁₂O₆ + 6 O₂</strong></div>
-          <p class="gs-photo-note">${fr?'Schéma de synthèse : la photosynthèse se déroule dans les chloroplastes des cellules chlorophylliennes.':'رسم تركيبي: تتم عملية التركيب الضوئي داخل البلاستيدات الخضراء للخلايا اليخضورية.'}</p>
+          <p class="gs-photo-note">${fr?'Photographie réelle d’une feuille ; les étapes ci-dessus expliquent le processus de photosynthèse.':'صورة حقيقية لورقة نباتية؛ وتوضح المراحل أعلاه عملية التركيب الضوئي.'}</p>
         </section>`;
     }
 
@@ -1319,7 +1311,7 @@
     }
 
     async function loadScientificMediaImages(root) {
-        const cards = root.querySelectorAll('.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search]');
+        const cards = root.querySelectorAll('.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search], .gs-real-science-photo[data-science-search]');
         const fr = lang() === 'fr';
         await Promise.all(Array.from(cards).map(async function(card) {
             const query = card.getAttribute('data-science-search') || '';
