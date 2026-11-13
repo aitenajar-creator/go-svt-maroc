@@ -603,7 +603,7 @@
     // ============================================
     // 4. QUIZ RESULTS (نتائج الاختبارات)
     // ============================================
-    function saveQuizResult(quizId, score, totalQuestions, mistakes, attemptId) {
+    function saveQuizResult(quizId, score, totalQuestions, mistakes, attemptId, silentRefresh) {
         if (!canTrack()) return null;
         const id = String(quizId == null ? '' : quizId).trim();
         const total = Number(totalQuestions);
@@ -636,7 +636,7 @@
         safeMistakes.forEach(mistake => profileData.mistakes.push(mistake));
         saveProfileData(currentProfileId, profileData);
         updateStreak();
-        refreshStudentSpaceView();
+        if (!silentRefresh) refreshStudentSpaceView();
         return profileData.quizResults;
     }
 
@@ -2255,9 +2255,14 @@
         ];
         const revisionRoot=container.querySelector('.gs-svt-revision-content');
         if(revisionRoot){
-            let index=0,score=0,answered=false;
+            let index=0,score=0,answered=false,mistakes=[],saved=false;
             const draw=()=>{
                 if(index>=cellPhotoQuestions.length){
+                    if(!saved){
+                        saved=true;
+                        try { saveQuizResult('cell-photosynthesis-revision',score,cellPhotoQuestions.length,mistakes,null,true); }
+                        catch(error){ console.warn('[GoSVT] Revision result not saved:',error&&error.message); }
+                    }
                     revisionRoot.innerHTML=`<div class="gs-svt-revision-result"><span>🌟</span><strong>${lang()==='fr'?'Résultat':'النتيجة'} : ${score}/5</strong><p>${score===5?(lang()==='fr'?'Bravo, sans faute !':'أحسنت! إجابات صحيحة بالكامل.'):lang()==='fr'?'Continuez à réviser pour renforcer vos acquis.':'واصل المراجعة لترسيخ مكتسباتك.'}</p><button type="button" data-svt-restart>${lang()==='fr'?'Rejouer':'إعادة التحدي'}</button></div>`;
                     return;
                 }
@@ -2271,6 +2276,7 @@
                     answered=true;
                     const q=cellPhotoQuestions[index],choice=Number(answer.dataset.svtAnswer);
                     if(choice===q.c)score++;
+                    else mistakes.push({question:q.q,selected:q.a[choice],correct:q.a[q.c]});
                     revisionRoot.querySelectorAll('[data-svt-answer]').forEach((button,i)=>{
                         button.disabled=true;
                         if(i===q.c)button.classList.add('is-correct');
@@ -2282,7 +2288,7 @@
                     if(next)next.hidden=false;
                 }
                 if(event.target.closest('[data-svt-next]')&&answered){index++;draw();}
-                if(event.target.closest('[data-svt-restart]')){index=0;score=0;draw();}
+                if(event.target.closest('[data-svt-restart]')){index=0;score=0;mistakes=[];saved=false;draw();}
             });
             draw();
         }
@@ -2422,9 +2428,14 @@
         ];
         const quizRoot = container.querySelector('.gs-atlas-quiz-content');
         if (quizRoot) {
-            let quizIndex = 0, quizScore = 0, quizAnswered = false;
+            let quizIndex = 0, quizScore = 0, quizAnswered = false, quizMistakes = [], quizSaved = false;
             const renderQuizStep = () => {
                 if (quizIndex >= atlasQuiz.length) {
+                    if (!quizSaved) {
+                        quizSaved = true;
+                        try { saveQuizResult('human-systems-atlas', quizScore, atlasQuiz.length, quizMistakes, null, true); }
+                        catch (error) { console.warn('[GoSVT] Atlas result not saved:', error && error.message); }
+                    }
                     quizRoot.innerHTML = `<div class="gs-atlas-quiz-result"><span aria-hidden="true">🏅</span><strong>${lang()==='fr'?'Votre résultat':'نتيجتك'} : ${quizScore}/${atlasQuiz.length}</strong><p>${quizScore===atlasQuiz.length?(lang()==='fr'?'Excellent ! Toutes les réponses sont correctes.':'ممتاز! جميع إجاباتك صحيحة.'):lang()==='fr'?'Relisez les explications et réessayez pour progresser.':'راجع الشروحات وحاول مجدداً لتحسين نتيجتك.'}</p><button type="button" class="gs-atlas-quiz-restart">${lang()==='fr'?'Recommencer':'إعادة المحاولة'}</button></div>`;
                     return;
                 }
@@ -2438,6 +2449,7 @@
                     quizAnswered=true;
                     const selected=Number(answerButton.dataset.atlasAnswer),question=atlasQuiz[quizIndex],correct=selected===question.c;
                     if(correct) quizScore++;
+                    else quizMistakes.push({question:question.q,selected:question.a[selected],correct:question.a[question.c]});
                     quizRoot.querySelectorAll('.gs-atlas-option').forEach((option,i)=>{
                         option.disabled=true;
                         if(i===question.c) option.classList.add('is-correct');
@@ -2449,7 +2461,7 @@
                     if(next) next.hidden=false;
                 }
                 if(event.target.closest('.gs-atlas-next') && quizAnswered){quizIndex++;renderQuizStep();}
-                if(event.target.closest('.gs-atlas-quiz-restart')){quizIndex=0;quizScore=0;renderQuizStep();}
+                if(event.target.closest('.gs-atlas-quiz-restart')){quizIndex=0;quizScore=0;quizMistakes=[];quizSaved=false;renderQuizStep();}
             });
             renderQuizStep();
         }
