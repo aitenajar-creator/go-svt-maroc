@@ -1262,7 +1262,7 @@
         return `<section class="gs-microscope-lab" data-active-slide="onion" aria-labelledby="gs-microscope-title">
           <div class="gs-micro-heading"><div><span class="gs-eyebrow">GO SVT MAROC · VIRTUAL MICROSCOPE</span>
             <h3 id="gs-microscope-title">${fr?'Laboratoire du microscope':'مختبر المجهر الافتراضي'}</h3>
-            <p>${fr?'Choisissez une préparation : la microphotographie réelle est affichée en priorité, avec un schéma pédagogique de secours.':'اختر تحضيراً مجهرياً: ستظهر الصورة المجهرية الحقيقية أولاً، مع الاحتفاظ بالرسم التوضيحي كبديل تعليمي.'}</p></div><span aria-hidden="true">🔬</span></div>
+            <p>${fr?'Choisissez une préparation : la microphotographie réelle est affichée en priorité, sans remplacer les spécimens par des dessins.':'اختر تحضيراً مجهرياً: ستظهر الصورة المجهرية الحقيقية أولاً، دون استبدال العينات برسوم تخطيطية.'}</p></div><span aria-hidden="true">🔬</span></div>
           <div class="gs-micro-layout">
             <div class="gs-micro-view"><div class="gs-micro-viewbar"><strong class="gs-micro-view-title">${first.name}</strong><div><button type="button" data-micro-zoom="out" aria-label="${fr?'Diminuer le zoom':'تصغير'}">−</button><span class="gs-micro-zoom-value">100%</span><button type="button" data-micro-zoom="in" aria-label="${fr?'Augmenter le zoom':'تكبير'}">+</button></div></div>
               <div class="gs-micro-canvas"><div class="gs-micro-art"><div class="gs-micro-image-placeholder">${fr?'La microphotographie réelle se charge…':'جارٍ تحميل الصورة المجهرية الحقيقية…'}</div></div><span class="gs-micro-overlay">${fr?'Chargement de la microphotographie réelle…':'جارٍ تحميل الصورة المجهرية الحقيقية…'}</span></div>
