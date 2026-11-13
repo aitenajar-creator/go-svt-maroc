@@ -1,0 +1,157 @@
+--- student-space.js	2026-11-02 12:31:24.001732000 +0000
++++ /home/claude/go-svt-maroc-main/student-space.js	2026-11-02 22:02:19.598845984 +0000
+@@ -40,6 +40,13 @@
+ 
+     // Relit le profil actif depuis le localStorage (changement fait dans un autre onglet)
+     function syncCurrentProfile() {
++        // Comptes (student-account.js) : le profil de la session fait foi, même si un autre
++        // onglet a changé le profil "courant" stocké.
++        const acc = window.StudentAccount ? window.StudentAccount.activeProfileId() : null;
++        if (acc) {
++            if (acc !== currentProfileId && getProfiles()[acc]) currentProfileId = acc;
++            return currentProfileId;
++        }
+         const stored = storage.get(STORAGE_KEYS.CURRENT_PROFILE);
+         if (stored && stored !== currentProfileId && getProfiles()[stored]) {
+             currentProfileId = stored;
+@@ -276,6 +283,13 @@
+         return key.normalize('NFC').replace(/^\/+/, '');
+     }
+ 
++    // Sans compte connecté (quand student-account.js est présent) rien n'est enregistré.
++    function canTrack() {
++        if (window.StudentAccount && !window.StudentAccount.isLoggedIn()) return false;
++        syncCurrentProfile();
++        return true;
++    }
++
+     // Déduit catégorie / langue / niveau / filière d'un chemin "cours/francais/1BAC/1BACSE/x.pdf"
+     // (les dossiers d'examens "2BAC SM" sont reconnus après suppression des espaces)
+     const TRACK_CODE = /^(TC[SL]|1BAC(SE|SM|L)|2BAC(SVT|SP|SM))$/;
+@@ -293,6 +307,7 @@
+     // Enregistre la CONSULTATION (viewed) d'un contenu. Ne marque jamais "terminé".
+     // meta (optionnel) : { title, path }
+     function updateProgress(type, item, meta) {
++        if (!canTrack()) return null;
+         const category = PROGRESS_TYPE_ALIASES[type];
+         const key = normalizeItemKey(item);
+         if (!category || !key) return null;
+@@ -339,7 +354,7 @@
+     }
+ 
+     function markLessonComplete(lessonId) {
+-        syncCurrentProfile();
++        if (!canTrack()) return;
+         const profileData = getProfileData(currentProfileId);
+         if (profileData.progress.lessons[lessonId]) {
+             profileData.progress.lessons[lessonId].completed = true;
+@@ -352,6 +367,7 @@
+     function refreshStudentSpaceView() {
+         const container = document.getElementById('student-space-content');
+         if (!container || !container.children.length) return; // sera rendu à l'ouverture de la section
++        if (container.querySelector('.gs-auth')) return;      // écran de connexion : ne pas effacer la saisie
+         const active = container.querySelector('.space-tab.active');
+         const tabName = active ? active.dataset.tab : 'dashboard';
+         renderStudentSpace();
+@@ -369,6 +385,7 @@
+     // 4. QUIZ RESULTS (نتائج الاختبارات)
+     // ============================================
+     function saveQuizResult(quizId, score, totalQuestions, mistakes) {
++        if (!canTrack()) return;
+         const profileData = getProfileData(currentProfileId);
+         
+         // Check if this quiz result already exists for this session
+@@ -406,6 +423,7 @@
+     // 5. STREAK TRACKING (تتبع الأيام المتتالية)
+     // ============================================
+     function updateStreak() {
++        if (!canTrack()) return;
+         const profileData = getProfileData(currentProfileId);
+         
+         const today = new Date().toDateString();
+@@ -540,13 +558,14 @@
+             profilesOptions += `<option value="${id}" ${isActive ? 'selected' : ''}>${profile.name}</option>`;
+         });
+ 
++        const accountBar = window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
+         const html = `
+             <div class="dashboard-header">
+-                <div class="profile-selector">
++                ${accountBar || `<div class="profile-selector">
+                     <label>${t('currentProfile')}:</label>
+                     <select id="profile-select">${profilesOptions}</select>
+                     <button class="btn-create-profile" onclick="promptCreateProfile()">+ ${t('createProfile')}</button>
+-                </div>
++                </div>`}
+                 <div class="data-actions">
+                     <button class="btn-export" onclick="handleExport()">${t('exportData')}</button>
+                     <button class="btn-import" onclick="handleImport()">${t('importData')}</button>
+@@ -878,6 +897,10 @@
+     function renderStudentSpace() {
+         const container = document.getElementById('student-space-content');
+         if (!container) return;
++        if (window.StudentAccount && !window.StudentAccount.isLoggedIn()) {
++            window.StudentAccount.renderGate(container);
++            return;
++        }
+         syncCurrentProfile();
+ 
+         let html = `
+--- enhancements.css	2026-11-02 12:31:24.044725000 +0000
++++ /home/claude/go-svt-maroc-main/enhancements.css	2026-11-02 22:02:19.599393532 +0000
+@@ -489,3 +489,45 @@
+ html.gs-dark .gs-track-btn { background: transparent; color: #9fd89a; border-color: #4f8a4a; }
+ html.gs-dark .gs-track-btn:hover, html.gs-dark .gs-track-btn.active { background: #3f7a3a; border-color: #3f7a3a; color: #fff; }
+ html.gs-dark .gs-doc-tag { background: #24402a; color: #9fd89a; }
++
++
++/* ===== حسابات التلاميذ (student-account.js) — نفس ألوان الموقع ===== */
++.gs-auth { max-width: 460px; margin: 0 auto; padding: 2rem 1.5rem; background: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow); text-align: center; }
++.gs-auth-icon { font-size: 2.6rem; }
++.gs-auth h3 { color: var(--primary-color); margin: .3rem 0 .5rem; }
++.gs-auth-lead, .gs-auth-hint { color: #555; font-size: .95rem; margin-bottom: 1rem; }
++.gs-auth-note { color: #777; font-size: .82rem; margin-top: 1rem; }
++.gs-auth-tabs { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.2rem; }
++.gs-auth-tab { flex: 1; padding: .5rem 1rem; border: 2px solid var(--primary-color); background: var(--white); color: var(--primary-color); border-radius: var(--border-radius); cursor: pointer; font-weight: 600; font-family: 'Cairo', sans-serif; transition: var(--transition); }
++.gs-auth-tab:hover, .gs-auth-tab.active { background: var(--primary-color); color: var(--white); }
++.gs-auth-form { display: flex; flex-direction: column; gap: .8rem; text-align: start; }
++.gs-auth-field { display: flex; flex-direction: column; gap: .3rem; font-weight: 600; color: var(--primary-color); font-size: .9rem; }
++.gs-auth-field input, .gs-auth-field select { padding: .6rem .8rem; border: 2px solid #cfd8cf; border-radius: var(--border-radius); font-family: 'Cairo', sans-serif; font-size: 1rem; background: var(--white); color: #222; }
++.gs-auth-field input:focus, .gs-auth-field select:focus { outline: none; border-color: var(--primary-color); }
++.gs-auth-check { display: flex; align-items: center; gap: .5rem; font-size: .9rem; color: #444; cursor: pointer; }
++.gs-auth-msg { min-height: 1.2em; margin: 0; color: #c0392b; font-weight: 600; font-size: .88rem; }
++.gs-auth-submit { padding: .65rem 1rem; border: none; border-radius: var(--border-radius); background: var(--primary-color); color: var(--white); font-weight: 700; font-family: 'Cairo', sans-serif; font-size: 1rem; cursor: pointer; transition: var(--transition); }
++.gs-auth-submit:hover:not(:disabled) { opacity: .9; }
++.gs-auth-submit:disabled { opacity: .5; cursor: not-allowed; }
++.gs-auth-link { background: none; border: none; color: var(--primary-color); text-decoration: underline; cursor: pointer; font-family: 'Cairo', sans-serif; font-size: .9rem; padding: .2rem; }
++.gs-auth-modal { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, .55); display: flex; align-items: center; justify-content: center; padding: 1rem; }
++.gs-auth-modal-box { background: var(--white); max-width: 440px; width: 100%; border-radius: var(--border-radius); padding: 1.5rem; text-align: center; display: flex; flex-direction: column; gap: .8rem; }
++.gs-auth-modal-box h3 { color: var(--primary-color); margin: 0; }
++.gs-auth-code { font-family: monospace; font-size: 1.5rem; font-weight: 700; letter-spacing: .08em; padding: .8rem; background: #f2f7f2; border: 2px dashed var(--primary-color); border-radius: var(--border-radius); user-select: all; }
++.gs-acc-wrap { display: flex; flex-direction: column; gap: .6rem; flex: 1 1 100%; }
++.gs-acc-bar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; justify-content: space-between; }
++.gs-acc-who { color: var(--primary-color); font-size: 1.05rem; }
++.gs-acc-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
++.gs-acc-btn { padding: .4rem .9rem; border: 2px solid var(--primary-color); background: var(--white); color: var(--primary-color); border-radius: var(--border-radius); cursor: pointer; font-weight: 600; font-family: 'Cairo', sans-serif; font-size: .85rem; transition: var(--transition); }
++.gs-acc-btn:hover { background: var(--primary-color); color: var(--white); }
++.gs-acc-panel { display: flex; flex-direction: column; gap: .6rem; max-width: 360px; padding: 1rem; border: 1px solid #dfe8df; border-radius: var(--border-radius); }
++.gs-acc-panel[hidden] { display: none; }
++html.gs-dark .gs-auth, html.gs-dark .gs-auth-modal-box { background: #1b261c; }
++html.gs-dark .gs-auth h3, html.gs-dark .gs-auth-field, html.gs-dark .gs-auth-modal-box h3, html.gs-dark .gs-acc-who, html.gs-dark .gs-auth-link { color: #9fd89a; }
++html.gs-dark .gs-auth-lead, html.gs-dark .gs-auth-hint, html.gs-dark .gs-auth-check, html.gs-dark .gs-auth-note, html.gs-dark .gs-auth-modal-box p { color: #c5d3c5; }
++html.gs-dark .gs-auth-field input, html.gs-dark .gs-auth-field select { background: #121b13; color: #e8f1e8; border-color: #3d5a3e; }
++html.gs-dark .gs-auth-tab, html.gs-dark .gs-acc-btn { background: transparent; color: #9fd89a; border-color: #4f8a4a; }
++html.gs-dark .gs-auth-tab:hover, html.gs-dark .gs-auth-tab.active, html.gs-dark .gs-acc-btn:hover { background: #3f7a3a; border-color: #3f7a3a; color: #fff; }
++html.gs-dark .gs-auth-code { background: #121b13; border-color: #4f8a4a; color: #e8f1e8; }
++html.gs-dark .gs-acc-panel { border-color: #3d5a3e; }
++html.gs-dark .gs-auth-msg { color: #ff8a80; }
+--- index.html	2026-11-02 12:31:25.391735000 +0000
++++ /home/claude/go-svt-maroc-main/index.html	2026-11-02 22:02:19.599393532 +0000
+@@ -384,6 +384,7 @@
+     <script src="pathways.js"></script>
+     <script src="student-space.js"></script>
+     <script src="student-space-integration.js"></script>
++    <script src="student-account.js"></script>
+     <script src="AUDIT_TEST_SUITE.js"></script>
+ </body>
+ </html>

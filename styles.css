@@ -701,3 +701,1684 @@ html[dir="rtl"] .header-actions {
         width: 100%;
     }
 }
+
+/* Study planner: make upcoming and overdue sessions easy to scan. */
+.gs-plan-item.is-overdue {
+    border-inline-start: 4px solid #d97706;
+    background: color-mix(in srgb, #d97706 7%, transparent);
+}
+.gs-plan-item.is-due-today {
+    border-inline-start: 4px solid #0d9488;
+    background: color-mix(in srgb, #0d9488 7%, transparent);
+}
+.gs-plan-item.is-done {
+    opacity: .78;
+}
+
+/* First-page previews for published resources */
+.content-card-thumbnail{width:100%;height:190px;margin:.25rem 0 1rem;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(80,110,120,.16);border-radius:12px;background:linear-gradient(145deg,#f1f6f7,#e7eef0)}
+.content-card-thumbnail img,.content-card-thumbnail canvas{display:block;width:100%;height:100%;object-fit:cover;background:#fff}
+.content-card-thumbnail.file-thumbnail span{font-size:3.6rem}
+.thumbnail-loading,.thumbnail-fallback{padding:.75rem;color:var(--light-text);font-size:.9rem;text-align:center}
+.content-card .file-name{overflow-wrap:anywhere}
+@media(max-width:600px){.content-card-thumbnail{height:170px}}
+
+/* Let the first PDF page fill the complete resource card while keeping
+   the level, title, filename and actions readable above the preview. */
+.content-card:has(.pdf-thumbnail) {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 360px;
+}
+.content-card:has(.pdf-thumbnail)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,.88) 0%,
+        rgba(255,255,255,.58) 42%,
+        rgba(255,255,255,.94) 100%
+    );
+}
+.content-card:has(.pdf-thumbnail) > .pdf-thumbnail {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: inherit;
+    background: #eef2f3;
+}
+.content-card:has(.pdf-thumbnail) > .level-badge,
+.content-card:has(.pdf-thumbnail) > .new-badge,
+.content-card:has(.pdf-thumbnail) > h3,
+.content-card:has(.pdf-thumbnail) > .file-name,
+.content-card:has(.pdf-thumbnail) > .card-actions {
+    position: relative;
+    z-index: 1;
+}
+.content-card:has(.pdf-thumbnail) > h3,
+.content-card:has(.pdf-thumbnail) > .file-name {
+    width: fit-content;
+    max-width: 100%;
+    padding: .25rem .55rem;
+    border-radius: 7px;
+    background: rgba(255,255,255,.88);
+    overflow-wrap: anywhere;
+}
+.content-card:has(.pdf-thumbnail) > .card-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .65rem;
+    width: fit-content;
+    max-width: 100%;
+    padding: .35rem .65rem;
+    border-radius: 9px;
+    background: rgba(255,255,255,.94);
+}
+.content-card:has(.pdf-thumbnail) .card-actions .download-btn {
+    margin-top: 0;
+}
+@media (max-width: 600px) {
+    .content-card:has(.pdf-thumbnail) {
+        min-height: 330px;
+    }
+}
+
+/* PDF resource cards: preserve the document's original page proportions
+   and present both actions together in a clear, high-contrast toolbar. */
+.content-card:has(> .pdf-thumbnail) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .45rem;
+    min-height: 390px;
+    padding: 1.15rem;
+}
+.content-card:has(> .pdf-thumbnail)::before {
+    content: none;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 3.25rem .75rem 5.25rem;
+    border: 0;
+    border-radius: inherit;
+    background: #e9eef1;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(15, 35, 45, .18);
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge,
+.content-card:has(> .pdf-thumbnail) > .new-badge,
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name,
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    position: relative;
+    z-index: 1;
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge,
+.content-card:has(> .pdf-thumbnail) > .new-badge {
+    box-shadow: 0 1px 5px rgba(0,0,0,.12);
+}
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    max-width: 100%;
+    margin: 0;
+    padding: .35rem .6rem;
+    border-radius: 7px;
+    color: #17313b;
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 1px 5px rgba(0,0,0,.12);
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > h3 {
+    font-size: 1.12rem;
+}
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    font-size: .88rem;
+}
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: .55rem;
+    width: 100%;
+    margin-top: auto;
+    padding: .55rem;
+    border: 1px solid rgba(20,50,60,.12);
+    border-radius: 12px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 2px 10px rgba(0,0,0,.14);
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    min-width: 0;
+    min-height: 42px;
+    margin: 0;
+    padding: .55rem .45rem;
+    border: 1px solid #176b83;
+    border-radius: 9px;
+    color: #fff;
+    background: #176b83;
+    font-size: .9rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+    white-space: normal;
+    cursor: pointer;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    border-color: #18734b;
+    background: #18734b;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn:hover,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn:hover {
+    filter: brightness(.92);
+    text-decoration: none;
+}
+@media (max-width: 600px) {
+    .content-card:has(> .pdf-thumbnail) {
+        min-height: 360px;
+    }
+    .content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+        padding: 3rem .55rem 5rem;
+    }
+    .content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+    .content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+        font-size: .82rem;
+    }
+}
+
+/* Final PDF preview layout: natural page ratio, high-resolution canvas,
+   and two equally visible actions below the document. */
+.content-card:has(> .pdf-thumbnail) {
+    position: relative;
+    isolation: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .45rem;
+    min-height: 0;
+    overflow: hidden;
+    padding: 1rem;
+}
+.content-card:has(> .pdf-thumbnail)::before {
+    content: none !important;
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge,
+.content-card:has(> .pdf-thumbnail) > .new-badge,
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name,
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    position: relative;
+    z-index: auto;
+    align-self: flex-start;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: .25rem 0 .5rem;
+    padding: .5rem;
+    overflow: hidden;
+    border: 1px solid #cbd5da;
+    border-radius: 10px;
+    background: #e9eef1;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+    box-shadow: 0 1px 5px rgba(15,35,45,.12);
+}
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    background: transparent;
+    box-shadow: none;
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: .65rem;
+    width: 100%;
+    margin: .35rem 0 0;
+    padding: .6rem;
+    border: 1px solid #d4e0e4;
+    border-radius: 11px;
+    background: #f7fafb;
+    box-shadow: none;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: .6rem .5rem;
+    border: 1px solid #125d78;
+    border-radius: 9px;
+    color: #fff;
+    background: #126783;
+    font-size: .92rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+    white-space: normal;
+    cursor: pointer;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    border-color: #176642;
+    background: #18764d;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn:hover,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn:hover {
+    filter: brightness(.9);
+    text-decoration: none;
+}
+@media (max-width: 600px) {
+    .content-card:has(> .pdf-thumbnail) {
+        padding: .8rem;
+    }
+    .content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+    .content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+        min-height: 42px;
+        font-size: .84rem;
+    }
+}
+
+/* PDF card: natural page preview beside a compact vertical action rail. */
+.content-card:has(> .pdf-thumbnail) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(116px, 32%);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions";
+    align-items: start;
+    column-gap: .75rem;
+    row-gap: .45rem;
+    min-height: 230px;
+    padding: .8rem;
+    overflow: hidden;
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge { grid-area: badge; justify-self: start; }
+.content-card:has(> .pdf-thumbnail) > .new-badge { grid-area: badge; justify-self: end; }
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+    grid-area: preview;
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 190px;
+    margin: 0;
+    padding: .35rem;
+    overflow: hidden;
+    border: 1px solid #cbd5da;
+    border-radius: 9px;
+    background: #e9eef1;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+}
+.content-card:has(> .pdf-thumbnail) > h3 {
+    grid-area: title;
+    align-self: end;
+    width: 100%;
+    margin: 0;
+    padding: .25rem;
+    color: #17313b;
+    background: #fff;
+    border-radius: 6px;
+    font-size: .94rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    grid-area: filename;
+    width: 100%;
+    margin: 0;
+    padding: .2rem .25rem;
+    color: #344b55;
+    background: #fff;
+    border-radius: 5px;
+    font-size: .76rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    grid-area: actions;
+    align-self: end;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    width: 100%;
+    margin: 0;
+    padding: .45rem;
+    border: 1px solid #d4e0e4;
+    border-radius: 9px;
+    background: #f7fafb;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    margin: 0;
+    padding: .4rem .3rem;
+    border: 1px solid #125d78;
+    border-radius: 8px;
+    color: #fff;
+    background: #126783;
+    font-size: .8rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    border-color: #176642;
+    background: #18764d;
+}
+@media (max-width: 480px) {
+    .content-card:has(> .pdf-thumbnail) {
+        grid-template-columns: minmax(0, 1fr) 104px;
+        min-height: 205px;
+        column-gap: .5rem;
+        padding: .65rem;
+    }
+    .content-card:has(> .pdf-thumbnail) > .pdf-thumbnail { min-height: 165px; }
+    .content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+    .content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+        min-height: 34px;
+        font-size: .72rem;
+    }
+}
+
+
+
+/* Explicit PDF card layout: keep the action rail beside the preview.
+   Grid follows the document direction: rail on inline-end (right in LTR,
+   left in RTL), without relying on the :has() selector for activation. */
+.content-card.pdf-resource-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(124px, 32%) !important;
+    grid-template-rows: auto auto auto minmax(76px, 1fr) !important;
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions" !important;
+    align-items: stretch !important;
+    column-gap: .75rem !important;
+    row-gap: .45rem !important;
+    min-height: 230px !important;
+    padding: .8rem !important;
+    direction: inherit;
+}
+.content-card.pdf-resource-card > .level-badge {
+    grid-area: badge !important;
+    justify-self: start;
+    align-self: start;
+}
+.content-card.pdf-resource-card > .new-badge {
+    grid-area: badge !important;
+    justify-self: end;
+    align-self: start;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    grid-area: preview !important;
+    position: relative !important;
+    inset: auto !important;
+    align-self: stretch !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 190px !important;
+    margin: 0 !important;
+    padding: .35rem !important;
+}
+.content-card.pdf-resource-card > h3 {
+    grid-area: title !important;
+    align-self: end;
+    width: 100%;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.content-card.pdf-resource-card > .file-name {
+    grid-area: filename !important;
+    align-self: start;
+    width: 100%;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.content-card.pdf-resource-card > .card-actions {
+    grid-area: actions !important;
+    align-self: end !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center;
+    gap: .5rem;
+    width: 100% !important;
+    margin: 0 !important;
+}
+.content-card.pdf-resource-card > .card-actions .preview-btn,
+.content-card.pdf-resource-card > .card-actions .download-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    margin: 0;
+    white-space: normal;
+}
+@media (max-width: 480px) {
+    .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 108px !important;
+        min-height: 205px !important;
+        column-gap: .5rem !important;
+        padding: .65rem !important;
+    }
+    .content-card.pdf-resource-card > .pdf-thumbnail {
+        min-height: 165px !important;
+    }
+    .content-card.pdf-resource-card > .card-actions .preview-btn,
+    .content-card.pdf-resource-card > .card-actions .download-btn {
+        min-height: 36px;
+        font-size: .74rem;
+    }
+}
+
+
+/* Final spacious PDF card: enlarge the document area and keep the action
+   rail alongside it. The rail swaps sides with the selected interface language. */
+.content-card.pdf-resource-card {
+    display: grid !important;
+    direction: ltr !important;
+    grid-template-columns: minmax(150px, 30%) minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+    grid-template-areas:
+        "badge badge"
+        "title preview"
+        "filename preview"
+        "actions preview" !important;
+    align-items: stretch !important;
+    gap: .7rem !important;
+    min-height: 440px !important;
+    padding: 1rem !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 30%) !important;
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions" !important;
+}
+.content-card.pdf-resource-card > .level-badge {
+    grid-area: badge !important;
+    justify-self: start;
+    align-self: start;
+}
+.content-card.pdf-resource-card > .new-badge {
+    grid-area: badge !important;
+    justify-self: end;
+    align-self: start;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    grid-area: preview !important;
+    position: relative !important;
+    inset: auto !important;
+    align-self: stretch !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 390px !important;
+    margin: 0 !important;
+    padding: .5rem !important;
+    overflow: hidden !important;
+    border: 1px solid #cbd5da !important;
+    border-radius: 12px !important;
+    background: #e9eef1 !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    background: #fff !important;
+}
+.content-card.pdf-resource-card > h3 {
+    grid-area: title !important;
+    align-self: end;
+    width: 100%;
+    margin: 0 !important;
+    overflow-wrap: anywhere;
+}
+.content-card.pdf-resource-card > .file-name {
+    grid-area: filename !important;
+    align-self: start;
+    width: 100%;
+    margin: 0 !important;
+    overflow-wrap: anywhere;
+}
+.content-card.pdf-resource-card > .card-actions {
+    grid-area: actions !important;
+    align-self: end !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center;
+    gap: .65rem;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: .6rem !important;
+}
+.content-card.pdf-resource-card > .card-actions .preview-btn,
+.content-card.pdf-resource-card > .card-actions .download-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    margin: 0 !important;
+    white-space: normal;
+    font-size: .9rem;
+}
+
+/* Keep homepage resource cards in a horizontal multi-column grid on desktop
+   and tablet; use a single column only when the screen is genuinely narrow. */
+#latest-content.content-grid,
+.content-grid#latest-content {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)) !important;
+    align-items: stretch;
+    gap: 1.25rem !important;
+}
+@media (min-width: 600px) and (max-width: 900px) {
+    #latest-content.content-grid,
+    .content-grid#latest-content {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card,
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 112px !important;
+        grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+        grid-template-areas:
+            "badge badge"
+            "preview title"
+            "preview filename"
+            "preview actions" !important;
+        min-height: 300px !important;
+        padding: .65rem !important;
+        gap: .45rem !important;
+    }
+    .content-card.pdf-resource-card > .pdf-thumbnail {
+        min-height: 250px !important;
+    }
+    .content-card.pdf-resource-card > .card-actions .preview-btn,
+    .content-card.pdf-resource-card > .card-actions .download-btn {
+        min-height: 40px;
+        padding: .35rem .25rem;
+        font-size: .72rem;
+    }
+}
+
+
+/* Preserve the PDF page's intrinsic proportions inside the enlarged preview.
+   Canvas is a replaced element: setting both dimensions to 100% can stretch it. */
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    flex: 0 1 auto !important;
+}
+
+/* Keep the original study tools in their own horizontal row beside the PDF preview.
+   They remain a direct child of the card, as in the original rendering structure. */
+.content-card.pdf-resource-card {
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto !important;
+    grid-template-areas:
+        "badge badge"
+        "title preview"
+        "filename preview"
+        "actions preview"
+        "tools preview" !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions"
+        "preview tools" !important;
+}
+.content-card.pdf-resource-card > .gs-tools {
+    grid-area: tools !important;
+    align-self: start !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .3rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: .2rem 0 0 !important;
+}
+.content-card.pdf-resource-card > .gs-tools > .gs-tool {
+    display: inline-flex !important;
+    flex: 1 1 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: .15rem 0 !important;
+    border: 1px solid #d7e1e5 !important;
+    border-radius: 7px !important;
+    background: #fff !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    cursor: pointer;
+}
+.content-card.pdf-resource-card > .gs-tools > .gs-tool.on {
+    background: #e5f4e9 !important;
+    border-color: #77ad86 !important;
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card,
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-rows: auto minmax(0, 1fr) auto auto auto !important;
+        grid-template-areas:
+            "badge badge"
+            "preview title"
+            "preview filename"
+            "preview actions"
+            "preview tools" !important;
+    }
+    .content-card.pdf-resource-card > .gs-tools > .gs-tool {
+        min-height: 30px !important;
+        font-size: .88rem !important;
+    }
+}
+
+/* Widen the PDF preview area so the visible page can use more of the card.
+   Keep the existing action rail and its horizontal study icons beside it. */
+.content-card.pdf-resource-card {
+    grid-template-columns: minmax(118px, 22%) minmax(0, 1fr) !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) minmax(118px, 22%) !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card,
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 100px !important;
+    }
+}
+
+/* Full-width PDF preview: the document frame occupies the entire card width.
+   Keep the original action icons unchanged and in one horizontal row below it. */
+.content-card.pdf-resource-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto auto !important;
+    grid-template-areas:
+        "badge"
+        "title"
+        "filename"
+        "preview"
+        "actions"
+        "tools" !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+        "badge"
+        "title"
+        "filename"
+        "preview"
+        "actions"
+        "tools" !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    grid-area: preview !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 460px !important;
+    height: auto !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+}
+.content-card.pdf-resource-card > h3 { grid-area: title !important; }
+.content-card.pdf-resource-card > .file-name { grid-area: filename !important; }
+.content-card.pdf-resource-card > .card-actions {
+    grid-area: actions !important;
+    width: 100% !important;
+}
+.content-card.pdf-resource-card > .gs-tools {
+    grid-area: tools !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: .4rem !important;
+}
+.content-card.pdf-resource-card > .gs-tools > .gs-tool {
+    flex: 0 0 auto !important;
+    min-width: 42px !important;
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card > .pdf-thumbnail {
+        min-height: 340px !important;
+    }
+}
+
+
+/* Keep the PDF preview large and full-width within its own area,
+   while restoring the preview/download action rail beside the page. */
+.content-card.pdf-resource-card,
+html[dir="rtl"] .content-card.pdf-resource-card {
+    display: grid !important;
+    grid-template-columns: minmax(136px, 24%) minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto !important;
+    grid-template-areas:
+        "badge badge"
+        "title preview"
+        "filename preview"
+        "actions preview"
+        "tools preview" !important;
+    align-items: stretch !important;
+    gap: .65rem !important;
+    min-height: 480px !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) minmax(136px, 24%) !important;
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions"
+        "preview tools" !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 440px !important;
+    height: 100% !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+}
+.content-card.pdf-resource-card > .card-actions {
+    grid-area: actions !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-self: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: .55rem !important;
+    margin: 0 !important;
+    padding: .25rem !important;
+}
+.content-card.pdf-resource-card > .card-actions .preview-btn,
+.content-card.pdf-resource-card > .card-actions .download-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    padding: .45rem .3rem !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    font-size: .84rem !important;
+}
+.content-card.pdf-resource-card > .gs-tools {
+    grid-area: tools !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: .2rem !important;
+}
+.content-card.pdf-resource-card > .gs-tools > .gs-tool {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+}
+@media (max-width: 599px) {
+    .content-card.pdf-resource-card {
+        grid-template-columns: 108px minmax(0, 1fr) !important;
+        min-height: 330px !important;
+        gap: .4rem !important;
+        padding: .55rem !important;
+    }
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 108px !important;
+    }
+    .content-card.pdf-resource-card > .pdf-thumbnail {
+        min-height: 290px !important;
+    }
+    .content-card.pdf-resource-card > .card-actions .preview-btn,
+    .content-card.pdf-resource-card > .card-actions .download-btn {
+        min-height: 38px !important;
+        font-size: .72rem !important;
+    }
+    .content-card.pdf-resource-card > .gs-tools > .gs-tool {
+        min-height: 30px !important;
+        font-size: .82rem !important;
+    }
+}
+
+
+/* Give the PDF page approximately 90% of the card width while retaining
+   the preview/download rail and the original horizontal study-tool row. */
+.content-card.pdf-resource-card {
+    grid-template-columns: minmax(92px, 10%) minmax(0, 1fr) !important;
+    gap: .45rem !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card {
+    grid-template-columns: minmax(0, 1fr) minmax(92px, 10%) !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail {
+    min-width: 0 !important;
+    width: 100% !important;
+    justify-self: stretch !important;
+}
+.content-card.pdf-resource-card > .pdf-thumbnail canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+.content-card.pdf-resource-card > .card-actions {
+    min-width: 0 !important;
+    padding: .1rem !important;
+}
+.content-card.pdf-resource-card > .card-actions .preview-btn,
+.content-card.pdf-resource-card > .card-actions .download-btn {
+    padding: .35rem .15rem !important;
+    font-size: .76rem !important;
+    overflow-wrap: anywhere !important;
+}
+.content-card.pdf-resource-card > .gs-tools {
+    gap: .12rem !important;
+}
+.content-card.pdf-resource-card > .gs-tools > .gs-tool {
+    min-width: 0 !important;
+    padding-inline: 0 !important;
+}
+@media (max-width: 599px) {
+    /* Preserve usable controls on narrow screens; desktop/tablet use ~90% preview. */
+    .content-card.pdf-resource-card,
+    html[dir="rtl"] .content-card.pdf-resource-card {
+        grid-template-columns: minmax(0, 1fr) 100px !important;
+        gap: .4rem !important;
+    }
+    .content-card.pdf-resource-card > .card-actions .preview-btn,
+    .content-card.pdf-resource-card > .card-actions .download-btn {
+        font-size: .7rem !important;
+    }
+}
+
+
+/* Reset the legacy outer PDF grid: the inner layout now owns the two panels. */
+.content-card.pdf-resource-card {
+    display: block !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: none !important;
+    grid-template-areas: none !important;
+    min-height: 0 !important;
+}
+.content-card.pdf-resource-card > .level-badge,
+.content-card.pdf-resource-card > .new-badge {
+    grid-area: auto !important;
+}
+/* PDF resource cards: a wider card with two distinct, adjacent panels.
+   The document keeps its complete page proportions; the information panel
+   contains metadata, preview/download actions and the original study tools. */
+.content-grid > .content-card.pdf-resource-card {
+    grid-column: span 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 1rem !important;
+}
+.content-card.pdf-resource-card .pdf-card-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.8fr) minmax(220px, .9fr) !important;
+    grid-template-areas: "document details" !important;
+    align-items: stretch !important;
+    gap: .85rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    direction: ltr !important;
+}
+html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
+    grid-template-columns: minmax(220px, .9fr) minmax(0, 1.8fr) !important;
+    grid-template-areas: "details document" !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel {
+    grid-area: document !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 100% !important;
+    padding: .55rem !important;
+    overflow: hidden !important;
+    border: 1px solid #cbded2 !important;
+    border-radius: 14px !important;
+    background: #f1f5f2 !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail {
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail canvas {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    box-shadow: 0 2px 12px rgba(20, 48, 34, .13) !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel {
+    grid-area: details !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: .7rem !important;
+    min-width: 0 !important;
+    padding: .85rem !important;
+    border: 1px solid #cbded2 !important;
+    border-radius: 14px !important;
+    background: #fff !important;
+    direction: inherit !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > h3,
+.content-card.pdf-resource-card .pdf-info-panel > .file-name {
+    position: static !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > h3 {
+    color: #214b36 !important;
+    font-size: 1.02rem !important;
+    line-height: 1.55 !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .file-name {
+    color: #718078 !important;
+    font-size: .78rem !important;
+    line-height: 1.5 !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .card-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: .55rem !important;
+    width: 100% !important;
+    margin: .15rem 0 0 !important;
+    padding: 0 !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .card-actions .preview-btn,
+.content-card.pdf-resource-card .pdf-info-panel > .card-actions .download-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    padding: .5rem .4rem !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .gs-tools {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .25rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+    padding-top: .6rem !important;
+    border-top: 1px solid #e6eee8 !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel > .gs-tools > .gs-tool {
+    display: inline-flex !important;
+    flex: 1 1 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 38px !important;
+    padding: .2rem !important;
+    font-size: 1rem !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .content-card.pdf-resource-card {
+        grid-column: 1 / -1 !important;
+    }
+    .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(0, 1.55fr) minmax(112px, .85fr) !important;
+        gap: .45rem !important;
+    }
+    html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(112px, .85fr) minmax(0, 1.55fr) !important;
+    }
+    .content-card.pdf-resource-card .pdf-preview-panel,
+    .content-card.pdf-resource-card .pdf-info-panel {
+        padding: .45rem !important;
+        border-radius: 10px !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel {
+        gap: .5rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > h3 {
+        font-size: .82rem !important;
+        line-height: 1.4 !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > .file-name {
+        font-size: .66rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > .card-actions .preview-btn,
+    .content-card.pdf-resource-card .pdf-info-panel > .card-actions .download-btn {
+        min-height: 36px !important;
+        padding: .35rem .2rem !important;
+        font-size: .68rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > .gs-tools > .gs-tool {
+        min-height: 32px !important;
+        font-size: .88rem !important;
+    }
+}
+@media (max-width: 360px) {
+    .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(0, 1.35fr) minmax(104px, .9fr) !important;
+    }
+    html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(104px, .9fr) minmax(0, 1.35fr) !important;
+    }
+}
+
+
+/* Fix PDF previews after moving the thumbnail inside the dedicated panel.
+   Older card-wide preview overlays targeted the former direct-child layout
+   and must not wash out or cover the nested canvas. */
+.content-card.pdf-resource-card:has(.pdf-thumbnail)::before {
+    content: none !important;
+    display: none !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel {
+    position: relative !important;
+    z-index: 1 !important;
+    align-self: stretch !important;
+    overflow: visible !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail {
+    flex: 1 1 auto !important;
+    align-self: stretch !important;
+    min-height: 220px !important;
+    height: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail canvas {
+    flex: 0 0 auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+@media (max-width: 640px) {
+    .content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail {
+        min-height: 180px !important;
+    }
+}
+
+
+/* Final PDF card layout correction: keep the preview panel genuinely wide
+   on narrow screens instead of allowing its grid track to collapse. */
+.content-card.pdf-resource-card .pdf-card-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) !important;
+    grid-template-areas: "document details" !important;
+    align-items: stretch !important;
+    gap: .65rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel {
+    grid-area: document !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+.content-card.pdf-resource-card .pdf-info-panel {
+    grid-area: details !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail {
+    display: block !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+.content-card.pdf-resource-card .pdf-preview-panel > .pdf-thumbnail canvas {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .content-card.pdf-resource-card {
+        grid-column: 1 / -1 !important;
+    }
+    .content-card.pdf-resource-card .pdf-card-layout {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) !important;
+        grid-template-areas: "document details" !important;
+        gap: .5rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-preview-panel,
+    .content-card.pdf-resource-card .pdf-info-panel {
+        min-width: 0 !important;
+        padding: .4rem !important;
+    }
+    .content-card.pdf-resource-card .pdf-info-panel > .card-actions {
+        min-width: 0 !important;
+    }
+}
+
+
+/* Unified visual system for every published file type.
+   Preview stays on the left and file details/actions stay on the right. */
+.content-card.file-resource-card {
+    position: relative !important;
+    isolation: isolate !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: .65rem !important;
+    min-width: 0 !important;
+    min-height: 360px !important;
+    padding: 1rem !important;
+    overflow: hidden !important;
+    border: 1px solid #d7e6dc !important;
+    border-inline-start: 5px solid #2c5f2d !important;
+    border-radius: 24px !important;
+    background: rgba(255,255,255,.94) !important;
+    box-shadow: 0 8px 26px rgba(34,73,48,.07) !important;
+}
+.content-card.file-resource-card::before { content: none !important; display: none !important; }
+.content-card.file-resource-card > .level-badge,
+.content-card.file-resource-card > .new-badge {
+    position: relative !important;
+    z-index: 2 !important;
+    align-self: flex-start !important;
+    margin: 0 !important;
+}
+.content-card.file-resource-card .file-card-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) !important;
+    grid-template-areas: "preview details" !important;
+    align-items: stretch !important;
+    gap: .8rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+}
+.content-card.file-resource-card .file-preview-panel,
+.content-card.file-resource-card .file-info-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    border: 1px solid #cbded2 !important;
+    border-radius: 20px !important;
+    background: #fff !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+    grid-area: preview !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+    background: #f0f4f2 !important;
+}
+.content-card.file-resource-card .file-info-panel {
+    grid-area: details !important;
+    align-items: stretch !important;
+    gap: .7rem !important;
+    padding: 1rem !important;
+    text-align: start !important;
+}
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 300px !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #f0f4f2 !important;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    object-position: top center !important;
+    background: #fff !important;
+}
+.content-card.file-resource-card .file-preview-panel .file-thumbnail {
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .6rem !important;
+}
+.content-card.file-resource-card .file-preview-panel .file-thumbnail span { font-size: 5rem !important; }
+.content-card.file-resource-card .file-preview-panel .file-thumbnail small {
+    color: #718078 !important;
+    font-weight: 700 !important;
+    letter-spacing: .08em !important;
+}
+.content-card.file-resource-card .file-info-panel > h3,
+.content-card.file-resource-card .file-info-panel > .file-name {
+    position: static !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.content-card.file-resource-card .file-info-panel > h3 {
+    color: #214b36 !important;
+    font-size: 1.15rem !important;
+    line-height: 1.5 !important;
+}
+.content-card.file-resource-card .file-info-panel > .file-name {
+    color: #89958e !important;
+    font-size: .9rem !important;
+    line-height: 1.5 !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: .6rem !important;
+    width: 100% !important;
+    margin: .15rem 0 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
+.content-card.file-resource-card .file-info-panel > .card-actions .download-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 76px !important;
+    margin: 0 !important;
+    padding: .7rem .5rem !important;
+    border-radius: 16px !important;
+    text-align: center !important;
+    overflow-wrap: anywhere !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .35rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+    padding-top: .65rem !important;
+    border-top: 1px solid #e6eee8 !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool {
+    display: inline-flex !important;
+    flex: 1 1 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    padding: .25rem !important;
+    font-size: 1.05rem !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .content-card.file-resource-card { grid-column: 1 / -1 !important; }
+    .content-card.file-resource-card { padding: .55rem !important; border-radius: 16px !important; }
+    .content-card.file-resource-card .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+        grid-template-areas: "preview details" !important;
+        gap: .45rem !important;
+    }
+    .content-card.file-resource-card .file-preview-panel,
+    .content-card.file-resource-card .file-info-panel { border-radius: 12px !important; }
+    .content-card.file-resource-card .file-preview-panel > .content-card-thumbnail { min-height: 210px !important; }
+    .content-card.file-resource-card .file-info-panel { gap: .5rem !important; padding: .55rem !important; }
+    .content-card.file-resource-card .file-info-panel > h3 { font-size: .82rem !important; line-height: 1.4 !important; }
+    .content-card.file-resource-card .file-info-panel > .file-name { font-size: .66rem !important; }
+    .content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
+    .content-card.file-resource-card .file-info-panel > .card-actions .download-btn {
+        min-height: 42px !important; padding: .35rem .2rem !important; font-size: .7rem !important;
+    }
+    .content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool { min-height: 34px !important; font-size: .88rem !important; }
+}
+@media (max-width: 360px) {
+    .content-card.file-resource-card .file-info-panel { padding: .4rem !important; }
+    .content-card.file-resource-card .file-info-panel > h3 { font-size: .74rem !important; }
+    .content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
+    .content-card.file-resource-card .file-info-panel > .card-actions .download-btn { font-size: .62rem !important; }
+}
+
+
+/* Match grouped lessons/exercises to the exact same grid geometry as summaries.
+   The group becomes a full-width section; its inner grid inherits the same
+   column algorithm, while each resource card spans two grid tracks just like
+   the reference summary cards. */
+.content-grid > .track-content-group {
+    grid-column: 1 / -1 !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.content-grid > .track-content-group > .track-content-heading {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 1rem !important;
+    padding: .85rem 1rem !important;
+    border: 1px solid #d7e6dc !important;
+    border-inline-start: 4px solid #2c5f2d !important;
+    border-radius: 14px !important;
+    background: #f5f8f5 !important;
+    color: #214b36 !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
+    text-align: start !important;
+    box-sizing: border-box !important;
+}
+.content-grid > .track-content-group > .content-grid {
+    display: grid !important;
+    /* Exact same column sizing and spacing used by the summaries grid. */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 245px), 1fr)) !important;
+    align-items: stretch !important;
+    gap: 1.1rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.content-grid > .files-count {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    margin: 0 0 .25rem !important;
+}
+.content-grid > .content-card.file-resource-card,
+.content-grid > .track-content-group .content-card.file-resource-card {
+    grid-column: span 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .track-content-group > .content-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: .65rem !important;
+    }
+    .content-grid > .content-card.file-resource-card,
+    .content-grid > .track-content-group .content-card.file-resource-card {
+        grid-column: 1 / -1 !important;
+    }
+}
+@media (max-width: 360px) {
+    .content-grid > .track-content-group > .content-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+
+/* Let the preview's real aspect ratio determine the card height. */
+.content-card.file-resource-card {
+    min-height: 0 !important;
+}
+.content-card.file-resource-card .file-card-layout {
+    align-items: stretch !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+    align-self: start !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail {
+    flex: 0 0 auto !important;
+    align-self: start !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: auto;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail {
+    width: 100% !important;
+    aspect-ratio: auto;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
+}
+@media (max-width: 640px) {
+    .content-card.file-resource-card .file-preview-panel > .content-card-thumbnail {
+        min-height: 0 !important;
+    }
+}
+
+
+/* Balance the information/actions panel against the natural preview height. */
+.content-card.file-resource-card .file-card-layout {
+    align-items: stretch !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+    height: 100% !important;
+    min-height: 0 !important;
+}
+.content-card.file-resource-card .file-info-panel {
+    height: 100% !important;
+    min-height: 0 !important;
+    box-sizing: border-box !important;
+    justify-content: space-between !important;
+    gap: clamp(.35rem, 1vw, .75rem) !important;
+    padding: clamp(.55rem, 1.2vw, 1rem) !important;
+    overflow: hidden !important;
+}
+.content-card.file-resource-card .file-info-panel > h3 {
+    font-size: clamp(.82rem, 1.15vw, 1.1rem) !important;
+    line-height: 1.35 !important;
+    overflow-wrap: anywhere !important;
+}
+.content-card.file-resource-card .file-info-panel > .file-name {
+    font-size: clamp(.68rem, .9vw, .85rem) !important;
+    line-height: 1.3 !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .4rem !important;
+    margin: 0 !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
+.content-card.file-resource-card .file-info-panel > .card-actions .download-btn {
+    min-height: clamp(38px, 4.2vw, 52px) !important;
+    height: auto !important;
+    padding: .4rem .5rem !important;
+    font-size: clamp(.68rem, .9vw, .86rem) !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools {
+    flex: 0 0 auto !important;
+    margin-top: 0 !important;
+    padding-top: .35rem !important;
+    gap: .2rem !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool {
+    min-height: clamp(30px, 3.2vw, 40px) !important;
+    font-size: clamp(.8rem, 1vw, 1rem) !important;
+}
+@media (max-width: 640px) {
+    .content-card.file-resource-card .file-info-panel {
+        justify-content: space-around !important;
+        gap: .3rem !important;
+        padding: .4rem !important;
+    }
+    .content-card.file-resource-card .file-info-panel > .card-actions .preview-btn,
+    .content-card.file-resource-card .file-info-panel > .card-actions .download-btn {
+        min-height: 34px !important;
+        padding: .25rem .2rem !important;
+        font-size: .65rem !important;
+    }
+    .content-card.file-resource-card .file-info-panel > .gs-tools {
+        padding-top: .25rem !important;
+    }
+    .content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool {
+        min-height: 28px !important;
+        font-size: .78rem !important;
+    }
+}

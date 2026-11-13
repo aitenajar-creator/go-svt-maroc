@@ -15,102 +15,92 @@
     // 1. INTEGRATION QUIZ - Sauvegarde automatique
     // ============================================
     function integrateQuizSystem() {
-        // Intercepter les clics sur les options de quiz
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                mutation.addedNodes.forEach(function(node) {
-                    if (node.nodeType === 1) {
-                        const quizOpts = node.querySelectorAll ? node.querySelectorAll('.quiz-opt') : [];
-                        if (quizOpts.length > 0) {
-                            attachQuizListeners(node);
-                        }
-                    }
-                });
-            });
-        });
+        // Attach to the quiz root, not to each question. The previous implementation
+        // attached listeners to individual .quiz-q nodes and could never see the final result.
+        const roots = document.querySelectorAll('#quizBox, [data-quiz-root]');
+        roots.forEach(attachQuizListeners);
 
+        const observer = new MutationObserver(function () {
+            document.querySelectorAll('#quizBox, [data-quiz-root]').forEach(attachQuizListeners);
+        });
         observer.observe(document.body, { childList: true, subtree: true });
-
-        // Attacher aux quiz existants déjà chargés
-        document.querySelectorAll('.quiz-opt').forEach(function(opt) {
-            const quizQ = opt.closest('.quiz-q');
-            if (quizQ) attachQuizListeners(quizQ);
-        });
     }
 
-    function attachQuizListeners(quizContainer) {
-        if (!quizContainer._quizIntegrated) {
-            quizContainer._quizIntegrated = true;
-            
-            // Generate stable quiz ID based on content
-            function getQuizId() {
-                const questions = quizContainer.querySelectorAll('.quiz-q');
-                let quizHash = '';
-                questions.forEach((q, index) => {
-                    const questionText = q.querySelector('h3')?.textContent || '';
-                    quizHash += questionText.substring(0, 20) + index;
-                });
-                return 'quiz_' + quizHash.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+    function attachQuizListeners(quizRoot) {
+        if (!quizRoot || quizRoot._gosvtQuizIntegrated) return;
+        quizRoot._gosvtQuizIntegrated = true;
+
+        let quizSaved = false;
+        let attemptId = createAttemptId();
+
+        function createAttemptId() {
+            return (window.crypto && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : 'attempt_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
+        }
+
+        function getQuizId() {
+            const questions = Array.from(quizRoot.querySelectorAll('.quiz-q[data-i]'))
+                .map(q => (q.querySelector('h3')?.textContent || '').trim());
+            const source = questions.join('|');
+            let hash = 2166136261;
+            for (let i = 0; i < source.length; i++) {
+                hash ^= source.charCodeAt(i);
+                hash = Math.imul(hash, 16777619);
             }
+            return 'quiz_' + (hash >>> 0).toString(16);
+        }
 
-            let quizSaved = false;
-            
-            quizContainer.addEventListener('click', function(e) {
-                const opt = e.target.closest('.quiz-opt');
-                if (!opt) return;
+        quizRoot.addEventListener('click', function (event) {
+            const target = event.target;
+            if (target && target.id === 'quizRestart') {
+                quizSaved = false;
+                attemptId = createAttemptId();
+                return;
+            }
+            const opt = target && target.closest ? target.closest('.quiz-opt') : null;
+            if (!opt || !quizRoot.contains(opt)) return;
 
-                const isCorrect = opt.classList.contains('correct');
-                const isWrong = opt.classList.contains('wrong');
-                
-                if (isCorrect || isWrong) {
-                    // Sauvegarder la réponse
-                    const questionText = quizContainer.querySelector('h3')?.textContent || '';
-                    const wrongAnswer = isWrong ? opt.textContent : null;
-                    
-                    if (window.StudentSpace) {
-                        const progress = window.StudentSpace.getDashboardStats();
-                        
-                        // Si c'est la dernière question, sauvegarder le résultat complet
-                        const quizResult = quizContainer.closest('#quizResult');
-                        if (quizResult && !quizSaved) {
-                            quizSaved = true; // Prevent duplicate saves
-                            
-                            setTimeout(function() {
-                                const scoreText = quizResult.querySelector('h3')?.textContent || '0 / 0';
-                                const match = scoreText.match(/(\d+)\s*\/\s*(\d+)/);
-                                if (match) {
-                                    const score = parseInt(match[1]);
-                                    const total = parseInt(match[2]);
-                                    
-                                    // Use stable quiz ID
-                                    const quizId = getQuizId();
-                                    
-                                    // Sauvegarder les erreurs avec tous les détails
-                                    const mistakes = [];
-                                    quizContainer.querySelectorAll('.quiz-q').forEach(function(questionDiv) {
-                                        const wrongOpt = questionDiv.querySelector('.quiz-opt.wrong');
-                                        const correctOpt = questionDiv.querySelector('.quiz-opt.correct');
-                                        const qText = questionDiv.querySelector('h3')?.textContent || '';
-                                        
-                                        if (wrongOpt) {
-                                            mistakes.push({
-                                                question: qText,
-                                                selected: wrongOpt.textContent,
-                                                correct: correctOpt?.textContent || '',
-                                                date: Date.now(),
-                                                quizId: quizId
-                                            });
-                                        }
-                                    });
-                                    
-                                    window.StudentSpace.saveQuizResult(quizId, score, total, mistakes);
-                                }
-                            }, 100);
-                        }
+            // Wait until the quiz engine has updated the answer state and result panel.
+            window.setTimeout(function () {
+                if (quizSaved) return;
+                const questions = Array.from(quizRoot.querySelectorAll('.quiz-q[data-i]'));
+                if (!questions.length || !questions.every(q => q.classList.contains('quiz-done'))) return;
+
+                const resultNode = quizRoot.querySelector('#quizResult');
+                const scoreText = resultNode?.querySelector('h3')?.textContent || '';
+                const match = scoreText.match(/(\d+)\s*\/\s*(\d+)/);
+                if (!match) return;
+
+                const score = Number(match[1]);
+                const total = Number(match[2]);
+                if (!Number.isInteger(score) || !Number.isInteger(total) || total <= 0 || score > total) return;
+
+                const quizId = getQuizId();
+                const mistakes = [];
+                questions.forEach(function (questionDiv) {
+                    const wrongOpt = questionDiv.querySelector('.quiz-opt.wrong');
+                    const correctOpt = questionDiv.querySelector('.quiz-opt.correct');
+                    if (wrongOpt) {
+                        mistakes.push({
+                            question: questionDiv.querySelector('h3')?.textContent || '',
+                            selected: wrongOpt.textContent || '',
+                            correct: correctOpt?.textContent || ''
+                        });
+                    }
+                });
+
+                quizSaved = true;
+                if (window.StudentSpace) {
+                    try {
+                        window.StudentSpace.saveQuizResult(quizId, score, total, mistakes, attemptId);
+                    } catch (error) {
+                        quizSaved = false;
+                        console.error('Student Space: impossible d’enregistrer le résultat du quiz', error);
                     }
                 }
-            });
-        }
+            }, 0);
+        });
     }
 
     // ============================================
@@ -190,27 +180,16 @@
     // 3. INTEGRATION FAVORITES - Synchronisation
     // ============================================
     function syncFavorites() {
-        // Les favoris sont déjà gérés par favorites.js
-        // Student Space lit simplement depuis la même clé
-        setInterval(function() {
-            if (window.StudentSpace && document.getElementById('panel-favorites')) {
-                // Rafraîchir l'affichage des favoris si nécessaire
-                const container = document.getElementById('student-space-content');
-                if (container && container.querySelector('.space-tab[data-tab="favorites"].active')) {
-                    // Re-render favorites panel
-                    const favs = JSON.parse(localStorage.getItem('gosvt_favs')) || [];
-                    const favsContainer = container.querySelector('.favorites-list');
-                    if (favsContainer) {
-                        favsContainer.innerHTML = favs.map(fav => `
-                            <div class="favorite-item">
-                                <a href="${fav.url}" target="_blank">${fav.title}</a>
-                                <button class="btn-remove-fav" data-url="${fav.url}">Retirer</button>
-                            </div>
-                        `).join('');
-                    }
-                }
+        // StudentSpace lit la clé commune au moment du rendu. Écoute aussi les
+        // changements provenant d'un autre onglet, sans polling permanent.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'gosvt_favs' && window.StudentSpace) {
+                window.StudentSpace.refresh();
             }
-        }, 2000);
+        });
+        document.addEventListener('gosvt:favorites-updated', function () {
+            if (window.StudentSpace) window.StudentSpace.refresh();
+        });
     }
 
     // ============================================

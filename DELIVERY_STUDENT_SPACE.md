@@ -308,3 +308,10 @@ Les styles sont inclus dans `student-space.js` dans une balise `<style>` pour:
 **Date de livraison:** 2026-11-01
 **Développeur:** Devin AI Assistant
 **Version Extension:** 1.0
+
+
+---
+
+## Mise à jour Version 7 — limites de sécurité
+
+Le présent document décrit une version antérieure et ne doit pas être interprété comme une certification de sécurité. La plateforme reste statique et les comptes sont locaux au navigateur. Les comptes locaux ne constituent pas une authentification sécurisée côté serveur. Voir `VERSION_7_AUDIT.md` pour le bilan actualisé, les corrections et les tests encore requis.
