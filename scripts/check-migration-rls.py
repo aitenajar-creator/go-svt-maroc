@@ -242,7 +242,7 @@ else:
     role_trigger_sql = role_trigger_migration.read_text(encoding="utf-8").lower()
     for grantee in ("public", "anon", "authenticated"):
         if not re.search(
-            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.prevent_profile_role_change\\(\\)\\s+from\\s+{grantee}",
+            rf"revoke\s+all\s+on\s+function\s+public\.prevent_profile_role_change\(\)\s+from\s+{grantee}",
             role_trigger_sql,
         ):
             failures.append(f"Profile role-change trigger function: EXECUTE must be revoked from {grantee}")
@@ -260,15 +260,15 @@ else:
     ):
         escaped = re.escape(signature)
         if not re.search(
-            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.{escaped}\\s+from\\s+public",
+            rf"revoke\s+all\s+on\s+function\s+public\.{escaped}\s+from\s+public",
             community_helper_sql,
         ) or not re.search(
-            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.{escaped}\\s+from\\s+anon",
+            rf"revoke\s+all\s+on\s+function\s+public\.{escaped}\s+from\s+anon",
             community_helper_sql,
         ):
             failures.append(f"Teacher-community helper {signature}: PUBLIC/anon EXECUTE must be revoked")
         if not re.search(
-            rf"grant\\s+execute\\s+on\\s+function\\s+public\\.{escaped}\\s+to\\s+authenticated",
+            rf"grant\s+execute\s+on\s+function\s+public\.{escaped}\s+to\s+authenticated",
             community_helper_sql,
         ):
             failures.append(f"Teacher-community helper {signature}: authenticated EXECUTE must remain granted")
