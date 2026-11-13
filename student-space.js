@@ -1262,7 +1262,7 @@
             {id:'leaf',name:'خلايا يخضورية',kind:'نسيج نباتي',detail:'تحتوي الخلايا اليخضورية على بلاستيدات خضراء تلتقط الطاقة الضوئية المستعملة في عملية التركيب الضوئي.',observe:'خلايا نباتية · بلاستيدات خضراء · جدران خلوية',svg:'<svg viewBox="0 0 520 300" role="img" aria-label="رسم خلايا يخضورية"><g fill="#e8f1d6" stroke="#779c61" stroke-width="5"><rect x="15" y="18" width="155" height="120" rx="22"/><rect x="180" y="18" width="155" height="120" rx="22"/><rect x="345" y="18" width="160" height="120" rx="22"/><rect x="15" y="158" width="155" height="125" rx="22"/><rect x="180" y="158" width="155" height="125" rx="22"/><rect x="345" y="158" width="160" height="125" rx="22"/></g><g fill="#4e9c56" stroke="#2e7140" stroke-width="2"><ellipse cx="45" cy="48" rx="13" ry="7"/><ellipse cx="130" cy="105" rx="13" ry="7"/><ellipse cx="210" cy="50" rx="13" ry="7"/><ellipse cx="300" cy="105" rx="13" ry="7"/><ellipse cx="375" cy="48" rx="13" ry="7"/><ellipse cx="470" cy="105" rx="13" ry="7"/><ellipse cx="45" cy="190" rx="13" ry="7"/><ellipse cx="130" cy="250" rx="13" ry="7"/><ellipse cx="210" cy="190" rx="13" ry="7"/><ellipse cx="300" cy="250" rx="13" ry="7"/><ellipse cx="375" cy="190" rx="13" ry="7"/><ellipse cx="470" cy="250" rx="13" ry="7"/></g><g fill="#a68ad0"><circle cx="90" cy="78" r="9"/><circle cx="255" cy="78" r="9"/><circle cx="430" cy="78" r="9"/><circle cx="90" cy="220" r="9"/><circle cx="255" cy="220" r="9"/><circle cx="430" cy="220" r="9"/></g></svg>'}
         ];
         const first = slides[0];
-        return `<section class="gs-microscope-lab" aria-labelledby="gs-microscope-title">
+        return `<section class="gs-microscope-lab" data-active-slide="onion" aria-labelledby="gs-microscope-title">
           <div class="gs-micro-heading"><div><span class="gs-eyebrow">GO SVT MAROC · VIRTUAL MICROSCOPE</span>
             <h3 id="gs-microscope-title">${fr?'Laboratoire du microscope':'مختبر المجهر الافتراضي'}</h3>
             <p>${fr?'Choisissez une préparation et observez les structures représentées.':'اختر تحضيراً مجهرياً ولاحظ البنيات الممثلة في الرسم.'}</p></div><span aria-hidden="true">🔬</span></div>
@@ -1270,6 +1270,12 @@
             <div class="gs-micro-view"><div class="gs-micro-viewbar"><strong class="gs-micro-view-title">${first.name}</strong><div><button type="button" data-micro-zoom="out" aria-label="${fr?'Diminuer le zoom':'تصغير'}">−</button><span class="gs-micro-zoom-value">100%</span><button type="button" data-micro-zoom="in" aria-label="${fr?'Augmenter le zoom':'تكبير'}">+</button></div></div>
               <div class="gs-micro-canvas"><div class="gs-micro-art">${first.svg}</div><span class="gs-micro-overlay">${fr?'Schéma pédagogique':'رسم تعليمي'}</span></div>
               <div class="gs-micro-viewfoot"><span class="gs-micro-kind">${first.kind}</span><button type="button" class="gs-micro-label-toggle" aria-pressed="false">${fr?'Afficher les repères':'إظهار البيانات'}</button></div>
+              <div class="gs-micro-real-sources" aria-label="${fr?'Microphotographies réelles':'صور مجهرية حقيقية'}">
+                <a class="gs-micro-source-card" data-micro-source="onion" data-science-search="onion epidermis cells light microscopy" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=onion%20epidermis%20cells%20light%20microscopy" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🧅</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
+                <a class="gs-micro-source-card" data-micro-source="stomata" data-science-search="leaf stomata light microscope" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=leaf%20stomata%20light%20microscope" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🍃</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
+                <a class="gs-micro-source-card" data-micro-source="blood" data-science-search="human blood smear microscope red white blood cells" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=human%20blood%20smear%20microscope" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🩸</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
+                <a class="gs-micro-source-card" data-micro-source="leaf" data-science-search="leaf mesophyll chloroplast microscope" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=leaf%20mesophyll%20chloroplast%20microscope" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🌿</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
+              </div>
             </div>
             <div class="gs-micro-side"><h4>${fr?'Préparations':'التحضيرات'}</h4>
               <div class="gs-micro-slides">${slides.map((slide,i)=>`<button type="button" class="gs-micro-slide ${i===0?'is-active':''}" data-micro-slide="${slide.id}" aria-pressed="${i===0?'true':'false'}"><span>0${i+1}</span><b>${slide.name}</b><small>${slide.kind}</small></button>`).join('')}</div>
@@ -1308,7 +1314,7 @@
     }
 
     async function loadScientificMediaImages(root) {
-        const cards = root.querySelectorAll('.gs-science-media-card[data-science-search]');
+        const cards = root.querySelectorAll('.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search]');
         const fr = lang() === 'fr';
         await Promise.all(Array.from(cards).map(async function(card) {
             const query = card.getAttribute('data-science-search') || '';
@@ -2178,6 +2184,7 @@
                     const slide = microscopeData[slideButton.dataset.microSlide];
                     if (!slide) return;
                     microscopeCurrent = slide;
+                    microscopeRoot.dataset.activeSlide = slideButton.dataset.microSlide;
                     microscopeRoot.querySelectorAll('[data-micro-slide]').forEach(function(button) {
                         const active = button === slideButton;
                         button.classList.toggle('is-active', active);
