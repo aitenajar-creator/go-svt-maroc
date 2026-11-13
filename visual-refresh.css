@@ -1306,3 +1306,26 @@ body{background:#f4f8f5}
 #student-space .gs-memory-actions button:focus-visible{outline:3px solid #d7ad55;outline-offset:3px}
 @media(max-width:480px){#student-space .gs-memory-actions{align-items:stretch;flex-direction:column}#student-space .gs-memory-actions>div{justify-content:flex-end}#student-space .gs-memory-actions .gs-memory-reveal{width:100%}}
 @media(prefers-reduced-motion:reduce){#student-space .gs-memory-progress>span{transition:none!important}}
+
+
+/* Searchable bilingual SVT glossary */
+#student-space .gs-svt-glossary{margin:1.25rem 0;padding:clamp(1rem,2.6vw,1.55rem);border:1px solid #dbe7ed;border-radius:21px;background:linear-gradient(145deg,#f1f7fb,#fff 72%);box-shadow:0 8px 22px rgba(42,76,105,.05)}
+#student-space .gs-svt-glossary-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+#student-space .gs-svt-glossary-heading h3{margin:.3rem 0;color:#315a78;font-size:clamp(1.1rem,2.2vw,1.45rem)}
+#student-space .gs-svt-glossary-heading p{margin:0;color:#708392;font-size:.85rem;line-height:1.7}
+#student-space .gs-svt-glossary-heading>span{display:grid;place-items:center;flex:0 0 50px;width:50px;height:50px;border-radius:15px;background:#e4eff7;font-size:1.7rem}
+#student-space .gs-svt-glossary-search{display:flex;align-items:center;gap:.65rem;padding:.65rem .85rem;border:1px solid #d7e4ec;border-radius:12px;background:#fff;color:#608099}
+#student-space .gs-svt-glossary-search>span{font-size:1.35rem}
+#student-space .gs-svt-glossary-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#334e62;font:inherit;font-size:.9rem}
+#student-space .gs-svt-glossary-search input::placeholder{color:#91a1ad}
+#student-space .gs-svt-glossary-search kbd{padding:.15rem .4rem;border:1px solid #e1e9ee;border-radius:5px;color:#91a0aa;font-size:.75rem}
+#student-space .gs-svt-glossary-meta{margin:.7rem 0;color:#718696;font-size:.76rem;font-weight:800}
+#student-space .gs-svt-glossary-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+#student-space .gs-svt-glossary-term{min-width:0;padding:.85rem;border:1px solid #e1eaf0;border-radius:12px;background:rgba(255,255,255,.9)}
+#student-space .gs-svt-glossary-term-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+#student-space .gs-svt-glossary-term h4{margin:0;color:#345c78;font-size:.9rem;line-height:1.6}
+#student-space .gs-svt-glossary-term-top>span{flex:0 0 auto;padding:.2rem .45rem;border-radius:20px;background:#edf4f8;color:#678196;font-size:.68rem}
+#student-space .gs-svt-glossary-term p{margin:.45rem 0 0;color:#697d8a;font-size:.8rem;line-height:1.75}
+#student-space .gs-svt-glossary-empty{grid-column:1/-1;margin:0;padding:1rem;border-radius:10px;background:#fff;color:#778894;text-align:center}
+#student-space .gs-svt-glossary-search:focus-within{border-color:#83abc6;box-shadow:0 0 0 3px rgba(91,145,181,.12)}
+@media(max-width:650px){#student-space .gs-svt-glossary-results{grid-template-columns:1fr}}

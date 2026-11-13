@@ -1230,6 +1230,18 @@
         </section>`;
     }
 
+    function renderSvtGlossary() {
+        const fr=lang()==='fr';
+        return `<section class="gs-svt-glossary" aria-labelledby="gs-svt-glossary-title">
+          <div class="gs-svt-glossary-heading"><div><span class="gs-eyebrow">SVT · MINI DICTIONNAIRE</span>
+            <h3 id="gs-svt-glossary-title">${fr?'Dictionnaire scientifique interactif':'المعجم العلمي التفاعلي'}</h3>
+            <p>${fr?'Recherchez rapidement les termes scientifiques et leurs définitions.':'ابحث بسرعة عن المصطلحات العلمية ومعانيها.'}</p></div><span aria-hidden="true">📚</span></div>
+          <label class="gs-svt-glossary-search"><span aria-hidden="true">⌕</span><input type="search" class="gs-svt-glossary-input" placeholder="${fr?'Rechercher un terme…':'ابحث عن مصطلح علمي…'}" autocomplete="off"><kbd>⌕</kbd></label>
+          <div class="gs-svt-glossary-meta" aria-live="polite"></div>
+          <div class="gs-svt-glossary-results"></div>
+        </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -1283,6 +1295,7 @@
             ${renderHumanSystemsAtlas()}
             ${renderScientificMediaLibrary()}
             ${renderScienceMemoryCards()}
+            ${renderSvtGlossary()}
             <div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
                 <div class="gs-path-steps">
@@ -2016,6 +2029,55 @@
                 if(event.target.closest('[data-svt-restart]')){index=0;score=0;draw();}
             });
             draw();
+        }
+        const glossaryTerms = lang()==='fr' ? [
+          ['Absorption intestinale','Passage des nutriments de l’intestin grêle vers le milieu intérieur.','Digestion'],
+          ['Alvéole pulmonaire','Petite structure du poumon où se réalisent les échanges gazeux.','Respiration'],
+          ['Biodiversité','Diversité des êtres vivants, des gènes et des écosystèmes.','Écologie'],
+          ['Capillaire sanguin','Très petit vaisseau où se déroulent de nombreux échanges avec les tissus.','Circulation'],
+          ['Chlorophylle','Pigment qui absorbe une partie de l’énergie lumineuse utilisée en photosynthèse.','Végétaux'],
+          ['Chloroplaste','Organite des cellules végétales où se déroule la photosynthèse.','Cellule'],
+          ['Enzyme','Molécule, généralement protéique, qui accélère une réaction biologique.','Digestion'],
+          ['Écosystème','Ensemble formé par un milieu et les êtres vivants qui y interagissent.','Écologie'],
+          ['Gène','Portion d’ADN portant une information héréditaire.','Génétique'],
+          ['Hématie','Globule rouge spécialisé dans le transport des gaz respiratoires.','Sang'],
+          ['Membrane plasmique','Enveloppe qui délimite la cellule et contrôle les échanges.','Cellule'],
+          ['Métabolisme','Ensemble des réactions chimiques qui se déroulent dans une cellule ou un organisme.','Cellule'],
+          ['Nutriment','Substance simple utilisable par l’organisme après la digestion ou directement absorbée.','Digestion'],
+          ['Photosynthèse','Processus par lequel les organismes chlorophylliens produisent de la matière organique grâce à la lumière.','Végétaux'],
+          ['Stomate','Pore de l’épiderme végétal participant aux échanges gazeux et à la transpiration.','Végétaux'],
+          ['Synapse','Zone de communication fonctionnelle entre deux neurones ou entre un neurone et une cellule cible.','Nerfs']
+        ] : [
+          ['الامتصاص المعوي','انتقال المغذيات من الأمعاء الدقيقة إلى الوسط الداخلي.','الهضم'],
+          ['السنخ الرئوي','بنية صغيرة في الرئة تتم على مستواها التبادلات الغازية.','التنفس'],
+          ['التنوع الحيوي','تنوع الكائنات الحية والمورثات والأنظمة البيئية.','البيئة'],
+          ['الشعيرة الدموية','وعاء دموي دقيق تتم عبر جداره مبادلات عديدة مع الأنسجة.','الدورة الدموية'],
+          ['اليخضور','صبغة تمتص جزءاً من الطاقة الضوئية المستعملة في التركيب الضوئي.','النباتات'],
+          ['البلاستيدة الخضراء','عضية في الخلايا النباتية تتم داخلها عملية التركيب الضوئي.','الخلية'],
+          ['الإنزيم','جزيئة غالباً ما تكون بروتينية تسرّع تفاعلاً بيولوجياً.','الهضم'],
+          ['النظام البيئي','مجموعة تضم وسطاً طبيعياً والكائنات الحية التي تتفاعل داخله.','البيئة'],
+          ['المورثة','جزء من ADN يحمل معلومة وراثية.','الوراثة'],
+          ['كرية الدم الحمراء','خلية دموية متخصصة في نقل الغازات التنفسية.','الدم'],
+          ['الغشاء الهيولي','غلاف يحدد الخلية وينظم المبادلات بينها وبين الوسط.','الخلية'],
+          ['الأيض','مجموع التفاعلات الكيميائية التي تحدث داخل الخلية أو الكائن الحي.','الخلية'],
+          ['المغذي','مادة بسيطة يستعملها الجسم بعد الهضم أو يمتصها مباشرة.','الهضم'],
+          ['التركيب الضوئي','عملية تنتج بها الكائنات اليخضورية مادة عضوية باستعمال الطاقة الضوئية.','النباتات'],
+          ['الثغر','فتحة في بشرة الورقة تساهم في التبادلات الغازية والنتح.','النباتات'],
+          ['المشبك العصبي','منطقة اتصال وظيفي بين عصبونين أو بين عصبون وخلية مستهدفة.','الجهاز العصبي']
+        ];
+        const glossaryRoot=container.querySelector('.gs-svt-glossary');
+        if(glossaryRoot){
+            const search=glossaryRoot.querySelector('.gs-svt-glossary-input');
+            const results=glossaryRoot.querySelector('.gs-svt-glossary-results');
+            const meta=glossaryRoot.querySelector('.gs-svt-glossary-meta');
+            const renderGlossary=()=>{
+                const query=search.value.trim().toLocaleLowerCase();
+                const filtered=glossaryTerms.filter(term=>term.join(' ').toLocaleLowerCase().includes(query));
+                meta.textContent=(lang()==='fr'?'Résultats : ':'النتائج: ')+filtered.length+' / '+glossaryTerms.length;
+                results.innerHTML=filtered.length?filtered.map((term,index)=>`<article class="gs-svt-glossary-term"><div class="gs-svt-glossary-term-top"><h4>${term[0]}</h4><span>${term[2]}</span></div><p>${term[1]}</p></article>`).join(''):`<p class="gs-svt-glossary-empty">${lang()==='fr'?'Aucun terme trouvé. Essayez un autre mot.':'لم يتم العثور على مصطلح. جرب كلمة أخرى.'}</p>`;
+            };
+            search.addEventListener('input',renderGlossary);
+            renderGlossary();
         }
         const memoryDeckData = lang()==='fr' ? [
           ['Cellule végétale','Quelle structure entoure la membrane et soutient la cellule ?','La paroi cellulosique, qui protège et soutient la cellule végétale.','🧫'],
