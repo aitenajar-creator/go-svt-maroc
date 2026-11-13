@@ -1228,3 +1228,9 @@ body{background:#f4f8f5}
 #student-space .gs-atlas-quiz-result p{margin:0;color:#607568;line-height:1.7}
 #student-space .gs-atlas-option:focus-visible,#student-space .gs-atlas-next:focus-visible,#student-space .gs-atlas-quiz-restart:focus-visible{outline:3px solid #d6ad50;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){#student-space .gs-atlas-quiz-track>span{transition:none!important}}
+
+
+/* Organ highlighting linked to the selected body system */
+#student-space .gs-anatomy-figure [data-organ-system]{opacity:.3;transition:opacity .2s ease,filter .2s ease}
+#student-space .gs-anatomy-figure [data-organ-system].is-highlighted{opacity:1;filter:drop-shadow(0 0 7px rgba(49,142,86,.72))}
+@media(prefers-reduced-motion:reduce){#student-space .gs-anatomy-figure [data-organ-system]{transition:none!important}}
