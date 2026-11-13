@@ -2405,3 +2405,14 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
     font-weight: 700;
     pointer-events: none;
 }
+
+.content-card.file-resource-card .image-thumbnail-fallback {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 180px;
+    padding: 1.25rem;
+    color: #52665a;
+    text-align: center;
+    font-weight: 700;
+}
