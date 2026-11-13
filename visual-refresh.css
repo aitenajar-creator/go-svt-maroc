@@ -904,3 +904,79 @@ body{background:#f4f8f5}
   #student-space .best-badge{font-size:.66rem}
 }
 @media(prefers-reduced-motion:reduce){#student-space .history-item{transition:none!important}}
+
+
+/* Personal study notebook — readable, calm and responsive note cards */
+#student-space .gs-notes-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));
+  gap:1rem;margin-top:1.1rem;
+}
+#student-space .gs-note-card{
+  position:relative;overflow:hidden;min-width:0;padding:1.1rem 1.15rem 1rem;
+  border:1px solid #dfeae2;border-radius:17px;
+  background:linear-gradient(145deg,#fff 0%,#fbfdfb 100%);
+  box-shadow:0 6px 18px rgba(24,82,52,.055);
+}
+#student-space .gs-note-card:before{
+  content:"";position:absolute;inset:0 0 auto;height:4px;
+  background:linear-gradient(90deg,#238052,#8dc9a0);
+}
+#student-space .gs-note-heading{padding-top:.2rem}
+#student-space .gs-note-heading strong{
+  min-width:0;color:#20553a;font-size:1rem;font-weight:850;
+  line-height:1.5;overflow-wrap:anywhere;
+}
+#student-space .gs-note-card p{
+  margin:.85rem 0;color:#4d6657;line-height:1.85;
+  overflow-wrap:anywhere;white-space:normal;
+}
+#student-space .gs-note-card small{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.3rem .55rem;border-radius:8px;
+  background:#eef6f0;color:#658071;font-size:.75rem;
+}
+#student-space .gs-note-card small:before{
+  content:"";width:13px;height:13px;display:inline-block;background:center/contain no-repeat;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23658071' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='17' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E");
+}
+#student-space .gs-note-delete{
+  flex:0 0 34px;width:34px;height:34px;display:inline-flex;
+  align-items:center;justify-content:center;border:1px solid #f0d9d4;
+  border-radius:10px;background:#fff7f5;color:#a34e42;
+  font-size:1.15rem;line-height:1;cursor:pointer;
+  transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+#student-space .gs-note-delete:hover{background:#ffebe7;border-color:#e8b8ae;transform:scale(1.04)}
+#student-space .gs-note-form{
+  display:grid;gap:.9rem;padding:clamp(1rem,2.5vw,1.35rem);
+  border:1px solid #dceae0;border-radius:18px;
+  background:linear-gradient(145deg,#f4faf5,#fff 75%);
+  box-shadow:0 7px 20px rgba(24,82,52,.05);
+}
+#student-space .gs-note-form label{display:grid;gap:.45rem;color:#28583e;font-weight:750}
+#student-space .gs-note-form input,#student-space .gs-note-form textarea{
+  width:100%;min-width:0;border:1px solid #d5e4d9;border-radius:11px;
+  background:#fff;color:#263d30;padding:.75rem .85rem;
+  font:inherit;line-height:1.65;transition:border-color .18s,box-shadow .18s;
+}
+#student-space .gs-note-form input:focus,#student-space .gs-note-form textarea:focus{
+  outline:none;border-color:#62a77a;box-shadow:0 0 0 3px rgba(67,151,94,.13)
+}
+#student-space .gs-note-form button[type="submit"]{
+  justify-self:start;min-height:42px;padding:.65rem 1.15rem;
+  border:0;border-radius:11px;background:linear-gradient(100deg,#24784d,#32915d);
+  color:#fff;font-weight:850;cursor:pointer;box-shadow:0 5px 13px rgba(35,120,77,.18);
+}
+#student-space .gs-note-form button[type="submit"]:hover{filter:brightness(1.06);transform:translateY(-1px)}
+#student-space .gs-note-delete:focus-visible,#student-space .gs-note-form button:focus-visible{
+  outline:3px solid #d9b65c;outline-offset:3px
+}
+@media(max-width:560px){
+  #student-space .gs-notes-grid{grid-template-columns:minmax(0,1fr);gap:.75rem}
+  #student-space .gs-note-card{padding:.95rem}
+  #student-space .gs-note-form{padding:.9rem}
+  #student-space .gs-note-form button[type="submit"]{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  #student-space .gs-note-card,#student-space .gs-note-delete,#student-space .gs-note-form input,#student-space .gs-note-form textarea{transition:none!important}
+}
