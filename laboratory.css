@@ -197,3 +197,35 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-water-management-feedback{padding:16px 18px;border-inline-start:4px solid #63977e;background:#f0f7f3;border-radius:10px;color:#416b58;line-height:1.95;min-height:72px}
 .gs-water-management-controls button:focus-visible,.gs-water-measures label:focus-within{outline:3px solid #e3bd62;outline-offset:3px}
 @media(max-width:620px){.gs-water-measures{grid-template-columns:1fr}.gs-water-measures label{grid-template-columns:auto auto 1fr}}
+
+
+/* Real Commons photographs across the standalone laboratory */
+.lab-real-photo{display:grid;gap:9px;min-width:0;width:100%;color:inherit;text-decoration:none}
+.lab-photo-frame{display:grid;place-items:center;min-height:220px;overflow:hidden;border:1px solid #dce9df;border-radius:16px;background:linear-gradient(145deg,#f3f8f3,#eaf1eb);color:#55715d}
+.lab-photo-frame img{display:block;width:100%;height:100%;min-height:220px;max-height:420px;object-fit:contain;background:#f7faf7}
+.lab-photo-frame>span{font-size:2rem}
+.lab-photo-frame>small{padding:1rem;text-align:center;line-height:1.7}
+.lab-photo-credit{display:block;color:#667b6d;font-size:.72rem;line-height:1.6;text-align:center;overflow-wrap:anywhere}
+.lab-real-photo:focus-visible{outline:3px solid #d6ad50;outline-offset:3px;border-radius:14px}
+.lab-micro-photo .lab-photo-frame{min-height:290px;height:290px}
+.lab-micro-photo .lab-photo-frame img{min-height:290px;max-height:290px;object-fit:contain}
+.gs-cell-drawing{display:grid;gap:12px}
+.gs-cell-drawing .lab-photo-frame{min-height:260px;height:300px}
+.gs-cell-drawing .lab-photo-frame img{min-height:260px;max-height:300px;object-fit:contain}
+.gs-organelle-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+.gs-organelle-choices .gs-organelle-hit{position:static;width:auto;height:auto;min-height:42px;padding:8px 10px;border:1px solid #d7e7da;border-radius:10px;background:#fff;color:#365d43;box-shadow:none;font:inherit;font-weight:750}
+.gs-organelle-choices .gs-organelle-hit[hidden]{display:none}
+.gs-photo-visual .lab-plant-photo{max-width:430px}
+.gs-photo-visual .lab-photo-frame{min-height:230px;height:260px}
+.gs-photo-visual .lab-photo-frame img{min-height:230px;max-height:260px;object-fit:contain}
+.gs-geology-visual .lab-geology-photo .lab-photo-frame{min-height:260px;height:310px}
+.gs-geology-visual .lab-geology-photo .lab-photo-frame img{min-height:260px;max-height:310px;object-fit:contain}
+.gs-relative-visual .lab-relative-photo .lab-photo-frame{min-height:260px;height:310px}
+.gs-relative-visual .lab-relative-photo .lab-photo-frame img{min-height:260px;max-height:310px;object-fit:contain}
+@media(max-width:650px){
+ .lab-photo-frame,.lab-micro-photo .lab-photo-frame{min-height:200px;height:220px}
+ .lab-photo-frame img,.lab-micro-photo .lab-photo-frame img{min-height:200px;max-height:220px}
+ .gs-cell-drawing .lab-photo-frame{height:240px;min-height:220px}
+ .gs-cell-drawing .lab-photo-frame img{min-height:220px;max-height:240px}
+ .gs-organelle-choices{grid-template-columns:1fr 1fr}
+}
