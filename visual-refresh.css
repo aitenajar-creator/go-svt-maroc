@@ -721,3 +721,116 @@ body{background:#f4f8f5}
 @media(prefers-reduced-motion:reduce){
   #student-space .dashboard-grid .stat-card{transition:none!important}
 }
+
+
+/* Student achievements — polished award gallery with original SVG badge symbols */
+#student-space .gs-achievements{
+  position:relative;overflow:hidden;padding:clamp(1rem,2.5vw,1.5rem)!important;
+  border:1px solid #dcece2!important;border-radius:22px!important;
+  background:linear-gradient(145deg,#fff 0%,#f5fbf7 100%)!important;
+  box-shadow:0 10px 28px rgba(20,75,48,.07)!important
+}
+#student-space .gs-achievements-heading{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:1rem!important;margin-bottom:1.1rem!important
+}
+#student-space .gs-achievements-heading h3{
+  color:#174d35!important;font-size:clamp(1.08rem,2vw,1.35rem)!important;
+  font-weight:800!important;letter-spacing:-.02em!important
+}
+#student-space .gs-achievements-heading p{
+  color:#63796b!important;line-height:1.6!important
+}
+#student-space .gs-achievements-count{
+  flex:0 0 auto!important;min-width:88px;padding:.7rem .85rem!important;
+  border:1px solid #d4eadb!important;border-radius:16px!important;
+  background:linear-gradient(145deg,#e9f7ee,#f8fcf9)!important;text-align:center!important
+}
+#student-space .gs-achievements-count strong{
+  display:block;color:#176e49!important;font-size:1.45rem!important;
+  line-height:1.15!important;font-weight:850!important;font-variant-numeric:tabular-nums
+}
+#student-space .gs-achievements-count small{display:block;color:#64806e!important;font-size:.72rem!important}
+#student-space .gs-badges-grid{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:.8rem!important
+}
+#student-space .gs-badge-card{
+  position:relative!important;display:flex!important;align-items:center!important;
+  gap:.85rem!important;min-width:0!important;padding:.9rem!important;
+  border:1px solid #e0ebe4!important;border-radius:17px!important;
+  background:#fff!important;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease!important
+}
+#student-space .gs-badge-card.is-earned{
+  border-color:#cce6d5!important;
+  background:linear-gradient(130deg,#fff 35%,#f2faf5)!important
+}
+#student-space .gs-badge-card.is-locked{
+  background:linear-gradient(130deg,#fff,#f7f8f7)!important
+}
+#student-space .gs-badge-card:hover{
+  transform:translateY(-3px)!important;border-color:#a9d6b8!important;
+  box-shadow:0 10px 22px rgba(20,75,48,.09)!important
+}
+#student-space .gs-badge-icon{
+  display:grid!important;place-items:center!important;flex:0 0 54px!important;
+  width:54px!important;height:54px!important;border-radius:17px!important;
+  color:#176e49!important;font-size:0!important;
+  background:linear-gradient(145deg,#e1f4e8,#f5fbf7)!important;
+  box-shadow:inset 0 0 0 1px rgba(37,132,83,.12)!important
+}
+#student-space .gs-badge-icon:before{
+  content:"";display:block;width:29px;height:29px;background:currentColor;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:center;mask-position:center;
+  -webkit-mask-size:contain;mask-size:contain
+}
+#student-space .gs-badge-card:nth-child(1) .gs-badge-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 20A7 7 0 0 1 4 13c0-5 8-10 8-10s8 5 8 10a7 7 0 0 1-9 7Z'/%3E%3Cpath d='M8 14c2 0 4-1 6-4'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 20A7 7 0 0 1 4 13c0-5 8-10 8-10s8 5 8 10a7 7 0 0 1-9 7Z'/%3E%3Cpath d='M8 14c2 0 4-1 6-4'/%3E%3C/svg%3E")
+}
+#student-space .gs-badge-card:nth-child(2) .gs-badge-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z'/%3E%3C/svg%3E")
+}
+#student-space .gs-badge-card:nth-child(3) .gs-badge-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 2-3 8h7L9 22l3-9H5l9-11Z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 2-3 8h7L9 22l3-9H5l9-11Z'/%3E%3C/svg%3E")
+}
+#student-space .gs-badge-card:nth-child(4) .gs-badge-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3C/svg%3E")
+}
+#student-space .gs-badge-card:nth-child(5) .gs-badge-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 2 2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2Z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 2 2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2Z'/%3E%3C/svg%3E")
+}
+#student-space .gs-badge-copy{display:flex!important;flex-direction:column!important;gap:.24rem!important;min-width:0!important}
+#student-space .gs-badge-copy strong{color:#204d37!important;font-size:.92rem!important;line-height:1.35!important}
+#student-space .gs-badge-copy small{color:#718176!important;font-size:.77rem!important;line-height:1.5!important}
+#student-space .gs-badge-status{
+  display:inline-flex!important;align-items:center!important;align-self:flex-start!important;
+  margin-top:.12rem!important;padding:.2rem .55rem!important;border-radius:999px!important;
+  color:#64766a!important;background:#f0f4f1!important;font-size:.7rem!important;font-weight:700!important
+}
+#student-space .gs-badge-card.is-earned .gs-badge-status{
+  color:#176e49!important;background:#e4f5e9!important
+}
+#student-space .gs-badge-track{
+  display:block!important;width:100%!important;max-width:150px!important;height:5px!important;
+  margin-top:.2rem!important;overflow:hidden!important;border-radius:99px!important;background:#e7eee9!important
+}
+#student-space .gs-badge-track i{
+  display:block!important;height:100%!important;border-radius:inherit!important;
+  background:linear-gradient(90deg,#42b77b,#176e49)!important
+}
+#student-space .gs-badge-card.is-locked .gs-badge-icon{
+  color:#829188!important;background:linear-gradient(145deg,#edf1ee,#f8faf8)!important
+}
+@media(max-width:620px){
+  #student-space .gs-badges-grid{grid-template-columns:1fr!important;gap:.6rem!important}
+  #student-space .gs-badge-card{padding:.78rem!important}
+  #student-space .gs-badge-icon{flex-basis:48px!important;width:48px!important;height:48px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #student-space .gs-badge-card{transition:none!important}
+}
