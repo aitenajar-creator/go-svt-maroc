@@ -230,3 +230,18 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
  .gs-cell-drawing .lab-photo-frame img{min-height:220px;max-height:240px}
  .gs-organelle-choices{grid-template-columns:1fr 1fr}
 }
+
+
+/* Real photographs for the laboratory welcome and rock-cycle stages */
+.gs-lab-hero-photo{width:min(100%,390px);justify-self:center;align-self:center}
+.gs-lab-hero-photo .lab-photo-frame{height:245px;min-height:220px;border:1px solid rgba(255,255,255,.5);background:#f2f7f2;box-shadow:0 14px 34px rgba(20,60,38,.16)}
+.gs-lab-hero-photo .lab-photo-frame img{min-height:220px;max-height:245px;object-fit:cover}
+.gs-rock-cycle-diagram{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch;gap:8px;padding:14px;background:linear-gradient(145deg,#f0f5ed,#f8f5ed);border-radius:17px}
+.gs-rock-cycle-diagram .lab-rock-photo{min-width:0;padding:8px;border:1px solid #dce8dc;border-radius:13px;background:#fff}
+.gs-rock-cycle-diagram .lab-photo-frame{height:120px;min-height:110px;border-radius:9px}
+.gs-rock-cycle-diagram .lab-photo-frame img{min-height:110px;max-height:120px;object-fit:cover}
+.gs-rock-cycle-diagram .lab-rock-photo strong{color:#365e42;font-size:.78rem;line-height:1.45;text-align:center}
+.gs-rock-cycle-diagram .lab-rock-photo .lab-photo-credit{font-size:.62rem}
+.gs-rock-cycle-diagram .gs-rock-arrow{display:none}
+@media(max-width:950px){.gs-rock-cycle-diagram{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.gs-rock-cycle-diagram{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px}.gs-rock-cycle-diagram .lab-photo-frame{height:110px;min-height:100px}.gs-rock-cycle-diagram .lab-photo-frame img{min-height:100px;max-height:110px}.gs-lab-hero-photo .lab-photo-frame{height:210px;min-height:190px}}
