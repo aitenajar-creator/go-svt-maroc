@@ -1134,9 +1134,9 @@
           circulatory:['الجهاز الدوري','ينقل الغازات والمغذيات ومواد أخرى داخل الجسم.','القلب + الشرايين + الشعيرات الدموية + الأوردة.','يدفع القلب الدم عبر دورتين متكاملتين: الدورة الرئوية والدورة العامة.'],
           nervous:['الجهاز العصبي','يستقبل الرسائل العصبية ويعالجها وينقلها.','الدماغ + النخاع الشوكي + الأعصاب.','تلتقط الأعضاء الحسية المنبهات، وتعالج المراكز العصبية المعلومات وتعد الاستجابات.']
         };
-        const names = fr ? ['Digestif','Respiratoire','Circulatoire','Nerveux'] : ['الهضمي','التنفسي','الدوري','العصبي'];
-        const icons = ['🥗','🫁','❤️','🧠'];
-        const keys = ['digestive','respiratory','circulatory','nervous'];
+        const names = fr ? ['Digestif','Respiratoire','Circulatoire','Nerveux','Urinaire','Squelettique'] : ['الهضمي','التنفسي','الدوري','العصبي','البولي','الهيكلي'];
+        const icons = ['🥗','🫁','❤️','🧠','🫘','🦴'];
+        const keys = ['digestive','respiratory','circulatory','nervous','urinary','skeletal'];
         const initial = data.digestive;
         return `<section class="gs-anatomy-atlas" aria-labelledby="gs-anatomy-title">
           <div class="gs-anatomy-heading"><div><span class="gs-eyebrow">GO SVT MAROC · SCIENCE ATLAS</span>
@@ -1153,6 +1153,8 @@
               <g class="gs-organ-highlight" data-organ-system="respiratory" fill="#83b8dc" stroke="#fff" stroke-width="2"><path d="M145 91Q119 83 119 119Q120 139 145 146Z"/><path d="M155 91Q181 83 181 119Q180 139 155 146Z"/></g>
               <path class="gs-organ-highlight is-highlighted" data-organ-system="digestive" d="M145 156Q132 162 140 183Q150 193 160 183Q168 162 155 156Z" fill="#dba56c" stroke="#fff" stroke-width="2"/>
               <path class="gs-organ-highlight is-highlighted" data-organ-system="digestive" d="M132 187Q150 178 168 187L166 209Q150 219 134 209Z" fill="#8dbd76" stroke="#fff" stroke-width="2"/>
+              <g class="gs-organ-highlight" data-organ-system="urinary" fill="#b76f7b" stroke="#fff" stroke-width="2"><path d="M128 190C105 176 105 211 124 220Q139 221 140 201Z"/><path d="M172 190C195 176 195 211 176 220Q161 221 160 201Z"/><path d="M140 226Q150 216 160 226Q166 243 150 250Q134 243 140 226Z"/></g>
+              <g class="gs-organ-highlight" data-organ-system="skeletal" fill="none" stroke="#d2b98e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M128 88L150 98 172 88M150 92V218M128 112Q150 125 172 112M125 128Q150 142 175 128M128 145Q150 159 172 145M130 164Q150 177 170 164M133 184Q150 196 167 184M132 210L116 302M168 210L184 302"/><path d="M135 218Q150 230 165 218"/></g>
             </svg>
             <span>${fr?'Schéma simplifié du corps humain':'رسم مبسط لجسم الإنسان'}</span>
           </div>
@@ -2266,7 +2268,9 @@
           digestive: lang()==='fr'?['Système digestif','Transforme les aliments en nutriments absorbables.','Bouche → œsophage → estomac → intestin grêle → gros intestin.','Les nutriments traversent la paroi de l’intestin grêle et rejoignent le sang.']:['الجهاز الهضمي','يحول الأغذية إلى مغذيات قابلة للامتصاص.','الفم ← المريء ← المعدة ← الأمعاء الدقيقة ← الأمعاء الغليظة.','تعبر المغذيات جدار الأمعاء الدقيقة لتصل إلى الدم.'],
           respiratory: lang()==='fr'?['Système respiratoire','Assure les échanges gazeux entre l’air et le sang.','Fosses nasales → trachée → bronches → bronchioles → alvéoles.','Au niveau des alvéoles, le dioxygène diffuse vers le sang et le CO₂ en sort.']:['الجهاز التنفسي','يضمن التبادلات الغازية بين الهواء والدم.','التجاويف الأنفية ← القصبة الهوائية ← الشعب ← القصيبات ← الأسناخ الرئوية.','على مستوى الأسناخ ينتشر الأكسجين نحو الدم ويغادره ثاني أكسيد الكربون.'],
           circulatory: lang()==='fr'?['Système circulatoire','Transporte les gaz, nutriments et autres substances dans l’organisme.','Cœur + artères + capillaires + veines.','Le cœur propulse le sang dans deux circuits complémentaires : pulmonaire et général.']:['الجهاز الدوري','ينقل الغازات والمغذيات ومواد أخرى داخل الجسم.','القلب + الشرايين + الشعيرات الدموية + الأوردة.','يدفع القلب الدم عبر دورتين متكاملتين: الدورة الرئوية والدورة العامة.'],
-          nervous: lang()==='fr'?['Système nerveux','Reçoit, traite et transmet les messages nerveux.','Encéphale + moelle épinière + nerfs.','Les organes sensoriels détectent les stimuli ; les centres nerveux élaborent des réponses.']:['الجهاز العصبي','يستقبل الرسائل العصبية ويعالجها وينقلها.','الدماغ + النخاع الشوكي + الأعصاب.','تلتقط الأعضاء الحسية المنبهات، وتعالج المراكز العصبية المعلومات وتعد الاستجابات.']
+          nervous: lang()==='fr'?['Système nerveux','Reçoit, traite et transmet les messages nerveux.','Encéphale + moelle épinière + nerfs.','Les organes sensoriels détectent les stimuli ; les centres nerveux élaborent des réponses.']:['الجهاز العصبي','يستقبل الرسائل العصبية ويعالجها وينقلها.','الدماغ + النخاع الشوكي + الأعصاب.','تلتقط الأعضاء الحسية المنبهات، وتعالج المراكز العصبية المعلومات وتعد الاستجابات.'],
+          urinary: lang()==='fr'?['Système urinaire','Filtre le sang et participe à l’équilibre hydrique et minéral.','Reins + uretères + vessie + urètre.','Les reins produisent l’urine ; les uretères la conduisent vers la vessie.']:['الجهاز البولي','يرشح الدم ويساهم في توازن الماء والأملاح المعدنية.','الكليتان + الحالبان + المثانة + الإحليل.','تنتج الكليتان البول الذي ينتقل عبر الحالبين إلى المثانة.'],
+          skeletal: lang()==='fr'?['Système squelettique','Soutient le corps, protège certains organes et participe aux mouvements.','Os + articulations + cartilages.','Les muscles agissent sur les os au niveau des articulations pour produire les mouvements.']:['الجهاز الهيكلي','يدعم الجسم ويحمي بعض الأعضاء ويساهم في الحركة.','العظام + المفاصل + الغضاريف.','تؤثر العضلات في العظام عند المفاصل لإحداث الحركة.']
         };
         container.querySelectorAll('.gs-anatomy-tab').forEach(button => button.addEventListener('click', function () {
             const fact = anatomyFacts[this.dataset.anatomySystem];
@@ -2289,12 +2293,16 @@
           {q:'Quel organe absorbe la majorité des nutriments ?',a:['L’estomac','L’intestin grêle','Le gros intestin'],c:1,e:'La paroi de l’intestin grêle assure l’essentiel de l’absorption des nutriments.'},
           {q:'Où se déroulent les échanges gazeux pulmonaires ?',a:['Dans les alvéoles','Dans la trachée','Dans le diaphragme'],c:0,e:'Les alvéoles offrent une grande surface d’échange avec les capillaires sanguins.'},
           {q:'Quel organe propulse le sang ?',a:['Le foie','Le poumon','Le cœur'],c:2,e:'Le cœur est une pompe musculaire qui propulse le sang dans les vaisseaux.'},
-          {q:'Quelle structure relie l’encéphale aux nerfs du corps ?',a:['La moelle épinière','L’œsophage','La trachée'],c:0,e:'La moelle épinière appartient au système nerveux central et communique avec les nerfs.'}
+          {q:'Quelle structure relie l’encéphale aux nerfs du corps ?',a:['La moelle épinière','L’œsophage','La trachée'],c:0,e:'La moelle épinière appartient au système nerveux central et communique avec les nerfs.'},
+          {q:'Quel organe produit l’urine ?',a:['La vessie','Les reins','Les uretères'],c:1,e:'Les reins filtrent le sang et produisent l’urine.'},
+          {q:'Quel ensemble protège notamment le cerveau ?',a:['La cage thoracique','Le bassin','Le crâne'],c:2,e:'Le crâne entoure et protège l’encéphale.'}
         ] : [
           {q:'ما العضو الذي يمتص معظم المغذيات؟',a:['المعدة','الأمعاء الدقيقة','الأمعاء الغليظة'],c:1,e:'يتم معظم امتصاص المغذيات عبر جدار الأمعاء الدقيقة.'},
           {q:'أين تتم التبادلات الغازية الرئوية؟',a:['في الأسناخ الرئوية','في القصبة الهوائية','في الحجاب الحاجز'],c:0,e:'توفر الأسناخ الرئوية سطحاً واسعاً للتبادل مع الشعيرات الدموية.'},
           {q:'ما العضو الذي يدفع الدم داخل الأوعية؟',a:['الكبد','الرئة','القلب'],c:2,e:'القلب مضخة عضلية تدفع الدم عبر الأوعية الدموية.'},
-          {q:'ما البنية التي تصل الدماغ بأعصاب الجسم؟',a:['النخاع الشوكي','المريء','القصبة الهوائية'],c:0,e:'ينتمي النخاع الشوكي إلى الجهاز العصبي المركزي ويتواصل مع الأعصاب.'}
+          {q:'ما البنية التي تصل الدماغ بأعصاب الجسم؟',a:['النخاع الشوكي','المريء','القصبة الهوائية'],c:0,e:'ينتمي النخاع الشوكي إلى الجهاز العصبي المركزي ويتواصل مع الأعصاب.'},
+          {q:'ما العضو الذي ينتج البول؟',a:['المثانة','الكليتان','الحالبان'],c:1,e:'ترشح الكليتان الدم وتنتجان البول.'},
+          {q:'ما الجزء الذي يحمي الدماغ؟',a:['القفص الصدري','الحوض','الجمجمة'],c:2,e:'تحيط الجمجمة بالدماغ وتوفر له الحماية.'}
         ];
         const quizRoot = container.querySelector('.gs-atlas-quiz-content');
         if (quizRoot) {
