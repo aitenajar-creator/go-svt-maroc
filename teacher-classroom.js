@@ -690,7 +690,7 @@
         const field=document.querySelector('[data-reply-for="'+CSS.escape(id)+'"]');
         const body=field?field.value.trim():'';
         const {error}=await client.from('teacher_question_messages').insert({question_id:id,sender_id:user.id,body});if(error)throw error;
-        const activeProfile=window.StudentAccount&&window.StudentAccount.getProfile?window.StudentAccount.getProfile():null;
+        const activeProfile=await profileFor(user);
         if(activeProfile&&activeProfile.role==='student'){
           const {error:statusError}=await client.rpc('gosvt_student_reopen_question',{p_question_id:id});
           if(statusError)throw statusError;
