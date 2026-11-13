@@ -274,6 +274,47 @@ else:
             failures.append(f"Teacher-community helper {signature}: authenticated EXECUTE must remain granted")
 
 
+# Anonymous clients may read only deliberately public site metadata tables.
+anon_grants_migration = MIGRATIONS / "20261113001200_minimize_anonymous_table_grants.sql"
+if not anon_grants_migration.is_file():
+    failures.append("Missing anonymous table-grants minimization migration")
+else:
+    anon_grants_sql = anon_grants_migration.read_text(encoding="utf-8").lower()
+    if not re.search(r"revoke\s+all\s+privileges\s+on\s+all\s+tables\s+in\s+schema\s+public\s+from\s+anon", anon_grants_sql):
+        failures.append("Anonymous table grants: broad legacy privileges must be revoked")
+    for table in ("site_content_items", "site_founder_profile"):
+        if not re.search(
+            rf"grant\s+select\s+on\s+table\s+public\.{table}\s+to\s+anon",
+            anon_grants_sql,
+        ):
+            failures.append(f"Anonymous table grants: public SELECT must remain on {table}")
+
+
+sequence_grants_migration = MIGRATIONS / "20261113001300_revoke_anonymous_sequence_grants.sql"
+if not sequence_grants_migration.is_file():
+    failures.append("Missing anonymous sequence-grants restriction migration")
+else:
+    sequence_grants_sql = sequence_grants_migration.read_text(encoding="utf-8").lower()
+    if not re.search(
+        r"revoke\s+all\s+privileges\s+on\s+all\s+sequences\s+in\s+schema\s+public\s+from\s+anon",
+        sequence_grants_sql,
+    ):
+        failures.append("Anonymous sequence grants: all legacy sequence privileges must be revoked")
+
+
+default_grants_migration = MIGRATIONS / "20261113001400_restrict_anonymous_default_privileges.sql"
+if not default_grants_migration.is_file():
+    failures.append("Missing postgres default anonymous-privilege restriction migration")
+else:
+    default_grants_sql = default_grants_migration.read_text(encoding="utf-8").lower()
+    for object_type in ("tables", "sequences"):
+        if not re.search(
+            rf"alter\s+default\s+privileges\s+for\s+role\s+postgres\s+in\s+schema\s+public\s+revoke\s+all\s+on\s+{object_type}\s+from\s+anon",
+            default_grants_sql,
+        ):
+            failures.append(f"Postgres default privileges: anonymous access to future {object_type} must be revoked")
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
