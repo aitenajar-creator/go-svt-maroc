@@ -157,6 +157,22 @@ else:
             break
 
 
+
+# Duplicate-upload trigger helper is internal-only; the trigger remains functional.
+duplicate_trigger_migration = MIGRATIONS / "20261113000700_restrict_duplicate_upload_trigger_execution.sql"
+if not duplicate_trigger_migration.is_file():
+    failures.append("Missing duplicate-upload trigger execution restriction migration")
+else:
+    duplicate_trigger_sql = duplicate_trigger_migration.read_text(encoding="utf-8").lower()
+    for grantee in ("public", "anon", "authenticated"):
+        if not re.search(
+            rf"revoke\\s+all\\s+on\\s+function\\s+public\\.prevent_duplicate_site_content_upload\\(\\)\\s+from\\s+{grantee}",
+            duplicate_trigger_sql,
+        ):
+            failures.append(f"Duplicate-upload trigger function: EXECUTE must be revoked from {grantee}")
+            break
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
