@@ -107,7 +107,7 @@
       '<div class="tc-resource-top"><span class="tc-file-icon">' + fileIcon(r.file_name) + '</span><span class="tc-pill">' + escapeHtml(categories[r.category] || categories.other) + '</span></div>' +
       '<h3>' + escapeHtml(r.title) + '</h3><p>' + escapeHtml(r.description || 'لا يوجد وصف إضافي لهذه الوثيقة.') + '</p>' +
       '<div class="tc-resource-meta"><span>' + escapeHtml(adminOwn) + '</span><span>· ' + escapeHtml(dateLabel(r.created_at)) + '</span><span>· ' + (r.size_bytes/1048576).toFixed(1) + ' MB</span></div>' +
-      '<div class="tc-resource-meta"><span>' + escapeHtml(r.file_name) + '</span>' + (r.is_shared ? '<span class="tc-pill">مشترك</span>' : '<span class="tc-pill">خاص</span>') + '</div>' +
+      '<div class="tc-resource-meta"><span>' + escapeHtml(r.file_name) + '</span>' + (r.status === 'hidden' ? '<span class="tc-pill">مخفي</span>' : (r.is_shared ? '<span class="tc-pill">مشترك</span>' : '<span class="tc-pill">خاص</span>')) + '</div>' +
       '<div class="tc-resource-actions"><button type="button" data-download="' + escapeHtml(r.id) + '">⬇ تحميل</button>' +
       ((own || isAdmin) ? '<button type="button" class="danger" data-delete="' + escapeHtml(r.id) + '">حذف</button>' : '') +
       ((own || isAdmin) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
@@ -170,6 +170,10 @@
       .eq('id',r.id).select('id').maybeSingle();
     if (hidden.error) throw new Error('تعذر إخفاء الوثيقة قبل حذفها: ' + hidden.error.message);
     if (!hidden.data) throw new Error('لم تعد الوثيقة متاحة للحذف أو لا تملك صلاحية إدارتها.');
+
+    // Refresh immediately so other members no longer see a stale shared card
+    // if the subsequent Storage deletion needs to be retried.
+    await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdmin() : Promise.resolve()]);
 
     const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
     if (removed.error) {
