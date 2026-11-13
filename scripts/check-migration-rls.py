@@ -452,3 +452,27 @@ if failures:
     sys.exit(1)
 
 print(f"RLS migration coverage check passed for {checked} public tables and student grading-column restrictions.")
+
+
+# Classroom tables must not retain broad TRUNCATE/trigger/reference rights or
+# mutation grants that have no matching workflow/policy.
+classroom_grants_migration = MIGRATIONS / "20261113002000_restrict_teacher_classroom_table_grants.sql"
+if not classroom_grants_migration.is_file():
+    failures.append("Missing teacher classroom least-privilege table-grants migration")
+else:
+    classroom_grants_sql = classroom_grants_migration.read_text(encoding="utf-8").lower()
+    for privilege in ("truncate", "references", "trigger"):
+        if not re.search(
+            rf"revoke\\s+{privilege}\\s*,\\s*references\\s*,\\s*trigger|revoke\\s+truncate\\s*,\\s*references\\s*,\\s*trigger",
+            classroom_grants_sql,
+        ):
+            failures.append(f"Teacher classroom tables: {privilege.upper()} must be revoked from authenticated")
+            break
+    for statement in (
+        "revoke insert, update on public.teacher_class_students from authenticated",
+        "revoke update, delete on public.teacher_question_messages from authenticated",
+        "revoke delete on public.teacher_assignment_submissions from authenticated",
+    ):
+        if statement not in classroom_grants_sql:
+            failures.append(f"Teacher classroom least-privilege grants missing: {statement}")
+            break
