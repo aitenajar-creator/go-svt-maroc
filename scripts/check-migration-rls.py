@@ -446,6 +446,27 @@ else:
             failures.append(f"Read-policy consolidation is missing required clause: {fragment}")
             break
 
+
+
+
+# Classroom tables must not retain broad TRUNCATE/trigger/reference rights or
+# mutation grants that have no matching workflow/policy.
+classroom_grants_migration = MIGRATIONS / "20261113002000_restrict_teacher_classroom_table_grants.sql"
+if not classroom_grants_migration.is_file():
+    failures.append("Missing teacher classroom least-privilege table-grants migration")
+else:
+    classroom_grants_sql = classroom_grants_migration.read_text(encoding="utf-8").lower()
+    if "revoke truncate, references, trigger" not in classroom_grants_sql:
+        failures.append("Teacher classroom tables: TRUNCATE, REFERENCES and TRIGGER must be revoked from authenticated")
+    for statement in (
+        "revoke insert, update on public.teacher_class_students from authenticated",
+        "revoke update, delete on public.teacher_question_messages from authenticated",
+        "revoke delete on public.teacher_assignment_submissions from authenticated",
+    ):
+        if statement not in classroom_grants_sql:
+            failures.append(f"Teacher classroom least-privilege grants missing: {statement}")
+            break
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
