@@ -1024,17 +1024,22 @@
                 </div>
                 <div class="gs-review-recommendations-list">
                     ${needsReview.map(result => {
+                        const internalTargets = {
+                            'human-systems-atlas': 'gs-anatomy-title',
+                            'cell-photosynthesis-revision': 'gs-svt-revision-title'
+                        };
+                        const target = internalTargets[result.quizId];
+                        if (target) return '<button type="button" class="gs-review-recommendation gs-review-jump" data-study-anchor="' + target + '">' +
+                            '<span>' + getQuizDisplayName(result.quizId) + '</span><strong>' + result.percentage + '%</strong>' +
+                            '<small>' + (lang() === 'ar' ? 'انتقل إلى المراجعة' : 'Ouvrir la révision') + ' ←</small></button>';
                         const path = result.quizId.charAt(0) === '/' ? result.quizId.slice(1) : result.quizId;
                         if (!path.startsWith('quiz/') || !path.toLowerCase().endsWith('.json') ||
                             path.split('/').includes('..') || path.includes('?') || path.includes('#')) return '';
                         const href = '/?quiz=' + encodeURIComponent(path) + '#quiz';
                         const label = path.split('/').pop().slice(0, -5).replace(/[_-]/g, ' ');
-                        return `
-                            <a class="gs-review-recommendation" href="${escapeHtml(href)}">
-                                <span>${escapeHtml(label)}</span>
-                                <strong>${result.percentage}%</strong>
-                                <small>${lang() === 'ar' ? 'أعد المراجعة' : 'Revoir'} ←</small>
-                            </a>`;
+                        return '<a class="gs-review-recommendation" href="' + escapeHtml(href) + '">' +
+                            '<span>' + escapeHtml(label) + '</span><strong>' + result.percentage + '%</strong>' +
+                            '<small>' + (lang() === 'ar' ? 'أعد المراجعة' : 'Revoir') + ' ←</small></a>';
                     }).join('')}
                 </div>
             </section>`;
@@ -2098,20 +2103,17 @@
 
         container.innerHTML = html;
         loadScientificMediaImages(container);
-        const levelPaths = container.querySelector('.gs-level-paths');
-        if (levelPaths) {
-            levelPaths.addEventListener('click', function(event) {
-                const jump = event.target.closest('[data-study-anchor]');
-                if (!jump) return;
-                const target = container.querySelector('#' + jump.dataset.studyAnchor);
-                if (target) {
-                    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                    target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
-                    target.setAttribute('tabindex','-1');
-                    target.focus({preventScroll:true});
-                }
-            });
-        }
+        container.addEventListener('click', function(event) {
+            const jump = event.target.closest('[data-study-anchor]');
+            if (!jump || !container.contains(jump)) return;
+            const target = container.querySelector('#' + jump.dataset.studyAnchor);
+            if (target) {
+                const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
+                target.setAttribute('tabindex','-1');
+                target.focus({preventScroll:true});
+            }
+        });
         const experimentRoot = container.querySelector('.gs-photosynthesis-experiment');
         if (experimentRoot) {
             const inputs = Array.from(experimentRoot.querySelectorAll('[data-experiment-input]'));
