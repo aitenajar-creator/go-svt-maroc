@@ -979,3 +979,113 @@ body{background:#f4f8f5}
 }
 @media(max-width:360px){#student-space .gs-quick-links{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){#student-space .gs-primary-link,#student-space .gs-quick-links a{transition:none!important}}
+
+
+/* Resource discovery headers and filters — keep existing file cards untouched */
+#cours>.container>.section-title,
+#exercices>.container>.section-title,
+#examens>.container>.section-title,
+#quiz>.container>.section-title,
+#fiches>.container>.section-title,
+#resumes>.container>.section-title,
+#documents>.container>.section-title,
+#ressources>.container>.section-title,
+#divers>.container>.section-title{
+  position:relative;isolation:isolate;overflow:hidden;
+  display:flex;align-items:center;min-height:118px;
+  padding:1.35rem clamp(1rem,3vw,2rem);
+  border:1px solid rgba(255,255,255,.2);border-radius:19px;
+  color:#fff!important;text-shadow:0 2px 12px rgba(0,0,0,.38);
+  background-color:#174b39;background-position:center 48%;background-size:cover;
+  box-shadow:0 10px 24px rgba(20,65,43,.12);
+}
+#cours>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.88),rgba(8,54,39,.28)),url("https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1400&q=82")}
+#exercices>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.9),rgba(8,54,39,.3)),url("https://images.unsplash.com/photo-1532619675605-1ede6c2ed2b0?auto=format&fit=crop&w=1400&q=82")}
+#examens>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.9),rgba(8,54,39,.3)),url("https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1400&q=82")}
+#quiz>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.9),rgba(8,54,39,.3)),url("https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1400&q=82")}
+#fiches>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.9),rgba(8,54,39,.3)),url("https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1400&q=82")}
+#resumes>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.9),rgba(8,54,39,.3)),url("https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=1400&q=82")}
+#documents>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.9),rgba(8,54,39,.3)),url("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=82")}
+#ressources>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.9),rgba(8,54,39,.3)),url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=82")}
+#divers>.container>.section-title{background-image:linear-gradient(90deg,rgba(8,54,39,.9),rgba(8,54,39,.3)),url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1400&q=82")}
+#cours>.container>.section-title:after,
+#exercices>.container>.section-title:after,
+#examens>.container>.section-title:after,
+#quiz>.container>.section-title:after,
+#fiches>.container>.section-title:after,
+#resumes>.container>.section-title:after,
+#documents>.container>.section-title:after,
+#ressources>.container>.section-title:after,
+#divers>.container>.section-title:after{
+  content:"";position:absolute;z-index:-1;inset:0;
+  background:radial-gradient(circle at 82% 50%,rgba(222,255,230,.2),transparent 30%);
+  pointer-events:none
+}
+#cours .subject-tabs,#exercices .subject-tabs,#examens .subject-tabs,
+#quiz .subject-tabs,#fiches .subject-tabs,#resumes .subject-tabs{
+  display:flex;flex-wrap:wrap;gap:.55rem;margin:1.1rem 0 .7rem
+}
+#cours .subject-tabs .tab-btn,#exercices .subject-tabs .tab-btn,
+#examens .subject-tabs .tab-btn,#quiz .subject-tabs .tab-btn,
+#fiches .subject-tabs .tab-btn,#resumes .subject-tabs .tab-btn{
+  min-height:42px;padding:.6rem 1rem;border:1px solid #dce9df;border-radius:11px;
+  background:#fff;color:#315d43;font-weight:750;
+  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease
+}
+#cours .subject-tabs .tab-btn.active,#exercices .subject-tabs .tab-btn.active,
+#examens .subject-tabs .tab-btn.active,#quiz .subject-tabs .tab-btn.active,
+#fiches .subject-tabs .tab-btn.active,#resumes .subject-tabs .tab-btn.active{
+  border-color:#287c50;background:#eaf5ed;color:#155b39;
+  box-shadow:inset 0 0 0 1px rgba(40,124,80,.12)
+}
+#cours .level-tabs,#exercices .level-tabs,#examens .level-tabs,
+#quiz .level-tabs,#fiches .level-tabs,#resumes .level-tabs{
+  display:flex;flex-wrap:wrap;gap:.5rem;margin:.65rem 0 1.25rem;
+  padding:.55rem;border:1px solid #e3ece5;border-radius:13px;
+  background:linear-gradient(100deg,#f5faf6,#fff)
+}
+#cours .level-tab-btn,#exercices .level-tab-btn,#examens .level-tab-btn,
+#quiz .level-tab-btn,#fiches .level-tab-btn,#resumes .level-tab-btn{
+  min-width:72px;min-height:39px;padding:.48rem .85rem;
+  border:1px solid transparent;border-radius:9px;background:transparent;
+  color:#526b5a;font-weight:800;cursor:pointer;
+  transition:background .16s ease,color .16s ease,box-shadow .16s ease
+}
+#cours .level-tab-btn.active,#exercices .level-tab-btn.active,
+#examens .level-tab-btn.active,#quiz .level-tab-btn.active,
+#fiches .level-tab-btn.active,#resumes .level-tab-btn.active{
+  border-color:#c7dfce;background:#fff;color:#17633e;
+  box-shadow:0 3px 9px rgba(30,90,55,.09)
+}
+#cours .subject-tabs button:focus-visible,#exercices .subject-tabs button:focus-visible,
+#examens .subject-tabs button:focus-visible,#quiz .subject-tabs button:focus-visible,
+#fiches .subject-tabs button:focus-visible,#resumes .subject-tabs button:focus-visible,
+#cours .level-tabs button:focus-visible,#exercices .level-tabs button:focus-visible,
+#examens .level-tabs button:focus-visible,#quiz .level-tabs button:focus-visible,
+#fiches .level-tabs button:focus-visible,#resumes .level-tabs button:focus-visible{
+  outline:3px solid #d6ad50;outline-offset:3px
+}
+#examens .section-intro,#quiz .section-intro,#resumes .section-intro,
+#documents .section-intro,#ressources .section-intro,#divers .section-intro{
+  max-width:75ch;margin:.85rem 0 1rem;color:#64766a;line-height:1.8
+}
+@media(max-width:600px){
+  #cours>.container>.section-title,#exercices>.container>.section-title,
+  #examens>.container>.section-title,#quiz>.container>.section-title,
+  #fiches>.container>.section-title,#resumes>.container>.section-title,
+  #documents>.container>.section-title,#ressources>.container>.section-title,
+  #divers>.container>.section-title{min-height:94px;padding:1rem;background-position:60% center}
+  #cours .subject-tabs,#exercices .subject-tabs,#examens .subject-tabs,
+  #quiz .subject-tabs,#fiches .subject-tabs,#resumes .subject-tabs{gap:.4rem}
+  #cours .subject-tabs .tab-btn,#exercices .subject-tabs .tab-btn,
+  #examens .subject-tabs .tab-btn,#quiz .subject-tabs .tab-btn,
+  #fiches .subject-tabs .tab-btn,#resumes .subject-tabs .tab-btn{flex:1 1 auto}
+  #cours .level-tabs,#exercices .level-tabs,#examens .level-tabs,
+  #quiz .level-tabs,#fiches .level-tabs,#resumes .level-tabs{gap:.35rem;padding:.4rem}
+}
+@media(prefers-reduced-motion:reduce){
+  #cours .subject-tabs button,#exercices .subject-tabs button,#examens .subject-tabs button,
+  #quiz .subject-tabs button,#fiches .subject-tabs button,#resumes .subject-tabs button,
+  #cours .level-tabs button,#exercices .level-tabs button,#examens .level-tabs button,
+  #quiz .level-tabs button,#fiches .level-tabs button,#resumes .level-tabs button{transition:none!important}
+}
