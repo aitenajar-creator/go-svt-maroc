@@ -371,6 +371,33 @@ else:
             break
 
 
+# Owner-only policies should use a statement-level auth.uid() initplan.
+const_uid_migration = MIGRATIONS / "20261113001700_optimize_owner_rls_initplans.sql"
+if not const_uid_migration.is_file():
+    failures.append("Missing owner-policy auth.uid() initplan optimization")
+else:
+    const_uid_sql = const_uid_migration.read_text(encoding="utf-8").lower()
+    for table, policy in (
+        ("role_change_requests", "role_requests_insert_self"),
+        ("role_change_requests", "role_requests_read_related"),
+        ("student_daily_challenges", "students can insert their own daily challenges"),
+        ("student_daily_challenges", "students can read their own daily challenges"),
+        ("student_favorites", "favorites_owner_all"),
+        ("student_notes", "notes_owner_all"),
+        ("student_progress", "progress_owner_all"),
+        ("student_study_plan", "study_plan_owner_all"),
+        ("teacher_student_support_plans", "teacher_support_plans_insert"),
+    ):
+        if not re.search(
+            rf"alter\\s+policy\\s+\"?{re.escape(policy)}\"?\\s+on\\s+public\\.{table}",
+            const_uid_sql,
+        ):
+            failures.append(f"Missing initplan policy rewrite: {table}.{policy}")
+            break
+    if const_uid_sql.count("(select auth.uid())") < 11:
+        failures.append("Owner-policy auth.uid() calls must use statement-level SELECT")
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
