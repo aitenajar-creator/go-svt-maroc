@@ -62,27 +62,37 @@
             // Test 2.1: Enregistrement de résultat
             window.StudentSpace.saveQuizResult('quiz_test_1', 8, 10, [
                 { question: 'Q1', selected: 'A', correct: 'B' }
-            ]);
+            ], 'attempt_test_1');
             
             const profileData = window.StudentSpace.getProfileData(profileId);
             logTest('2.1 Enregistrement de résultat', profileData.quizResults.length === 1, `Résultats: ${profileData.quizResults.length}`);
             
             // Test 2.2: Évitement des doublons (même quiz dans la minute)
-            window.StudentSpace.saveQuizResult('quiz_test_1', 8, 10, []);
+            window.StudentSpace.saveQuizResult('quiz_test_1', 8, 10, [], 'attempt_test_1');
             const profileData2 = window.StudentSpace.getProfileData(profileId);
-            logTest('2.2 Évitement des doublons', profileData2.quizResults.length === 1, `Pas de doublon: ${profileData2.quizResults.length}`);
+            logTest('2.2 Idempotence du même essai', profileData2.quizResults.length === 1, `Essais: ${profileData2.quizResults.length}`);
+
+            // Une nouvelle tentative du même quiz doit être conservée, même dans la même minute.
+            window.StudentSpace.saveQuizResult('quiz_test_1', 6, 10, [], 'attempt_test_2');
+            const profileData3 = window.StudentSpace.getProfileData(profileId);
+            logTest('2.3 Nouvelle tentative conservée', profileData3.quizResults.length === 2, `Essais: ${profileData3.quizResults.length}`);
             
             // Test 2.3: Calcul correct du score
-            const result = profileData2.quizResults[0];
-            logTest('2.3 Calcul du score', result.percentage === 80, `Score: ${result.percentage}%`);
+            const result = profileData3.quizResults[0];
+            logTest('2.4 Calcul du score', result.percentage === 80, `Score: ${result.percentage}%`);
             
             // Test 2.4: Détails des réponses
-            logTest('2.4 Détails des réponses', result.mistakes.length === 1, `Erreurs: ${result.mistakes.length}`);
+            logTest('2.5 Détails des réponses', result.mistakes.length === 1, `Erreurs: ${result.mistakes.length}`);
             
             // Test 2.5: Quiz ID stable
             const quizId = result.quizId;
-            logTest('2.5 Quiz ID stable', quizId === 'quiz_test_1', `ID: ${quizId}`);
-            
+            logTest('2.6 Quiz ID stable', quizId === 'quiz_test_1', `ID: ${quizId}`);
+
+            let invalidRejected = false;
+            try { window.StudentSpace.saveQuizResult('bad', 11, 10, [], 'attempt_bad'); }
+            catch (e) { invalidRejected = true; }
+            logTest('2.7 Rejet des scores invalides', invalidRejected, 'Un score supérieur au total est rejeté');
+
             // Cleanup
             window.StudentSpace.deleteProfile(profileId);
             
@@ -219,11 +229,13 @@
             // Données pour profil 1
             window.StudentSpace.switchProfile(profileId1);
             window.StudentSpace.saveQuizResult('quiz_iso', 9, 10, []);
+            window.StudentSpace.updateProgress('lesson', 'lesson_a');
             window.StudentSpace.markLessonComplete('lesson_a');
             
             // Données pour profil 2
             window.StudentSpace.switchProfile(profileId2);
             window.StudentSpace.saveQuizResult('quiz_iso', 5, 10, []);
+            window.StudentSpace.updateProgress('lesson', 'lesson_b');
             window.StudentSpace.markLessonComplete('lesson_b');
             
             // Vérification isolation
@@ -260,9 +272,12 @@
             logTest('7.1 Données sauvegardées immédiatement', dataBefore.quizResults.length === 1, `Résultats: ${dataBefore.quizResults.length}`);
             
             // Vérifier depuis localStorage
-            const localStorageKey = 'gosvt_student_space_data_' + profileId;
+            const localStorageKey = profileId + '_gosvt_quiz_results';
             const localStorageData = localStorage.getItem(localStorageKey);
-            logTest('7.2 Données dans localStorage', !!localStorageData, 'Présent dans localStorage');
+            let persistedResults = [];
+            try { persistedResults = JSON.parse(localStorageData || '[]'); } catch (_) {}
+            logTest('7.2 Données dans localStorage', Array.isArray(persistedResults) && persistedResults.length === 1,
+                'Résultat retrouvé dans la clé locale propre au profil');
             
             // Cleanup
             window.StudentSpace.deleteProfile(profileId);
@@ -280,18 +295,21 @@
         
         try {
             // Test 8.1: Vérifier que le système lit depuis gosvt_favs
-            localStorage.setItem('gosvt_favs', JSON.stringify([
-                { title: 'Test Favorite', url: 'http://test.com' }
+            localStorage.setItem('gosvt-favs', JSON.stringify([
+                'cours/francais/2BAC/2BACSVT/test-favorite.pdf'
             ]));
             
             const profileId = window.StudentSpace.createProfile('FavTestUser');
             window.StudentSpace.switchProfile(profileId);
             
-            const profileData = window.StudentSpace.getProfileData(profileId);
-            logTest('8.1 Lecture favoris existants', true, 'Favoris lus depuis gosvt_favs');
+            // The standalone runner starts with an empty container, so render explicitly.
+            window.StudentSpace.renderStudentSpace();
+            const favoriteLink = document.querySelector('#panel-favorites .favorite-item a');
+            logTest('8.1 Lecture favoris existants', !!favoriteLink && /test-favorite/.test(favoriteLink.href),
+                'Favori lu depuis gosvt-favs (format tableau de chemins)');
             
             // Cleanup
-            localStorage.removeItem('gosvt_favs');
+            localStorage.removeItem('gosvt-favs');
             window.StudentSpace.deleteProfile(profileId);
             
         } catch (e) {
@@ -299,10 +317,35 @@
         }
     }
 
+
+    // ============================================
+    // TEST 9: STUDY PLANNER AND PERSONAL NOTES
+    // ============================================
+    function testPlannerAndNotes() {
+        console.log('\n=== TEST 9: MODÈLE DU PLANNING ET DES NOTES ===');
+        try {
+            const profileId = window.StudentSpace.createProfile('PlannerNotesTest');
+            window.StudentSpace.switchProfile(profileId);
+            const data = window.StudentSpace.getProfileData(profileId);
+            data.studyPlan.push({ id: 'task_test', title: 'Réviser la cellule', date: '2026-11-07', duration: 45, completed: false });
+            data.notes.push({ id: 'note_test', title: 'Définition', body: 'La cellule est l’unité structurale du vivant.', createdAt: Date.now() });
+            // The public save path is exercised through the existing data update methods in the UI;
+            // this test confirms the data model exposes profile-scoped collections.
+            logTest('9.1 Collections planning et notes disponibles',
+                Array.isArray(data.studyPlan) && Array.isArray(data.notes),
+                `Collections disponibles — planning: ${data.studyPlan.length}, notes: ${data.notes.length}`);
+            window.StudentSpace.deleteProfile(profileId);
+        } catch (e) {
+            logTest('9.0 Tests planning et notes', false, `Erreur: ${e.message}`);
+        }
+    }
+
     // ============================================
     // RUN ALL TESTS
     // ============================================
     function runAllTests() {
+        // A fresh run must not include results from a previous button click.
+        testResults.length = 0;
         console.log('\n╔════════════════════════════════════════════════════════════╗');
         console.log('║     GO SVT MAROC - AUDIT TEST SUITE                     ║');
         console.log('╚════════════════════════════════════════════════════════════╝\n');
@@ -315,6 +358,7 @@
         testProfileIsolation();
         testPersistence();
         testFavoritesIntegration();
+        testPlannerAndNotes();
         
         // Summary
         console.log('\n╔════════════════════════════════════════════════════════════╗');

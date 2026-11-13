@@ -258,7 +258,14 @@
         try {
             const quiz = await loadQuiz(path);
             if (quiz.titre) title.textContent = `❓ ${quiz.titre}`;
-            quizState = { path, quiz, order: shuffle(quiz.questions.map((_, i) => i)), index: 0, score: 0, wrong: [], answered: false };
+            quizState = {
+                path, quiz, order: shuffle(quiz.questions.map((_, i) => i)),
+                index: 0, score: 0, wrong: [], answered: false,
+                attemptId: (window.crypto && crypto.randomUUID)
+                    ? crypto.randomUUID()
+                    : 'attempt_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2),
+                resultSaved: false
+            };
             renderQuestion();
         } catch (e) {
             quizBody().innerHTML = `<p class="error">${t('تعذر تحميل الاختبار.', 'Impossible de charger ce quiz.')} <small>(${escapeHtml(e.message)})</small></p>`;
@@ -323,16 +330,42 @@
         const s = quizState;
         const total = s.order.length;
         const pct = Math.round(s.score / total * 100);
-        const scores = readObject('gosvt-quiz');
-        const best = Math.max(pct, scores[s.path] ? scores[s.path].best : 0);
-        scores[s.path] = { best, last: pct, date: Date.now() };
-        storage.set('gosvt-quiz', JSON.stringify(scores));
-        trackEvent('quiz', s.path);
+        let best = pct;
+        if (!s.reviewMode) {
+            const scores = readObject('gosvt-quiz');
+            best = Math.max(pct, scores[s.path] ? scores[s.path].best : 0);
+            scores[s.path] = { best, last: pct, date: Date.now() };
+            storage.set('gosvt-quiz', JSON.stringify(scores));
+            trackEvent('quiz', s.path);
+        }
 
-        const msg = pct >= 80 ? t('🏆 ممتاز! أنت متمكن من هذا الدرس.', '🏆 Excellent ! Vous maîtrisez ce chapitre.')
+        // Save modern course quizzes to the student's personal assessment history.
+        // Keep the attempt token stable so duplicate result rendering cannot add repeats.
+        if (!s.reviewMode && !s.resultSaved && window.StudentSpace &&
+            typeof window.StudentSpace.saveQuizResult === 'function') {
+            const mistakes = s.wrong.map(function (item) {
+                return {
+                    question: item.q.question,
+                    selected: item.q.choix[item.choice],
+                    correct: item.q.choix[item.q.reponse]
+                };
+            });
+            try {
+                window.StudentSpace.saveQuizResult(s.path, s.score, total, mistakes, s.attemptId);
+                s.resultSaved = true;
+            } catch (error) {
+                console.warn('[GoSVT] Quiz result could not be added to student history:', error);
+            }
+        }
+
+        const msg = s.reviewMode
+            ? t('أكملت مراجعة الأخطاء. أحسنت! يمكنك إعادة المراجعة لترسيخ الفهم.', 'Révision terminée. Vous pouvez recommencer pour consolider vos acquis.')
+            : pct >= 80 ? t('🏆 ممتاز! أنت متمكن من هذا الدرس.', '🏆 Excellent ! Vous maîtrisez ce chapitre.')
             : pct >= 50 ? t('👍 جيد، راجع الأخطاء أسفله.', '👍 Bien ! Revoyez les erreurs ci-dessous.')
             : t('📚 راجع الدرس ثم أعد المحاولة.', '📚 Révisez le cours puis réessayez.');
 
+        const scoreLabel = s.reviewMode ? t('نتيجة المراجعة:', 'Score de révision :') : t('أفضل نتيجة:', 'Meilleur score :');
+        const restartLabel = s.reviewMode ? t('إعادة المراجعة', 'Recommencer la révision') : t('إعادة الاختبار', 'Recommencer');
         const review = s.wrong.length
             ? `<h4 class="gs-quiz-review-title">${t('تصحيح الأخطاء', 'Correction des erreurs')}</h4>` + s.wrong.map(({ q, choice }) => `
                 <div class="gs-quiz-review" dir="auto">
@@ -348,9 +381,9 @@
                 <div class="gs-quiz-score">${s.score} / ${total}</div>
                 <p class="gs-quiz-pct">${pct}%</p>
                 <p>${msg}</p>
-                <p class="gs-quiz-best">${t('أفضل نتيجة:', 'Meilleur score :')} ${best}%</p>
+                <p class="gs-quiz-best">${scoreLabel} ${best}%</p>
                 <div class="gs-note-actions gs-quiz-end">
-                    <button type="button" class="gs-btn gs-btn-main gs-quiz-restart">🔄 ${t('إعادة الاختبار', 'Recommencer')}</button>
+                    <button type="button" class="gs-btn gs-btn-main gs-quiz-restart">🔄 ${restartLabel}</button>
                     <button type="button" class="gs-btn gs-btn-ghost gs-quiz-close">${t('إغلاق', 'Fermer')}</button>
                 </div>
             </div>${review}`;
@@ -358,6 +391,45 @@
         const section = document.getElementById('quiz');
         if (section) renderQuizList(section);
     }
+
+    // =============== مراجعة أخطاء التلميذ من «مساحتي» ===============
+    function startMistakesReview(items) {
+        const safeItems = Array.isArray(items) ? items.filter(item =>
+            item && typeof item.question === 'string' &&
+            typeof item.selected === 'string' && typeof item.correct === 'string' &&
+            item.selected !== item.correct
+        ).slice(0, 50) : [];
+        if (!safeItems.length) return false;
+        if (!quizModal()) buildQuizModal();
+
+        const path = String(safeItems[0].quizId || 'mistakes-review');
+        const questions = safeItems.map(item => ({
+            question: item.question.slice(0, 2000),
+            choix: [item.selected.slice(0, 1000), item.correct.slice(0, 1000)],
+            reponse: 1,
+            explication: '',
+            image: ''
+        }));
+        const title = quizModal().querySelector('.gs-modal-title');
+        if (title) title.textContent = t('مراجعة أخطائي', 'Révision de mes erreurs');
+        quizState = {
+            path: path,
+            quiz: { titre: t('مراجعة أخطائي', 'Révision de mes erreurs'), questions: questions, auto: false },
+            order: shuffle(questions.map((_, index) => index)),
+            index: 0,
+            score: 0,
+            wrong: [],
+            answered: false,
+            reviewMode: true,
+            reviewItems: safeItems
+        };
+        openModal('gs-quiz-modal');
+        renderQuestion();
+        return true;
+    }
+
+    window.GoSVTQuiz = window.GoSVTQuiz || {};
+    window.GoSVTQuiz.reviewMistakes = startMistakesReview;
 
     // =============== توجيه قسم Quiz ===============
     const prevLoadSection = loadSection;
@@ -380,7 +452,11 @@
         const choice = e.target.closest('.gs-quiz-choice');
         if (choice) { answer(Number(choice.dataset.choice)); return; }
         if (e.target.closest('.gs-quiz-next')) { nextQuestion(); return; }
-        if (e.target.closest('.gs-quiz-restart')) { if (quizState) openQuiz(quizState.path); return; }
+        if (e.target.closest('.gs-quiz-restart')) {
+            if (quizState && quizState.reviewMode) startMistakesReview(quizState.reviewItems);
+            else if (quizState) openQuiz(quizState.path);
+            return;
+        }
         if (e.target.closest('.gs-quiz-close')) { closeModal(quizModal()); return; }
         const video = e.target.closest('.gs-video-btn, .gs-video-part');
         if (video) openVideo(video.dataset.path, Number(video.dataset.index || 0));
