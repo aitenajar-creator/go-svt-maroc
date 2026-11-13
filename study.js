@@ -148,6 +148,9 @@
         byPath('.gs-fav', path).forEach(b => { b.classList.toggle('on', on); b.textContent = on ? '★' : '☆'; });
         toast(on ? t('⭐ أُضيف إلى مراجعتي', '⭐ Ajouté à Ma révision') : t('حُذف من المفضلة', 'Retiré des favoris'));
         renderRevision();
+        if (window.StudentSpace && typeof window.StudentSpace.refresh === 'function') {
+            window.StudentSpace.refresh();
+        }
     }
 
     // ---------- الحفظ بدون إنترنت ----------
