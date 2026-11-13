@@ -1040,6 +1040,37 @@
             </section>`;
     }
 
+    function renderPlantCellExplorer() {
+        const fr = lang() === 'fr';
+        const names = fr
+          ? {nucleus:'Noyau',chloroplast:'Chloroplaste',vacuole:'Vacuole',membrane:'Membrane plasmique',wall:'Paroi cellulaire'}
+          : {nucleus:'النواة',chloroplast:'البلاستيدة الخضراء',vacuole:'الفجوة العصارية',membrane:'الغشاء البلازمي',wall:'الجدار الخلوي'};
+        const intro = fr ? 'Sélectionnez un organite pour découvrir son rôle.' : 'اختر عضية من الرسم لاكتشاف دورها.';
+        const facts = fr
+          ? {nucleus:'Le noyau contient l’information génétique (ADN) et participe au contrôle des activités cellulaires.',chloroplast:'Les chloroplastes contiennent la chlorophylle et réalisent la photosynthèse grâce à l’énergie lumineuse.',vacuole:'La grande vacuole stocke notamment l’eau et contribue au maintien de la turgescence.',membrane:'La membrane plasmique délimite la cellule et régule les échanges avec le milieu.',wall:'La paroi cellulosique protège la cellule et lui donne soutien et forme.'}
+          : {nucleus:'تحتوي النواة على المعلومة الوراثية (ADN)، وتساهم في تنظيم أنشطة الخلية.',chloroplast:'تحتوي البلاستيدات الخضراء على اليخضور، وتنجز عملية التركيب الضوئي باستعمال الطاقة الضوئية.',vacuole:'تخزن الفجوة العصارية الماء ومواد مختلفة، وتساهم في الحفاظ على ضغط الامتلاء.',membrane:'يحيط الغشاء البلازمي بالخلية وينظم التبادلات بينها وبين الوسط الخارجي.',wall:'يوفر الجدار الخلوي دعامة وحماية للخلية ويساهم في الحفاظ على شكلها.'};
+        return `<section class="gs-cell-lab" aria-labelledby="gs-cell-lab-title">
+          <div class="gs-cell-lab-heading"><div><span class="gs-eyebrow">GO SVT MAROC · MINI LAB</span><h3 id="gs-cell-lab-title">${fr?'Explorez une cellule végétale':'استكشف الخلية النباتية'}</h3><p>${intro}</p></div><span class="gs-cell-lab-symbol" aria-hidden="true">🧫</span></div>
+          <div class="gs-cell-lab-layout">
+            <div class="gs-cell-illustration" role="img" aria-label="${fr?'Schéma simplifié d’une cellule végétale':'رسم مبسط لخلية نباتية'}">
+              <svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs><linearGradient id="gsCellFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e9f8d9"/><stop offset="1" stop-color="#b8e2a5"/></linearGradient><linearGradient id="gsVacuole" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8f1ff"/><stop offset="1" stop-color="#8bc9e8"/></linearGradient></defs>
+                <rect x="28" y="35" width="464" height="260" rx="78" fill="#a8d18f" stroke="#39794b" stroke-width="12"/><rect x="43" y="50" width="434" height="230" rx="66" fill="url(#gsCellFill)" stroke="#f8fff2" stroke-width="5"/>
+                <path d="M178 90 Q260 55 346 100 Q390 130 375 220 Q330 264 215 245 Q158 213 178 90Z" fill="url(#gsVacuole)" stroke="#68a9cb" stroke-width="3"/>
+                <ellipse cx="128" cy="155" rx="43" ry="35" fill="#9c83d8" stroke="#604c9c" stroke-width="4"/><circle cx="140" cy="146" r="11" fill="#e8ddff"/>
+                <g fill="#4d9c60" stroke="#27683c" stroke-width="3"><ellipse cx="397" cy="94" rx="32" ry="16"/><ellipse cx="110" cy="235" rx="30" ry="14"/></g>
+                <g fill="none" stroke="#548d59" stroke-width="2" stroke-dasharray="5 5"><path d="M130 117L108 76H60"/><path d="M397 78L424 56H470"/><path d="M275 238L295 270H380"/><path d="M45 178L12 198"/></g>
+              </svg>
+            </div>
+            <div class="gs-cell-controls">
+              ${Object.entries(names).map(([key,name],i)=>`<button type="button" class="gs-cell-part ${i===0?'is-active':''}" data-cell-part="${key}" aria-pressed="${i===0?'true':'false'}"><span>0${i+1}</span>${name}</button>`).join('')}
+            </div>
+          </div>
+          <div class="gs-cell-fact" aria-live="polite"><strong class="gs-cell-fact-title">${names.nucleus}</strong><p class="gs-cell-fact-text">${facts.nucleus}</p></div>
+          <p class="gs-cell-note">${fr?'Schéma pédagogique simplifié, non à l’échelle.':'رسم تعليمي مبسط، وليس وفق مقياس حقيقي.'}</p>
+        </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -1087,6 +1118,7 @@
                 <div class="gs-welcome-tags"><span>🧬 ${lang() === 'ar' ? 'افهم' : 'Comprendre'}</span><span>🔬 ${lang() === 'ar' ? 'استكشف' : 'Explorer'}</span><span>🎯 ${lang() === 'ar' ? 'أتقن' : 'Maîtriser'}</span></div></div>
                 <a class="gs-primary-link" href="#cours">${lang() === 'ar' ? 'ابدأ التعلم الآن' : 'Commencer'} <span aria-hidden="true">←</span></a>
             </section>
+            ${renderPlantCellExplorer()}
             <div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
                 <div class="gs-path-steps">
@@ -1728,6 +1760,26 @@
         `;
 
         container.innerHTML = html;
+        const cellFacts = {
+            nucleus: [lang()==='fr'?'Noyau':'النواة', lang()==='fr'?'Le noyau contient l’information génétique (ADN) et participe au contrôle des activités cellulaires.':'تحتوي النواة على المعلومة الوراثية (ADN)، وتساهم في تنظيم أنشطة الخلية.'],
+            chloroplast: [lang()==='fr'?'Chloroplaste':'البلاستيدة الخضراء', lang()==='fr'?'Les chloroplastes contiennent la chlorophylle et réalisent la photosynthèse grâce à l’énergie lumineuse.':'تحتوي البلاستيدات الخضراء على اليخضور، وتنجز عملية التركيب الضوئي باستعمال الطاقة الضوئية.'],
+            vacuole: [lang()==='fr'?'Vacuole':'الفجوة العصارية', lang()==='fr'?'La grande vacuole stocke notamment l’eau et contribue au maintien de la turgescence.':'تخزن الفجوة العصارية الماء ومواد مختلفة، وتساهم في الحفاظ على ضغط الامتلاء.'],
+            membrane: [lang()==='fr'?'Membrane plasmique':'الغشاء البلازمي', lang()==='fr'?'La membrane plasmique délimite la cellule et régule les échanges avec le milieu.':'يحيط الغشاء البلازمي بالخلية وينظم التبادلات بينها وبين الوسط الخارجي.'],
+            wall: [lang()==='fr'?'Paroi cellulaire':'الجدار الخلوي', lang()==='fr'?'La paroi cellulosique protège la cellule et lui donne soutien et forme.':'يوفر الجدار الخلوي دعامة وحماية للخلية ويساهم في الحفاظ على شكلها.']
+        };
+        container.querySelectorAll('.gs-cell-part').forEach(button => button.addEventListener('click', function () {
+            const fact = cellFacts[this.dataset.cellPart];
+            if (!fact) return;
+            container.querySelectorAll('.gs-cell-part').forEach(item => {
+                const active = item === this;
+                item.classList.toggle('is-active', active);
+                item.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            const title = container.querySelector('.gs-cell-fact-title');
+            const body = container.querySelector('.gs-cell-fact-text');
+            if (title) title.textContent = fact[0];
+            if (body) body.textContent = fact[1];
+        }));
         bindPlannerAndNotes(container);
         bindFavoritesPanel(container.querySelector('#panel-favorites'));
         hydrateDailyChallenge();
