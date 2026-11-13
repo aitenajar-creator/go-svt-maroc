@@ -1212,6 +1212,24 @@
         </section>`;
     }
 
+    function renderScienceMemoryCards() {
+        const fr=lang()==='fr';
+        return `<section class="gs-memory-deck" aria-labelledby="gs-memory-title">
+          <div class="gs-memory-heading"><div><span class="gs-eyebrow">SMART STUDY · FLASHCARDS</span>
+            <h3 id="gs-memory-title">${fr?'Cartes mémoire SVT':'بطاقات الذاكرة في علوم الحياة والأرض'}</h3>
+            <p>${fr?'Révisez les notions essentielles : réfléchissez, révélez, puis passez à la carte suivante.':'راجع المفاهيم الأساسية: فكر في الإجابة، اكشفها، ثم انتقل إلى البطاقة التالية.'}</p></div><span aria-hidden="true">🗂️</span></div>
+          <div class="gs-memory-card" aria-live="polite">
+            <div class="gs-memory-card-top"><span class="gs-memory-category"></span><span class="gs-memory-counter"></span></div>
+            <div class="gs-memory-art" aria-hidden="true"><span class="gs-memory-art-icon"></span></div>
+            <h4 class="gs-memory-question"></h4>
+            <div class="gs-memory-answer" hidden></div>
+            <div class="gs-memory-actions"><button type="button" class="gs-memory-reveal">${fr?'Révéler la réponse':'اكشف الإجابة'}</button><div><button type="button" class="gs-memory-prev" aria-label="${fr?'Carte précédente':'البطاقة السابقة'}">←</button><button type="button" class="gs-memory-next">${fr?'Suivante':'التالية'} →</button></div></div>
+            <div class="gs-memory-progress" role="progressbar" aria-label="${fr?'Progression des cartes':'تقدم البطاقات'}" aria-valuemin="0" aria-valuemax="8" aria-valuenow="1"><span></span></div>
+          </div>
+          <p class="gs-memory-tip">${fr?'Astuce : essayez de répondre avant de révéler le verso.':'نصيحة: حاول الإجابة من ذاكرتك قبل كشف الوجه الآخر للبطاقة.'}</p>
+        </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -1264,6 +1282,7 @@
             ${renderCellPhotosynthesisQuiz()}
             ${renderHumanSystemsAtlas()}
             ${renderScientificMediaLibrary()}
+            ${renderScienceMemoryCards()}
             <div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
                 <div class="gs-path-steps">
@@ -1997,6 +2016,51 @@
                 if(event.target.closest('[data-svt-restart]')){index=0;score=0;draw();}
             });
             draw();
+        }
+        const memoryDeckData = lang()==='fr' ? [
+          ['Cellule végétale','Quelle structure entoure la membrane et soutient la cellule ?','La paroi cellulosique, qui protège et soutient la cellule végétale.','🧫'],
+          ['Chloroplaste','Quel pigment capte principalement l’énergie lumineuse ?','La chlorophylle, présente dans les membranes des thylakoïdes.','🍃'],
+          ['Photosynthèse','Quels sont les deux réactifs minéraux de la photosynthèse ?','L’eau (H₂O) et le dioxyde de carbone (CO₂), en présence de lumière.','☀️'],
+          ['Échanges gazeux','Où se déroulent les échanges gazeux dans les poumons ?','Au niveau des alvéoles pulmonaires, en contact avec les capillaires.','🫁'],
+          ['Digestion','Où la majorité des nutriments sont-ils absorbés ?','Dans l’intestin grêle, à travers sa paroi riche en villosités.','🥗'],
+          ['Circulation','Quel est le rôle principal du cœur ?','Propulser le sang dans les circuits pulmonaire et général.','❤️'],
+          ['Système nerveux','Quel est le rôle de la moelle épinière ?','Transmettre les messages nerveux entre l’encéphale et les nerfs, et participer aux réflexes.','🧠'],
+          ['Biodiversité','Que révèle l’étude des fossiles ?','Elle renseigne sur les êtres vivants du passé et l’évolution de la biodiversité.','🦴']
+        ] : [
+          ['الخلية النباتية','ما البنية التي تحيط بالغشاء وتدعم الخلية؟','الجدار السيليلوزي، الذي يحمي الخلية النباتية ويساهم في دعمها.','🧫'],
+          ['البلاستيدة الخضراء','ما الصبغة التي تلتقط الطاقة الضوئية أساساً؟','اليخضور الموجود في أغشية التيلاكويدات.','🍃'],
+          ['التركيب الضوئي','ما المادتان المعدنيتان الأوليتان في التركيب الضوئي؟','الماء H₂O وثاني أكسيد الكربون CO₂ بوجود الضوء.','☀️'],
+          ['التبادلات الغازية','أين تتم التبادلات الغازية في الرئتين؟','على مستوى الأسناخ الرئوية المحاطة بالشعيرات الدموية.','🫁'],
+          ['الهضم','أين يتم امتصاص معظم المغذيات؟','في الأمعاء الدقيقة عبر جدارها الغني بالزغابات المعوية.','🥗'],
+          ['الدورة الدموية','ما الدور الأساسي للقلب؟','دفع الدم عبر الدورة الرئوية والدورة العامة.','❤️'],
+          ['الجهاز العصبي','ما دور النخاع الشوكي؟','نقل الرسائل العصبية بين الدماغ وأعصاب الجسم والمساهمة في المنعكسات.','🧠'],
+          ['التنوع الحيوي','ماذا تكشف دراسة المستحاثات؟','تقدم معلومات عن الكائنات الحية في الماضي وتطور التنوع الحيوي.','🦴']
+        ];
+        const memoryRoot=container.querySelector('.gs-memory-deck');
+        if(memoryRoot){
+            let memoryIndex=0,revealed=false;
+            const updateMemoryCard=()=>{
+                const card=memoryDeckData[memoryIndex];
+                memoryRoot.querySelector('.gs-memory-category').textContent=card[0];
+                memoryRoot.querySelector('.gs-memory-counter').textContent=(lang()==='fr'?'Carte':'بطاقة')+' '+(memoryIndex+1)+' / '+memoryDeckData.length;
+                memoryRoot.querySelector('.gs-memory-art-icon').textContent=card[3];
+                memoryRoot.querySelector('.gs-memory-question').textContent=card[1];
+                const answer=memoryRoot.querySelector('.gs-memory-answer');
+                answer.textContent=card[2];
+                answer.hidden=!revealed;
+                memoryRoot.querySelector('.gs-memory-reveal').textContent=revealed?(lang()==='fr'?'Masquer la réponse':'إخفاء الإجابة'):(lang()==='fr'?'Révéler la réponse':'اكشف الإجابة');
+                const progress=memoryRoot.querySelector('.gs-memory-progress');
+                progress.setAttribute('aria-valuenow',String(memoryIndex+1));
+                progress.querySelector('span').style.width=((memoryIndex+1)/memoryDeckData.length*100)+'%';
+                memoryRoot.querySelector('.gs-memory-prev').disabled=memoryIndex===0;
+                memoryRoot.querySelector('.gs-memory-next').textContent=memoryIndex===memoryDeckData.length-1?(lang()==='fr'?'Recommencer':'من البداية')+' ↻':(lang()==='fr'?'Suivante':'التالية')+' →';
+            };
+            memoryRoot.addEventListener('click',event=>{
+                if(event.target.closest('.gs-memory-reveal')){revealed=!revealed;updateMemoryCard();}
+                if(event.target.closest('.gs-memory-prev')&&memoryIndex>0){memoryIndex--;revealed=false;updateMemoryCard();}
+                if(event.target.closest('.gs-memory-next')){memoryIndex=memoryIndex===memoryDeckData.length-1?0:memoryIndex+1;revealed=false;updateMemoryCard();}
+            });
+            updateMemoryCard();
         }
         const anatomyFacts = {
           digestive: lang()==='fr'?['Système digestif','Transforme les aliments en nutriments absorbables.','Bouche → œsophage → estomac → intestin grêle → gros intestin.','Les nutriments traversent la paroi de l’intestin grêle et rejoignent le sang.']:['الجهاز الهضمي','يحول الأغذية إلى مغذيات قابلة للامتصاص.','الفم ← المريء ← المعدة ← الأمعاء الدقيقة ← الأمعاء الغليظة.','تعبر المغذيات جدار الأمعاء الدقيقة لتصل إلى الدم.'],
