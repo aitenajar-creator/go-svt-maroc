@@ -42,9 +42,26 @@ for migration in sorted(MIGRATIONS.glob("*.sql")):
                 f"{migration.relative_to(ROOT)}: {table} has no policy and no explicit client-access revoke"
             )
 
+# Student submissions must never be able to set teacher-owned grading fields.
+grading_migration = MIGRATIONS / "20261113000100_restrict_student_submission_fields.sql"
+if not grading_migration.is_file():
+    failures.append("Missing student submission grading-permissions migration")
+else:
+    grading_sql = grading_migration.read_text(encoding="utf-8").lower()
+    if not re.search(
+        r"revoke\s+insert\s+on\s+public\.teacher_assignment_submissions\s+from\s+authenticated",
+        grading_sql,
+    ):
+        failures.append("Student submissions: table-level INSERT must be revoked")
+    if not re.search(
+        r"grant\s+insert\s*\(\s*assignment_id\s*,\s*student_id\s*,\s*answer\s*\)\s+on\s+public\.teacher_assignment_submissions\s+to\s+authenticated",
+        grading_sql,
+    ):
+        failures.append("Student submissions: INSERT must be limited to assignment_id, student_id and answer")
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
     sys.exit(1)
 
-print(f"RLS migration coverage check passed for {checked} public tables.")
+print(f"RLS migration coverage check passed for {checked} public tables and student grading-column restrictions.")
