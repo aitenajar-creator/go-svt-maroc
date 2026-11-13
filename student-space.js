@@ -2029,7 +2029,6 @@
 
         container.innerHTML = html;
         loadScientificMediaImages(container);
-        const microscopeSlides = [];
         const microscopeData = {
             onion: {name: lang()==='fr'?'Épiderme d’oignon':'بشرة البصل',kind: lang()==='fr'?'Cellules végétales':'خلايا نباتية',observe: lang()==='fr'?'Paroi cellulaire · organisation en mosaïque':'الجدار الخلوي · تنظيم الخلايا كفسيفساء',detail: lang()==='fr'?'Cellules jointives, de forme polygonale, limitées par une paroi visible.':'خلايا متراصة متعددة الأضلاع تحدها جدران خلوية واضحة.',art: '<svg viewBox="0 0 520 300" role="img" aria-label="Cellules épidermiques"><g fill="#f3d9ee" stroke="#9a6d9a" stroke-width="4"><path d="M20 18L145 12 152 95 18 103Z"/><path d="M155 12L280 20 276 104 152 95Z"/><path d="M290 18L500 12 502 105 276 104Z"/><path d="M18 112L152 105 160 205 18 211Z"/><path d="M160 105L276 112 280 210 160 205Z"/><path d="M285 112L502 112 500 210 280 210Z"/><path d="M18 220L160 215 155 290 18 288Z"/><path d="M165 215L280 220 278 290 155 290Z"/><path d="M285 220L500 218 502 290 278 290Z"/></g><g fill="#9165a0"><circle cx="85" cy="59" r="9"/><circle cx="216" cy="58" r="9"/><circle cx="395" cy="58" r="9"/><circle cx="85" cy="160" r="9"/><circle cx="218" cy="160" r="9"/><circle cx="394" cy="160" r="9"/></g></svg>'},
             stomata: {name: lang()==='fr'?'Stomates foliaires':'ثغور الورقة',kind: lang()==='fr'?'Épiderme de feuille':'بشرة ورقية',observe: lang()==='fr'?'Cellules de garde · ostiole · échanges gazeux':'الخلايا الحارسة · الفتحة الثغرية · التبادلات الغازية',detail: lang()==='fr'?'Deux cellules de garde entourent une ouverture qui participe aux échanges gazeux.':'تحيط خليتان حارستان بفتحة تساهم في التبادلات الغازية والنتح.',art: '<svg viewBox="0 0 520 300" role="img" aria-label="Stomate"><path d="M125 55C40 80 65 220 175 245Q235 150 175 65Z M395 55C480 80 455 220 345 245Q285 150 345 65Z" fill="#b6d99b" stroke="#568b50" stroke-width="5"/><ellipse cx="260" cy="150" rx="35" ry="85" fill="#eaf6df" stroke="#578c53" stroke-width="4"/></svg>'},
@@ -2037,6 +2036,7 @@
             leaf: {name: lang()==='fr'?'Cellules chlorophylliennes':'خلايا يخضورية',kind: lang()==='fr'?'Tissu végétal':'نسيج نباتي',observe: lang()==='fr'?'Cellules végétales · chloroplastes · parois':'خلايا نباتية · بلاستيدات خضراء · جدران',detail: lang()==='fr'?'Les chloroplastes captent l’énergie lumineuse utilisée pour la photosynthèse.':'تلتقط البلاستيدات الخضراء الطاقة الضوئية اللازمة للتركيب الضوئي.',art: '<svg viewBox="0 0 520 300" role="img" aria-label="Cellules chlorophylliennes"><g fill="#e8f1d6" stroke="#779c61" stroke-width="5"><rect x="15" y="18" width="155" height="120" rx="22"/><rect x="180" y="18" width="155" height="120" rx="22"/><rect x="345" y="18" width="160" height="120" rx="22"/><rect x="15" y="158" width="155" height="125" rx="22"/><rect x="180" y="158" width="155" height="125" rx="22"/><rect x="345" y="158" width="160" height="125" rx="22"/></g><g fill="#4e9c56"><ellipse cx="45" cy="48" rx="13" ry="7"/><ellipse cx="130" cy="105" rx="13" ry="7"/><ellipse cx="210" cy="50" rx="13" ry="7"/><ellipse cx="300" cy="105" rx="13" ry="7"/><ellipse cx="375" cy="48" rx="13" ry="7"/><ellipse cx="470" cy="105" rx="13" ry="7"/></g></svg>'}
         };
         let microscopeZoom = 100;
+        let microscopeCurrent = microscopeData.onion;
         const microscopeRoot = container.querySelector('.gs-microscope-lab');
         if (microscopeRoot) {
             microscopeRoot.addEventListener('click', function(event) {
@@ -2044,6 +2044,7 @@
                 if (slideButton) {
                     const slide = microscopeData[slideButton.dataset.microSlide];
                     if (!slide) return;
+                    microscopeCurrent = slide;
                     microscopeRoot.querySelectorAll('[data-micro-slide]').forEach(function(button) {
                         const active = button === slideButton;
                         button.classList.toggle('is-active', active);
@@ -2067,6 +2068,8 @@
                     const active = labelButton.getAttribute('aria-pressed') !== 'true';
                     labelButton.setAttribute('aria-pressed', active ? 'true' : 'false');
                     microscopeRoot.classList.toggle('show-micro-labels', active);
+                    const overlay = microscopeRoot.querySelector('.gs-micro-overlay');
+                    if (overlay) overlay.textContent = active ? microscopeCurrent.observe : (lang()==='fr'?'Schéma pédagogique':'رسم تعليمي');
                     labelButton.textContent = lang()==='fr' ? (active?'Masquer les repères':'Afficher les repères') : (active?'إخفاء البيانات':'إظهار البيانات');
                 }
             });
