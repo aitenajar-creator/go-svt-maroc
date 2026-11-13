@@ -1336,7 +1336,7 @@
                         return { page: candidate, info: imageInfo };
                     }).filter(function(item) {
                         return item.info && item.info.thumburl && item.info.descriptionurl &&
-                            /^image\\/(jpeg|png|webp|gif|tiff)$/i.test(item.info.mime || '') &&
+                            /^image\/(jpeg|png|webp|gif|tiff)$/i.test(item.info.mime || '') &&
                             Number(item.info.width) >= 320 && Number(item.info.height) >= 200;
                     }).sort(function(a, b) {
                         return (Number(b.info.width) * Number(b.info.height)) - (Number(a.info.width) * Number(a.info.height));
