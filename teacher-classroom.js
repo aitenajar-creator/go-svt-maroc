@@ -95,7 +95,7 @@
       [tr('المؤشر','Indicateur'),tr('القيمة','Valeur')],
       [tr('عدد التلاميذ','Nombre d’élèves'),report.studentCount],
       [tr('مجموع الدروس المكتملة','Total des leçons terminées'),report.lessonTotal],
-      [tr('متوسط نتائج التلاميذ المسجلين (%)','Moyenne des résultats des élèves inscrits (%)'),report.quizAverage],
+      [tr('متوسط نتائج محاولات التدريب المصرّح بها (%)','Moyenne des essais d’entraînement déclarés (%)'),report.quizAverage],
       [tr('إجابات الواجبات الفريدة المستلمة','Soumissions de devoirs uniques reçues'),report.uniqueSubmissionCount],
       [tr('إجمالي فرص التسليم','Nombre total de remises attendues'),report.expectedSubmissionCount],
       [tr('معدل التسليم (%)','Taux de remise (%)'),report.submissionRate],
@@ -416,13 +416,13 @@
         const unassessedCount=students.length-quizAverages.length;
         const classAnalyticsHtml='<section class="gs-cl-card" style="margin:0 0 1rem"><h4>'+tr('📊 تحليل نتائج القسم','📊 Analyse des résultats de la classe')+'</h4>'+
           '<div class="gs-cl-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:.65rem 0">'+
-          '<div class="gs-cl-row"><strong>'+(classAverage==='—'?'—':classAverage+'%')+'</strong><p class="gs-cl-muted">'+tr('المتوسط الحسابي','Moyenne')+'</p></div>'+
+          '<div class="gs-cl-row"><strong>'+(classAverage==='—'?'—':classAverage+'%')+'</strong><p class="gs-cl-muted">'+tr('متوسط محاولات التدريب المصرّح بها','Moyenne des essais d’entraînement déclarés')+'</p></div>'+
           '<div class="gs-cl-row"><strong>'+(classMedian===null?'—':classMedian.toFixed(1)+'%')+'</strong><p class="gs-cl-muted">'+tr('الوسيط','Médiane')+'</p></div>'+
           '<div class="gs-cl-row"><strong>'+quizAverages.length+'/'+students.length+'</strong><p class="gs-cl-muted">'+tr('تلاميذ لهم نتائج مسجلة','Élèves avec résultats')+'</p></div>'+
-          '</div><p class="gs-cl-muted">'+tr('توزيع التلاميذ حسب متوسط نتائج محاولات الاختبار المسجلة في حساباتهم:','Répartition selon la moyenne des tentatives de quiz enregistrées dans leurs comptes :')+'</p>'+
+          '</div><p class="gs-cl-muted">'+tr('توزيع التلاميذ حسب متوسط نتائج محاولات التدريب التي سُجلت في حساباتهم. هذه نتائج يصرّح بها التلميذ ذاتياً وليست درجات امتحان موثّقة:','Répartition selon les résultats des essais d’entraînement enregistrés dans les comptes élèves. Ces résultats sont déclaratifs et ne constituent pas des notes d’examen vérifiées :')+'</p>'+
           '<div class="gs-cl-list">'+scoreBands.map(b=>'<div class="gs-cl-row"><div class="gs-cl-head" style="margin:0"><strong>'+esc(b.label)+'</strong><strong>'+b.count+'</strong></div><div role="img" aria-label="'+esc(b.label)+' : '+b.count+'" style="height:9px;background:var(--gs-cl-border,#ddd);border-radius:8px;overflow:hidden;margin-top:.4rem"><span style="display:block;width:'+(quizAverages.length?Math.round(b.count/quizAverages.length*100):0)+'%;height:100%;background:var(--gs-cl-accent,#27866b)"></span></div></div>').join('')+
           (unassessedCount?'<p class="gs-cl-muted">'+unassessedCount+' '+tr('تلاميذ دون نتائج اختبار مسجلة بعد','élèves sans résultat de quiz enregistré')+'</p>':'')+
-          '</div><small class="gs-cl-muted">'+tr('هذه مؤشرات مجمعة للقسم وليست ترتيباً للتلاميذ. وتُعرض التفاصيل الفردية في التقرير التربوي المخصص للأستاذ.','Ces indicateurs sont agrégés et ne constituent pas un classement. Les détails individuels restent dans le rapport pédagogique réservé à l’enseignant.')+'</small></section>';
+          '</div><small class="gs-cl-muted">'+tr('هذه مؤشرات تدريبية يصرّح بها التلاميذ ويمكن أن تكون غير مكتملة أو غير متحقق منها؛ لا تُستخدم كدرجات رسمية أو أساساً لقرار تقويمي. وهي مجمعة وليست ترتيباً للتلاميذ.','Ces indicateurs d’entraînement sont déclaratifs, peuvent être incomplets ou non vérifiés et ne doivent pas servir de notes officielles ni de base à une décision d’évaluation. Ils sont agrégés et ne constituent pas un classement.')+'</small></section>';
         const submissionActivityDays=Array.from({length:7},(_,i)=>{
           const date=new Date();date.setHours(0,0,0,0);date.setDate(date.getDate()-(6-i));
           const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
@@ -459,7 +459,7 @@
           ? '<div class="gs-cl-head"><strong>'+tr('ملخص القسم','Résumé de la classe')+'</strong><button type="button" class="gs-cl-secondary" data-action="export-class-report">'+tr('تصدير تقرير CSV','Exporter le rapport CSV')+'</button></div><div class="gs-cl-grid" style="margin-bottom:1rem">'+
             '<div class="gs-cl-row"><strong>'+students.length+'</strong><p class="gs-cl-muted">'+tr('تلميذاً في القسم','élèves dans la classe')+'</p></div>'+
             '<div class="gs-cl-row"><strong>'+totalLessons+'</strong><p class="gs-cl-muted">'+tr('درساً مكتملاً','leçons terminées')+'</p></div>'+
-            '<div class="gs-cl-row"><strong>'+classAverage+(classAverage==='—'?'':'%')+'</strong><p class="gs-cl-muted">'+tr('متوسط نتائج التلاميذ المسجلين','moyenne des élèves inscrits')+'</p></div>'+
+            '<div class="gs-cl-row"><strong>'+classAverage+(classAverage==='—'?'':'%')+'</strong><p class="gs-cl-muted">'+tr('متوسط محاولات التدريب المصرّح بها','moyenne des essais d’entraînement déclarés')+'</p></div>'+
             '<div class="gs-cl-row"><strong>'+submittedPairs.size+'</strong><p class="gs-cl-muted">'+tr('إجابة واجب فريدة مستلمة','réponses uniques reçues')+'</p></div>'+
             '<div class="gs-cl-row"><strong>'+followUpCount+'</strong><p class="gs-cl-muted">'+tr('تلاميذ مقترح تتبعهم','élèves à suivre')+'</p></div>'+
             '</div>'+
