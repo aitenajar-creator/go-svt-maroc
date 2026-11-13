@@ -1171,7 +1171,7 @@
           <section class="gs-atlas-quiz" aria-labelledby="gs-atlas-quiz-title">
             <div class="gs-atlas-quiz-heading"><div><span class="gs-eyebrow">QUICK CHECK · AUTOÉVALUATION</span>
               <h4 id="gs-atlas-quiz-title">${fr?'Testez vos connaissances':'اختبر معلوماتك'}</h4>
-              <p>${fr?'Quatre questions courtes pour vérifier votre compréhension.':'أربعة أسئلة قصيرة للتحقق من فهمك.'}</p></div><span aria-hidden="true">🎯</span></div>
+              <p>${fr?'Six questions courtes pour vérifier votre compréhension.':'ستة أسئلة قصيرة للتحقق من فهمك.'}</p></div><span aria-hidden="true">🎯</span></div>
             <div class="gs-atlas-quiz-content" aria-live="polite"></div>
           </section>
 </section>`;
