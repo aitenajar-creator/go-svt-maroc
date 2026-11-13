@@ -61,7 +61,7 @@
     const list = $('resource-list');
     list.innerHTML = '<p class="muted">جاري تحميل المحتوى...</p>';
     const { data, error } = await client.from('site_content_items')
-      .select('id,title,category,language,study_level,study_track,file_name,storage_path,created_at')
+      .select('id,title,category,language,study_level,study_track,file_name,storage_path,created_at,is_deleted')
       .order('created_at', { ascending: false }).limit(100);
     if (error) { list.textContent = 'تعذر تحميل الملفات: ' + error.message; return; }
     $('resource-count').textContent = String(data.length);
@@ -76,19 +76,45 @@
       info.append(title,meta);
       const actions = document.createElement('div'); actions.className = 'resource-actions';
       const open = document.createElement('a'); open.href = publicUrl(item.storage_path); open.target = '_blank'; open.rel = 'noopener'; open.textContent = 'فتح الملف';
-      const del = document.createElement('button'); del.type = 'button'; del.className = 'delete-btn'; del.textContent = 'حذف';
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'delete-btn'; del.textContent = item.is_deleted ? 'إعادة محاولة الحذف' : 'حذف';
+      if (item.is_deleted) { const pending = document.createElement('small'); pending.textContent = 'مخفي عن الزوار — في انتظار إتمام حذف الملف'; pending.className = 'muted'; info.append(pending); }
       del.addEventListener('click', () => removeResource(item, del));
       actions.append(open,del); row.append(info,actions); list.append(row);
     });
   }
   async function removeResource(item, button) {
-    if (!window.confirm('هل تريد حذف هذا الملف من الموقع؟')) return;
+    if (!item.is_deleted && !window.confirm('هل تريد حذف هذا الملف من الموقع؟')) return;
     button.disabled = true;
-    const { error: storageError } = await client.storage.from('site-content').remove([item.storage_path]);
-    if (storageError) { button.disabled = false; alert('تعذر حذف الملف: ' + storageError.message); return; }
-    const { error } = await client.from('site_content_items').delete().eq('id', item.id);
-    if (error) { alert('حُذف الملف من التخزين لكن تعذر حذف بياناته: ' + error.message); }
-    await loadResources();
+    try {
+      // Hide the database record first. Public catalogue queries are then filtered by RLS.
+      if (!item.is_deleted) {
+        const { data, error } = await client.from('site_content_items')
+          .update({ is_deleted: true }).eq('id', item.id).select('id').maybeSingle();
+        if (error) throw error;
+        if (!data) throw new Error('لم يتم العثور على المورد أو لا تملك صلاحية حذفه.');
+        item.is_deleted = true;
+      }
+
+      // If storage cleanup fails, the hidden row remains as a retryable deletion task.
+      const { error: storageError } = await client.storage.from('site-content').remove([item.storage_path]);
+      if (storageError) {
+        alert('أُخفي المورد عن الزوار، لكن تعذر حذف الملف من التخزين. يمكنك الضغط على «إعادة محاولة الحذف» لاحقاً. التفاصيل: ' + storageError.message);
+        await loadResources();
+        return;
+      }
+
+      const { error: metadataError } = await client.from('site_content_items').delete().eq('id', item.id);
+      if (metadataError) {
+        alert('حُذف الملف من التخزين، لكن بقي سجل إداري مخفي. أعد محاولة الحذف لإكمال التنظيف. التفاصيل: ' + metadataError.message);
+        await loadResources();
+        return;
+      }
+      await loadResources();
+    } catch (error) {
+      alert('تعذر حذف المورد: ' + (error.message || error));
+    } finally {
+      button.disabled = false;
+    }
   }
   $('login-form').addEventListener('submit', async event => {
     event.preventDefault();
