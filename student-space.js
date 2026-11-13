@@ -1174,25 +1174,30 @@
         const icons = ['🥗','🫁','❤️','🧠','🫘','🦴'];
         const keys = ['digestive','respiratory','circulatory','nervous','urinary','skeletal'];
         const initial = data.digestive;
+        const photoTopics = fr ? [
+          ['digestive','Système digestif','Organes digestifs humains · photographie anatomique','human digestive system anatomy specimen','🥗'],
+          ['respiratory','Système respiratoire','Poumons et voies respiratoires · photographie anatomique','human lungs respiratory system anatomy specimen','🫁'],
+          ['circulatory','Système circulatoire','Cœur et vaisseaux sanguins · photographie anatomique','human heart cardiovascular anatomy specimen','❤️'],
+          ['nervous','Système nerveux','Encéphale et moelle épinière · photographie anatomique','human brain spinal cord anatomy specimen','🧠'],
+          ['urinary','Système urinaire','Reins et voies urinaires · photographie anatomique','human kidneys urinary system anatomy specimen','🫘'],
+          ['skeletal','Système squelettique','Os et articulations · photographie anatomique','human skeleton bones anatomy specimen','🦴']
+        ] : [
+          ['digestive','الجهاز الهضمي','أعضاء الجهاز الهضمي البشري · صورة تشريحية حقيقية','human digestive system anatomy specimen','🥗'],
+          ['respiratory','الجهاز التنفسي','الرئتان والمسالك التنفسية · صورة تشريحية حقيقية','human lungs respiratory system anatomy specimen','🫁'],
+          ['circulatory','الجهاز الدوري','القلب والأوعية الدموية · صورة تشريحية حقيقية','human heart cardiovascular anatomy specimen','❤️'],
+          ['nervous','الجهاز العصبي','الدماغ والنخاع الشوكي · صورة تشريحية حقيقية','human brain spinal cord anatomy specimen','🧠'],
+          ['urinary','الجهاز البولي','الكليتان والمسالك البولية · صورة تشريحية حقيقية','human kidneys urinary system anatomy specimen','🫘'],
+          ['skeletal','الجهاز الهيكلي','العظام والمفاصل · صورة تشريحية حقيقية','human skeleton bones anatomy specimen','🦴']
+        ];
         return `<section class="gs-anatomy-atlas" aria-labelledby="gs-anatomy-title">
           <div class="gs-anatomy-heading"><div><span class="gs-eyebrow">GO SVT MAROC · SCIENCE ATLAS</span>
             <h3 id="gs-anatomy-title">${fr?'Atlas interactif du corps humain':'الأطلس التفاعلي لجسم الإنسان'}</h3>
-            <p>${fr?'Choisissez un système pour découvrir ses organes et ses fonctions.':'اختر جهازاً للتعرف على أعضائه ووظائفه.'}</p></div><span class="gs-anatomy-mark" aria-hidden="true">🧍</span></div>
-          <div class="gs-anatomy-figure" aria-hidden="true">
-            <svg viewBox="0 0 300 340" role="img">
-              <defs><linearGradient id="gsBodyGrad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9e9df"/><stop offset="1" stop-color="#a9cbb5"/></linearGradient></defs>
-              <circle cx="150" cy="45" r="29" fill="url(#gsBodyGrad)" stroke="#548a68" stroke-width="3"/>
-              <path d="M121 82Q105 88 91 104L67 178Q63 192 76 197Q88 201 94 186L112 137L109 218L99 303Q98 319 113 320Q127 320 130 305L150 231L170 305Q173 320 187 320Q202 319 201 303L191 218L188 137L206 186Q212 201 224 197Q237 192 233 178L209 104Q195 88 179 82Z" fill="url(#gsBodyGrad)" stroke="#548a68" stroke-width="3"/>
-              <path d="M150 77V219" stroke="#548a68" stroke-width="2" stroke-dasharray="4 5"/>
-              <g class="gs-organ-highlight" data-organ-system="nervous" fill="#6d8fd0" stroke="#fff" stroke-width="2"><path d="M137 36Q150 20 163 36Q159 54 150 59Q141 54 137 36Z"/></g>
-              <g class="gs-organ-highlight" data-organ-system="circulatory" fill="#e98b85" stroke="#fff" stroke-width="2"><path d="M150 110C125 93 117 119 150 145C183 119 175 93 150 110Z"/></g>
-              <g class="gs-organ-highlight" data-organ-system="respiratory" fill="#83b8dc" stroke="#fff" stroke-width="2"><path d="M145 91Q119 83 119 119Q120 139 145 146Z"/><path d="M155 91Q181 83 181 119Q180 139 155 146Z"/></g>
-              <path class="gs-organ-highlight is-highlighted" data-organ-system="digestive" d="M145 156Q132 162 140 183Q150 193 160 183Q168 162 155 156Z" fill="#dba56c" stroke="#fff" stroke-width="2"/>
-              <path class="gs-organ-highlight is-highlighted" data-organ-system="digestive" d="M132 187Q150 178 168 187L166 209Q150 219 134 209Z" fill="#8dbd76" stroke="#fff" stroke-width="2"/>
-              <g class="gs-organ-highlight" data-organ-system="urinary" fill="#b76f7b" stroke="#fff" stroke-width="2"><path d="M128 190C105 176 105 211 124 220Q139 221 140 201Z"/><path d="M172 190C195 176 195 211 176 220Q161 221 160 201Z"/><path d="M140 226Q150 216 160 226Q166 243 150 250Q134 243 140 226Z"/></g>
-              <g class="gs-organ-highlight" data-organ-system="skeletal" fill="none" stroke="#d2b98e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M128 88L150 98 172 88M150 92V218M128 112Q150 125 172 112M125 128Q150 142 175 128M128 145Q150 159 172 145M130 164Q150 177 170 164M133 184Q150 196 167 184M132 210L116 302M168 210L184 302"/><path d="M135 218Q150 230 165 218"/></g>
-            </svg>
-            <span>${fr?'Schéma simplifié du corps humain':'رسم مبسط لجسم الإنسان'}</span>
+            <p>${fr?'Choisissez un système : explorez des photographies anatomiques réelles, avec leurs sources et licences.':'اختر جهازاً لاستكشاف صور تشريحية حقيقية موثقة المصدر والترخيص.'}</p></div><span class="gs-anatomy-mark" aria-hidden="true">📷</span></div>
+          <div class="gs-anatomy-photo-gallery" aria-label="${fr?'Photographies anatomiques réelles':'صور تشريحية حقيقية'}">
+            ${photoTopics.map((topic,i)=>`<a class="gs-anatomy-photo-card ${i===0?'is-active':''}" data-anatomy-photo="${topic[0]}" data-science-search="${topic[3]}" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=${encodeURIComponent(topic[3])}" target="_blank" rel="noopener noreferrer" aria-pressed="${i===0?'true':'false'}">
+              <span class="gs-science-media-photo"><span>${topic[4]}</span><small>${fr?'Chargement de la photo…':'جارٍ تحميل الصورة الحقيقية…'}</small></span>
+              <span class="gs-anatomy-photo-copy"><strong>${topic[1]}</strong><small>${topic[2]}</small><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span>
+            </a>`).join('')}
           </div>
           <div class="gs-anatomy-tabs" role="group" aria-label="${fr?'Systèmes du corps':'أجهزة الجسم'}">
             ${keys.map((key,i)=>`<button type="button" class="gs-anatomy-tab ${i===0?'is-active':''}" data-anatomy-system="${key}" aria-pressed="${i===0?'true':'false'}"><span>${icons[i]}</span><b>${names[i]}</b></button>`).join('')}
@@ -1202,7 +1207,7 @@
             <div class="gs-anatomy-info"><span>🔎 ${fr?'Principaux organes':'أهم المكونات'}</span><p class="gs-anatomy-organs">${initial[2]}</p></div>
             <div class="gs-anatomy-info"><span>💡 ${fr?'À retenir':'معلومة أساسية'}</span><p class="gs-anatomy-fact">${initial[3]}</p></div>
           </div>
-          <p class="gs-anatomy-note">${fr?'Illustration pédagogique schématique, non destinée au diagnostic médical.':'رسم تعليمي تخطيطي، وليس مرجعاً للتشخيص الطبي.'}</p>
+          <p class="gs-anatomy-note">${fr?'Photographies pédagogiques, non destinées au diagnostic médical.':'صور تعليمية حقيقية، وليست مرجعاً للتشخيص الطبي.'}</p>
         
           <section class="gs-atlas-quiz" aria-labelledby="gs-atlas-quiz-title">
             <div class="gs-atlas-quiz-heading"><div><span class="gs-eyebrow">QUICK CHECK · AUTOÉVALUATION</span>
@@ -1314,7 +1319,7 @@
     }
 
     async function loadScientificMediaImages(root) {
-        const cards = root.querySelectorAll('.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search]');
+        const cards = root.querySelectorAll('.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search]');
         const fr = lang() === 'fr';
         await Promise.all(Array.from(cards).map(async function(card) {
             const query = card.getAttribute('data-science-search') || '';
@@ -2475,8 +2480,10 @@
         container.querySelectorAll('.gs-anatomy-tab').forEach(button => button.addEventListener('click', function () {
             const fact = anatomyFacts[this.dataset.anatomySystem];
             if (!fact) return;
-            container.querySelectorAll('.gs-anatomy-figure [data-organ-system]').forEach(organ => {
-                organ.classList.toggle('is-highlighted', organ.dataset.organSystem === this.dataset.anatomySystem);
+            container.querySelectorAll('.gs-anatomy-photo-card').forEach(card => {
+                const activePhoto = card.dataset.anatomyPhoto === this.dataset.anatomySystem;
+                card.classList.toggle('is-active', activePhoto);
+                card.setAttribute('aria-pressed', activePhoto ? 'true' : 'false');
             });
             container.querySelectorAll('.gs-anatomy-tab').forEach(item => {
                 const active = item === this;
