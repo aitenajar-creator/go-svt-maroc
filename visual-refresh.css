@@ -1382,6 +1382,9 @@ body{background:#f4f8f5}
 #student-space .gs-micro-zoom-value{min-width:44px;color:#65798d;font-size:.75rem;text-align:center}
 #student-space .gs-micro-canvas{position:relative;display:grid;place-items:center;min-height:240px;margin:.75rem 0;overflow:hidden;border-radius:12px;background:radial-gradient(circle,#fff 0,#edf3f8 100%)}
 #student-space .gs-micro-art{width:min(100%,560px);transform-origin:center;transition:transform .2s ease}
+#student-space .gs-micro-image-placeholder{display:grid;place-items:center;min-height:220px;padding:1.5rem;border:1px dashed #c8d7e4;border-radius:12px;background:#f7fafc;color:#637b91;font-size:.9rem;text-align:center;line-height:1.7}
+#student-space .gs-micro-art.is-real-photo img{max-width:100%;max-height:420px;object-fit:contain}
+
 #student-space .gs-micro-art svg{display:block;width:100%;height:auto}
 #student-space .gs-micro-overlay{position:absolute;right:10px;bottom:9px;padding:.25rem .5rem;border-radius:7px;background:rgba(255,255,255,.85);color:#6c7c8d;font-size:.66rem}
 #student-space .gs-micro-kind{color:#59728d;font-size:.75rem;font-weight:750}
