@@ -446,12 +446,7 @@ else:
             failures.append(f"Read-policy consolidation is missing required clause: {fragment}")
             break
 
-if failures:
-    print("RLS migration coverage check failed:")
-    print("\n".join(f"- {item}" for item in failures))
-    sys.exit(1)
 
-print(f"RLS migration coverage check passed for {checked} public tables and student grading-column restrictions.")
 
 
 # Classroom tables must not retain broad TRUNCATE/trigger/reference rights or
@@ -471,3 +466,10 @@ else:
         if statement not in classroom_grants_sql:
             failures.append(f"Teacher classroom least-privilege grants missing: {statement}")
             break
+
+if failures:
+    print("RLS migration coverage check failed:")
+    print("\n".join(f"- {item}" for item in failures))
+    sys.exit(1)
+
+print(f"RLS migration coverage check passed for {checked} public tables and student grading-column restrictions.")
