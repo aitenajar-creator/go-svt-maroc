@@ -2265,7 +2265,7 @@
                     labelButton.setAttribute('aria-pressed', active ? 'true' : 'false');
                     microscopeRoot.classList.toggle('show-micro-labels', active);
                     const overlay = microscopeRoot.querySelector('.gs-micro-overlay');
-                    if (overlay) overlay.textContent = active ? microscopeCurrent.observe : (lang()==='fr'?'Schéma pédagogique':'رسم تعليمي');
+                    if (overlay) overlay.textContent = active ? microscopeCurrent.observe : (microscopeRoot.querySelector('.gs-micro-art') && microscopeRoot.querySelector('.gs-micro-art').classList.contains('is-real-photo') ? (lang()==='fr'?'Microphotographie réelle':'صورة مجهرية حقيقية') : (lang()==='fr'?'Schéma pédagogique':'رسم تعليمي'));
                     labelButton.textContent = lang()==='fr' ? (active?'Masquer les repères':'Afficher les repères') : (active?'إخفاء البيانات':'إظهار البيانات');
                 }
             });
