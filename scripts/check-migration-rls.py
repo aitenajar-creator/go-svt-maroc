@@ -191,6 +191,49 @@ else:
             break
 
 
+# Legacy SECURITY DEFINER RPCs must not be callable by anonymous users.
+# Internal trigger helpers are revoked from all client roles; user-facing RPCs
+# remain explicitly executable by authenticated users only.
+legacy_rpc_migration = MIGRATIONS / "20261113000900_restrict_legacy_security_definer_rpcs.sql"
+if not legacy_rpc_migration.is_file():
+    failures.append("Missing legacy SECURITY DEFINER RPC restriction migration")
+else:
+    legacy_rpc_sql = legacy_rpc_migration.read_text(encoding="utf-8").lower()
+    internal_functions = ('"current_role"()', 'handle_new_user()')
+    for signature in internal_functions:
+        if not re.search(
+            rf"revoke\s+all\s+on\s+function\s+public\.{re.escape(signature)}\s+from\s+public\s*,\s*anon\s*,\s*authenticated",
+            legacy_rpc_sql,
+        ):
+            failures.append(f"Internal SECURITY DEFINER function {signature}: client EXECUTE must be revoked")
+    authenticated_functions = (
+        "gosvt_is_site_admin()",
+        "gosvt_join_teacher_class(text)",
+        "gosvt_student_classes()",
+        "gosvt_student_reopen_question(uuid)",
+        "gosvt_teacher_class_roster(uuid)",
+        "grade_submission(uuid, numeric, numeric)",
+        "is_admin()",
+        "is_student_in_class(uuid)",
+        "save_answer(uuid, uuid, jsonb)",
+        "start_attempt(uuid)",
+        "submit_submission(uuid)",
+        "teaches_class(uuid)",
+    )
+    for signature in authenticated_functions:
+        escaped = re.escape(signature)
+        if not re.search(
+            rf"revoke\s+all\s+on\s+function\s+public\.{escaped}\s+from\s+public\s*,\s*anon",
+            legacy_rpc_sql,
+        ):
+            failures.append(f"Legacy SECURITY DEFINER RPC {signature}: PUBLIC/anon EXECUTE must be revoked")
+        if not re.search(
+            rf"grant\s+execute\s+on\s+function\s+public\.{escaped}\s+to\s+authenticated",
+            legacy_rpc_sql,
+        ):
+            failures.append(f"Legacy SECURITY DEFINER RPC {signature}: authenticated EXECUTE must remain granted")
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
