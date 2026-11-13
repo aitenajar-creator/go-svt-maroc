@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#205c3b">
+<meta name="description" content="مختبر تفاعلي لعلوم الحياة والأرض: استكشف الخلية والمجهر وأنجز أنشطة علمية. Laboratoire interactif de SVT.">
+<title>المختبر الرقمي | Go SVT Maroc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="visual-refresh.css">
+<link rel="stylesheet" href="laboratory.css?v=20261112-7">
+</head>
+<body class="gs-lab-page">
+<header class="header">
+ <div class="container">
+  <a class="logo gs-lab-logo" href="/" aria-label="Go SVT Maroc"><h1>🔬 Go SVT Maroc</h1><p data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</p></a>
+  <nav class="main-nav" aria-label="Main navigation"><ul>
+   <li><a href="/" data-ar="الرئيسية" data-fr="Accueil">الرئيسية</a></li>
+   <li><a href="/#cours" data-ar="الدروس" data-fr="Cours">الدروس</a></li>
+   <li><a href="/#student-space" data-ar="مساحتي" data-fr="Mon espace">مساحتي</a></li>
+   <li><a href="/teacher-community.html" data-ar="مجتمع الأساتذة" data-fr="Communauté des enseignants">مجتمع الأساتذة</a></li>
+  </ul></nav>
+  <div class="header-actions"><button class="lang-switcher" id="lab-language" type="button">Français</button><button class="mobile-menu-btn" id="lab-menu" type="button" aria-label="Menu"><span></span><span></span><span></span></button></div>
+ </div>
+</header>
+<main class="gs-lab-main">
+ <section class="gs-lab-hero">
+  <div class="gs-lab-hero-copy"><span class="gs-lab-kicker" data-ar="التعلم بالاكتشاف والتجربة" data-fr="Apprendre en explorant">التعلم بالاكتشاف والتجربة</span>
+   <h1 data-ar="مرحباً بك في المختبر الرقمي لعلوم الحياة والأرض" data-fr="Bienvenue dans le laboratoire numérique de SVT">مرحباً بك في المختبر الرقمي لعلوم الحياة والأرض</h1>
+   <p data-ar="اكتشف البنيات المجهرية، تعرّف على مكونات الخلية، واختبر فهمك من خلال أنشطة تعليمية تفاعلية." data-fr="Explorez les structures microscopiques, découvrez les constituants cellulaires et vérifiez vos acquis grâce à des activités interactives.">اكتشف البنيات المجهرية، تعرّف على مكونات الخلية، واختبر فهمك من خلال أنشطة تعليمية تفاعلية.</p>
+   <a class="gs-lab-cta" href="#cell-lab" data-ar="ابدأ الاستكشاف ←" data-fr="Commencer l'exploration →">ابدأ الاستكشاف ←</a>
+  </div>
+  <div class="gs-lab-hero-art" aria-hidden="true"><div class="gs-lab-orbit gs-orbit-one"></div><div class="gs-lab-orbit gs-orbit-two"></div><div class="gs-lab-hero-cell"><span>✦</span></div><div class="gs-lab-hero-label">SVT • LAB</div></div>
+ </section>
+ <section class="gs-lab-section" id="microscope-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 01" data-fr="EXPÉRIENCE 01">التجربة 01</span><h2 data-ar="محطة المجهر الافتراضي" data-fr="Station de microscope virtuel">محطة المجهر الافتراضي</h2><p data-ar="غيّر درجة التكبير ولاحظ كيف تتضح تفاصيل العينة في مجال الرؤية." data-fr="Réglez le grossissement et observez les détails de l'échantillon dans le champ visuel.">غيّر درجة التكبير ولاحظ كيف تتضح تفاصيل العينة في مجال الرؤية.</p></div><span class="gs-lab-number">01</span></div>
+  <div class="gs-microscope-card">
+   <div class="gs-micro-visual"><div class="gs-micro-top"><span data-ar="مجال الرؤية" data-fr="Champ de vision">مجال الرؤية</span><span id="lab-zoom-label">×100</span></div>
+    <div class="gs-micro-view"><div class="gs-micro-specimen" id="micro-specimen"><svg viewBox="0 0 400 300" role="img" aria-label="رسم توضيحي لخلايا نباتية تحت المجهر"><g fill="#d9edcf" stroke="#528b5b" stroke-width="5"><path d="M20 28 Q70 8 112 35 L105 105 Q65 130 18 105Z"/><path d="M122 28 Q180 8 220 34 L216 107 Q166 127 116 105Z"/><path d="M230 28 Q290 8 370 35 L378 105 Q310 130 226 106Z"/><path d="M20 118 Q70 100 108 128 L105 205 Q60 226 18 205Z"/><path d="M120 118 Q170 100 218 128 L218 205 Q165 225 116 205Z"/><path d="M230 118 Q300 100 374 128 L378 205 Q300 226 226 205Z"/><path d="M20 218 Q75 198 110 228 L106 280 L18 280Z"/><path d="M122 218 Q175 198 218 228 L218 280 L116 280Z"/><path d="M230 218 Q300 198 374 228 L378 280 L226 280Z"/></g><g fill="#8c6ab0" opacity=".9"><ellipse cx="65" cy="70" rx="14" ry="19"/><ellipse cx="170" cy="70" rx="14" ry="19"/><ellipse cx="300" cy="70" rx="14" ry="19"/><ellipse cx="65" cy="165" rx="14" ry="19"/><ellipse cx="170" cy="165" rx="14" ry="19"/><ellipse cx="300" cy="165" rx="14" ry="19"/><ellipse cx="65" cy="248" rx="14" ry="19"/><ellipse cx="170" cy="248" rx="14" ry="19"/><ellipse cx="300" cy="248" rx="14" ry="19"/></g><g fill="#f0c66e"><circle cx="93" cy="47" r="5"/><circle cx="198" cy="48" r="5"/><circle cx="330" cy="48" r="5"/><circle cx="94" cy="143" r="5"/><circle cx="198" cy="143" r="5"/><circle cx="330" cy="143" r="5"/></g></svg></div></div>
+    <div class="gs-micro-scale"><span>×40</span><input id="lab-zoom" type="range" min="40" max="400" step="20" value="100" aria-label="درجة التكبير"><span>×400</span></div>
+    <div class="gs-micro-caption" id="lab-micro-caption" data-ar="عينة توضيحية لخلايا نباتية — رسم تعليمي، وليست صورة مجهرية حقيقية." data-fr="Échantillon schématique de cellules végétales — illustration pédagogique, pas une microphotographie réelle.">عينة توضيحية لخلايا نباتية — رسم تعليمي، وليست صورة مجهرية حقيقية.</div>
+   </div>
+   <div class="gs-micro-info"><span class="gs-lab-kicker" data-ar="كيف نستخدمها؟" data-fr="COMMENT L'UTILISER ?">كيف نستخدمها؟</span><h3 data-ar="استكشف العينة" data-fr="Explorez l'échantillon">استكشف العينة</h3><p data-ar="حرّك المؤشر لتغيير التكبير. كلما ارتفعت القيمة، بدا جزء أصغر من العينة أكبر في مجال الرؤية." data-fr="Déplacez le curseur pour modifier le grossissement. Plus la valeur augmente, plus une petite partie de l'échantillon apparaît agrandie.">حرّك المؤشر لتغيير التكبير. كلما ارتفعت القيمة، بدا جزء أصغر من العينة أكبر في مجال الرؤية.</p><div class="gs-micro-fact"><strong data-ar="ملاحظة علمية" data-fr="À retenir">ملاحظة علمية</strong><span data-ar="التكبير الكلي للمجهر يساوي تكبير العدسة العينية مضروباً في تكبير العدسة الشيئية." data-fr="Le grossissement total est le produit du grossissement de l'oculaire par celui de l'objectif.">التكبير الكلي للمجهر يساوي تكبير العدسة العينية مضروباً في تكبير العدسة الشيئية.</span></div></div>
+  </div>
+ </section>
+ <section class="gs-lab-section" id="cell-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 02" data-fr="EXPÉRIENCE 02">التجربة 02</span><h2 data-ar="استكشاف الخلية" data-fr="Explorer la cellule">استكشاف الخلية</h2><p data-ar="اختر نوع الخلية، ثم اضغط على أحد مكوناتها للتعرف على دوره." data-fr="Choisissez un type de cellule, puis sélectionnez un constituant pour découvrir son rôle.">اختر نوع الخلية، ثم اضغط على أحد مكوناتها للتعرف على دوره.</p></div><span class="gs-lab-number">02</span></div>
+  <div class="gs-cell-card">
+   <div class="gs-cell-controls" role="group" aria-label="نوع الخلية"><button type="button" class="gs-cell-type is-active" data-cell="plant" data-ar="خلية نباتية" data-fr="Cellule végétale">خلية نباتية</button><button type="button" class="gs-cell-type" data-cell="animal" data-ar="خلية حيوانية" data-fr="Cellule animale">خلية حيوانية</button></div>
+   <div class="gs-cell-workspace"><div class="gs-cell-drawing" id="gs-cell-drawing">
+    <svg viewBox="0 0 440 340" role="img" aria-label="رسم تفاعلي مبسط للخلية النباتية">
+     <rect class="cell-wall" x="28" y="25" width="384" height="290" rx="58"/>
+     <rect class="cell-membrane" x="43" y="40" width="354" height="260" rx="48"/>
+     <ellipse class="cell-nucleus" cx="125" cy="125" rx="39" ry="34"/>
+     <circle class="cell-nucleolus" cx="132" cy="125" r="12"/>
+     <rect class="cell-vacuole" x="190" y="72" width="150" height="190" rx="36"/>
+     <g class="cell-chloro"><ellipse cx="95" cy="220" rx="26" ry="13"/><path d="M76 220h38M95 207v26"/><ellipse cx="345" cy="95" rx="23" ry="12"/><path d="M328 95h34"/></g>
+     <g class="cell-mito"><path d="M160 55q25-18 39 4t-16 23q-30-2-23-27zM285 270q25-18 39 4t-16 23q-30-2-23-27z"/></g>
+     <g class="cell-ribo"><circle cx="175" cy="155" r="4"/><circle cx="180" cy="174" r="4"/><circle cx="160" cy="190" r="4"/><circle cx="365" cy="190" r="4"/><circle cx="355" cy="210" r="4"/></g>
+    </svg>
+    <button class="gs-organelle-hit hit-nucleus" data-organelle="nucleus" type="button" aria-label="النواة"></button><button class="gs-organelle-hit hit-vacuole" data-organelle="vacuole" type="button" aria-label="الفجوة"></button><button class="gs-organelle-hit hit-chloro" data-organelle="chloroplast" type="button" aria-label="البلاستيدة الخضراء"></button><button class="gs-organelle-hit hit-mito" data-organelle="mitochondria" type="button" aria-label="الميتوكندريا"></button>
+   </div>
+   <aside class="gs-organelle-panel" aria-live="polite"><span class="gs-lab-kicker" data-ar="بطاقة المكوّن" data-fr="FICHE DU CONSTITUANT">بطاقة المكوّن</span><h3 id="organelle-title">النواة</h3><p id="organelle-description">تحتوي على المادة الوراثية وتساهم في تنظيم أنشطة الخلية.</p><div class="gs-organelle-tip" id="organelle-tip">اضغط على مكونات أخرى في الرسم لمقارنة وظائفها.</div></aside></div>
+   <div class="gs-cell-legend"><span><i class="legend-wall"></i><b data-ar="الجدار الخلوي" data-fr="Paroi">الجدار الخلوي</b></span><span><i class="legend-nucleus"></i><b data-ar="النواة" data-fr="Noyau">النواة</b></span><span><i class="legend-vacuole"></i><b data-ar="الفجوة" data-fr="Vacuole">الفجوة</b></span><span><i class="legend-chloro"></i><b data-ar="البلاستيدة" data-fr="Chloroplaste">البلاستيدة</b></span></div>
+  </div>
+ </section>
+ <section class="gs-lab-section" id="photosynthesis-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 03" data-fr="EXPÉRIENCE 03">التجربة 03</span><h2 data-ar="محاكاة التركيب الضوئي" data-fr="Simulation de la photosynthèse">محاكاة التركيب الضوئي</h2><p data-ar="غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط." data-fr="Modifiez l’intensité lumineuse et la concentration en dioxyde de carbone pour observer leur effet, de façon simplifiée.">غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط.</p></div><span class="gs-lab-number">03</span></div>
+  <div class="gs-photo-card">
+   <div class="gs-photo-visual">
+    <svg viewBox="0 0 420 300" role="img" aria-label="رسم توضيحي لنبات أخضر تحت أشعة الشمس">
+     <defs><linearGradient id="leafGrad" x1="0" x2="1"><stop offset="0" stop-color="#8fcf76"/><stop offset="1" stop-color="#327d4a"/></linearGradient></defs>
+     <circle cx="330" cy="65" r="34" fill="#f5cb62"/><g stroke="#f5cb62" stroke-width="5" stroke-linecap="round"><path d="M330 14v-9M330 125v-9M279 65h-10M390 65h-10M294 29l-8-8M374 109l-8-8M366 29l8-8M294 101l-8 8"/></g>
+     <path d="M208 266Q205 190 211 115" stroke="#397b4b" stroke-width="11" fill="none" stroke-linecap="round"/>
+     <path d="M208 191Q112 89 72 155Q103 225 208 205Z" fill="url(#leafGrad)" stroke="#28683d" stroke-width="4"/><path d="M207 203Q132 166 88 157M210 153Q259 64 327 102Q318 176 210 165Z" fill="url(#leafGrad)" stroke="#28683d" stroke-width="4"/><path d="M208 199Q148 178 91 158M211 163Q263 122 315 107" stroke="#d7efb8" stroke-width="3" fill="none"/>
+     <path d="M130 270h160" stroke="#9b7654" stroke-width="12" stroke-linecap="round"/>
+     <g class="photo-oxygen"><circle cx="90" cy="75" r="8" fill="#8ed8ed"/><circle cx="65" cy="48" r="5" fill="#8ed8ed"/><circle cx="270" cy="35" r="7" fill="#8ed8ed"/></g>
+     <g fill="#4d9cc0" font-size="14" font-weight="700"><text x="20" y="25">CO₂</text><text x="350" y="160">O₂</text></g>
+    </svg>
+    <div class="gs-photo-equation" dir="ltr">6CO₂ + 6H₂O + lumière → C₆H₁₂O₆ + 6O₂</div>
+   </div>
+   <div class="gs-photo-controls">
+    <div class="gs-photo-control"><label for="lab-light"><span data-ar="شدة الإضاءة" data-fr="Intensité lumineuse">شدة الإضاءة</span><strong id="lab-light-value">60%</strong></label><input id="lab-light" type="range" min="0" max="100" value="60"><div class="gs-photo-scale"><span data-ar="ضعيفة" data-fr="Faible">ضعيفة</span><span data-ar="قوية" data-fr="Forte">قوية</span></div></div>
+    <div class="gs-photo-control"><label for="lab-co2"><span data-ar="توفر CO₂" data-fr="Disponibilité du CO₂">توفر CO₂</span><strong id="lab-co2-value">60%</strong></label><input id="lab-co2" type="range" min="0" max="100" value="60"><div class="gs-photo-scale"><span data-ar="منخفض" data-fr="Faible">منخفض</span><span data-ar="مرتفع" data-fr="Élevé">مرتفع</span></div></div>
+    <div class="gs-photo-result"><div class="gs-photo-result-head"><span data-ar="مؤشر النشاط التمثيلي التقريبي" data-fr="Indice approximatif d’activité photosynthétique">مؤشر النشاط التمثيلي التقريبي</span><strong id="lab-photo-rate">60%</strong></div><div class="gs-photo-meter"><span id="lab-photo-meter-fill" style="width:60%"></span></div><p id="lab-photo-explanation" aria-live="polite">في هذا النموذج المبسط، يتحدد النشاط بالعامل الأقل توفراً بين الضوء وCO₂.</p></div>
+    <p class="gs-photo-note" data-ar="نموذج تعليمي نوعي مبسط، وليس قياساً تجريبياً أو معادلة كمية دقيقة. عوامل أخرى مثل درجة الحرارة والماء تؤثر أيضاً في التركيب الضوئي." data-fr="Modèle pédagogique qualitatif simplifié, et non une mesure expérimentale quantitative. D’autres facteurs, comme la température et l’eau, influencent aussi la photosynthèse.">نموذج تعليمي نوعي مبسط، وليس قياساً تجريبياً أو معادلة كمية دقيقة. عوامل أخرى مثل درجة الحرارة والماء تؤثر أيضاً في التركيب الضوئي.</p>
+   </div>
+  </div>
+ </section>
+ <section class="gs-lab-section" id="genetics-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 04" data-fr="EXPÉRIENCE 04">التجربة 04</span><h2 data-ar="مختبر الوراثة ومربع بانيت" data-fr="Laboratoire de génétique et carré de Punnett">مختبر الوراثة ومربع بانيت</h2><p data-ar="غيّر النمط الوراثي للأبوين، ثم اكتشف التراكيب الوراثية المحتملة للأبناء في مثال تعليمي لصفة واحدة." data-fr="Modifiez les génotypes des parents et découvrez les génotypes possibles des descendants dans un exemple pédagogique portant sur un seul caractère.">غيّر النمط الوراثي للأبوين، ثم اكتشف التراكيب الوراثية المحتملة للأبناء في مثال تعليمي لصفة واحدة.</p></div><span class="gs-lab-number">04</span></div>
+  <div class="gs-genetics-card">
+   <div class="gs-genetics-controls">
+    <div class="gs-genetics-parent"><label for="gen-parent-one" data-ar="النمط الوراثي للأب الأول" data-fr="Génotype du parent 1">النمط الوراثي للأب الأول</label><select id="gen-parent-one"><option value="Aa" selected data-ar="Aa — متغاير الزيجوت" data-fr="Aa — hétérozygote">Aa — متغاير الزيجوت</option><option value="AA" data-ar="AA — متماثل سائد" data-fr="AA — homozygote dominant">AA — متماثل سائد</option><option value="aa" data-ar="aa — متماثل متنحٍ" data-fr="aa — homozygote récessif">aa — متماثل متنحٍ</option></select></div>
+    <div class="gs-genetics-cross">×</div>
+    <div class="gs-genetics-parent"><label for="gen-parent-two" data-ar="النمط الوراثي للأب الثاني" data-fr="Génotype du parent 2">النمط الوراثي للأب الثاني</label><select id="gen-parent-two"><option value="Aa" selected data-ar="Aa — متغاير الزيجوت" data-fr="Aa — hétérozygote">Aa — متغاير الزيجوت</option><option value="AA" data-ar="AA — متماثل سائد" data-fr="AA — homozygote dominant">AA — متماثل سائد</option><option value="aa" data-ar="aa — متماثل متنحٍ" data-fr="aa — homozygote récessif">aa — متماثل متنحٍ</option></select></div>
+   </div>
+   <div class="gs-punnett-wrap"><h3 data-ar="مربع بانيت" data-fr="Carré de Punnett">مربع بانيت</h3><p data-ar="الأمشاج الممكنة لكل أب تظهر أعلى المربع وعلى جانبه." data-fr="Les gamètes possibles de chaque parent apparaissent en haut et sur le côté du carré.">الأمشاج الممكنة لكل أب تظهر أعلى المربع وعلى جانبه.</p>
+    <table class="gs-punnett" aria-label="مربع بانيت"><thead><tr><th>×</th><th id="gen-col-one">A</th><th id="gen-col-two">a</th></tr></thead><tbody><tr><th id="gen-row-one">A</th><td id="gen-result-0">AA</td><td id="gen-result-1">Aa</td></tr><tr><th id="gen-row-two">a</th><td id="gen-result-2">Aa</td><td id="gen-result-3">aa</td></tr></tbody></table>
+   </div>
+   <div class="gs-genetics-results"><div><span data-ar="احتمال الصفة السائدة" data-fr="Probabilité du phénotype dominant">احتمال الصفة السائدة</span><strong id="gen-dominant">75%</strong></div><div><span data-ar="احتمال الصفة المتنحية" data-fr="Probabilité du phénotype récessif">احتمال الصفة المتنحية</span><strong id="gen-recessive">25%</strong></div><div><span data-ar="النسبة الجينية" data-fr="Proportion génotypique">النسبة الجينية</span><strong id="gen-ratio">1 AA : 2 Aa : 1 aa</strong></div></div>
+   <p class="gs-genetics-explain" id="gen-explanation" aria-live="polite">في هذا التزاوج، تكون ثلاثة أرباع النتائج حاملة للمظهر السائد وربعها للمظهر المتنحي، وفق فرضية السيادة التامة.</p>
+   <p class="gs-photo-note" data-ar="هذا نموذج مبسط لوراثة مندلية لصفة واحدة مع سيادة تامة، ويفترض تكافؤ احتمالات الأمشاج والإخصاب. الصفات الحقيقية قد تتأثر بعدة مورثات والبيئة." data-fr="Modèle mendélien simplifié d’un seul caractère à dominance complète, supposant des probabilités égales pour les gamètes et la fécondation. Les caractères réels peuvent dépendre de plusieurs gènes et de l’environnement.">هذا نموذج مبسط لوراثة مندلية لصفة واحدة مع سيادة تامة، ويفترض تكافؤ احتمالات الأمشاج والإخصاب. الصفات الحقيقية قد تتأثر بعدة مورثات والبيئة.</p>
+  </div>
+ </section>
+ <section class="gs-lab-section" id="geology-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 05" data-fr="EXPÉRIENCE 05">التجربة 05</span><h2 data-ar="مختبر الطبقات والبنيات الجيولوجية" data-fr="Laboratoire des strates et structures géologiques">مختبر الطبقات والبنيات الجيولوجية</h2><p data-ar="اختر بنية جيولوجية ولاحظ كيف تتغير الطبقات بفعل الترسيب والتشوهات التكتونية." data-fr="Choisissez une structure géologique et observez comment les couches évoluent sous l’effet de la sédimentation et des déformations tectoniques.">اختر بنية جيولوجية ولاحظ كيف تتغير الطبقات بفعل الترسيب والتشوهات التكتونية.</p></div><span class="gs-lab-number">05</span></div>
+  <div class="gs-geology-card">
+   <div class="gs-geology-tabs" role="group" aria-label="اختيار البنية الجيولوجية">
+    <button type="button" class="gs-geology-choice is-active" data-geology="horizontal" data-ar="طبقات أفقية" data-fr="Couches horizontales" aria-pressed="true">طبقات أفقية</button>
+    <button type="button" class="gs-geology-choice" data-geology="fold" data-ar="طية" data-fr="Pli" aria-pressed="false">طية</button>
+    <button type="button" class="gs-geology-choice" data-geology="fault" data-ar="فالق" data-fr="Faille" aria-pressed="false">فالق</button>
+   </div>
+   <div class="gs-geology-visual">
+    <svg viewBox="0 0 640 340" role="img" aria-label="مقطع جيولوجي تعليمي لطبقات صخرية">
+     <g data-geo-scene="horizontal">
+      <path d="M30 60H610V125H30Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/><path d="M30 125H610V190H30Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/><path d="M30 190H610V255H30Z" fill="#d89c72" stroke="#fff" stroke-width="2"/><path d="M30 255H610V320H30Z" fill="#8ca8b7" stroke="#fff" stroke-width="2"/>
+      <g fill="#4d5148" font-size="15" font-weight="700"><text x="45" y="98">A</text><text x="45" y="164">B</text><text x="45" y="230">C</text><text x="45" y="296">D</text></g>
+     </g>
+     <g data-geo-scene="fold" hidden>
+      <path d="M30 60 Q160 60 240 130 Q320 200 400 130 Q480 60 610 60 L610 115 Q480 115 400 185 Q320 255 240 185 Q160 115 30 115Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/>
+      <path d="M30 115 Q160 115 240 185 Q320 255 400 185 Q480 115 610 115 L610 170 Q480 170 400 240 Q320 310 240 240 Q160 170 30 170Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/>
+      <path d="M30 170 Q160 170 240 240 Q320 310 400 240 Q480 170 610 170 L610 225 Q480 225 400 295 Q320 365 240 295 Q160 225 30 225Z" fill="#d89c72" stroke="#fff" stroke-width="2"/>
+      <path d="M30 225 Q160 225 240 295 Q320 365 400 295 Q480 225 610 225 L610 340H30Z" fill="#8ca8b7" stroke="#fff" stroke-width="2"/>
+      <path d="M320 25V310" stroke="#596d60" stroke-dasharray="7 7" stroke-width="2"/><text x="330" y="35" fill="#435b49" font-size="14">Axe du pli</text>
+     </g>
+     <g data-geo-scene="fault" hidden>
+      <path d="M30 60H330L450 125H610V190H450L330 125H30Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/>
+      <path d="M30 125H330L450 190H610V255H450L330 190H30Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/>
+      <path d="M30 190H330L450 255H610V320H450L330 255H30Z" fill="#d89c72" stroke="#fff" stroke-width="2"/>
+      <path d="M330 20L450 330" stroke="#394f43" stroke-width="5" stroke-dasharray="9 6"/><path d="M430 145l-2 24 18-16" fill="none" stroke="#394f43" stroke-width="4"/>
+     </g>
+    </svg>
+    <div class="gs-geology-legend"><span><i class="geo-swatch geo-a"></i><span data-ar="طبقة A (أحدث)" data-fr="Couche A (plus récente)">طبقة A (أحدث)</span></span><span><i class="geo-swatch geo-b"></i><span data-ar="طبقة B" data-fr="Couche B">طبقة B</span></span><span><i class="geo-swatch geo-c"></i><span data-ar="طبقة C" data-fr="Couche C">طبقة C</span></span><span><i class="geo-swatch geo-d"></i><span data-ar="طبقة D (أقدم)" data-fr="Couche D (plus ancienne)">طبقة D (أقدم)</span></span></div>
+   </div>
+   <div class="gs-geology-explanation" id="geo-explanation" aria-live="polite">في الطبقات الأفقية غير المشوهة، تكون الطبقات السفلى أقدم من الطبقات العليا وفق مبدأ التراكب.</div>
+   <p class="gs-photo-note" data-ar="رسوم تخطيطية تعليمية وليست مقاطع جيولوجية بمقياس حقيقي. تحديد العمر النسبي يتطلب مراعاة السياق الجيولوجي والعلاقات بين الطبقات." data-fr="Schémas pédagogiques non à l’échelle. La datation relative nécessite de tenir compte du contexte géologique et des relations entre les couches.">رسوم تخطيطية تعليمية وليست مقاطع جيولوجية بمقياس حقيقي. تحديد العمر النسبي يتطلب مراعاة السياق الجيولوجي والعلاقات بين الطبقات.</p>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="relative-dating-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 06" data-fr="EXPÉRIENCE 06">التجربة 06</span><h2 data-ar="تحدي التأريخ النسبي" data-fr="Défi de datation relative">تحدي التأريخ النسبي</h2><p data-ar="استعمل مبدأ التراكب ومبدأ التقاطع لتحديد ترتيب الأحداث الجيولوجية." data-fr="Utilisez le principe de superposition et le principe de recoupement pour ordonner les événements géologiques.">استعمل مبدأ التراكب ومبدأ التقاطع لتحديد ترتيب الأحداث الجيولوجية.</p></div><span class="gs-lab-number">06</span></div>
+  <div class="gs-relative-card">
+   <div class="gs-relative-visual">
+    <svg viewBox="0 0 560 300" role="img" aria-label="مقطع جيولوجي يوضح طبقات صخرية يخترقها تداخل ناري">
+     <path d="M25 35H535V95H25Z" fill="#e5c38a" stroke="#fff" stroke-width="3"/>
+     <path d="M25 95H535V155H25Z" fill="#b8cf9c" stroke="#fff" stroke-width="3"/>
+     <path d="M25 155H535V215H25Z" fill="#d89c72" stroke="#fff" stroke-width="3"/>
+     <path d="M25 215H535V275H25Z" fill="#8ca8b7" stroke="#fff" stroke-width="3"/>
+     <path d="M300 275L355 215L335 155L385 95L365 35L420 35L440 95L390 155L410 215L355 275Z" fill="#8b6b9e" stroke="#fff" stroke-width="4"/>
+     <g fill="#394f43" font-size="18" font-weight="800"><text x="45" y="72">A</text><text x="45" y="132">B</text><text x="45" y="192">C</text><text x="45" y="252">D</text></g>
+     <text x="445" y="170" fill="#fff" font-size="15" font-weight="800" text-anchor="middle">I</text>
+    </svg>
+    <div class="gs-relative-legend"><span><i class="geo-swatch geo-a"></i>A</span><span><i class="geo-swatch geo-b"></i>B</span><span><i class="geo-swatch geo-c"></i>C</span><span><i class="geo-swatch geo-d"></i>D</span><span><i class="geo-swatch geo-intrusion"></i>I — تداخل ناري / Intrusion</span></div>
+   </div>
+   <div class="gs-relative-task">
+    <span class="gs-lab-kicker" data-ar="سؤال تطبيقي" data-fr="QUESTION D’APPLICATION">سؤال تطبيقي</span>
+    <h3 data-ar="أي حدث جيولوجي وقع أخيراً؟" data-fr="Quel événement géologique est le plus récent ?">أي حدث جيولوجي وقع أخيراً؟</h3>
+    <p data-ar="لاحظ أن التداخل الناري I يقطع الطبقات A وB وC وD. اختر الاستنتاج الصحيح." data-fr="Observez que l’intrusion I recoupe les couches A, B, C et D. Choisissez la conclusion correcte.">لاحظ أن التداخل الناري I يقطع الطبقات A وB وC وD. اختر الاستنتاج الصحيح.</p>
+    <div class="gs-relative-options" role="group" aria-label="اختيار الحدث الأحدث">
+     <button type="button" data-relative-answer="layers" data-ar="ترسب الطبقات" data-fr="Dépôt des couches">ترسب الطبقات</button>
+     <button type="button" data-relative-answer="intrusion" data-ar="حدوث التداخل الناري I" data-fr="Mise en place de l’intrusion I">حدوث التداخل الناري I</button>
+     <button type="button" data-relative-answer="unknown" data-ar="لا يمكن تحديد ذلك" data-fr="Impossible à déterminer">لا يمكن تحديد ذلك</button>
+    </div>
+    <p class="gs-relative-feedback" id="relative-feedback" aria-live="polite" data-ar="اختر إجابتك لعرض التصحيح والتفسير." data-fr="Choisissez une réponse pour afficher la correction et l’explication.">اختر إجابتك لعرض التصحيح والتفسير.</p>
+    <p class="gs-photo-note" data-ar="قاعدة علمية: البنية التي تقطع بنية أخرى تكون أحدث منها، إذا لم توجد أدلة على إعادة تنشيط أو تعقيد لاحق." data-fr="Règle : une structure qui en recoupe une autre est plus récente, sauf indices de réactivation ou de complexité ultérieure.">قاعدة علمية: البنية التي تقطع بنية أخرى تكون أحدث منها، إذا لم توجد أدلة على إعادة تنشيط أو تعقيد لاحق.</p>
+   </div>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="rock-cycle-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 07" data-fr="EXPÉRIENCE 07">التجربة 07</span><h2 data-ar="محطة الدورة الصخرية" data-fr="Explorer le cycle des roches">محطة الدورة الصخرية</h2><p data-ar="اكتشف كيف تتحول الصخور عبر عمليات جيولوجية متواصلة على مدى أزمنة طويلة." data-fr="Découvrez comment les roches se transforment par des processus géologiques continus sur de longues durées.">اكتشف كيف تتحول الصخور عبر عمليات جيولوجية متواصلة على مدى أزمنة طويلة.</p></div><span class="gs-lab-number">07</span></div>
+  <div class="gs-rock-cycle-card">
+   <div class="gs-rock-cycle-diagram" role="group" aria-label="مراحل الدورة الصخرية">
+    <div class="gs-rock-node rock-magma"><span>01</span><strong data-ar="الصهارة" data-fr="Magma">الصهارة</strong></div>
+    <div class="gs-rock-arrow" aria-hidden="true">→</div>
+    <div class="gs-rock-node rock-igneous"><span>02</span><strong data-ar="صخور نارية" data-fr="Roches magmatiques">صخور نارية</strong></div>
+    <div class="gs-rock-arrow" aria-hidden="true">→</div>
+    <div class="gs-rock-node rock-sediment"><span>03</span><strong data-ar="رواسب" data-fr="Sédiments">رواسب</strong></div>
+    <div class="gs-rock-arrow" aria-hidden="true">→</div>
+    <div class="gs-rock-node rock-sedimentary"><span>04</span><strong data-ar="صخور رسوبية" data-fr="Roches sédimentaires">صخور رسوبية</strong></div>
+    <div class="gs-rock-arrow" aria-hidden="true">→</div>
+    <div class="gs-rock-node rock-metamorphic"><span>05</span><strong data-ar="صخور متحولة" data-fr="Roches métamorphiques">صخور متحولة</strong></div>
+   </div>
+   <div class="gs-rock-processes" role="group" aria-label="اختيار عملية جيولوجية">
+    <button type="button" data-rock-process="cooling" data-ar="التبريد والتبلور" data-fr="Refroidissement et cristallisation">التبريد والتبلور</button>
+    <button type="button" data-rock-process="weathering" data-ar="التجوية والتعرية" data-fr="Altération et érosion">التجوية والتعرية</button>
+    <button type="button" data-rock-process="sedimentation" data-ar="الترسيب والتصخر" data-fr="Dépôt et lithification">الترسيب والتصخر</button>
+    <button type="button" data-rock-process="metamorphism" data-ar="التحول" data-fr="Métamorphisme">التحول</button>
+    <button type="button" data-rock-process="melting" data-ar="الانصهار" data-fr="Fusion">الانصهار</button>
+   </div>
+   <div class="gs-rock-explanation" id="rock-process-explanation" aria-live="polite" data-ar="اختر عملية جيولوجية لقراءة شرحها." data-fr="Choisissez un processus géologique pour lire son explication.">اختر عملية جيولوجية لقراءة شرحها.</div>
+   <p class="gs-photo-note" data-ar="ملاحظة: الدورة الصخرية ليست مساراً واحداً إجبارياً؛ يمكن لأي نوع من الصخور أن يتحول إلى نوع آخر عبر عمليات مختلفة حسب الظروف الجيولوجية." data-fr="Remarque : le cycle des roches n’est pas un parcours unique et obligatoire ; chaque type de roche peut évoluer vers un autre selon les processus et les conditions géologiques.">ملاحظة: الدورة الصخرية ليست مساراً واحداً إجبارياً؛ يمكن لأي نوع من الصخور أن يتحول إلى نوع آخر عبر عمليات مختلفة حسب الظروف الجيولوجية.</p>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="ecosystem-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 08" data-fr="EXPÉRIENCE 08">التجربة 08</span><h2 data-ar="مختبر السلسلة الغذائية" data-fr="Laboratoire de la chaîne alimentaire">مختبر السلسلة الغذائية</h2><p data-ar="تتبع انتقال المادة والطاقة بين مستويات غذائية مختلفة داخل نظام بيئي." data-fr="Suivez le transfert de matière et d’énergie entre différents niveaux trophiques d’un écosystème.">تتبع انتقال المادة والطاقة بين مستويات غذائية مختلفة داخل نظام بيئي.</p></div><span class="gs-lab-number">08</span></div>
+  <div class="gs-eco-card">
+   <div class="gs-eco-chain" aria-label="سلسلة غذائية مبسطة">
+    <button type="button" class="gs-eco-level is-active" data-eco-level="producer"><span class="gs-eco-emoji" aria-hidden="true">🌿</span><strong data-ar="منتِج" data-fr="Producteur">منتِج</strong><small data-ar="نبات أخضر" data-fr="Plante verte">نبات أخضر</small></button>
+    <span class="gs-eco-arrow" aria-hidden="true">→</span>
+    <button type="button" class="gs-eco-level" data-eco-level="primary"><span class="gs-eco-emoji" aria-hidden="true">🦗</span><strong data-ar="مستهلك أولي" data-fr="Consommateur primaire">مستهلك أولي</strong><small data-ar="جرادة" data-fr="Criquet">جرادة</small></button>
+    <span class="gs-eco-arrow" aria-hidden="true">→</span>
+    <button type="button" class="gs-eco-level" data-eco-level="secondary"><span class="gs-eco-emoji" aria-hidden="true">🐸</span><strong data-ar="مستهلك ثانوي" data-fr="Consommateur secondaire">مستهلك ثانوي</strong><small data-ar="ضفدع" data-fr="Grenouille">ضفدع</small></button>
+    <span class="gs-eco-arrow" aria-hidden="true">→</span>
+    <button type="button" class="gs-eco-level" data-eco-level="tertiary"><span class="gs-eco-emoji" aria-hidden="true">🐍</span><strong data-ar="مستهلك أعلى" data-fr="Consommateur supérieur">مستهلك أعلى</strong><small data-ar="أفعى" data-fr="Serpent">أفعى</small></button>
+   </div>
+   <div class="gs-eco-detail" id="eco-level-detail" aria-live="polite" data-ar="المنتِجات تصنع المادة العضوية انطلاقاً من مواد معدنية باستعمال مصدر للطاقة، غالباً ضوء الشمس." data-fr="Les producteurs fabriquent de la matière organique à partir de matière minérale en utilisant une source d’énergie, le plus souvent la lumière solaire.">المنتِجات تصنع المادة العضوية انطلاقاً من مواد معدنية باستعمال مصدر للطاقة، غالباً ضوء الشمس.</div>
+   <div class="gs-eco-energy">
+    <h3 data-ar="نموذج مبسط لانتقال الطاقة" data-fr="Modèle simplifié du transfert d’énergie">نموذج مبسط لانتقال الطاقة</h3>
+    <p data-ar="إذا توفرت 10 000 وحدة طاقة في مستوى المنتجين، فقد ينتقل نحو 10% فقط إلى المستوى التالي في هذا المثال التقريبي." data-fr="Si 10 000 unités d’énergie sont disponibles chez les producteurs, environ 10 % peuvent passer au niveau suivant dans cet exemple simplifié.">إذا توفرت 10 000 وحدة طاقة في مستوى المنتجين، فقد ينتقل نحو 10% فقط إلى المستوى التالي في هذا المثال التقريبي.</p>
+    <div class="gs-eco-bars">
+     <div><span data-ar="منتِجات" data-fr="Producteurs">منتِجات</span><i><b style="width:100%"></b></i><strong>10 000</strong></div>
+     <div><span data-ar="مستهلكات أولية" data-fr="Consommateurs primaires">مستهلكات أولية</span><i><b style="width:10%"></b></i><strong>1 000</strong></div>
+     <div><span data-ar="مستهلكات ثانوية" data-fr="Consommateurs secondaires">مستهلكات ثانوية</span><i><b style="width:1%"></b></i><strong>100</strong></div>
+     <div><span data-ar="مستهلكات أعلى" data-fr="Consommateurs supérieurs">مستهلكات أعلى</span><i><b style="width:.1%"></b></i><strong>10</strong></div>
+    </div>
+    <p class="gs-photo-note" data-ar="قاعدة 10% تقريب تعليمي وليست قانوناً ثابتاً؛ تختلف كفاءة انتقال الطاقة باختلاف النظام البيئي والكائنات والظروف." data-fr="La règle des 10 % est une approximation pédagogique, pas une loi fixe ; l’efficacité du transfert varie selon l’écosystème, les organismes et les conditions.">قاعدة 10% تقريب تعليمي وليست قانوناً ثابتاً؛ تختلف كفاءة انتقال الطاقة باختلاف النظام البيئي والكائنات والظروف.</p>
+   </div>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="ecosystem-balance">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 09" data-fr="EXPÉRIENCE 09">التجربة 09</span><h2 data-ar="تحدي التوازن البيئي" data-fr="Défi de l’équilibre écologique">تحدي التوازن البيئي</h2><p data-ar="ماذا يحدث إذا اختفى نوع من كائنات الشبكة الغذائية؟ جرّب ولاحظ الآثار المحتملة." data-fr="Que se passe-t-il si une espèce disparaît du réseau alimentaire ? Faites un essai et observez les effets possibles.">ماذا يحدث إذا اختفى نوع من كائنات الشبكة الغذائية؟ جرّب ولاحظ الآثار المحتملة.</p></div><span class="gs-lab-number">09</span></div>
+  <div class="gs-balance-card">
+   <div class="gs-balance-species" role="group" aria-label="اختيار كائن لمحاكاة اختفائه">
+    <button type="button" data-balance-species="plants"><span>🌱</span><strong data-ar="النباتات" data-fr="Plantes">النباتات</strong><small data-ar="منتِجات" data-fr="Producteurs">منتِجات</small></button>
+    <button type="button" data-balance-species="insects"><span>🦗</span><strong data-ar="الحشرات" data-fr="Insectes">الحشرات</strong><small data-ar="مستهلكات أولية" data-fr="Consommateurs primaires">مستهلكات أولية</small></button>
+    <button type="button" data-balance-species="frogs"><span>🐸</span><strong data-ar="الضفادع" data-fr="Grenouilles">الضفادع</strong><small data-ar="مستهلكات ثانوية" data-fr="Consommateurs secondaires">مستهلكات ثانوية</small></button>
+    <button type="button" data-balance-species="birds"><span>🐦</span><strong data-ar="الطيور" data-fr="Oiseaux">الطيور</strong><small data-ar="مستهلكات" data-fr="Consommateurs">مستهلكات</small></button>
+    <button type="button" data-balance-species="snakes"><span>🐍</span><strong data-ar="الأفاعي" data-fr="Serpents">الأفاعي</strong><small data-ar="مستهلكات عليا" data-fr="Consommateurs supérieurs">مستهلكات عليا</small></button>
+   </div>
+   <div class="gs-balance-controls"><p data-ar="اختر كائناً لمحاكاة اختفائه من هذا النظام البيئي المبسط." data-fr="Choisissez une espèce pour simuler sa disparition de cet écosystème simplifié.">اختر كائناً لمحاكاة اختفائه من هذا النظام البيئي المبسط.</p><button type="button" id="balance-reset" data-ar="إعادة التوازن" data-fr="Réinitialiser">إعادة التوازن</button></div>
+   <div class="gs-balance-result" id="balance-result" aria-live="polite" data-ar="ستظهر هنا الآثار المحتملة بعد اختيار كائن." data-fr="Les effets possibles apparaîtront ici après votre choix.">ستظهر هنا الآثار المحتملة بعد اختيار كائن.</div>
+   <p class="gs-photo-note" data-ar="هذه محاكاة تعليمية مبسطة وليست تنبؤاً دقيقاً؛ فالنتائج الحقيقية تعتمد على عدد الأنواع والعلاقات والظروف البيئية وقد تتأثر بوجود بدائل غذائية." data-fr="Cette simulation est pédagogique et simplifiée, pas une prédiction exacte ; les effets réels dépendent du nombre d’espèces, des relations et des conditions écologiques, ainsi que des ressources alimentaires alternatives.">هذه محاكاة تعليمية مبسطة وليست تنبؤاً دقيقاً؛ فالنتائج الحقيقية تعتمد على عدد الأنواع والعلاقات والظروف البيئية وقد تتأثر بوجود بدائل غذائية.</p>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="food-web-explorer">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 10" data-fr="EXPÉRIENCE 10">التجربة 10</span><h2 data-ar="استكشف الشبكة الغذائية" data-fr="Explorer le réseau alimentaire">استكشف الشبكة الغذائية</h2><p data-ar="في الطبيعة، ترتبط السلاسل الغذائية لتكوّن شبكة من العلاقات. اختر كائناً لاكتشاف علاقاته الغذائية." data-fr="Dans la nature, les chaînes alimentaires sont interconnectées. Choisissez un organisme pour découvrir ses relations alimentaires.">في الطبيعة، ترتبط السلاسل الغذائية لتكوّن شبكة من العلاقات. اختر كائناً لاكتشاف علاقاته الغذائية.</p></div><span class="gs-lab-number">10</span></div>
+  <div class="gs-foodweb-card">
+   <div class="gs-foodweb-grid" role="group" aria-label="كائنات الشبكة الغذائية">
+    <button type="button" data-foodweb="plants"><span>🌿</span><strong data-ar="نباتات" data-fr="Plantes">نباتات</strong></button>
+    <button type="button" data-foodweb="seeds"><span>🌾</span><strong data-ar="بذور" data-fr="Graines">بذور</strong></button>
+    <button type="button" data-foodweb="insects"><span>🦗</span><strong data-ar="حشرات" data-fr="Insectes">حشرات</strong></button>
+    <button type="button" data-foodweb="rabbits"><span>🐇</span><strong data-ar="أرانب" data-fr="Lapins">أرانب</strong></button>
+    <button type="button" data-foodweb="frogs"><span>🐸</span><strong data-ar="ضفادع" data-fr="Grenouilles">ضفادع</strong></button>
+    <button type="button" data-foodweb="birds"><span>🐦</span><strong data-ar="طيور" data-fr="Oiseaux">طيور</strong></button>
+    <button type="button" data-foodweb="snakes"><span>🐍</span><strong data-ar="أفاعٍ" data-fr="Serpents">أفاعٍ</strong></button>
+    <button type="button" data-foodweb="hawks"><span>🦅</span><strong data-ar="جوارح" data-fr="Rapaces">جوارح</strong></button>
+   </div>
+   <div class="gs-foodweb-detail" id="foodweb-detail" aria-live="polite" data-ar="اختر كائناً لعرض ما يتغذى عليه والكائنات التي قد تتغذى عليه." data-fr="Choisissez un organisme pour voir ce qu’il mange et quels organismes peuvent le consommer.">اختر كائناً لعرض ما يتغذى عليه والكائنات التي قد تتغذى عليه.</div>
+   <p class="gs-photo-note" data-ar="تُقرأ الأسهم الغذائية من الكائن المأكول نحو الكائن المستهلك، أي في اتجاه انتقال المادة والطاقة. هذه شبكة نموذجية مبسطة وليست وصفاً لكل نظام بيئي." data-fr="Les flèches alimentaires vont de l’organisme consommé vers le consommateur, dans le sens du transfert de matière et d’énergie. Ce réseau est un modèle simplifié, pas la description de tous les écosystèmes.">تُقرأ الأسهم الغذائية من الكائن المأكول نحو الكائن المستهلك، أي في اتجاه انتقال المادة والطاقة. هذه شبكة نموذجية مبسطة وليست وصفاً لكل نظام بيئي.</p>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="biodiversity-observer">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 11" data-fr="EXPÉRIENCE 11">التجربة 11</span><h2 data-ar="مرصد التنوع البيولوجي" data-fr="Observatoire de la biodiversité">مرصد التنوع البيولوجي</h2><p data-ar="قارن بين أوساط طبيعية مختلفة، واكتشف كيف يمكن للضغوط البيئية أن تؤثر في تنوع الكائنات." data-fr="Comparez différents milieux naturels et découvrez comment les pressions environnementales peuvent affecter la diversité des organismes.">قارن بين أوساط طبيعية مختلفة، واكتشف كيف يمكن للضغوط البيئية أن تؤثر في تنوع الكائنات.</p></div><span class="gs-lab-number">11</span></div>
+  <div class="gs-biodiv-card">
+   <h3 data-ar="1. اختر الوسط الطبيعي" data-fr="1. Choisissez le milieu naturel">1. اختر الوسط الطبيعي</h3>
+   <div class="gs-biodiv-habitats">
+    <button type="button" data-habitat="forest"><span>🌳</span><strong data-ar="غابة" data-fr="Forêt">غابة</strong></button>
+    <button type="button" data-habitat="wetland"><span>🪷</span><strong data-ar="منطقة رطبة" data-fr="Zone humide">منطقة رطبة</strong></button>
+    <button type="button" data-habitat="desert"><span>🏜️</span><strong data-ar="وسط صحراوي" data-fr="Milieu désertique">وسط صحراوي</strong></button>
+   </div>
+   <div id="habitat-description" class="gs-biodiv-detail" aria-live="polite" data-ar="اختر وسطاً لعرض بعض مكوناته الحية والعوامل التي تميزه." data-fr="Choisissez un milieu pour découvrir quelques organismes et facteurs qui le caractérisent.">اختر وسطاً لعرض بعض مكوناته الحية والعوامل التي تميزه.</div>
+   <h3 data-ar="2. اختر ضغطاً بيئياً" data-fr="2. Choisissez une pression environnementale">2. اختر ضغطاً بيئياً</h3>
+   <div class="gs-biodiv-pressures">
+    <button type="button" data-pressure="pollution" data-ar="التلوث" data-fr="Pollution">التلوث</button>
+    <button type="button" data-pressure="habitat" data-ar="تدهور الوسط" data-fr="Dégradation du milieu">تدهور الوسط</button>
+    <button type="button" data-pressure="climate" data-ar="تغير المناخ" data-fr="Changement climatique">تغير المناخ</button>
+   </div>
+   <div id="pressure-description" class="gs-biodiv-detail" aria-live="polite" data-ar="اختر ضغطاً بيئياً لاكتشاف آثاره المحتملة." data-fr="Choisissez une pression environnementale pour découvrir ses effets possibles.">اختر ضغطاً بيئياً لاكتشاف آثاره المحتملة.</div>
+   <p class="gs-photo-note" data-ar="يعتمد التنوع البيولوجي على تفاعل الكائنات الحية مع وسطها. هذه أمثلة تعليمية عامة؛ تختلف الاستجابات الفعلية حسب النوع والمكان وشدة الضغط." data-fr="La biodiversité dépend des interactions entre les organismes et leur milieu. Ces exemples sont pédagogiques ; les réponses réelles varient selon les espèces, le lieu et l’intensité de la pression.">يعتمد التنوع البيولوجي على تفاعل الكائنات الحية مع وسطها. هذه أمثلة تعليمية عامة؛ تختلف الاستجابات الفعلية حسب النوع والمكان وشدة الضغط.</p>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="pollution-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 12" data-fr="EXPÉRIENCE 12">التجربة 12</span><h2 data-ar="مختبر التلوث البيئي" data-fr="Laboratoire de la pollution environnementale">مختبر التلوث البيئي</h2><p data-ar="اكتشف كيف تؤثر مصادر التلوث المختلفة في الماء والتربة والكائنات الحية، وتعرّف على وسائل الحد منها." data-fr="Découvrez comment différentes sources de pollution affectent l’eau, le sol et les organismes vivants, et explorez des moyens de les réduire.">اكتشف كيف تؤثر مصادر التلوث المختلفة في الماء والتربة والكائنات الحية، وتعرّف على وسائل الحد منها.</p></div><span class="gs-lab-number">12</span></div>
+  <div class="gs-pollution-card">
+   <h3 data-ar="اختر نوع التلوث" data-fr="Choisissez le type de pollution">اختر نوع التلوث</h3>
+   <div class="gs-pollution-types">
+    <button type="button" data-pollution="water"><span>💧</span><strong data-ar="تلوث الماء" data-fr="Pollution de l’eau">تلوث الماء</strong></button>
+    <button type="button" data-pollution="soil"><span>🌱</span><strong data-ar="تلوث التربة" data-fr="Pollution du sol">تلوث التربة</strong></button>
+    <button type="button" data-pollution="air"><span>🌫️</span><strong data-ar="تلوث الهواء" data-fr="Pollution de l’air">تلوث الهواء</strong></button>
+   </div>
+   <div id="pollution-impact" class="gs-pollution-detail" aria-live="polite" data-ar="اختر نوعاً من التلوث لعرض مصادره وآثاره المحتملة." data-fr="Choisissez un type de pollution pour découvrir ses sources et ses effets possibles.">اختر نوعاً من التلوث لعرض مصادره وآثاره المحتملة.</div>
+   <h3 data-ar="ما الإجراء الأنسب للحد من التلوث؟" data-fr="Quelle action aide à réduire la pollution ?">ما الإجراء الأنسب للحد من التلوث؟</h3>
+   <div class="gs-pollution-actions">
+    <button type="button" data-pollution-action="waste" data-ar="فرز النفايات ومعالجتها" data-fr="Trier et traiter les déchets">فرز النفايات ومعالجتها</button>
+    <button type="button" data-pollution-action="water" data-ar="معالجة المياه العادمة" data-fr="Traiter les eaux usées">معالجة المياه العادمة</button>
+    <button type="button" data-pollution-action="plants" data-ar="حماية الغطاء النباتي" data-fr="Protéger la couverture végétale">حماية الغطاء النباتي</button>
+   </div>
+   <div id="pollution-action-feedback" class="gs-pollution-feedback" aria-live="polite" data-ar="اختر إجراءً لمعرفة دوره في حماية البيئة." data-fr="Choisissez une action pour découvrir son rôle dans la protection de l’environnement.">اختر إجراءً لمعرفة دوره في حماية البيئة.</div>
+   <p class="gs-photo-note" data-ar="تختلف آثار الملوثات باختلاف طبيعتها وتركيزها ومدة التعرض وحساسية الكائنات الحية. هذه المحاكاة تفسيرية ولا تمثل قياساً ميدانياً أو تشخيصاً لجودة الماء أو الهواء." data-fr="Les effets des polluants varient selon leur nature, leur concentration, la durée d’exposition et la sensibilité des organismes. Cette simulation est explicative ; elle ne constitue ni une mesure de terrain ni un diagnostic de la qualité de l’eau ou de l’air.">تختلف آثار الملوثات باختلاف طبيعتها وتركيزها ومدة التعرض وحساسية الكائنات الحية. هذه المحاكاة تفسيرية ولا تمثل قياساً ميدانياً أو تشخيصاً لجودة الماء أو الهواء.</p>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="water-cycle-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 13" data-fr="EXPÉRIENCE 13">التجربة 13</span><h2 data-ar="رحلة قطرة ماء: دورة الماء في الطبيعة" data-fr="Le voyage d’une goutte : le cycle de l’eau">رحلة قطرة ماء: دورة الماء في الطبيعة</h2><p data-ar="تتبع انتقال الماء بين سطح الأرض والغلاف الجوي، واختر كل مرحلة لفهم دورها." data-fr="Suivez les déplacements de l’eau entre la surface terrestre et l’atmosphère. Sélectionnez chaque étape pour comprendre son rôle.">تتبع انتقال الماء بين سطح الأرض والغلاف الجوي، واختر كل مرحلة لفهم دورها.</p></div><span class="gs-lab-number">13</span></div>
+  <div class="gs-watercycle-card">
+   <div class="gs-watercycle-flow" role="group" aria-label="مراحل دورة الماء">
+    <button type="button" data-watercycle="evaporation"><span>☀️</span><strong data-ar="التبخر" data-fr="Évaporation">التبخر</strong></button>
+    <span class="gs-watercycle-arrow" aria-hidden="true">←</span>
+    <button type="button" data-watercycle="condensation"><span>☁️</span><strong data-ar="التكاثف" data-fr="Condensation">التكاثف</strong></button>
+    <span class="gs-watercycle-arrow" aria-hidden="true">←</span>
+    <button type="button" data-watercycle="precipitation"><span>🌧️</span><strong data-ar="التساقطات" data-fr="Précipitations">التساقطات</strong></button>
+    <span class="gs-watercycle-arrow" aria-hidden="true">←</span>
+    <button type="button" data-watercycle="collection"><span>🌊</span><strong data-ar="التجمع" data-fr="Accumulation">التجمع</strong></button>
+   </div>
+   <div class="gs-watercycle-secondary">
+    <button type="button" data-watercycle="transpiration"><span>🌿</span><strong data-ar="النتح" data-fr="Transpiration">النتح</strong></button>
+    <button type="button" data-watercycle="infiltration"><span>🪨</span><strong data-ar="التسرب والجريان" data-fr="Infiltration et ruissellement">التسرب والجريان</strong></button>
+   </div>
+   <div id="watercycle-detail" class="gs-watercycle-detail" aria-live="polite" data-ar="اختر مرحلة من دورة الماء لعرض شرحها." data-fr="Choisissez une étape du cycle de l’eau pour afficher son explication.">اختر مرحلة من دورة الماء لعرض شرحها.</div>
+   <p class="gs-photo-note" data-ar="دورة الماء عملية مستمرة تحركها الطاقة الشمسية والجاذبية. قد تختلف المسارات الفعلية للماء حسب المناخ والتضاريس والغطاء النباتي." data-fr="Le cycle de l’eau est un processus continu alimenté par l’énergie solaire et la gravité. Les parcours réels de l’eau varient selon le climat, le relief et la couverture végétale.">دورة الماء عملية مستمرة تحركها الطاقة الشمسية والجاذبية. قد تختلف المسارات الفعلية للماء حسب المناخ والتضاريس والغطاء النباتي.</p>
+  </div>
+ </section>
+
+ <section class="gs-lab-section" id="water-management-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 14" data-fr="EXPÉRIENCE 14">التجربة 14</span><h2 data-ar="تحدي تدبير الموارد المائية" data-fr="Défi : gérer durablement les ressources en eau">تحدي تدبير الموارد المائية</h2><p data-ar="اتخذ قرارات لحماية مورد مائي محدود، ووازن بين حاجات السكان والزراعة والطبيعة." data-fr="Prenez des décisions pour protéger une ressource limitée et équilibrer les besoins des habitants, de l’agriculture et des écosystèmes.">اتخذ قرارات لحماية مورد مائي محدود، ووازن بين حاجات السكان والزراعة والطبيعة.</p></div><span class="gs-lab-number">14</span></div>
+  <div class="gs-water-management-card">
+   <div class="gs-water-management-intro"><span>💧</span><p data-ar="أمامك حوض مائي افتراضي يواجه ضغطاً بسبب قلة التساقطات وارتفاع الطلب. اختر التدابير المناسبة ثم اكتشف أثرها." data-fr="Un bassin versant fictif subit une pression due au manque de précipitations et à une demande élevée. Choisissez des mesures et découvrez leurs effets.">أمامك حوض مائي افتراضي يواجه ضغطاً بسبب قلة التساقطات وارتفاع الطلب. اختر التدابير المناسبة ثم اكتشف أثرها.</p></div>
+   <h3 data-ar="اختر تدبيراً أو أكثر" data-fr="Choisissez une ou plusieurs mesures">اختر تدبيراً أو أكثر</h3>
+   <div class="gs-water-measures">
+    <label><input type="checkbox" data-water-measure="leaks"><span>🔧</span><strong data-ar="إصلاح تسربات الشبكة" data-fr="Réparer les fuites du réseau">إصلاح تسربات الشبكة</strong><small data-ar="تقليل ضياع المياه أثناء التوزيع" data-fr="Réduire les pertes pendant la distribution">تقليل ضياع المياه أثناء التوزيع</small></label>
+    <label><input type="checkbox" data-water-measure="irrigation"><span>🌾</span><strong data-ar="اعتماد الري الموضعي" data-fr="Adopter l’irrigation localisée">اعتماد الري الموضعي</strong><small data-ar="توجيه الماء إلى منطقة الجذور وفق حاجة النبات" data-fr="Apporter l’eau près des racines selon les besoins">توجيه الماء إلى منطقة الجذور وفق حاجة النبات</small></label>
+    <label><input type="checkbox" data-water-measure="reuse"><span>♻️</span><strong data-ar="إعادة استعمال المياه المعالجة" data-fr="Réutiliser les eaux traitées">إعادة استعمال المياه المعالجة</strong><small data-ar="استعمالها في أغراض ملائمة وفق معايير السلامة" data-fr="Les utiliser pour des usages adaptés selon les normes">استعمالها في أغراض ملائمة وفق معايير السلامة</small></label>
+    <label><input type="checkbox" data-water-measure="wetlands"><span>🌿</span><strong data-ar="حماية المناطق الرطبة" data-fr="Protéger les zones humides">حماية المناطق الرطبة</strong><small data-ar="الحفاظ على الموائل وتنظيم الدورة المائية محلياً" data-fr="Préserver les habitats et les fonctions hydrologiques locales">الحفاظ على الموائل وتنظيم الدورة المائية محلياً</small></label>
+    <label><input type="checkbox" data-water-measure="groundwater"><span>🪨</span><strong data-ar="حماية الفرشات المائية" data-fr="Protéger les nappes souterraines">حماية الفرشات المائية</strong><small data-ar="ترشيد الضخ والحد من مصادر التلوث" data-fr="Réguler le pompage et prévenir les pollutions">ترشيد الضخ والحد من مصادر التلوث</small></label>
+    <label><input type="checkbox" data-water-measure="awareness"><span>📣</span><strong data-ar="التوعية وترشيد الاستهلاك" data-fr="Sensibiliser et économiser l’eau">التوعية وترشيد الاستهلاك</strong><small data-ar="تقليل الاستعمال غير الضروري وإصلاح العادات" data-fr="Réduire les usages évitables et améliorer les habitudes">تقليل الاستعمال غير الضروري وإصلاح العادات</small></label>
+   </div>
+   <div class="gs-water-management-controls"><button type="button" id="water-management-evaluate" data-ar="تقييم اختياراتي" data-fr="Évaluer mes choix">تقييم اختياراتي</button><button type="button" id="water-management-reset" data-ar="إعادة الاختيار" data-fr="Réinitialiser">إعادة الاختيار</button></div>
+   <div id="water-management-feedback" class="gs-water-management-feedback" aria-live="polite" data-ar="حدد التدابير التي تراها مناسبة، ثم اضغط على تقييم اختياراتي." data-fr="Sélectionnez les mesures qui vous semblent adaptées, puis cliquez sur Évaluer mes choix.">حدد التدابير التي تراها مناسبة، ثم اضغط على تقييم اختياراتي.</div>
+   <p class="gs-photo-note" data-ar="هذه محاكاة تربوية نوعية وليست نموذجاً هيدرولوجياً أو توقعاً لكمية المياه. فعالية التدابير تعتمد على الظروف المحلية والتخطيط والصيانة." data-fr="Cette simulation est qualitative et pédagogique ; ce n’est ni un modèle hydrologique ni une prévision des volumes d’eau. L’efficacité des mesures dépend du contexte local, de la planification et de l’entretien.">هذه محاكاة تربوية نوعية وليست نموذجاً هيدرولوجياً أو توقعاً لكمية المياه. فعالية التدابير تعتمد على الظروف المحلية والتخطيط والصيانة.</p>
+  </div>
+ </section>
+ <section class="gs-lab-section gs-lab-quiz" id="lab-quiz">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 15" data-fr="EXPÉRIENCE 15">التجربة 15</span><h2 data-ar="اختبر معلوماتك" data-fr="Testez vos connaissances">اختبر معلوماتك</h2><p data-ar="اختبر فهمك لتدبير الموارد المائية بشكل مستدام." data-fr="Vérifiez votre compréhension de la gestion durable des ressources en eau.">اختبر فهمك لتدبير الموارد المائية بشكل مستدام.</p></div><span class="gs-lab-number">15</span></div>
+  <div class="gs-quiz-card"><h3 data-ar="أي إجراء يساعد مباشرة على تقليل ضياع الماء في شبكة التوزيع؟" data-fr="Quelle mesure réduit directement les pertes d’eau dans le réseau de distribution ?">أي إجراء يساعد مباشرة على تقليل ضياع الماء في شبكة التوزيع؟</h3><div class="gs-quiz-options"><button type="button" data-answer="correct" data-ar="إصلاح التسربات" data-fr="Réparer les fuites">إصلاح التسربات</button><button type="button" data-answer="wrong" data-ar="زيادة الضخ دون مراقبة" data-fr="Augmenter le pompage sans contrôle">زيادة الضخ دون مراقبة</button><button type="button" data-answer="wrong" data-ar="إهمال صيانة القنوات" data-fr="Négliger l’entretien des conduites">إهمال صيانة القنوات</button></div><p id="lab-quiz-feedback" class="gs-quiz-feedback" aria-live="polite" data-ar="اختر إجابتك." data-fr="Choisissez votre réponse.">اختر إجابتك.</p></div>
+ </section>
+ <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
+</main>
+<footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
+<script src="laboratory.js?v=20261112-11" defer></script>
+</body></html>

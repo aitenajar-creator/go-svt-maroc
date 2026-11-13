@@ -701,3 +701,421 @@ html[dir="rtl"] .header-actions {
         width: 100%;
     }
 }
+
+/* Study planner: make upcoming and overdue sessions easy to scan. */
+.gs-plan-item.is-overdue {
+    border-inline-start: 4px solid #d97706;
+    background: color-mix(in srgb, #d97706 7%, transparent);
+}
+.gs-plan-item.is-due-today {
+    border-inline-start: 4px solid #0d9488;
+    background: color-mix(in srgb, #0d9488 7%, transparent);
+}
+.gs-plan-item.is-done {
+    opacity: .78;
+}
+
+/* First-page previews for published resources */
+.content-card-thumbnail{width:100%;height:190px;margin:.25rem 0 1rem;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(80,110,120,.16);border-radius:12px;background:linear-gradient(145deg,#f1f6f7,#e7eef0)}
+.content-card-thumbnail img,.content-card-thumbnail canvas{display:block;width:100%;height:100%;object-fit:cover;background:#fff}
+.content-card-thumbnail.file-thumbnail span{font-size:3.6rem}
+.thumbnail-loading,.thumbnail-fallback{padding:.75rem;color:var(--light-text);font-size:.9rem;text-align:center}
+.content-card .file-name{overflow-wrap:anywhere}
+@media(max-width:600px){.content-card-thumbnail{height:170px}}
+
+/* Let the first PDF page fill the complete resource card while keeping
+   the level, title, filename and actions readable above the preview. */
+.content-card:has(.pdf-thumbnail) {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 360px;
+}
+.content-card:has(.pdf-thumbnail)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,.88) 0%,
+        rgba(255,255,255,.58) 42%,
+        rgba(255,255,255,.94) 100%
+    );
+}
+.content-card:has(.pdf-thumbnail) > .pdf-thumbnail {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: inherit;
+    background: #eef2f3;
+}
+.content-card:has(.pdf-thumbnail) > .level-badge,
+.content-card:has(.pdf-thumbnail) > .new-badge,
+.content-card:has(.pdf-thumbnail) > h3,
+.content-card:has(.pdf-thumbnail) > .file-name,
+.content-card:has(.pdf-thumbnail) > .card-actions {
+    position: relative;
+    z-index: 1;
+}
+.content-card:has(.pdf-thumbnail) > h3,
+.content-card:has(.pdf-thumbnail) > .file-name {
+    width: fit-content;
+    max-width: 100%;
+    padding: .25rem .55rem;
+    border-radius: 7px;
+    background: rgba(255,255,255,.88);
+    overflow-wrap: anywhere;
+}
+.content-card:has(.pdf-thumbnail) > .card-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .65rem;
+    width: fit-content;
+    max-width: 100%;
+    padding: .35rem .65rem;
+    border-radius: 9px;
+    background: rgba(255,255,255,.94);
+}
+.content-card:has(.pdf-thumbnail) .card-actions .download-btn {
+    margin-top: 0;
+}
+@media (max-width: 600px) {
+    .content-card:has(.pdf-thumbnail) {
+        min-height: 330px;
+    }
+}
+
+/* PDF resource cards: preserve the document's original page proportions
+   and present both actions together in a clear, high-contrast toolbar. */
+.content-card:has(> .pdf-thumbnail) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .45rem;
+    min-height: 390px;
+    padding: 1.15rem;
+}
+.content-card:has(> .pdf-thumbnail)::before {
+    content: none;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 3.25rem .75rem 5.25rem;
+    border: 0;
+    border-radius: inherit;
+    background: #e9eef1;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(15, 35, 45, .18);
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge,
+.content-card:has(> .pdf-thumbnail) > .new-badge,
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name,
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    position: relative;
+    z-index: 1;
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge,
+.content-card:has(> .pdf-thumbnail) > .new-badge {
+    box-shadow: 0 1px 5px rgba(0,0,0,.12);
+}
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    max-width: 100%;
+    margin: 0;
+    padding: .35rem .6rem;
+    border-radius: 7px;
+    color: #17313b;
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 1px 5px rgba(0,0,0,.12);
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > h3 {
+    font-size: 1.12rem;
+}
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    font-size: .88rem;
+}
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: .55rem;
+    width: 100%;
+    margin-top: auto;
+    padding: .55rem;
+    border: 1px solid rgba(20,50,60,.12);
+    border-radius: 12px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 2px 10px rgba(0,0,0,.14);
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    min-width: 0;
+    min-height: 42px;
+    margin: 0;
+    padding: .55rem .45rem;
+    border: 1px solid #176b83;
+    border-radius: 9px;
+    color: #fff;
+    background: #176b83;
+    font-size: .9rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+    white-space: normal;
+    cursor: pointer;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    border-color: #18734b;
+    background: #18734b;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn:hover,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn:hover {
+    filter: brightness(.92);
+    text-decoration: none;
+}
+@media (max-width: 600px) {
+    .content-card:has(> .pdf-thumbnail) {
+        min-height: 360px;
+    }
+    .content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+        padding: 3rem .55rem 5rem;
+    }
+    .content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+    .content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+        font-size: .82rem;
+    }
+}
+
+/* Final PDF preview layout: natural page ratio, high-resolution canvas,
+   and two equally visible actions below the document. */
+.content-card:has(> .pdf-thumbnail) {
+    position: relative;
+    isolation: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .45rem;
+    min-height: 0;
+    overflow: hidden;
+    padding: 1rem;
+}
+.content-card:has(> .pdf-thumbnail)::before {
+    content: none !important;
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge,
+.content-card:has(> .pdf-thumbnail) > .new-badge,
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name,
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    position: relative;
+    z-index: auto;
+    align-self: flex-start;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: .25rem 0 .5rem;
+    padding: .5rem;
+    overflow: hidden;
+    border: 1px solid #cbd5da;
+    border-radius: 10px;
+    background: #e9eef1;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+    box-shadow: 0 1px 5px rgba(15,35,45,.12);
+}
+.content-card:has(> .pdf-thumbnail) > h3,
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    background: transparent;
+    box-shadow: none;
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: .65rem;
+    width: 100%;
+    margin: .35rem 0 0;
+    padding: .6rem;
+    border: 1px solid #d4e0e4;
+    border-radius: 11px;
+    background: #f7fafb;
+    box-shadow: none;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: .6rem .5rem;
+    border: 1px solid #125d78;
+    border-radius: 9px;
+    color: #fff;
+    background: #126783;
+    font-size: .92rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+    white-space: normal;
+    cursor: pointer;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    border-color: #176642;
+    background: #18764d;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn:hover,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn:hover {
+    filter: brightness(.9);
+    text-decoration: none;
+}
+@media (max-width: 600px) {
+    .content-card:has(> .pdf-thumbnail) {
+        padding: .8rem;
+    }
+    .content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+    .content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+        min-height: 42px;
+        font-size: .84rem;
+    }
+}
+
+/* Horizontal PDF card: document preview on the left, actions beside it. */
+.content-card:has(> .pdf-thumbnail) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(118px, 34%);
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+        "badge badge"
+        "preview title"
+        "preview filename"
+        "preview actions";
+    align-items: start;
+    column-gap: .8rem;
+    row-gap: .5rem;
+    min-height: 245px;
+    padding: .85rem;
+}
+.content-card:has(> .pdf-thumbnail) > .level-badge {
+    grid-area: badge;
+    justify-self: start;
+}
+.content-card:has(> .pdf-thumbnail) > .new-badge {
+    grid-area: badge;
+    justify-self: end;
+}
+.content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+    grid-area: preview;
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
+    min-height: 205px;
+    margin: 0;
+    padding: .35rem;
+}
+.content-card:has(> .pdf-thumbnail) > h3 {
+    grid-area: title;
+    align-self: end;
+    width: 100%;
+    font-size: .98rem;
+    line-height: 1.35;
+}
+.content-card:has(> .pdf-thumbnail) > .file-name {
+    grid-area: filename;
+    width: 100%;
+    font-size: .78rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.content-card:has(> .pdf-thumbnail) > .card-actions {
+    grid-area: actions;
+    align-self: end;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+.content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+.content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+    width: 100%;
+    min-height: 39px;
+    padding: .45rem .35rem;
+    font-size: .82rem;
+    white-space: nowrap;
+}
+@media (max-width: 480px) {
+    .content-card:has(> .pdf-thumbnail) {
+        grid-template-columns: minmax(0, 1fr) 108px;
+        column-gap: .55rem;
+        min-height: 220px;
+        padding: .7rem;
+    }
+    .content-card:has(> .pdf-thumbnail) > .pdf-thumbnail {
+        min-height: 180px;
+    }
+    .content-card:has(> .pdf-thumbnail) .card-actions .preview-btn,
+    .content-card:has(> .pdf-thumbnail) .card-actions .download-btn {
+        min-height: 36px;
+        font-size: .75rem;
+    }
+}
+

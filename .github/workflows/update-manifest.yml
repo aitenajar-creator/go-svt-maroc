@@ -5,11 +5,16 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'manifest.json'
+      - 'sitemap.xml'
       - '.github/**'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: update-content-manifest-main
+  cancel-in-progress: false
 
 jobs:
   update-manifest:
@@ -18,14 +23,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate manifest.json
+      - name: Regenerate manifest from the latest main and push safely
         run: |
-          python3 << 'PYEOF'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for attempt in 1 2 3; do
+            echo "Manifest update attempt $attempt"
+            git fetch origin main
+            git reset --hard origin/main
+
+            python3 << 'PYEOF'
           import os, json, datetime
 
           CONTENT_DIRS = ["cours", "exercices", "examens", "fiches", "documents", "ressources", "divers"]
           SKIP = {"readme.md", "thumbs.db", "desktop.ini"}
           tree = {}
+          pdf_paths = []
 
           for base in CONTENT_DIRS:
               if not os.path.isdir(base):
@@ -39,6 +53,7 @@ jobs:
                   if not clean:
                       continue
                   rel = root.replace(os.sep, "/")
+                  pdf_paths.extend(f"{rel}/{name}" for name in clean if name.lower().endswith(".pdf"))
                   node = tree
                   for part in rel.split("/"):
                       node = node.setdefault(part, {})
@@ -53,16 +68,39 @@ jobs:
               json.dump(manifest, fh, ensure_ascii=False, indent=2)
 
           print("manifest.json OK -", len(tree), "sections:", ", ".join(tree.keys()))
+
+          from urllib.parse import quote
+          from xml.sax.saxutils import escape
+
+          urls = ["https://gosvtmaroc.com/"]
+          urls.extend("https://gosvtmaroc.com/" + quote(path, safe="/") for path in sorted(pdf_paths))
+          sitemap = [
+              '<?xml version="1.0" encoding="UTF-8"?>',
+              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+          ]
+          for url in urls:
+              sitemap.extend(["  <url>", f"    <loc>{escape(url)}</loc>", "  </url>"])
+          sitemap.append("</urlset>")
+          with open("sitemap.xml", "w", encoding="utf-8") as fh:
+              fh.write("\n".join(sitemap) + "\n")
+          print("sitemap.xml OK -", len(urls), "URLs including homepage")
           PYEOF
 
-      - name: Commit and push manifest
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add manifest.json
-          if git diff --cached --quiet; then
-            echo "Manifest unchanged - nothing to commit"
-          else
+            git add manifest.json sitemap.xml
+            if git diff --cached --quiet; then
+              echo "Manifest unchanged - nothing to commit"
+              exit 0
+            fi
+
             git commit -m "Auto-update manifest.json"
-            git push
-          fi
+            if git push origin HEAD:main; then
+              echo "Manifest pushed successfully"
+              exit 0
+            fi
+
+            echo "Push attempt $attempt failed; retrying from latest main..."
+            sleep 2
+          done
+
+          echo "Unable to push manifest after 3 attempts."
+          exit 1

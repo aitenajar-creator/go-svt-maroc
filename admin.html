@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#173f35">
+  <title>إدارة GO SVT Maroc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-header">
+      <a class="brand" href="/" aria-label="Go SVT Maroc"><span>🔬</span><span>GO SVT Maroc<small>لوحة الإدارة الخاصة</small></span></a>
+      <a class="back-link" href="/">العودة إلى الموقع ↩</a>
+    </header>
+
+    <section id="login-panel" class="panel auth-panel">
+      <div class="panel-icon">🔐</div>
+      <p class="eyebrow">OWNER ACCESS</p>
+      <h1>الدخول إلى الإدارة</h1>
+      <p class="muted">هذه المساحة مخصصة لمدير المنصة المعتمد فقط.</p>
+      <form id="login-form">
+        <label for="admin-email">البريد الإلكتروني</label>
+        <input id="admin-email" type="email" autocomplete="username" required>
+        <label for="admin-password">كلمة المرور</label>
+        <input id="admin-password" type="password" autocomplete="current-password" required>
+        <button class="primary-btn" type="submit">تسجيل الدخول</button>
+      </form>
+      <p id="login-message" class="message" role="status"></p>
+    </section>
+
+    <section id="dashboard" hidden>
+      <div class="welcome-row">
+        <div><p class="eyebrow">SITE OWNER CONTROL CENTER</p><h1>مرحباً بك في لوحة الإدارة</h1><p id="admin-identity" class="muted"></p></div>
+        <button id="signout-btn" class="quiet-btn" type="button">تسجيل الخروج</button>
+      </div>
+      <div class="stats-grid">
+        <article class="stat-card"><span>📚</span><strong id="resource-count">—</strong><small>ملفاً منشوراً عبر الإدارة</small></article>
+        <article class="stat-card"><span>☁️</span><strong>Supabase</strong><small>التخزين السحابي</small></article>
+        <article class="stat-card"><span>🛡️</span><strong>مدير فقط</strong><small>صلاحيات الرفع والتعديل والحذف</small></article>
+      </div>
+
+      <section class="panel" id="founder-editor">
+        <div class="section-heading"><div><p class="eyebrow">FOUNDER PROFILE</p><h2>تعديل نبذة صاحب الموقع</h2><p class="muted">هذه المعلومات تظهر للزوار في الصفحة الرئيسية.</p></div><span class="heading-icon">👨‍🏫</span></div>
+        <form id="founder-form" class="upload-grid">
+          <div class="field"><label for="founder-name-ar">الاسم بالعربية</label><input id="founder-name-ar" maxlength="120" required></div>
+          <div class="field"><label for="founder-name-fr">Nom en français</label><input id="founder-name-fr" maxlength="120" required></div>
+          <div class="field"><label for="founder-role-ar">الصفة المهنية بالعربية</label><input id="founder-role-ar" maxlength="180" required></div>
+          <div class="field"><label for="founder-role-fr">Fonction en français</label><input id="founder-role-fr" maxlength="180" required></div>
+          <div class="field wide"><label for="founder-bio-ar">النبذة بالعربية</label><textarea id="founder-bio-ar" rows="5" maxlength="3000" required></textarea></div>
+          <div class="field wide"><label for="founder-bio-fr">Biographie en français</label><textarea id="founder-bio-fr" rows="5" maxlength="3000" required></textarea></div>
+          <div class="field"><label for="founder-vision-ar">الرؤية بالعربية</label><textarea id="founder-vision-ar" rows="3" maxlength="800" required></textarea></div>
+          <div class="field"><label for="founder-vision-fr">Vision en français</label><textarea id="founder-vision-fr" rows="3" maxlength="800" required></textarea></div>
+          <div class="field wide"><label for="founder-photo">الصورة الشخصية (JPG / PNG / WebP، حتى 5MB)</label><input id="founder-photo" type="file" accept="image/jpeg,image/png,image/webp"><small class="muted">اختياري؛ يمكنك تركه فارغاً للاحتفاظ بالصورة الحالية.</small><img id="founder-photo-preview" alt="معاينة الصورة الشخصية" hidden style="max-width:180px;max-height:180px;object-fit:cover;border-radius:16px"></div>
+          <div class="field wide"><button id="founder-save" class="primary-btn" type="submit">حفظ ونشر التعديلات</button></div>
+        </form>
+        <p id="founder-message" class="message" role="status"></p>
+      </section>
+      <section class="panel">
+        <div class="section-heading"><div><p class="eyebrow">CONTENT PUBLISHER</p><h2>إضافة محتوى جديد</h2></div><span class="heading-icon">📤</span></div>
+        <form id="upload-form" class="upload-grid">
+          <div class="field wide"><label for="resource-title">عنوان الملف</label><input id="resource-title" maxlength="180" required placeholder="مثال: درس التوالد عند النباتات"></div>
+          <div class="field"><label for="category">القسم</label><select id="category" required>
+            <option value="cours">الدروس</option><option value="exercices">التمارين</option><option value="examens">الامتحانات</option><option value="fiches">الجذاذات</option><option value="resumes">الملخصات</option><option value="documents">الوثائق</option><option value="ressources">الموارد</option><option value="divers">متفرقات</option>
+          </select></div>
+          <div class="field"><label for="language">اللغة</label><select id="language"><option value="francais">Français</option><option value="arabe">العربية</option></select></div>
+          <div class="field"><label for="study-level">المستوى</label><select id="study-level"><option value="">غير محدد</option><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option></select></div>
+          <div class="field"><label for="study-track">الشعبة</label><select id="study-track"><option value="">غير محددة</option><option>TCS</option><option>TCL</option><option>1BACSE</option><option>1BACSM</option><option>1BACL</option><option>2BACSVT</option><option>2BACSP</option><option>2BACSM</option></select></div>
+          <div class="field wide"><label for="resource-file">الملف (PDF أو Office أو صورة، حتى 50MB)</label><input id="resource-file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp" required><small id="file-hint" class="muted">اختر الملف من جهازك.</small></div>
+          <div class="field wide"><button id="upload-btn" class="primary-btn" type="submit">رفع ونشر المحتوى</button></div>
+        </form>
+        <div id="upload-progress" class="progress-track" hidden><span></span></div>
+        <p id="upload-message" class="message" role="status"></p>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading"><div><p class="eyebrow">PUBLISHED LIBRARY</p><h2>المحتوى الذي أضفته</h2></div><button id="refresh-btn" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div id="resource-list" class="resource-list"><p class="muted">جاري تحميل المحتوى...</p></div>
+      </section>
+      <p class="security-note">🔒 لا تمنح هذه الصفحة صلاحيات بحد ذاتها؛ يتم التحقق من دور admin في قاعدة البيانات عند كل عملية، كما تحمي سياسات التخزين والبيانات عمليات الرفع والحذف.</p>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="admin.js?v=20261112-5"></script>
+</body>
+</html>

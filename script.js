@@ -50,7 +50,12 @@ function escapeHtml(text) {
 function getExt(name) { const m = /\.([^./]+)$/.exec(name); return m ? m[1].toLowerCase() : ''; }
 function getFileTitle(filename) { return filename.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '); }
 function getFileIcon(ext) { return FILE_ICONS[ext] || '📄'; }
-function buildFileUrl(path) { return path.split('/').map(encodeURIComponent).join('/'); }
+const cloudContentUrls = new Map();
+function buildFileUrl(path) {
+    const cloud = cloudContentUrls.get(path);
+    if (cloud) return cloud;
+    return path.split('/').map(encodeURIComponent).join('/');
+}
 function isMobile() { return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768; }
 
 function normalizeText(s) {
@@ -80,8 +85,29 @@ function loadManifest() {
                 if (!response.ok) throw new Error(`content.json introuvable (${response.status})`);
                 return response.json();
             })
-            .then(paths => {
+            .then(async paths => {
                 const files = paths.filter(isContentFile);
+                // Add resources uploaded from the owner dashboard; existing repository files remain untouched.
+                if (window.supabaseClient) {
+                    const { data, error } = await window.supabaseClient
+                        .from('site_content_items')
+                        .select('id,category,language,study_level,study_track,file_name,storage_path')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+                    (data || []).forEach(item => {
+                        const category = item.category === 'resumes' ? 'fiches' : item.category;
+                        const parts = [category];
+                        if (['cours','exercices','examens','fiches'].includes(category)) {
+                            parts.push(item.language || 'francais', item.study_level || 'TC');
+                            if (item.study_track) parts.push(item.study_track);
+                        }
+                        parts.push('__cloud', item.id, item.file_name);
+                        const virtualPath = '/' + parts.join('/');
+                        const publicUrl = window.supabaseClient.storage.from('site-content').getPublicUrl(item.storage_path).data.publicUrl;
+                        cloudContentUrls.set(virtualPath, publicUrl);
+                        files.push(virtualPath);
+                    });
+                }
                 trackNewFiles(files);
                 return files;
             })
@@ -104,9 +130,27 @@ function trackNewFiles(files) {
     fileDates = next;
 }
 
+// نسخ مطابقة محفوظة داخل مجلدات الفصول؛ نخفيها من القوائم والبحث فقط
+// مع الإبقاء على الملفات ومساراتها المباشرة دون أي تغيير.
+const HIDDEN_DUPLICATE_COURSE_COPIES = new Set([
+    'cours/francais/TC/TCS/Chapitre 1/eleves-TCS  AIT ENAJAR U1C1.pdf',
+    'cours/francais/TC/TCS/Chapitre 2/eleves-TCS  AIT ENAJAR U1C2.pdf',
+    'cours/francais/TC/TCS/Chapitre 3/eleves-TCS  AIT ENAJAR U1C3.pdf',
+    'cours/francais/TC/TCS/Chapitre 4/eleves-TCS  AIT ENAJAR U1C4.pdf',
+    'cours/francais/TC/TCS/Chapitre 5/eleves-TCS  AIT ENAJAR U1C5.pdf'
+]);
+
+function isHiddenDuplicateCourseCopy(path) {
+    return HIDDEN_DUPLICATE_COURSE_COPIES.has(String(path).replace(/^\/+/, ''));
+}
+
 function isNew(path) {
     const d = fileDates[path];
     return d && (Date.now() - d) < CONFIG.NEW_DAYS * 86400000;
+}
+
+function isCloudInternalSegment(segment) {
+    return segment === '__cloud' || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(segment));
 }
 
 function describePath(path) {
@@ -114,7 +158,7 @@ function describePath(path) {
     const labels = [];
     if (SECTION_NAMES[type]) labels.push(SECTION_NAMES[type][currentLang]);
     if (subject) labels.push(SUBJECT_NAMES[subject] || subject);
-    return labels.concat(rest).join(' · ');
+    return labels.concat(rest.filter(segment => !isCloudInternalSegment(segment))).join(' · ');
 }
 
 function renderCard(path, badgeText) {
@@ -125,10 +169,15 @@ function renderCard(path, badgeText) {
     const previewBtn = PREVIEWABLE.includes(ext)
         ? `<button type="button" class="preview-btn" data-path="${safePath}">👁️ ${t('معاينة', 'Aperçu')}</button>`
         : '';
+    const thumbnail = ext === 'pdf'
+        ? `<div class="content-card-thumbnail pdf-thumbnail" data-pdf-thumbnail data-path="${safePath}" aria-label="${t('معاينة الصفحة الأولى', 'Aperçu de la première page')}"><span class="thumbnail-loading">${t('جاري إعداد المعاينة...', 'Préparation de l’aperçu...')}</span></div>`
+        : ['jpg','jpeg','png','gif','webp'].includes(ext)
+            ? `<div class="content-card-thumbnail"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy"></div>`
+            : `<div class="content-card-thumbnail file-thumbnail" aria-hidden="true"><span>${getFileIcon(ext)}</span></div>`;
     return `
         <div class="content-card">
             <span class="level-badge">${escapeHtml(badgeText)}</span>${newBadge}
-            <div class="file-icon">${getFileIcon(ext)}</div>
+            ${thumbnail}
             <h3>${escapeHtml(getFileTitle(fileName))}</h3>
             <p class="file-name">${escapeHtml(fileName)}</p>
             <div class="card-actions">
@@ -138,6 +187,101 @@ function renderCard(path, badgeText) {
         </div>`;
 }
 
+
+/* Lazy first-page previews for published PDF resources. */
+let pdfJsPromise = null;
+let pdfThumbnailObserver = null;
+function loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfJsPromise) {
+        pdfJsPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+            script.async = true;
+            script.onload = () => {
+                if (!window.pdfjsLib) { reject(new Error('PDF.js unavailable')); return; }
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+                resolve(window.pdfjsLib);
+            };
+            script.onerror = () => reject(new Error('PDF preview library failed to load'));
+            document.head.appendChild(script);
+        }).catch(error => { pdfJsPromise = null; throw error; });
+    }
+    return pdfJsPromise;
+}
+async function renderFirstPdfPage(container) {
+    if (!container || container.dataset.rendered === 'true' || container.dataset.loading === 'true') return;
+    container.dataset.loading = 'true';
+    try {
+        const pdfjs = await loadPdfJs();
+        const pdf = await pdfjs.getDocument({ url: buildFileUrl(container.dataset.path), withCredentials: false }).promise;
+        const page = await pdf.getPage(1);
+        const base = page.getViewport({ scale: 1 });
+        const cssWidth = Math.max(container.clientWidth || 0, 300);
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.75);
+        const renderScale = Math.min(2.4, Math.max(1, (cssWidth * pixelRatio) / base.width));
+        const viewport = page.getViewport({ scale: renderScale });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        canvas.style.display = 'block';
+        await page.render({ canvasContext: canvas.getContext('2d', { alpha: false }), viewport }).promise;
+        container.replaceChildren(canvas);
+        container.dataset.rendered = 'true';
+        page.cleanup();
+        await pdf.destroy();
+    } catch (error) {
+        console.warn('PDF thumbnail unavailable:', container.dataset.path, error);
+        container.innerHTML = `<span class="thumbnail-fallback">${t('المعاينة غير متاحة لهذا الملف', 'Aperçu indisponible pour ce fichier')}</span>`;
+        container.dataset.rendered = 'true';
+    } finally {
+        delete container.dataset.loading;
+    }
+}
+function observePdfThumbnails(root = document) {
+    const nodes = root.querySelectorAll('[data-pdf-thumbnail]');
+    if (!nodes.length) return;
+    if (!('IntersectionObserver' in window)) {
+        nodes.forEach(node => renderFirstPdfPage(node));
+        return;
+    }
+    if (!pdfThumbnailObserver) {
+        pdfThumbnailObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                pdfThumbnailObserver.unobserve(entry.target);
+                renderFirstPdfPage(entry.target);
+            });
+        }, { rootMargin: '700px 0px', threshold: 0.01 });
+    }
+    nodes.forEach(node => {
+        if (node.dataset.rendered !== 'true') pdfThumbnailObserver.observe(node);
+    });
+}
+
+// تحديد الشعبة من بنية مسار الملف، بما في ذلك مجلدات الامتحانات.
+function getTrackInfo(path) {
+    const parts = String(path).replace(/^\/+/, '').split('/');
+    const trackLabels = {
+        TCS: ['الجذع المشترك العلمي', 'Tronc commun scientifique'],
+        TCL: ['الجذع المشترك الأدبي', 'Tronc commun littéraire'],
+        '1BACSE': ['الأولى باكالوريا: علوم تجريبية', '1ère Bac : Sciences expérimentales'],
+        '1BACL': ['الأولى باكالوريا: علوم رياضية', '1ère Bac : Sciences mathématiques'],
+        '1BACSM': ['الأولى باكالوريا: علوم رياضية', '1ère Bac : Sciences mathématiques'],
+        '2BACSVT': ['الثانية باكالوريا: علوم الحياة والأرض', '2ème Bac : Sciences de la vie et de la Terre'],
+        '2BACSP': ['الثانية باكالوريا: علوم فيزيائية', '2ème Bac : Sciences physiques'],
+        '2BACSM': ['الثانية باكالوريا: علوم رياضية', '2ème Bac : Sciences mathématiques'],
+        '2BAC SVT': ['الثانية باكالوريا: علوم الحياة والأرض', '2ème Bac : Sciences de la vie et de la Terre'],
+        '2BAC SP': ['الثانية باكالوريا: علوم فيزيائية', '2ème Bac : Sciences physiques'],
+        '2BAC SM': ['الثانية باكالوريا: علوم رياضية', '2ème Bac : Sciences mathématiques']
+    };
+    const index = parts.findIndex(part => Object.prototype.hasOwnProperty.call(trackLabels, part));
+    if (index < 0) return null;
+    return { key: parts[index], label: trackLabels[parts[index]][currentLang === 'fr' ? 1 : 0], index };
+}
+
 // ---------- عرض الأقسام ----------
 async function loadContentFromManifest(type, subject, level) {
     const container = document.getElementById(`${type}-content`);
@@ -145,15 +289,31 @@ async function loadContentFromManifest(type, subject, level) {
 
     const requestId = String(++requestCounter);
     container.dataset.requestId = requestId;
-    const prefix = `/${type}/${subject}/${level}/`;
+    const account = window.StudentAccount;
+    const academic = account && account.isLoggedIn() && typeof account.getProfile === 'function'
+        ? account.getProfile() : null;
+    const studentLevel = academic && academic.study_level;
+    const studentTrack = academic && academic.study_track;
+    // أولوية الاختيار الظاهر في أزرار المستوى والشعبة على مستوى الحساب.
+    const pathwayTrack = window.GoSVTPathways && typeof window.GoSVTPathways.trackFor === 'function'
+        ? window.GoSVTPathways.trackFor(type, level) : 'all';
+    const effectiveStudentTrack = pathwayTrack && pathwayTrack !== 'all'
+        ? pathwayTrack : (studentLevel === level ? studentTrack : null);
+    const trackPrefix = effectiveStudentTrack && (type === 'cours' || type === 'exercices')
+        ? `${effectiveStudentTrack}/` : '';
+    const prefix = `/${type}/${subject}/${level}/${trackPrefix}`;
 
     try {
         const allFiles = await loadManifest();
         if (container.dataset.requestId !== requestId) return;
 
-        const files = allFiles
-            .filter(p => p.startsWith(prefix))
-            .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        let files = allFiles.filter(p => p.startsWith(prefix) && !isHiddenDuplicateCourseCopy(p));
+        if (academic && effectiveStudentTrack && type === 'examens') {
+            const examTrackNames = { '2BACSVT': '2BAC SVT', '2BACSP': '2BAC SP', '2BACSM': '2BAC SM' };
+            const examTrackName = examTrackNames[effectiveStudentTrack];
+            if (examTrackName) files = files.filter(p => p.includes('/' + examTrackName + '/'));
+        }
+        files = files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
         if (files.length === 0) {
             container.innerHTML = `<p class="no-files">${t('لا توجد ملفات حالياً', 'Aucun fichier disponible pour le moment')}</p>`;
@@ -161,10 +321,44 @@ async function loadContentFromManifest(type, subject, level) {
         }
 
         const count = `<p class="files-count">${files.length} ${t('ملف', 'fichier(s)')}</p>`;
-        container.innerHTML = count + files.map(p => {
-            const sub = p.slice(prefix.length).split('/').slice(0, -1).join(' / ');
-            return renderCard(p, sub ? `${level} - ${sub}` : level);
+        const grouped = new Map();
+        files.forEach(path => {
+            const track = getTrackInfo(path);
+            const key = track ? track.key : '__shared__';
+            if (!grouped.has(key)) grouped.set(key, { track, files: [] });
+            grouped.get(key).files.push(path);
+        });
+
+        // عند وجود أكثر من شعبة، نعرض كل شعبة في مجموعة مستقلة بدلاً من خلط الملفات.
+        const hasTrackGroups = [...grouped.values()].some(group => group.track);
+        const renderFiles = paths => paths.map(path => {
+            const track = getTrackInfo(path);
+            const relativeParts = path.slice(prefix.length).split('/').slice(0, -1);
+            if (track && relativeParts.includes(track.key)) {
+                relativeParts.splice(relativeParts.indexOf(track.key), 1);
+            }
+            const sub = relativeParts.filter(part => part && !isCloudInternalSegment(part)).join(' / ');
+            return renderCard(path, sub ? `${level} - ${sub}` : level);
         }).join('');
+
+        if (!hasTrackGroups) {
+            container.innerHTML = count + renderFiles(files);
+            observePdfThumbnails(container);
+            return;
+        }
+
+        const orderedGroups = [...grouped.values()].sort((a, b) => {
+            if (!a.track) return 1;
+            if (!b.track) return -1;
+            return a.track.label.localeCompare(b.track.label, currentLang === 'fr' ? 'fr' : 'ar');
+        });
+        container.innerHTML = count + orderedGroups.map(group => {
+            const heading = group.track
+                ? group.track.label
+                : t('ملفات مشتركة بين الشعب', 'Ressources communes');
+            return `<section class="track-content-group"><h3 class="track-content-heading">${escapeHtml(heading)}</h3><div class="content-grid">${renderFiles(group.files)}</div></section>`;
+        }).join('');
+        observePdfThumbnails(container);
     } catch (error) {
         console.error('Error loading content:', error);
         if (container.dataset.requestId === requestId) {
@@ -183,10 +377,13 @@ async function loadContent(type, subject, level) {
 function getSectionState(section) {
     const subjectBtn = section.querySelector('.tab-btn.active') || section.querySelector('.tab-btn');
     const levelBtn = section.querySelector('.level-tab-btn.active') || section.querySelector('.level-tab-btn');
+    const account = window.StudentAccount;
+    const academic = account && account.isLoggedIn() && typeof account.getProfile === 'function'
+        ? account.getProfile() : null;
     return {
         type: (subjectBtn && subjectBtn.dataset.type) || section.id,
         subject: subjectBtn ? subjectBtn.dataset.subject : 'francais',
-        level: levelBtn ? levelBtn.dataset.level : 'TC'
+        level: levelBtn ? levelBtn.dataset.level : (academic && academic.study_level ? academic.study_level : 'TC')
     };
 }
 
@@ -205,25 +402,35 @@ async function runSearch(query) {
     const results = document.getElementById('gs-search-results');
     if (!results) return;
     const words = normalizeText(query).split(/\s+/).filter(Boolean);
+    const category = document.getElementById('gs-search-category')?.value || '';
+    const level = document.getElementById('gs-search-level')?.value || '';
+    const language = document.getElementById('gs-search-language')?.value || '';
 
-    if (words.length === 0) {
-        results.innerHTML = `<p class="gs-search-hint">${t('اكتب اسم درس أو تمرين أو امتحان...', 'Tapez le nom d’un cours, d’un exercice ou d’un examen...')}</p>`;
+    if (words.length === 0 && !category && !level && !language) {
+        results.innerHTML = `<p class="gs-search-hint">${t('اكتب اسم درس أو اختر نوع المورد أو المستوى أو اللغة...', 'Saisissez un titre ou choisissez un type, un niveau ou une langue...')}</p>`;
         return;
     }
     try {
         const all = await loadManifest();
         const matches = all.filter(p => {
-            const hay = normalizeText(p);
-            return words.every(w => hay.includes(w));
+            if (isHiddenDuplicateCourseCopy(p)) return false;
+            const normalizedPath = normalizeText(p);
+            if (words.length && !words.every(w => normalizedPath.includes(w))) return false;
+            if (category && !p.toLowerCase().includes('/' + category + '/')) return false;
+            if (level && !p.toLowerCase().includes('/' + level.toLowerCase() + '/')) return false;
+            if (language && !p.toLowerCase().includes('/' + language + '/')) return false;
+            return true;
         });
         if (matches.length === 0) {
-            results.innerHTML = `<p class="gs-search-hint">${t('لا توجد نتائج', 'Aucun résultat')}</p>`;
+            results.innerHTML = `<p class="gs-search-hint">${t('لا توجد نتائج مطابقة لهذه الاختيارات', 'Aucun résultat pour ces critères')}</p>`;
             return;
         }
         const more = matches.length > 60
-            ? `<p class="gs-search-hint">${t('دقّق البحث لعرض نتائج أخرى', 'Précisez la recherche pour voir plus de résultats')}</p>`
+            ? `<p class="gs-search-hint">${t('توجد نتائج إضافية؛ دقّق البحث لتضييق النتائج', 'Il existe d’autres résultats ; affinez les critères')}</p>`
             : '';
-        results.innerHTML = matches.slice(0, 60).map(p => renderCard(p, describePath(p))).join('') + more;
+        results.innerHTML = `<p class="gs-search-count">${t('عدد النتائج:', 'Résultats :')} ${matches.length}</p>` +
+            matches.slice(0, 60).map(p => renderCard(p, describePath(p))).join('') + more;
+        observePdfThumbnails(results);
     } catch (error) {
         results.innerHTML = `<p class="gs-search-hint">${t('تعذر البحث حالياً', 'Recherche indisponible')}</p>`;
     }
@@ -291,6 +498,28 @@ function buildUI() {
                 <input type="search" id="gs-search-input" autocomplete="off">
                 <button type="button" class="gs-close" aria-label="Fermer">✕</button>
             </div>
+            <div class="gs-search-filters" role="group" aria-label="Search filters">
+                <select id="gs-search-category" aria-label="Type de ressource">
+                    <option value="">${t('كل الموارد', 'Tous les types')}</option>
+                    <option value="cours">${t('الدروس', 'Cours')}</option>
+                    <option value="exercices">${t('التمارين', 'Exercices')}</option>
+                    <option value="examens">${t('الامتحانات', 'Examens')}</option>
+                    <option value="fiches">${t('الملخصات', 'Fiches')}</option>
+                    <option value="documents">${t('الوثائق', 'Documents')}</option>
+                    <option value="ressources">${t('الموارد', 'Ressources')}</option>
+                </select>
+                <select id="gs-search-level" aria-label="Niveau scolaire">
+                    <option value="">${t('كل المستويات', 'Tous les niveaux')}</option>
+                    <option value="TC">TC</option>
+                    <option value="1BAC">1BAC</option>
+                    <option value="2BAC">2BAC</option>
+                </select>
+                <select id="gs-search-language" aria-label="Langue">
+                    <option value="">${t('كل اللغات', 'Toutes les langues')}</option>
+                    <option value="francais">${t('الفرنسية', 'Français')}</option>
+                    <option value="arabe">${t('العربية', 'Arabe')}</option>
+                </select>
+            </div>
             <div id="gs-search-results"></div>
         </div>`;
     document.body.appendChild(search);
@@ -330,6 +559,12 @@ function buildUI() {
     document.getElementById('gs-search-input').addEventListener('input', function () {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => runSearch(this.value), 150);
+    });
+    ['gs-search-category', 'gs-search-level', 'gs-search-language'].forEach(id => {
+        const control = document.getElementById(id);
+        if (control) control.addEventListener('change', () => {
+            runSearch(document.getElementById('gs-search-input')?.value || '');
+        });
     });
 
     refreshUiTexts();
@@ -436,14 +671,23 @@ function setupTabs() {
 }
 
 function setupNavigation() {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            const id = this.getAttribute('href').substring(1);
-            if (id && document.getElementById(id)) {
-                e.preventDefault();
-                navigateTo(id);
-            }
-        });
+    // Delegated navigation also handles links rendered later (for example,
+    // the quick-access links inside the dynamically rendered student space).
+    if (document.documentElement.dataset.gosvtNavigationBound === 'true') return;
+    document.documentElement.dataset.gosvtNavigationBound = 'true';
+
+    document.addEventListener('click', function (e) {
+        const anchor = e.target && e.target.closest
+            ? e.target.closest('a[href^="#"]')
+            : null;
+        if (!anchor) return;
+
+        const href = anchor.getAttribute('href') || '';
+        const id = href.slice(1);
+        if (!id || !document.getElementById(id)) return;
+
+        e.preventDefault();
+        navigateTo(id);
     });
 }
 
