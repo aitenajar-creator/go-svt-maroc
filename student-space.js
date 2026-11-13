@@ -1244,9 +1244,9 @@
                 const meta = info.extmetadata || {};
                 const plain = function(value) {
                     const raw = value && (value.value || value);
-                    const node = document.createElement('span');
-                    node.innerHTML = String(raw || '');
-                    return (node.textContent || '').replace(/\\s+/g, ' ').trim();
+                    return String(raw || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ')
+                        .replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/gi, "'")
+                        .replace(/\s+/g, ' ').trim();
                 };
                 const license = plain(meta.LicenseShortName) || (fr ? 'Licence à vérifier' : 'يجب التحقق من الترخيص');
                 const author = plain(meta.Artist) || plain(meta.Credit) || (fr ? 'Auteur non indiqué' : 'المؤلف غير محدد');
