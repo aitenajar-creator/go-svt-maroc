@@ -1151,7 +1151,7 @@
               <g class="gs-organ-highlight" data-organ-system="nervous" fill="#6d8fd0" stroke="#fff" stroke-width="2"><path d="M137 36Q150 20 163 36Q159 54 150 59Q141 54 137 36Z"/></g>
               <g class="gs-organ-highlight" data-organ-system="circulatory" fill="#e98b85" stroke="#fff" stroke-width="2"><path d="M150 110C125 93 117 119 150 145C183 119 175 93 150 110Z"/></g>
               <g class="gs-organ-highlight" data-organ-system="respiratory" fill="#83b8dc" stroke="#fff" stroke-width="2"><path d="M145 91Q119 83 119 119Q120 139 145 146Z"/><path d="M155 91Q181 83 181 119Q180 139 155 146Z"/></g>
-              <path class="gs-organ-highlight" data-organ-system="digestive" d="M145 156Q132 162 140 183Q150 193 160 183Q168 162 155 156Z" fill="#dba56c" stroke="#fff" stroke-width="2"/>
+              <path class="gs-organ-highlight is-highlighted" data-organ-system="digestive" d="M145 156Q132 162 140 183Q150 193 160 183Q168 162 155 156Z" fill="#dba56c" stroke="#fff" stroke-width="2"/>
               <path class="gs-organ-highlight" data-organ-system="digestive" d="M132 187Q150 178 168 187L166 209Q150 219 134 209Z" fill="#8dbd76" stroke="#fff" stroke-width="2"/>
             </svg>
             <span>${fr?'Schéma simplifié du corps humain':'رسم مبسط لجسم الإنسان'}</span>
