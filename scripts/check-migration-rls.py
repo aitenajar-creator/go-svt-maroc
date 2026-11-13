@@ -127,12 +127,12 @@ if not support_migration.is_file():
 else:
     support_sql = support_migration.read_text(encoding="utf-8").lower()
     support_patterns = (
-        r"drop\\s+policy\\s+if\\s+exists\\s+teacher_support_plans_update\\s+on\\s+public\\.teacher_student_support_plans",
-        r"drop\\s+policy\\s+if\\s+exists\\s+teacher_support_plans_delete\\s+on\\s+public\\.teacher_student_support_plans",
-        r"revoke\\s+update\\s+on\\s+public\\.teacher_student_support_plans\\s+from\\s+authenticated",
-        r"revoke\\s+update\\s*\\([\\s\\w,]+\\)\\s+on\\s+public\\.teacher_student_support_plans\\s+from\\s+authenticated",
-        r"revoke\\s+delete\\s+on\\s+public\\.teacher_student_support_plans\\s+from\\s+authenticated",
-        r"grant\\s+select\\s*,\\s*insert\\s+on\\s+public\\.teacher_student_support_plans\\s+to\\s+authenticated",
+        r"drop\s+policy\s+if\s+exists\s+teacher_support_plans_update\s+on\s+public\.teacher_student_support_plans",
+        r"drop\s+policy\s+if\s+exists\s+teacher_support_plans_delete\s+on\s+public\.teacher_student_support_plans",
+        r"revoke\s+update\s+on\s+public\.teacher_student_support_plans\s+from\s+authenticated",
+        r"revoke\s+update\s*\([\s\w,]+\)\s+on\s+public\.teacher_student_support_plans\s+from\s+authenticated",
+        r"revoke\s+delete\s+on\s+public\.teacher_student_support_plans\s+from\s+authenticated",
+        r"grant\s+select\s*,\s*insert\s+on\s+public\.teacher_student_support_plans\s+to\s+authenticated",
     )
     for pattern in support_patterns:
         if not re.search(pattern, support_sql):
