@@ -162,15 +162,31 @@
     const { data, error } = await client.from('teacher_community_resources').select('*').eq('id',id).maybeSingle();
     if (error) throw error; return data;
   }
+  // Hide metadata before removing the private object. If storage or metadata
+  // deletion fails, the resource stays hidden and can be retried by its owner/admin.
+  async function safelyDeleteResource(r) {
+    const hidden = await client.from('teacher_community_resources')
+      .update({status:'hidden',updated_at:new Date().toISOString()})
+      .eq('id',r.id).select('id').maybeSingle();
+    if (hidden.error) throw new Error('تعذر إخفاء الوثيقة قبل حذفها: ' + hidden.error.message);
+    if (!hidden.data) throw new Error('لم تعد الوثيقة متاحة للحذف أو لا تملك صلاحية إدارتها.');
+
+    const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
+    if (removed.error) {
+      throw new Error('أُخفيت الوثيقة لحمايتها، لكن تعذر حذف الملف من التخزين. أعد المحاولة لاحقاً. ' + removed.error.message);
+    }
+
+    const deleted = await client.from('teacher_community_resources').delete().eq('id',r.id);
+    if (deleted.error) {
+      throw new Error('حُذف الملف من التخزين، لكن تعذر حذف بياناته. بقي السجل مخفياً ويمكن إعادة محاولة الحذف. ' + deleted.error.message);
+    }
+  }
   async function deleteResource(id) {
     const r = await findResource(id); if (!r) return;
     if (r.owner_id !== user.id && !isAdmin) throw new Error('لا يمكنك حذف ملف أستاذ آخر.');
     if (!window.confirm('هل تريد حذف هذه الوثيقة نهائياً؟')) return;
-    const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
-    if (removed.error) throw removed.error;
-    const { error } = await client.from('teacher_community_resources').delete().eq('id',id);
-    if (error) throw error;
-    await Promise.all([loadLibrary(),loadMyResources()]);
+    await safelyDeleteResource(r);
+    await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdmin() : Promise.resolve()]);
   }
   async function toggleShare(id) {
     const r = await findResource(id); if (!r) return;
@@ -235,7 +251,11 @@
         is_shared:$('tc-file-share').checked,status:'published'};
       const saved = await client.from('teacher_community_resources').insert(row);
       if (saved.error) {
-        await client.storage.from('teacher-community').remove([path]);
+        const cleanup = await client.storage.from('teacher-community').remove([path]);
+        if (cleanup.error) {
+          console.error('[Teacher community] Uploaded object cleanup failed:', path, cleanup.error);
+          throw new Error('تعذر حفظ بيانات الوثيقة، كما تعذر تنظيف الملف المؤقت تلقائياً. أبلغ إدارة المنصة ليتم تنظيفه بأمان. ' + saved.error.message);
+        }
         throw saved.error;
       }
       $('tc-upload-form').reset(); $('tc-upload-dialog').close();
@@ -256,11 +276,9 @@
         if(error) throw error; await Promise.all([loadAdmin(),loadLibrary()]);
       } else if (b.dataset.adminDelete) {
         const id=b.dataset.adminDelete, r=await findResource(id);
+        if (!r) return;
         if (!window.confirm('هل تريد حذف هذه الوثيقة من المجتمع نهائياً؟')) return;
-        const removed=await client.storage.from('teacher-community').remove([r.storage_path]);
-        if(removed.error) throw removed.error;
-        const {error}=await client.from('teacher_community_resources').delete().eq('id',id);
-        if(error) throw error;
+        await safelyDeleteResource(r);
         await Promise.all([loadAdmin(),loadLibrary(),loadMyResources()]);
       }
     } catch(err) { alert(err.message || 'تعذر تنفيذ العملية.'); }
