@@ -1234,3 +1234,29 @@ body{background:#f4f8f5}
 #student-space .gs-anatomy-figure [data-organ-system]{opacity:.3;transition:opacity .2s ease,filter .2s ease}
 #student-space .gs-anatomy-figure [data-organ-system].is-highlighted{opacity:1;filter:drop-shadow(0 0 7px rgba(49,142,86,.72))}
 @media(prefers-reduced-motion:reduce){#student-space .gs-anatomy-figure [data-organ-system]{transition:none!important}}
+
+
+/* Cell and photosynthesis revision challenge */
+#student-space .gs-svt-revision{margin:1.25rem 0;padding:clamp(1rem,2.6vw,1.55rem);border:1px solid #dce8d7;border-radius:20px;background:linear-gradient(145deg,#f5faef,#fff 70%);box-shadow:0 8px 22px rgba(40,88,44,.055)}
+#student-space .gs-svt-revision-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+#student-space .gs-svt-revision-heading h3{margin:.3rem 0;color:#285d39;font-size:clamp(1.1rem,2.1vw,1.45rem)}
+#student-space .gs-svt-revision-heading p{margin:0;color:#718071;line-height:1.7}
+#student-space .gs-svt-revision-heading>span{font-size:1.9rem}
+#student-space .gs-svt-revision-meta{display:flex;justify-content:space-between;gap:1rem;color:#58745d;font-size:.8rem;font-weight:850}
+#student-space .gs-svt-revision-track{height:6px;margin:.55rem 0 .9rem;overflow:hidden;border-radius:8px;background:#e7eee2}
+#student-space .gs-svt-revision-track>span{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#a6c96c,#39854d);transition:width .2s ease}
+#student-space .gs-svt-revision-content h4{margin:.4rem 0 .8rem;color:#34583a;font-size:1rem;line-height:1.7}
+#student-space .gs-svt-revision-options{display:grid;gap:.5rem}
+#student-space .gs-svt-revision-options button{padding:.7rem .85rem;border:1px solid #e0e9da;border-radius:10px;background:#fff;color:#4d654e;text-align:start;font:inherit;cursor:pointer}
+#student-space .gs-svt-revision-options button:disabled{opacity:1;cursor:default}
+#student-space .gs-svt-revision-options button.is-correct{border-color:#78b582;background:#eaf6e9;color:#245c35;font-weight:800}
+#student-space .gs-svt-revision-options button.is-incorrect{border-color:#d99a91;background:#fff0ee;color:#8a3d36}
+#student-space .gs-svt-revision-feedback{min-height:1.5rem;margin:.65rem 0 0;color:#5d705d;font-size:.84rem;line-height:1.75}
+#student-space .gs-svt-revision-content [data-svt-next],#student-space .gs-svt-revision-result button{margin-top:.65rem;padding:.65rem 1rem;border:0;border-radius:10px;background:#367c45;color:#fff;font:inherit;font-weight:850;cursor:pointer}
+#student-space .gs-svt-revision-content [hidden]{display:none}
+#student-space .gs-svt-revision-result{display:grid;justify-items:center;gap:.45rem;padding:1rem;text-align:center}
+#student-space .gs-svt-revision-result>span{font-size:2rem}
+#student-space .gs-svt-revision-result strong{color:#285d39;font-size:1.1rem}
+#student-space .gs-svt-revision-result p{margin:0;color:#687a67;line-height:1.7}
+#student-space .gs-svt-revision-options button:focus-visible,#student-space .gs-svt-revision-content [data-svt-next]:focus-visible,#student-space .gs-svt-revision-result button:focus-visible{outline:3px solid #d6ad50;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){#student-space .gs-svt-revision-track>span{transition:none!important}}

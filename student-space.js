@@ -1175,6 +1175,16 @@
 </section>`;
     }
 
+    function renderCellPhotosynthesisQuiz() {
+        const fr=lang()==='fr';
+        return `<section class="gs-svt-revision" aria-labelledby="gs-svt-revision-title">
+          <div class="gs-svt-revision-heading"><div><span class="gs-eyebrow">GO SVT MAROC · SMART REVISION</span>
+            <h3 id="gs-svt-revision-title">${fr?'Défi : cellule et photosynthèse':'تحدي الخلية والتركيب الضوئي'}</h3>
+            <p>${fr?'Cinq questions pour consolider les notions essentielles.':'خمسة أسئلة لترسيخ المفاهيم الأساسية.'}</p></div><span aria-hidden="true">🧠</span></div>
+          <div class="gs-svt-revision-content" aria-live="polite"></div>
+        </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -1224,6 +1234,7 @@
             </section>
             ${renderPlantCellExplorer()}
             ${renderPhotosynthesisLab()}
+            ${renderCellPhotosynthesisQuiz()}
             ${renderHumanSystemsAtlas()}
             <div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
@@ -1913,6 +1924,52 @@
                 scene.classList.add('gs-photo-pulse');
             }
         }));
+        const cellPhotoQuestions = lang()==='fr' ? [
+          {q:'Quel organite contient la chlorophylle ?',a:['Le noyau','Le chloroplaste','La vacuole'],c:1,e:'Les chloroplastes contiennent les pigments chlorophylliens.'},
+          {q:'Quel est le rôle principal de la paroi cellulosique ?',a:['Protéger et soutenir la cellule','Produire les protéines','Stocker l’ADN'],c:0,e:'La paroi donne une forme et une résistance à la cellule végétale.'},
+          {q:'Quel gaz est utilisé pendant la photosynthèse ?',a:['Le dioxygène','Le dioxyde de carbone','L’azote'],c:1,e:'Le CO₂ est utilisé avec l’eau pour fabriquer de la matière organique.'},
+          {q:'Quelle énergie alimente la photosynthèse ?',a:['L’énergie lumineuse','L’énergie sonore','La chaleur seule'],c:0,e:'La chlorophylle capte l’énergie lumineuse.'},
+          {q:'Quel gaz est libéré pendant la photosynthèse ?',a:['Le dioxyde de carbone','Le méthane','Le dioxygène'],c:2,e:'Le dioxygène est libéré dans le milieu extérieur.'}
+        ] : [
+          {q:'ما العضية التي تحتوي على اليخضور؟',a:['النواة','البلاستيدة الخضراء','الفجوة العصارية'],c:1,e:'تحتوي البلاستيدات الخضراء على الأصباغ اليخضورية.'},
+          {q:'ما الدور الأساسي للجدار السيليلوزي؟',a:['حماية الخلية ودعامتها','إنتاج البروتينات','تخزين ADN'],c:0,e:'يساهم الجدار في إعطاء الخلية النباتية شكلها ومقاومتها.'},
+          {q:'ما الغاز المستعمل خلال التركيب الضوئي؟',a:['الأكسجين','ثاني أكسيد الكربون','الآزوت'],c:1,e:'يستعمل CO₂ مع الماء لإنتاج المادة العضوية.'},
+          {q:'ما مصدر الطاقة الضروري للتركيب الضوئي؟',a:['الطاقة الضوئية','الطاقة الصوتية','الحرارة وحدها'],c:0,e:'يلتقط اليخضور الطاقة الضوئية.'},
+          {q:'ما الغاز الذي ينطلق خلال التركيب الضوئي؟',a:['ثاني أكسيد الكربون','الميثان','الأكسجين'],c:2,e:'ينطلق غاز الأكسجين إلى الوسط الخارجي.'}
+        ];
+        const revisionRoot=container.querySelector('.gs-svt-revision-content');
+        if(revisionRoot){
+            let index=0,score=0,answered=false;
+            const draw=()=>{
+                if(index>=cellPhotoQuestions.length){
+                    revisionRoot.innerHTML=`<div class="gs-svt-revision-result"><span>🌟</span><strong>${lang()==='fr'?'Résultat':'النتيجة'} : ${score}/5</strong><p>${score===5?(lang()==='fr'?'Bravo, sans faute !':'أحسنت! إجابات صحيحة بالكامل.'):lang()==='fr'?'Continuez à réviser pour renforcer vos acquis.':'واصل المراجعة لترسيخ مكتسباتك.'}</p><button type="button" data-svt-restart>${lang()==='fr'?'Rejouer':'إعادة التحدي'}</button></div>`;
+                    return;
+                }
+                answered=false;
+                const q=cellPhotoQuestions[index];
+                revisionRoot.innerHTML=`<div class="gs-svt-revision-meta"><span>${lang()==='fr'?'Question':'السؤال'} ${index+1}/5</span><span>${lang()==='fr'?'Score':'النقاط'} : ${score}</span></div><div class="gs-svt-revision-track"><span style="width:${index/5*100}%"></span></div><h4>${q.q}</h4><div class="gs-svt-revision-options">${q.a.map((a,i)=>`<button type="button" data-svt-answer="${i}">${a}</button>`).join('')}</div><p class="gs-svt-revision-feedback" aria-live="polite"></p><button type="button" data-svt-next hidden>${index===4?(lang()==='fr'?'Voir le résultat':'عرض النتيجة'):(lang()==='fr'?'Continuer':'متابعة')}</button>`;
+            };
+            revisionRoot.addEventListener('click',event=>{
+                const answer=event.target.closest('[data-svt-answer]');
+                if(answer&&!answered){
+                    answered=true;
+                    const q=cellPhotoQuestions[index],choice=Number(answer.dataset.svtAnswer);
+                    if(choice===q.c)score++;
+                    revisionRoot.querySelectorAll('[data-svt-answer]').forEach((button,i)=>{
+                        button.disabled=true;
+                        if(i===q.c)button.classList.add('is-correct');
+                        else if(i===choice)button.classList.add('is-incorrect');
+                    });
+                    const feedback=revisionRoot.querySelector('.gs-svt-revision-feedback');
+                    if(feedback)feedback.textContent=(choice===q.c?(lang()==='fr'?'Bonne réponse ! ':'إجابة صحيحة! '):(lang()==='fr'?'À revoir. ':'راجع هذه الإجابة. '))+q.e;
+                    const next=revisionRoot.querySelector('[data-svt-next]');
+                    if(next)next.hidden=false;
+                }
+                if(event.target.closest('[data-svt-next]')&&answered){index++;draw();}
+                if(event.target.closest('[data-svt-restart]')){index=0;score=0;draw();}
+            });
+            draw();
+        }
         const anatomyFacts = {
           digestive: lang()==='fr'?['Système digestif','Transforme les aliments en nutriments absorbables.','Bouche → œsophage → estomac → intestin grêle → gros intestin.','Les nutriments traversent la paroi de l’intestin grêle et rejoignent le sang.']:['الجهاز الهضمي','يحول الأغذية إلى مغذيات قابلة للامتصاص.','الفم ← المريء ← المعدة ← الأمعاء الدقيقة ← الأمعاء الغليظة.','تعبر المغذيات جدار الأمعاء الدقيقة لتصل إلى الدم.'],
           respiratory: lang()==='fr'?['Système respiratoire','Assure les échanges gazeux entre l’air et le sang.','Fosses nasales → trachée → bronches → bronchioles → alvéoles.','Au niveau des alvéoles, le dioxygène diffuse vers le sang et le CO₂ en sort.']:['الجهاز التنفسي','يضمن التبادلات الغازية بين الهواء والدم.','التجاويف الأنفية ← القصبة الهوائية ← الشعب ← القصيبات ← الأسناخ الرئوية.','على مستوى الأسناخ ينتشر الأكسجين نحو الدم ويغادره ثاني أكسيد الكربون.'],
