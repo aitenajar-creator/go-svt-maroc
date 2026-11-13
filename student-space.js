@@ -1322,18 +1322,29 @@
                 const params = new URLSearchParams({
                     action: 'query', format: 'json', origin: '*',
                     generator: 'search', gsrnamespace: '6',
-                    gsrsearch: query + ' filetype:bitmap', gsrlimit: '1',
-                    prop: 'imageinfo', iiprop: 'url|extmetadata', iiurlwidth: '640'
+                    gsrsearch: query + ' filetype:bitmap', gsrlimit: '5',
+                    prop: 'imageinfo', iiprop: 'url|extmetadata|size|mime', iiurlwidth: '640'
                 });
                 const response = await fetch('https://commons.wikimedia.org/w/api.php?' + params.toString(), {
                     headers: { Accept: 'application/json' }
                 });
                 if (!response.ok) throw new Error('Wikimedia request failed');
                 const payload = await response.json();
-                const page = payload && payload.query && payload.query.pages
-                    ? Object.values(payload.query.pages)[0] : null;
-                const info = page && Array.isArray(page.imageinfo) ? page.imageinfo[0] : null;
-                if (!info || !info.thumburl || !info.descriptionurl) throw new Error('No image result');
+                const candidates = payload && payload.query && payload.query.pages
+                    ? Object.values(payload.query.pages).map(function(candidate) {
+                        const imageInfo = candidate && Array.isArray(candidate.imageinfo) ? candidate.imageinfo[0] : null;
+                        return { page: candidate, info: imageInfo };
+                    }).filter(function(item) {
+                        return item.info && item.info.thumburl && item.info.descriptionurl &&
+                            /^image\\/(jpeg|png|webp|gif|tiff)$/i.test(item.info.mime || '') &&
+                            Number(item.info.width) >= 320 && Number(item.info.height) >= 200;
+                    }).sort(function(a, b) {
+                        return (Number(b.info.width) * Number(b.info.height)) - (Number(a.info.width) * Number(a.info.height));
+                    }) : [];
+                const selected = candidates[0];
+                const page = selected && selected.page;
+                const info = selected && selected.info;
+                if (!info) throw new Error('No suitable raster image (minimum 320×200)');
                 const imageUrl = new URL(info.thumburl);
                 const pageUrl = new URL(info.descriptionurl);
                 if (imageUrl.hostname !== 'upload.wikimedia.org' || pageUrl.hostname !== 'commons.wikimedia.org') {
