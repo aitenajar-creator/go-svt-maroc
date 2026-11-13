@@ -1374,3 +1374,10 @@ body{background:#f4f8f5}
 #student-space .gs-microscope-lab.show-micro-labels .gs-micro-overlay{background:#254e72;color:#fff}
 @media(max-width:720px){#student-space .gs-micro-layout{grid-template-columns:1fr}#student-space .gs-micro-slides{grid-template-columns:repeat(2,minmax(0,1fr))}#student-space .gs-micro-canvas{min-height:190px}}
 @media(prefers-reduced-motion:reduce){#student-space .gs-micro-art{transition:none}}
+
+
+/* Expanded human systems atlas */
+#student-space .gs-anatomy-figure [data-organ-system="urinary"].is-highlighted{filter:drop-shadow(0 0 7px rgba(183,111,123,.8))}
+#student-space .gs-anatomy-figure [data-organ-system="skeletal"].is-highlighted{filter:drop-shadow(0 0 7px rgba(165,132,78,.8))}
+#student-space .gs-anatomy-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:560px){#student-space .gs-anatomy-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
