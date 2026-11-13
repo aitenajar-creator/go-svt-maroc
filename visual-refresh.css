@@ -1260,3 +1260,23 @@ body{background:#f4f8f5}
 #student-space .gs-svt-revision-result p{margin:0;color:#687a67;line-height:1.7}
 #student-space .gs-svt-revision-options button:focus-visible,#student-space .gs-svt-revision-content [data-svt-next]:focus-visible,#student-space .gs-svt-revision-result button:focus-visible{outline:3px solid #d6ad50;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){#student-space .gs-svt-revision-track>span{transition:none!important}}
+
+
+/* Open scientific photography and microscopy collection */
+#student-space .gs-science-media{margin:1.25rem 0;padding:clamp(1rem,2.6vw,1.55rem);border:1px solid #dce7e3;border-radius:21px;background:linear-gradient(145deg,#f0f7f7,#fff 72%);box-shadow:0 8px 22px rgba(31,78,79,.055)}
+#student-space .gs-science-media-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+#student-space .gs-science-media-heading h3{margin:.3rem 0;color:#245b59;font-size:clamp(1.1rem,2.2vw,1.45rem)}
+#student-space .gs-science-media-heading p{max-width:780px;margin:0;color:#687e7b;line-height:1.75;font-size:.86rem}
+#student-space .gs-science-media-mark{display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;border-radius:16px;background:#e0efed;font-size:1.8rem}
+#student-space .gs-science-media-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
+#student-space .gs-science-media-card{display:flex;align-items:flex-start;gap:.8rem;min-width:0;padding:.9rem;border:1px solid #dfeae7;border-radius:14px;background:rgba(255,255,255,.92);color:inherit;text-decoration:none;transition:border-color .16s,transform .16s,box-shadow .16s}
+#student-space .gs-science-media-card:hover{transform:translateY(-2px);border-color:#9fc8c1;box-shadow:0 7px 17px rgba(37,100,92,.08)}
+#student-space .gs-science-media-icon{display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:12px;background:#eaf4f2;font-size:1.4rem}
+#student-space .gs-science-media-copy{display:grid;gap:.32rem;min-width:0}
+#student-space .gs-science-media-copy strong{color:#285b56;font-size:.91rem}
+#student-space .gs-science-media-copy small{color:#70817d;font-size:.78rem;line-height:1.65}
+#student-space .gs-science-media-copy em{margin-top:.15rem;color:#267d70;font-size:.76rem;font-style:normal;font-weight:850}
+#student-space .gs-science-media-license{margin:.85rem 0 0;padding:.7rem .8rem;border-radius:10px;background:#eaf3f1;color:#627874;font-size:.74rem;line-height:1.75}
+#student-space .gs-science-media-card:focus-visible{outline:3px solid #d4ad55;outline-offset:3px}
+@media(max-width:650px){#student-space .gs-science-media-grid{grid-template-columns:1fr}#student-space .gs-science-media-heading{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){#student-space .gs-science-media-card{transition:none!important}}

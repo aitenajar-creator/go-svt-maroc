@@ -1185,6 +1185,33 @@
         </section>`;
     }
 
+    function renderScientificMediaLibrary() {
+        const fr=lang()==='fr';
+        const topics=fr?[
+          ['Microscopie végétale','Cellules végétales, chloroplastes et tissus observés au microscope','plant cell microscopy chloroplast'],
+          ['Stomates et feuilles','Photographies et micrographies des stomates et de l’épiderme foliaire','leaf stomata scanning electron microscopy'],
+          ['Sang et cellules','Globules rouges, globules blancs et frottis sanguins','human blood cells microscopy'],
+          ['Cœur et circulation','Photographies anatomiques et ressources visuelles sur le cœur','human heart anatomy specimen'],
+          ['Poumons et alvéoles','Images histologiques et micrographies des alvéoles pulmonaires','lung alveoli histology microscopy'],
+          ['Fossiles et biodiversité','Fossiles, organismes et traces de l’histoire de la vie','fossils biodiversity paleontology']
+        ]:[
+          ['مجهر الخلية النباتية','صور مجهرية للخلايا النباتية والبلاستيدات والأنسجة','plant cell microscopy chloroplast'],
+          ['الثغور والأوراق','صور ومجاهر إلكترونية للثغور وبشرة الورقة','leaf stomata scanning electron microscopy'],
+          ['الدم والخلايا','صور كريات الدم الحمراء والبيضاء واللطاخات الدموية','human blood cells microscopy'],
+          ['القلب والدورة الدموية','صور تشريحية وموارد بصرية حول القلب','human heart anatomy specimen'],
+          ['الرئتان والأسناخ','صور نسيجية ومجهرية للأسناخ الرئوية','lung alveoli histology microscopy'],
+          ['المستحاثات والتنوع الحيوي','مستحاثات وكائنات وآثار تاريخ الحياة','fossils biodiversity paleontology']
+        ];
+        const icons=['🔬','🍃','🩸','❤️','🫁','🦴'];
+        return `<section class="gs-science-media" aria-labelledby="gs-science-media-title">
+          <div class="gs-science-media-heading"><div><span class="gs-eyebrow">OPEN SCIENCE · MEDIA COLLECTION</span>
+            <h3 id="gs-science-media-title">${fr?'Bibliothèque de photographies scientifiques':'مكتبة الصور العلمية الحقيقية'}</h3>
+            <p>${fr?'Explorez des photographies et micrographies issues des collections Wikimedia Commons. Vérifiez la licence et le crédit de chaque fichier avant toute réutilisation.':'اكتشف صوراً فوتوغرافية ومجهرية من مجموعات ويكيميديا كومنز. تحقق من ترخيص كل صورة واسم صاحبها قبل إعادة استخدامها.'}</p></div><span class="gs-science-media-mark" aria-hidden="true">📷</span></div>
+          <div class="gs-science-media-grid">${topics.map((topic,i)=>`<a class="gs-science-media-card" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=${encodeURIComponent(topic[2])}" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-icon" aria-hidden="true">${icons[i]}</span><span class="gs-science-media-copy"><strong>${topic[0]}</strong><small>${topic[1]}</small><em>${fr?'Voir les images libres':'استكشاف الصور المتاحة'} <span aria-hidden="true">↗</span></em></span></a>`).join('')}</div>
+          <p class="gs-science-media-license">${fr?'Les fichiers peuvent avoir des licences différentes (CC BY, CC BY-SA, domaine public, etc.). Consultez toujours la page de chaque image pour respecter les conditions de réutilisation.':'تختلف تراخيص الملفات (CC BY وCC BY-SA والملكية العامة وغيرها). راجع صفحة كل صورة لمعرفة شروط الاستخدام ونسب العمل إلى صاحبه.'}</p>
+        </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -1236,6 +1263,7 @@
             ${renderPhotosynthesisLab()}
             ${renderCellPhotosynthesisQuiz()}
             ${renderHumanSystemsAtlas()}
+            ${renderScientificMediaLibrary()}
             <div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
                 <div class="gs-path-steps">
