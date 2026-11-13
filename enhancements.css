@@ -786,3 +786,15 @@ html.gs-dark #student-space-content .gs-pa-review {
 .gs-manager-academic .is-confirmed{color:#23834e}.gs-manager-academic .is-pending{color:#a36b16}
 .gs-manager-empty{padding:18px;text-align:center;color:var(--text-muted,#718078)}
 @media(max-width:650px){.gs-manager-hero{padding:18px}.gs-manager-hero h3{font-size:1.2rem}.gs-manager-icon{font-size:2rem}.gs-manager-tools{grid-template-columns:1fr}.gs-manager-student{flex-direction:column}.gs-manager-academic{align-items:flex-start;text-align:start}.gs-manager-heading{align-items:flex-start}}
+
+
+.gs-quiz-image-fallback {
+    margin: .75rem 0 1rem;
+    padding: .8rem 1rem;
+    border: 1px dashed #b8c9bb;
+    border-radius: 12px;
+    background: #f3f7f3;
+    color: #53675a;
+    text-align: center;
+    line-height: 1.6;
+}
