@@ -39,7 +39,7 @@
   <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 01" data-fr="EXPÉRIENCE 01">التجربة 01</span><h2 data-ar="محطة المجهر الافتراضي" data-fr="Station de microscope virtuel">محطة المجهر الافتراضي</h2><p data-ar="غيّر درجة التكبير ولاحظ كيف تتضح تفاصيل العينة في مجال الرؤية." data-fr="Réglez le grossissement et observez les détails de l'échantillon dans le champ visuel.">غيّر درجة التكبير ولاحظ كيف تتضح تفاصيل العينة في مجال الرؤية.</p></div><span class="gs-lab-number">01</span></div>
   <div class="gs-microscope-card">
    <div class="gs-micro-visual"><div class="gs-micro-top"><span data-ar="مجال الرؤية" data-fr="Champ de vision">مجال الرؤية</span><span id="lab-zoom-label">×100</span></div>
-    <div class="gs-micro-view"><div class="gs-micro-specimen" id="micro-specimen"><svg viewBox="0 0 400 300" role="img" aria-label="رسم توضيحي لخلايا نباتية تحت المجهر"><g fill="#d9edcf" stroke="#528b5b" stroke-width="5"><path d="M20 28 Q70 8 112 35 L105 105 Q65 130 18 105Z"/><path d="M122 28 Q180 8 220 34 L216 107 Q166 127 116 105Z"/><path d="M230 28 Q290 8 370 35 L378 105 Q310 130 226 106Z"/><path d="M20 118 Q70 100 108 128 L105 205 Q60 226 18 205Z"/><path d="M120 118 Q170 100 218 128 L218 205 Q165 225 116 205Z"/><path d="M230 118 Q300 100 374 128 L378 205 Q300 226 226 205Z"/><path d="M20 218 Q75 198 110 228 L106 280 L18 280Z"/><path d="M122 218 Q175 198 218 228 L218 280 L116 280Z"/><path d="M230 218 Q300 198 374 228 L378 280 L226 280Z"/></g><g fill="#8c6ab0" opacity=".9"><ellipse cx="65" cy="70" rx="14" ry="19"/><ellipse cx="170" cy="70" rx="14" ry="19"/><ellipse cx="300" cy="70" rx="14" ry="19"/><ellipse cx="65" cy="165" rx="14" ry="19"/><ellipse cx="170" cy="165" rx="14" ry="19"/><ellipse cx="300" cy="165" rx="14" ry="19"/><ellipse cx="65" cy="248" rx="14" ry="19"/><ellipse cx="170" cy="248" rx="14" ry="19"/><ellipse cx="300" cy="248" rx="14" ry="19"/></g><g fill="#f0c66e"><circle cx="93" cy="47" r="5"/><circle cx="198" cy="48" r="5"/><circle cx="330" cy="48" r="5"/><circle cx="94" cy="143" r="5"/><circle cx="198" cy="143" r="5"/><circle cx="330" cy="143" r="5"/></g></svg></div></div>
+    <div class="gs-micro-view"><div class="gs-micro-specimen" id="micro-specimen"><a class="lab-real-photo lab-micro-photo" data-commons-query="onion epidermis cells light microscopy micrograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=onion%20epidermis%20cells%20light%20microscopy%20micrograph" target="_blank" rel="noopener noreferrer"><span class="lab-photo-frame"><span>🔬</span><small data-ar="جارٍ تحميل صورة مجهرية حقيقية..." data-fr="Chargement d’une microphotographie réelle…">جارٍ تحميل صورة مجهرية حقيقية...</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">المصدر والترخيص قيد التحميل</span></small></a></div></div>
     <div class="gs-micro-scale"><span>×40</span><input id="lab-zoom" type="range" min="40" max="400" step="20" value="100" aria-label="درجة التكبير"><span>×400</span></div>
     <div class="gs-micro-caption" id="lab-micro-caption" data-ar="عينة توضيحية لخلايا نباتية — رسم تعليمي، وليست صورة مجهرية حقيقية." data-fr="Échantillon schématique de cellules végétales — illustration pédagogique, pas une microphotographie réelle.">عينة توضيحية لخلايا نباتية — رسم تعليمي، وليست صورة مجهرية حقيقية.</div>
    </div>
@@ -51,19 +51,12 @@
   <div class="gs-cell-card">
    <div class="gs-cell-controls" role="group" aria-label="نوع الخلية"><button type="button" class="gs-cell-type is-active" data-cell="plant" data-ar="خلية نباتية" data-fr="Cellule végétale">خلية نباتية</button><button type="button" class="gs-cell-type" data-cell="animal" data-ar="خلية حيوانية" data-fr="Cellule animale">خلية حيوانية</button></div>
    <div class="gs-cell-workspace"><div class="gs-cell-drawing" id="gs-cell-drawing">
-    <svg viewBox="0 0 440 340" role="img" aria-label="رسم تفاعلي مبسط للخلية النباتية">
-     <rect class="cell-wall" x="28" y="25" width="384" height="290" rx="58"/>
-     <rect class="cell-membrane" x="43" y="40" width="354" height="260" rx="48"/>
-     <ellipse class="cell-nucleus" cx="125" cy="125" rx="39" ry="34"/>
-     <circle class="cell-nucleolus" cx="132" cy="125" r="12"/>
-     <rect class="cell-vacuole" x="190" y="72" width="150" height="190" rx="36"/>
-     <g class="cell-chloro"><ellipse cx="95" cy="220" rx="26" ry="13"/><path d="M76 220h38M95 207v26"/><ellipse cx="345" cy="95" rx="23" ry="12"/><path d="M328 95h34"/></g>
-     <g class="cell-mito"><path d="M160 55q25-18 39 4t-16 23q-30-2-23-27zM285 270q25-18 39 4t-16 23q-30-2-23-27z"/></g>
-     <g class="cell-ribo"><circle cx="175" cy="155" r="4"/><circle cx="180" cy="174" r="4"/><circle cx="160" cy="190" r="4"/><circle cx="365" cy="190" r="4"/><circle cx="355" cy="210" r="4"/></g>
-    </svg>
-    <button class="gs-organelle-hit hit-nucleus" data-organelle="nucleus" type="button" aria-label="النواة"></button><button class="gs-organelle-hit hit-vacuole" data-organelle="vacuole" type="button" aria-label="الفجوة"></button><button class="gs-organelle-hit hit-chloro" data-organelle="chloroplast" type="button" aria-label="البلاستيدة الخضراء"></button><button class="gs-organelle-hit hit-mito" data-organelle="mitochondria" type="button" aria-label="الميتوكندريا"></button>
+    <a class="lab-real-photo lab-cell-photo" data-cell-photo="plant" data-commons-query="plant cell light microscopy micrograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=plant%20cell%20light%20microscopy%20micrograph" target="_blank" rel="noopener noreferrer"><span class="lab-photo-frame"><span>🌿</span><small data-ar="صورة مجهرية حقيقية للخلية النباتية" data-fr="Microphotographie réelle d’une cellule végétale">صورة مجهرية حقيقية للخلية النباتية</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">المصدر والترخيص قيد التحميل</span></small></a>
+    <a class="lab-real-photo lab-cell-photo" data-cell-photo="animal" data-commons-query="human cheek epithelial animal cells light microscopy micrograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=human%20cheek%20epithelial%20animal%20cells%20light%20microscopy%20micrograph" target="_blank" rel="noopener noreferrer" hidden><span class="lab-photo-frame"><span>🧫</span><small data-ar="صورة مجهرية حقيقية للخلية الحيوانية" data-fr="Microphotographie réelle d’une cellule animale">صورة مجهرية حقيقية للخلية الحيوانية</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">المصدر والترخيص قيد التحميل</span></small></a>
    </div>
-   <aside class="gs-organelle-panel" aria-live="polite"><span class="gs-lab-kicker" data-ar="بطاقة المكوّن" data-fr="FICHE DU CONSTITUANT">بطاقة المكوّن</span><h3 id="organelle-title">النواة</h3><p id="organelle-description">تحتوي على المادة الوراثية وتساهم في تنظيم أنشطة الخلية.</p><div class="gs-organelle-tip" id="organelle-tip">اضغط على مكونات أخرى في الرسم لمقارنة وظائفها.</div></aside></div>
+   <aside class="gs-organelle-panel" aria-live="polite"><span class="gs-lab-kicker" data-ar="بطاقة المكوّن" data-fr="FICHE DU CONSTITUANT">بطاقة المكوّن</span><h3 id="organelle-title">النواة</h3><p id="organelle-description">تحتوي على المادة الوراثية وتساهم في تنظيم أنشطة الخلية.</p><div class="gs-organelle-tip" id="organelle-tip">اختر مكوّناً من القائمة للتعرف على وظيفته.</div>
+    <div class="gs-organelle-choices"><button class="gs-organelle-hit" data-organelle="nucleus" type="button">النواة</button><button class="gs-organelle-hit" data-organelle="vacuole" type="button">الفجوة</button><button class="gs-organelle-hit" data-organelle="chloroplast" type="button">البلاستيدة الخضراء</button><button class="gs-organelle-hit" data-organelle="mitochondria" type="button">الميتوكندريا</button></div>
+   </aside></div>
    <div class="gs-cell-legend"><span><i class="legend-wall"></i><b data-ar="الجدار الخلوي" data-fr="Paroi">الجدار الخلوي</b></span><span><i class="legend-nucleus"></i><b data-ar="النواة" data-fr="Noyau">النواة</b></span><span><i class="legend-vacuole"></i><b data-ar="الفجوة" data-fr="Vacuole">الفجوة</b></span><span><i class="legend-chloro"></i><b data-ar="البلاستيدة" data-fr="Chloroplaste">البلاستيدة</b></span></div>
   </div>
  </section>
@@ -71,15 +64,7 @@
   <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 03" data-fr="EXPÉRIENCE 03">التجربة 03</span><h2 data-ar="محاكاة التركيب الضوئي" data-fr="Simulation de la photosynthèse">محاكاة التركيب الضوئي</h2><p data-ar="غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط." data-fr="Modifiez l’intensité lumineuse et la concentration en dioxyde de carbone pour observer leur effet, de façon simplifiée.">غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط.</p></div><span class="gs-lab-number">03</span></div>
   <div class="gs-photo-card">
    <div class="gs-photo-visual">
-    <svg viewBox="0 0 420 300" role="img" aria-label="رسم توضيحي لنبات أخضر تحت أشعة الشمس">
-     <defs><linearGradient id="leafGrad" x1="0" x2="1"><stop offset="0" stop-color="#8fcf76"/><stop offset="1" stop-color="#327d4a"/></linearGradient></defs>
-     <circle cx="330" cy="65" r="34" fill="#f5cb62"/><g stroke="#f5cb62" stroke-width="5" stroke-linecap="round"><path d="M330 14v-9M330 125v-9M279 65h-10M390 65h-10M294 29l-8-8M374 109l-8-8M366 29l8-8M294 101l-8 8"/></g>
-     <path d="M208 266Q205 190 211 115" stroke="#397b4b" stroke-width="11" fill="none" stroke-linecap="round"/>
-     <path d="M208 191Q112 89 72 155Q103 225 208 205Z" fill="url(#leafGrad)" stroke="#28683d" stroke-width="4"/><path d="M207 203Q132 166 88 157M210 153Q259 64 327 102Q318 176 210 165Z" fill="url(#leafGrad)" stroke="#28683d" stroke-width="4"/><path d="M208 199Q148 178 91 158M211 163Q263 122 315 107" stroke="#d7efb8" stroke-width="3" fill="none"/>
-     <path d="M130 270h160" stroke="#9b7654" stroke-width="12" stroke-linecap="round"/>
-     <g class="photo-oxygen"><circle cx="90" cy="75" r="8" fill="#8ed8ed"/><circle cx="65" cy="48" r="5" fill="#8ed8ed"/><circle cx="270" cy="35" r="7" fill="#8ed8ed"/></g>
-     <g fill="#4d9cc0" font-size="14" font-weight="700"><text x="20" y="25">CO₂</text><text x="350" y="160">O₂</text></g>
-    </svg>
+    <a class="lab-real-photo lab-plant-photo" data-commons-query="green plant leaf sunlight macro photography" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=green%20plant%20leaf%20sunlight%20macro%20photography" target="_blank" rel="noopener noreferrer"><span class="lab-photo-frame"><span>🍃</span><small data-ar="صورة حقيقية لنبات أخضر" data-fr="Photographie réelle d’une plante verte">صورة حقيقية لنبات أخضر</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">المصدر والترخيص قيد التحميل</span></small></a>
     <div class="gs-photo-equation" dir="ltr">6CO₂ + 6H₂O + lumière → C₆H₁₂O₆ + 6O₂</div>
    </div>
    <div class="gs-photo-controls">
@@ -115,27 +100,10 @@
     <button type="button" class="gs-geology-choice" data-geology="fault" data-ar="فالق" data-fr="Faille" aria-pressed="false">فالق</button>
    </div>
    <div class="gs-geology-visual">
-    <svg viewBox="0 0 640 340" role="img" aria-label="مقطع جيولوجي تعليمي لطبقات صخرية">
-     <g data-geo-scene="horizontal">
-      <path d="M30 60H610V125H30Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/><path d="M30 125H610V190H30Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/><path d="M30 190H610V255H30Z" fill="#d89c72" stroke="#fff" stroke-width="2"/><path d="M30 255H610V320H30Z" fill="#8ca8b7" stroke="#fff" stroke-width="2"/>
-      <g fill="#4d5148" font-size="15" font-weight="700"><text x="45" y="98">A</text><text x="45" y="164">B</text><text x="45" y="230">C</text><text x="45" y="296">D</text></g>
-     </g>
-     <g data-geo-scene="fold" hidden>
-      <path d="M30 60 Q160 60 240 130 Q320 200 400 130 Q480 60 610 60 L610 115 Q480 115 400 185 Q320 255 240 185 Q160 115 30 115Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/>
-      <path d="M30 115 Q160 115 240 185 Q320 255 400 185 Q480 115 610 115 L610 170 Q480 170 400 240 Q320 310 240 240 Q160 170 30 170Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/>
-      <path d="M30 170 Q160 170 240 240 Q320 310 400 240 Q480 170 610 170 L610 225 Q480 225 400 295 Q320 365 240 295 Q160 225 30 225Z" fill="#d89c72" stroke="#fff" stroke-width="2"/>
-      <path d="M30 225 Q160 225 240 295 Q320 365 400 295 Q480 225 610 225 L610 340H30Z" fill="#8ca8b7" stroke="#fff" stroke-width="2"/>
-      <path d="M320 25V310" stroke="#596d60" stroke-dasharray="7 7" stroke-width="2"/><text x="330" y="35" fill="#435b49" font-size="14">Axe du pli</text>
-     </g>
-     <g data-geo-scene="fault" hidden>
-      <path d="M30 60H330L450 125H610V190H450L330 125H30Z" fill="#e5c38a" stroke="#fff" stroke-width="2"/>
-      <path d="M30 125H330L450 190H610V255H450L330 190H30Z" fill="#b8cf9c" stroke="#fff" stroke-width="2"/>
-      <path d="M30 190H330L450 255H610V320H450L330 255H30Z" fill="#d89c72" stroke="#fff" stroke-width="2"/>
-      <path d="M330 20L450 330" stroke="#394f43" stroke-width="5" stroke-dasharray="9 6"/><path d="M430 145l-2 24 18-16" fill="none" stroke="#394f43" stroke-width="4"/>
-     </g>
-    </svg>
-    <div class="gs-geology-legend"><span><i class="geo-swatch geo-a"></i><span data-ar="طبقة A (أحدث)" data-fr="Couche A (plus récente)">طبقة A (أحدث)</span></span><span><i class="geo-swatch geo-b"></i><span data-ar="طبقة B" data-fr="Couche B">طبقة B</span></span><span><i class="geo-swatch geo-c"></i><span data-ar="طبقة C" data-fr="Couche C">طبقة C</span></span><span><i class="geo-swatch geo-d"></i><span data-ar="طبقة D (أقدم)" data-fr="Couche D (plus ancienne)">طبقة D (أقدم)</span></span></div>
-   </div>
+    <a class="lab-real-photo lab-geology-photo" data-geo-photo="horizontal" data-commons-query="horizontal sedimentary rock strata outcrop photograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=horizontal%20sedimentary%20rock%20strata%20outcrop%20photograph" target="_blank" rel="noopener noreferrer"><span class="lab-photo-frame"><span>🪨</span><small data-ar="صورة ميدانية لطبقات رسوبية أفقية" data-fr="Photographie de strates sédimentaires horizontales">صورة ميدانية لطبقات رسوبية أفقية</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">المصدر والترخيص قيد التحميل</span></small></a>
+    <a class="lab-real-photo lab-geology-photo" data-geo-photo="fold" data-commons-query="folded sedimentary rock layers outcrop photograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=folded%20sedimentary%20rock%20layers%20outcrop%20photograph" target="_blank" rel="noopener noreferrer" hidden><span class="lab-photo-frame"><span>⛰️</span><small data-ar="صورة ميدانية لطيات صخرية حقيقية" data-fr="Photographie d’un pli géologique réel">صورة ميدانية لطيات صخرية حقيقية</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">Source et licence en cours de chargement</span></small></a>
+    <a class="lab-real-photo lab-geology-photo" data-geo-photo="fault" data-commons-query="geological fault offset strata outcrop photograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=geological%20fault%20offset%20strata%20outcrop%20photograph" target="_blank" rel="noopener noreferrer" hidden><span class="lab-photo-frame"><span>🪨</span><small data-ar="صورة ميدانية لفالق جيولوجي حقيقي" data-fr="Photographie d’une faille géologique réelle">صورة ميدانية لفالق جيولوجي حقيقي</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">Source et licence en cours de chargement</span></small></a>
+   </div>iv>
    <div class="gs-geology-explanation" id="geo-explanation" aria-live="polite">في الطبقات الأفقية غير المشوهة، تكون الطبقات السفلى أقدم من الطبقات العليا وفق مبدأ التراكب.</div>
    <p class="gs-photo-note" data-ar="رسوم تخطيطية تعليمية وليست مقاطع جيولوجية بمقياس حقيقي. تحديد العمر النسبي يتطلب مراعاة السياق الجيولوجي والعلاقات بين الطبقات." data-fr="Schémas pédagogiques non à l’échelle. La datation relative nécessite de tenir compte du contexte géologique et des relations entre les couches.">رسوم تخطيطية تعليمية وليست مقاطع جيولوجية بمقياس حقيقي. تحديد العمر النسبي يتطلب مراعاة السياق الجيولوجي والعلاقات بين الطبقات.</p>
   </div>
@@ -145,16 +113,7 @@
   <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 06" data-fr="EXPÉRIENCE 06">التجربة 06</span><h2 data-ar="تحدي التأريخ النسبي" data-fr="Défi de datation relative">تحدي التأريخ النسبي</h2><p data-ar="استعمل مبدأ التراكب ومبدأ التقاطع لتحديد ترتيب الأحداث الجيولوجية." data-fr="Utilisez le principe de superposition et le principe de recoupement pour ordonner les événements géologiques.">استعمل مبدأ التراكب ومبدأ التقاطع لتحديد ترتيب الأحداث الجيولوجية.</p></div><span class="gs-lab-number">06</span></div>
   <div class="gs-relative-card">
    <div class="gs-relative-visual">
-    <svg viewBox="0 0 560 300" role="img" aria-label="مقطع جيولوجي يوضح طبقات صخرية يخترقها تداخل ناري">
-     <path d="M25 35H535V95H25Z" fill="#e5c38a" stroke="#fff" stroke-width="3"/>
-     <path d="M25 95H535V155H25Z" fill="#b8cf9c" stroke="#fff" stroke-width="3"/>
-     <path d="M25 155H535V215H25Z" fill="#d89c72" stroke="#fff" stroke-width="3"/>
-     <path d="M25 215H535V275H25Z" fill="#8ca8b7" stroke="#fff" stroke-width="3"/>
-     <path d="M300 275L355 215L335 155L385 95L365 35L420 35L440 95L390 155L410 215L355 275Z" fill="#8b6b9e" stroke="#fff" stroke-width="4"/>
-     <g fill="#394f43" font-size="18" font-weight="800"><text x="45" y="72">A</text><text x="45" y="132">B</text><text x="45" y="192">C</text><text x="45" y="252">D</text></g>
-     <text x="445" y="170" fill="#fff" font-size="15" font-weight="800" text-anchor="middle">I</text>
-    </svg>
-    <div class="gs-relative-legend"><span><i class="geo-swatch geo-a"></i>A</span><span><i class="geo-swatch geo-b"></i>B</span><span><i class="geo-swatch geo-c"></i>C</span><span><i class="geo-swatch geo-d"></i>D</span><span><i class="geo-swatch geo-intrusion"></i>I — تداخل ناري / Intrusion</span></div>
+    <a class="lab-real-photo lab-relative-photo" data-commons-query="igneous dike intrusion cutting sedimentary strata outcrop photograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=igneous%20dike%20intrusion%20cutting%20sedimentary%20strata%20outcrop%20photograph" target="_blank" rel="noopener noreferrer"><span class="lab-photo-frame"><span>🌋</span><small data-ar="صورة ميدانية لتداخل ناري يخترق الطبقات الصخرية" data-fr="Photographie d’une intrusion magmatique recoupant les strates">صورة ميدانية لتداخل ناري يخترق الطبقات الصخرية</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">المصدر والترخيص قيد التحميل</span></small></a>
    </div>
    <div class="gs-relative-task">
     <span class="gs-lab-kicker" data-ar="سؤال تطبيقي" data-fr="QUESTION D’APPLICATION">سؤال تطبيقي</span>
