@@ -1372,7 +1372,11 @@
                     }
                     if (overlay) overlay.textContent = fr ? 'Microphotographie réelle' : 'صورة مجهرية حقيقية';
                 }
-                card.href = pageUrl.href;
+                card.dataset.realImageUrl = imageUrl.href;
+                card.dataset.sourcePageUrl = pageUrl.href;
+                card.href = '#';
+                card.removeAttribute('target');
+                card.setAttribute('aria-haspopup', 'dialog');
                 card.setAttribute('aria-label', (page.title || '') + ' — ' + license);
                 if (credit) credit.textContent = (fr ? '© ' : '© ') + author + ' · ' + license;
             } catch (error) {
@@ -1383,6 +1387,39 @@
                 if (note) note.textContent = fr ? 'Aperçu indisponible' : 'المعاينة غير متاحة حالياً';
             }
         }));
+    }
+
+
+function openScientificPhotoPreview(card){
+ const imageUrl=card.dataset.realImageUrl;
+ const sourceUrl=card.dataset.sourcePageUrl;
+ if(!imageUrl||!sourceUrl)return;
+ let dialog=document.getElementById('gs-science-photo-dialog');
+ if(!dialog){
+  dialog=document.createElement('dialog');dialog.id='gs-science-photo-dialog';
+  dialog.innerHTML='<div class="gs-photo-dialog-shell"><button type="button" class="gs-photo-dialog-close" aria-label="Close">×</button><img class="gs-photo-dialog-image" alt=""><div class="gs-photo-dialog-caption"></div><a class="gs-photo-dialog-source" target="_blank" rel="noopener noreferrer"></a></div>';
+  const style=document.createElement('style');
+  style.textContent='#gs-science-photo-dialog{width:min(94vw,1200px);max-width:94vw;max-height:92vh;padding:0;border:0;border-radius:18px;background:#fff;color:#183326;box-shadow:0 24px 80px #0007}#gs-science-photo-dialog::backdrop{background:#07170fdd;backdrop-filter:blur(4px)}#gs-science-photo-dialog .gs-photo-dialog-shell{position:relative;display:grid;gap:12px;padding:18px;justify-items:center}#gs-science-photo-dialog .gs-photo-dialog-image{display:block;max-width:100%;max-height:72vh;width:auto;height:auto;object-fit:contain}#gs-science-photo-dialog .gs-photo-dialog-caption{font-size:.85rem;line-height:1.6;text-align:center;color:#496353}#gs-science-photo-dialog .gs-photo-dialog-source{display:inline-flex;padding:9px 14px;border-radius:999px;background:#eaf4ec;color:#17623a;font-weight:700;text-decoration:none}#gs-science-photo-dialog .gs-photo-dialog-close{position:absolute;z-index:1;inset-block-start:8px;inset-inline-end:8px;width:40px;height:40px;border:0;border-radius:50%;background:#173d2b;color:#fff;font-size:28px;cursor:pointer}';
+  document.head.appendChild(style);document.body.appendChild(dialog);
+  dialog.querySelector('.gs-photo-dialog-close').addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
+ }
+ const image=dialog.querySelector('.gs-photo-dialog-image');
+ image.src=imageUrl;image.alt=card.querySelector('img')?.alt||card.getAttribute('aria-label')||'Scientific photograph';
+ dialog.querySelector('.gs-photo-dialog-caption').textContent=card.querySelector('.gs-science-media-credit,.lab-photo-credit')?.textContent||'';
+ const source=dialog.querySelector('.gs-photo-dialog-source');
+ source.href=sourceUrl;source.textContent=document.documentElement.lang==='fr'?'Voir la source et la licence sur Wikimedia Commons':'عرض المصدر والترخيص على ويكيميديا كومنز';
+ if(!dialog.open)dialog.showModal();
+}
+
+    if (!document.documentElement.dataset.gsPhotoPreviewBound) {
+        document.addEventListener('click', function(event) {
+            const card = event.target.closest('.gs-science-media-card[data-real-image-url], .gs-micro-source-card[data-real-image-url], .gs-anatomy-photo-card[data-real-image-url], .gs-real-science-photo[data-real-image-url]');
+            if (!card) return;
+            event.preventDefault();
+            openScientificPhotoPreview(card);
+        });
+        document.documentElement.dataset.gsPhotoPreviewBound = 'true';
     }
 
     function renderScienceMemoryCards() {
