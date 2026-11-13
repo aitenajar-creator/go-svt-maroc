@@ -1165,7 +1165,14 @@
             <div class="gs-anatomy-info"><span>💡 ${fr?'À retenir':'معلومة أساسية'}</span><p class="gs-anatomy-fact">${initial[3]}</p></div>
           </div>
           <p class="gs-anatomy-note">${fr?'Illustration pédagogique schématique, non destinée au diagnostic médical.':'رسم تعليمي تخطيطي، وليس مرجعاً للتشخيص الطبي.'}</p>
-        </section>`;
+        
+          <section class="gs-atlas-quiz" aria-labelledby="gs-atlas-quiz-title">
+            <div class="gs-atlas-quiz-heading"><div><span class="gs-eyebrow">QUICK CHECK · AUTOÉVALUATION</span>
+              <h4 id="gs-atlas-quiz-title">${fr?'Testez vos connaissances':'اختبر معلوماتك'}</h4>
+              <p>${fr?'Quatre questions courtes pour vérifier votre compréhension.':'أربعة أسئلة قصيرة للتحقق من فهمك.'}</p></div><span aria-hidden="true">🎯</span></div>
+            <div class="gs-atlas-quiz-content" aria-live="polite"></div>
+          </section>
+</section>`;
     }
 
     function renderDashboard() {
@@ -1926,6 +1933,50 @@
                 if (element) element.textContent = fact[index];
             });
         }));
+        const atlasQuiz = lang()==='fr' ? [
+          {q:'Quel organe absorbe la majorité des nutriments ?',a:['L’estomac','L’intestin grêle','Le gros intestin'],c:1,e:'La paroi de l’intestin grêle assure l’essentiel de l’absorption des nutriments.'},
+          {q:'Où se déroulent les échanges gazeux pulmonaires ?',a:['Dans les alvéoles','Dans la trachée','Dans le diaphragme'],c:0,e:'Les alvéoles offrent une grande surface d’échange avec les capillaires sanguins.'},
+          {q:'Quel organe propulse le sang ?',a:['Le foie','Le poumon','Le cœur'],c:2,e:'Le cœur est une pompe musculaire qui propulse le sang dans les vaisseaux.'},
+          {q:'Quelle structure relie l’encéphale aux nerfs du corps ?',a:['La moelle épinière','L’œsophage','La trachée'],c:0,e:'La moelle épinière appartient au système nerveux central et communique avec les nerfs.'}
+        ] : [
+          {q:'ما العضو الذي يمتص معظم المغذيات؟',a:['المعدة','الأمعاء الدقيقة','الأمعاء الغليظة'],c:1,e:'يتم معظم امتصاص المغذيات عبر جدار الأمعاء الدقيقة.'},
+          {q:'أين تتم التبادلات الغازية الرئوية؟',a:['في الأسناخ الرئوية','في القصبة الهوائية','في الحجاب الحاجز'],c:0,e:'توفر الأسناخ الرئوية سطحاً واسعاً للتبادل مع الشعيرات الدموية.'},
+          {q:'ما العضو الذي يدفع الدم داخل الأوعية؟',a:['الكبد','الرئة','القلب'],c:2,e:'القلب مضخة عضلية تدفع الدم عبر الأوعية الدموية.'},
+          {q:'ما البنية التي تصل الدماغ بأعصاب الجسم؟',a:['النخاع الشوكي','المريء','القصبة الهوائية'],c:0,e:'ينتمي النخاع الشوكي إلى الجهاز العصبي المركزي ويتواصل مع الأعصاب.'}
+        ];
+        const quizRoot = container.querySelector('.gs-atlas-quiz-content');
+        if (quizRoot) {
+            let quizIndex = 0, quizScore = 0, quizAnswered = false;
+            const renderQuizStep = () => {
+                if (quizIndex >= atlasQuiz.length) {
+                    quizRoot.innerHTML = `<div class="gs-atlas-quiz-result"><span aria-hidden="true">🏅</span><strong>${lang()==='fr'?'Votre résultat':'نتيجتك'} : ${quizScore}/${atlasQuiz.length}</strong><p>${quizScore===atlasQuiz.length?(lang()==='fr'?'Excellent ! Toutes les réponses sont correctes.':'ممتاز! جميع إجاباتك صحيحة.'):lang()==='fr'?'Relisez les explications et réessayez pour progresser.':'راجع الشروحات وحاول مجدداً لتحسين نتيجتك.'}</p><button type="button" class="gs-atlas-quiz-restart">${lang()==='fr'?'Recommencer':'إعادة المحاولة'}</button></div>`;
+                    return;
+                }
+                const question = atlasQuiz[quizIndex];
+                quizAnswered = false;
+                quizRoot.innerHTML = `<div class="gs-atlas-quiz-progress"><span>${lang()==='fr'?'Question':'السؤال'} ${quizIndex+1}/${atlasQuiz.length}</span><span>${lang()==='fr'?'Score':'النقاط'} : ${quizScore}</span></div><div class="gs-atlas-quiz-track"><span style="width:${(quizIndex/atlasQuiz.length)*100}%"></span></div><h5 class="gs-atlas-question">${question.q}</h5><div class="gs-atlas-options">${question.a.map((answer,i)=>`<button type="button" class="gs-atlas-option" data-atlas-answer="${i}">${answer}</button>`).join('')}</div><div class="gs-atlas-feedback" aria-live="polite"></div><button type="button" class="gs-atlas-next" hidden>${quizIndex===atlasQuiz.length-1?(lang()==='fr'?'Voir le résultat':'عرض النتيجة'):(lang()==='fr'?'Question suivante':'السؤال التالي')}</button>`;
+            };
+            quizRoot.addEventListener('click',event=>{
+                const answerButton=event.target.closest('[data-atlas-answer]');
+                if(answerButton && !quizAnswered){
+                    quizAnswered=true;
+                    const selected=Number(answerButton.dataset.atlasAnswer),question=atlasQuiz[quizIndex],correct=selected===question.c;
+                    if(correct) quizScore++;
+                    quizRoot.querySelectorAll('.gs-atlas-option').forEach((option,i)=>{
+                        option.disabled=true;
+                        if(i===question.c) option.classList.add('is-correct');
+                        else if(i===selected) option.classList.add('is-incorrect');
+                    });
+                    const feedback=quizRoot.querySelector('.gs-atlas-feedback');
+                    if(feedback) feedback.textContent=(correct?(lang()==='fr'?'Bonne réponse ! ':'إجابة صحيحة! '):(lang()==='fr'?'Pas tout à fait. ':'ليست الإجابة الصحيحة. '))+question.e;
+                    const next=quizRoot.querySelector('.gs-atlas-next');
+                    if(next) next.hidden=false;
+                }
+                if(event.target.closest('.gs-atlas-next') && quizAnswered){quizIndex++;renderQuizStep();}
+                if(event.target.closest('.gs-atlas-quiz-restart')){quizIndex=0;quizScore=0;renderQuizStep();}
+            });
+            renderQuizStep();
+        }
         bindPlannerAndNotes(container);
         bindFavoritesPanel(container.querySelector('#panel-favorites'));
         hydrateDailyChallenge();

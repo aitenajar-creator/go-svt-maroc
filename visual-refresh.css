@@ -1202,3 +1202,29 @@ body{background:#f4f8f5}
 @media(max-width:650px){#student-space .gs-anatomy-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}#student-space .gs-anatomy-figure{min-height:225px}#student-space .gs-anatomy-figure svg{height:215px}}
 @media(max-width:380px){#student-space .gs-anatomy-tab{gap:.3rem;padding:.45rem}#student-space .gs-anatomy-tab b{font-size:.77rem}}
 @media(prefers-reduced-motion:reduce){#student-space .gs-anatomy-tab{transition:none!important}}
+
+
+/* Human systems atlas self-assessment */
+#student-space .gs-atlas-quiz{margin-top:1rem;padding:1rem;border:1px solid #dce9e1;border-radius:15px;background:linear-gradient(135deg,#f8fbf8,#fff)}
+#student-space .gs-atlas-quiz-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.9rem}
+#student-space .gs-atlas-quiz-heading h4{margin:.25rem 0;color:#245c48;font-size:1.05rem}
+#student-space .gs-atlas-quiz-heading p{margin:0;color:#718078;font-size:.82rem;line-height:1.6}
+#student-space .gs-atlas-quiz-heading>span{font-size:1.8rem}
+#student-space .gs-atlas-quiz-progress{display:flex;justify-content:space-between;gap:1rem;color:#597364;font-size:.78rem;font-weight:800}
+#student-space .gs-atlas-quiz-track{height:6px;margin:.55rem 0 .9rem;overflow:hidden;border-radius:9px;background:#e7efe9}
+#student-space .gs-atlas-quiz-track>span{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#75b68b,#28794e);transition:width .2s ease}
+#student-space .gs-atlas-question{margin:.4rem 0 .8rem;color:#294f3a;font-size:1rem;line-height:1.65}
+#student-space .gs-atlas-options{display:grid;gap:.5rem}
+#student-space .gs-atlas-option{width:100%;padding:.7rem .85rem;border:1px solid #dfe9e2;border-radius:10px;background:#fff;color:#456252;text-align:start;font:inherit;cursor:pointer}
+#student-space .gs-atlas-option:disabled{cursor:default;opacity:1}
+#student-space .gs-atlas-option.is-correct{border-color:#70b489;background:#eaf6ed;color:#205c3d;font-weight:800}
+#student-space .gs-atlas-option.is-incorrect{border-color:#d99a91;background:#fff0ee;color:#8a3d36}
+#student-space .gs-atlas-feedback{margin-top:.7rem;color:#526b5b;font-size:.85rem;line-height:1.75}
+#student-space .gs-atlas-next,#student-space .gs-atlas-quiz-restart{margin-top:.75rem;padding:.65rem 1rem;border:0;border-radius:10px;background:#28784d;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+#student-space .gs-atlas-next[hidden]{display:none}
+#student-space .gs-atlas-quiz-result{display:grid;justify-items:center;gap:.45rem;padding:1rem;text-align:center}
+#student-space .gs-atlas-quiz-result>span{font-size:2rem}
+#student-space .gs-atlas-quiz-result strong{color:#205b40;font-size:1.1rem}
+#student-space .gs-atlas-quiz-result p{margin:0;color:#607568;line-height:1.7}
+#student-space .gs-atlas-option:focus-visible,#student-space .gs-atlas-next:focus-visible,#student-space .gs-atlas-quiz-restart:focus-visible{outline:3px solid #d6ad50;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){#student-space .gs-atlas-quiz-track>span{transition:none!important}}
