@@ -1194,7 +1194,7 @@
             <h3 id="gs-anatomy-title">${fr?'Atlas interactif du corps humain':'الأطلس التفاعلي لجسم الإنسان'}</h3>
             <p>${fr?'Choisissez un système : explorez des photographies anatomiques réelles, avec leurs sources et licences.':'اختر جهازاً لاستكشاف صور تشريحية حقيقية موثقة المصدر والترخيص.'}</p></div><span class="gs-anatomy-mark" aria-hidden="true">📷</span></div>
           <div class="gs-anatomy-photo-gallery" aria-label="${fr?'Photographies anatomiques réelles':'صور تشريحية حقيقية'}">
-            ${photoTopics.map((topic,i)=>`<a class="gs-anatomy-photo-card ${i===0?'is-active':''}" data-anatomy-photo="${topic[0]}" data-science-search="${topic[3]}" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=${encodeURIComponent(topic[3])}" target="_blank" rel="noopener noreferrer"
+            ${photoTopics.map((topic,i)=>`<a class="gs-anatomy-photo-card ${i===0?'is-active':''}" data-anatomy-photo="${topic[0]}" data-science-search="${topic[3]}" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=${encodeURIComponent(topic[3])}" target="_blank" rel="noopener noreferrer">
               <span class="gs-science-media-photo"><span>${topic[4]}</span><small>${fr?'Chargement de la photo…':'جارٍ تحميل الصورة الحقيقية…'}</small></span>
               <span class="gs-anatomy-photo-copy"><strong>${topic[1]}</strong><small>${topic[2]}</small><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span>
             </a>`).join('')}
