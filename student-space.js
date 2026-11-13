@@ -1148,11 +1148,11 @@
               <circle cx="150" cy="45" r="29" fill="url(#gsBodyGrad)" stroke="#548a68" stroke-width="3"/>
               <path d="M121 82Q105 88 91 104L67 178Q63 192 76 197Q88 201 94 186L112 137L109 218L99 303Q98 319 113 320Q127 320 130 305L150 231L170 305Q173 320 187 320Q202 319 201 303L191 218L188 137L206 186Q212 201 224 197Q237 192 233 178L209 104Q195 88 179 82Z" fill="url(#gsBodyGrad)" stroke="#548a68" stroke-width="3"/>
               <path d="M150 77V219" stroke="#548a68" stroke-width="2" stroke-dasharray="4 5"/>
-              <g fill="#6d8fd0" stroke="#fff" stroke-width="2"><path d="M137 36Q150 20 163 36Q159 54 150 59Q141 54 137 36Z"/></g>
-              <g fill="#e98b85" stroke="#fff" stroke-width="2"><path d="M150 110C125 93 117 119 150 145C183 119 175 93 150 110Z"/></g>
-              <g fill="#83b8dc" stroke="#fff" stroke-width="2"><path d="M145 91Q119 83 119 119Q120 139 145 146Z"/><path d="M155 91Q181 83 181 119Q180 139 155 146Z"/></g>
-              <path d="M145 156Q132 162 140 183Q150 193 160 183Q168 162 155 156Z" fill="#dba56c" stroke="#fff" stroke-width="2"/>
-              <path d="M132 187Q150 178 168 187L166 209Q150 219 134 209Z" fill="#8dbd76" stroke="#fff" stroke-width="2"/>
+              <g class="gs-organ-highlight" data-organ-system="nervous" fill="#6d8fd0" stroke="#fff" stroke-width="2"><path d="M137 36Q150 20 163 36Q159 54 150 59Q141 54 137 36Z"/></g>
+              <g class="gs-organ-highlight" data-organ-system="circulatory" fill="#e98b85" stroke="#fff" stroke-width="2"><path d="M150 110C125 93 117 119 150 145C183 119 175 93 150 110Z"/></g>
+              <g class="gs-organ-highlight" data-organ-system="respiratory" fill="#83b8dc" stroke="#fff" stroke-width="2"><path d="M145 91Q119 83 119 119Q120 139 145 146Z"/><path d="M155 91Q181 83 181 119Q180 139 155 146Z"/></g>
+              <path class="gs-organ-highlight" data-organ-system="digestive" d="M145 156Q132 162 140 183Q150 193 160 183Q168 162 155 156Z" fill="#dba56c" stroke="#fff" stroke-width="2"/>
+              <path class="gs-organ-highlight" data-organ-system="digestive" d="M132 187Q150 178 168 187L166 209Q150 219 134 209Z" fill="#8dbd76" stroke="#fff" stroke-width="2"/>
             </svg>
             <span>${fr?'Schéma simplifié du corps humain':'رسم مبسط لجسم الإنسان'}</span>
           </div>
@@ -1922,6 +1922,9 @@
         container.querySelectorAll('.gs-anatomy-tab').forEach(button => button.addEventListener('click', function () {
             const fact = anatomyFacts[this.dataset.anatomySystem];
             if (!fact) return;
+            container.querySelectorAll('.gs-anatomy-figure [data-organ-system]').forEach(organ => {
+                organ.classList.toggle('is-highlighted', organ.dataset.organSystem === this.dataset.anatomySystem);
+            });
             container.querySelectorAll('.gs-anatomy-tab').forEach(item => {
                 const active = item === this;
                 item.classList.toggle('is-active', active);
