@@ -1121,6 +1121,37 @@
         </section>`;
     }
 
+    function renderLevelLearningPaths() {
+        const fr = lang() === 'fr';
+        const account = window.StudentAccount;
+        const academic = account && account.isLoggedIn && account.isLoggedIn() &&
+            typeof account.getProfile === 'function' ? account.getProfile() : null;
+        const level = String(academic && academic.study_level || '').toUpperCase();
+        const track = String(academic && academic.study_track || '').toUpperCase();
+        const current = level.startsWith('2BAC') ? '2BAC' : level.startsWith('1BAC') ? '1BAC' : level === 'TC' ? 'TC' : '';
+        const paths = fr ? [
+            {id:'TC',title:'Tronc commun',desc:'Découvrir la cellule végétale, les observations microscopiques et la photosynthèse.',steps:[['gs-cell-lab-title','Cellule végétale'],['gs-microscope-title','Observer au microscope'],['gs-photo-lab-title','Photosynthèse']]},
+            {id:'1BAC',title:'1ère année Bac',desc:'Relier les cellules, les échanges et les grandes fonctions des systèmes du corps.',steps:[['gs-anatomy-title','Atlas du corps humain'],['gs-microscope-title','Préparations microscopiques'],['gs-svt-revision-title','Défi de révision']]},
+            {id:'2BAC',title:'2ème année Bac',desc:'Approfondir les facteurs de la photosynthèse et consolider les notions scientifiques.',steps:[['gs-experiment-title','Expérience virtuelle'],['gs-svt-revision-title','Défi cellule et photosynthèse'],['gs-svt-glossary-title','Glossaire scientifique']]}
+        ] : [
+            {id:'TC',title:'الجذع المشترك',desc:'اكتشاف الخلية النباتية والملاحظة المجهرية وعملية التركيب الضوئي.',steps:[['gs-cell-lab-title','استكشاف الخلية النباتية'],['gs-microscope-title','الملاحظة بالمجهر'],['gs-photo-lab-title','مراحل التركيب الضوئي']]},
+            {id:'1BAC',title:'الأولى بكالوريا',desc:'الربط بين الخلايا والتبادلات والوظائف الكبرى لأجهزة جسم الإنسان.',steps:[['gs-anatomy-title','أطلس جسم الإنسان'],['gs-microscope-title','التحضيرات المجهرية'],['gs-svt-revision-title','تحدي المراجعة']]},
+            {id:'2BAC',title:'الثانية بكالوريا',desc:'تعميق فهم عوامل التركيب الضوئي وترسيخ المفاهيم العلمية الأساسية.',steps:[['gs-experiment-title','التجربة الافتراضية'],['gs-svt-revision-title','تحدي الخلية والتركيب الضوئي'],['gs-svt-glossary-title','المعجم العلمي']]}
+        ];
+        return `<section class="gs-level-paths" aria-labelledby="gs-level-paths-title">
+          <div class="gs-level-paths-heading"><div><span class="gs-eyebrow">LEARNING PATH · PARCOURS SVT</span>
+            <h3 id="gs-level-paths-title">${fr?'Votre parcours de découverte':'مسارات الاستكشاف حسب المستوى'}</h3>
+            <p>${fr?'Choisissez un niveau pour accéder directement aux activités de découverte.':'اختر مستواك للوصول مباشرة إلى أنشطة الاستكشاف المناسبة.'}</p></div><span aria-hidden="true">🧭</span></div>
+          <div class="gs-level-paths-grid">${paths.map(path=>`<article class="gs-level-path-card ${current===path.id?'is-current':''}" data-path-level="${path.id}">
+            <div class="gs-level-path-top"><span>${path.id}</span>${current===path.id?`<small>${fr?'Votre niveau':'مستواك الدراسي'}</small>`:''}</div>
+            <h4>${path.title}</h4><p>${path.desc}</p>
+            <div class="gs-level-path-links">${path.steps.map(step=>`<button type="button" data-study-anchor="${step[0]}"><span>↗</span>${step[1]}</button>`).join('')}</div>
+          </article>`).join('')}</div>
+          <p class="gs-level-paths-note">${fr?'Parcours de découverte complémentaires : consultez aussi les cours, exercices et examens officiels de votre niveau.':'هذه مسارات استكشاف مساعدة؛ احرص أيضاً على مراجعة الدروس والتمارين والامتحانات الخاصة بمستواك.'} <a href="#cours">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
+          ${track?`<span class="gs-level-path-track">${fr?'Filière de votre profil : ':'مسلك ملفك الدراسي: '}${escapeHtml(track)}</span>`:''}
+        </section>`;
+    }
+
     function renderHumanSystemsAtlas() {
         const fr = lang() === 'fr';
         const data = fr ? {
@@ -1410,6 +1441,7 @@
             ${renderPhotosynthesisLab()}
             ${renderCellPhotosynthesisQuiz()}
             ${renderHumanSystemsAtlas()}
+            ${renderLevelLearningPaths()}
             ${renderMicroscopeLab()}
             ${renderPhotosynthesisExperiment()}
             ${renderScientificMediaLibrary()}
@@ -2057,6 +2089,20 @@
 
         container.innerHTML = html;
         loadScientificMediaImages(container);
+        const levelPaths = container.querySelector('.gs-level-paths');
+        if (levelPaths) {
+            levelPaths.addEventListener('click', function(event) {
+                const jump = event.target.closest('[data-study-anchor]');
+                if (!jump) return;
+                const target = container.querySelector('#' + jump.dataset.studyAnchor);
+                if (target) {
+                    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
+                    target.setAttribute('tabindex','-1');
+                    target.focus({preventScroll:true});
+                }
+            });
+        }
         const experimentRoot = container.querySelector('.gs-photosynthesis-experiment');
         if (experimentRoot) {
             const inputs = Array.from(experimentRoot.querySelectorAll('[data-experiment-input]'));
