@@ -1187,6 +1187,31 @@
         </section>`;
     }
 
+    function renderPhotosynthesisExperiment() {
+        const fr = lang() === 'fr';
+        return `<section class="gs-photosynthesis-experiment" aria-labelledby="gs-experiment-title">
+          <div class="gs-experiment-heading"><div><span class="gs-eyebrow">GO SVT MAROC · VIRTUAL EXPERIMENT</span>
+            <h3 id="gs-experiment-title">${fr?'Expérience virtuelle : facteurs de la photosynthèse':'تجربة افتراضية: عوامل التركيب الضوئي'}</h3>
+            <p>${fr?'Modifiez les conditions et observez quel facteur limite la vitesse relative de photosynthèse.':'غيّر الظروف ولاحظ العامل الذي يحد من الوتيرة النسبية للتركيب الضوئي.'}</p></div><span aria-hidden="true">🧪</span></div>
+          <div class="gs-experiment-grid">
+            <div class="gs-experiment-controls">
+              <label class="gs-experiment-control"><span><b>${fr?'Intensité lumineuse':'شدة الإضاءة'}</b><output data-experiment-value="light">70%</output></span><input type="range" min="0" max="100" step="5" value="70" data-experiment-input="light"><small>${fr?'Énergie lumineuse disponible':'الطاقة الضوئية المتاحة'}</small></label>
+              <label class="gs-experiment-control"><span><b>${fr?'CO₂ disponible':'تركيز CO₂ المتاح'}</b><output data-experiment-value="co2">65%</output></span><input type="range" min="0" max="100" step="5" value="65" data-experiment-input="co2"><small>${fr?'Disponibilité du dioxyde de carbone':'مدى توفر ثاني أكسيد الكربون'}</small></label>
+              <label class="gs-experiment-control"><span><b>${fr?'Température':'درجة الحرارة'}</b><output data-experiment-value="temperature">25°C</output></span><input type="range" min="5" max="45" step="1" value="25" data-experiment-input="temperature"><small>${fr?'Température du milieu':'درجة حرارة الوسط'}</small></label>
+              <button type="button" class="gs-experiment-reset">${fr?'Réinitialiser les conditions':'إعادة ضبط الظروف'}</button>
+            </div>
+            <div class="gs-experiment-result" aria-live="polite">
+              <div class="gs-experiment-result-top"><span>${fr?'Vitesse relative simulée':'الوتيرة النسبية المحاكاة'}</span><strong data-experiment-rate>65%</strong></div>
+              <div class="gs-experiment-meter"><span data-experiment-meter style="width:65%"></span></div>
+              <div class="gs-experiment-gauges"><div><span>${fr?'Lumière':'الضوء'}</span><b data-experiment-gauge="light">70%</b></div><div><span>CO₂</span><b data-experiment-gauge="co2">65%</b></div><div><span>${fr?'Capacité thermique':'ملاءمة الحرارة'}</span><b data-experiment-gauge="temperature">100%</b></div></div>
+              <div class="gs-experiment-limiter"><strong>${fr?'Facteur limitant':'العامل المحدِّد'}</strong><p data-experiment-limiter>${fr?'CO₂ disponible':'توفر CO₂'}</p></div>
+              <p class="gs-experiment-explain" data-experiment-explain>${fr?'Dans ce modèle, le CO₂ est le facteur le moins disponible et limite la vitesse relative.':'في هذا النموذج، يعد توفر CO₂ العامل الأقل، ولذلك يحد من الوتيرة النسبية.'}</p>
+            </div>
+          </div>
+          <p class="gs-experiment-note">${fr?'Modèle pédagogique simplifié : les valeurs sont relatives et illustratives, pas des mesures expérimentales. Les autres facteurs sont supposés constants.':'نموذج تعليمي مبسط: القيم نسبية وتوضيحية وليست قياسات تجريبية. نفترض ثبات العوامل الأخرى.'}</p>
+        </section>`;
+    }
+
     function renderMicroscopeLab() {
         const fr = lang() === 'fr';
         const slides = fr ? [
@@ -1386,6 +1411,7 @@
             ${renderCellPhotosynthesisQuiz()}
             ${renderHumanSystemsAtlas()}
             ${renderMicroscopeLab()}
+            ${renderPhotosynthesisExperiment()}
             ${renderScientificMediaLibrary()}
             ${renderScienceMemoryCards()}
             ${renderSvtGlossary()}
@@ -2031,6 +2057,50 @@
 
         container.innerHTML = html;
         loadScientificMediaImages(container);
+        const experimentRoot = container.querySelector('.gs-photosynthesis-experiment');
+        if (experimentRoot) {
+            const inputs = Array.from(experimentRoot.querySelectorAll('[data-experiment-input]'));
+            const updateExperiment = function() {
+                const values = {};
+                inputs.forEach(input => { values[input.dataset.experimentInput] = Number(input.value); });
+                const temperature = values.temperature;
+                const thermalCapacity = temperature <= 10 ? temperature * 5 :
+                    temperature <= 25 ? 50 + (temperature - 10) * (50 / 15) :
+                    temperature <= 35 ? 100 - (temperature - 25) * 3 :
+                    Math.max(10, 70 - (temperature - 35) * 5);
+                const factors = [
+                    {key:'light',value:values.light,label:lang()==='fr'?'la lumière':'الضوء'},
+                    {key:'co2',value:values.co2,label:'CO₂'},
+                    {key:'temperature',value:Math.round(thermalCapacity),label:lang()==='fr'?'la température':'درجة الحرارة'}
+                ];
+                const limiting = factors.reduce((lowest,item)=>item.value<lowest.value?item:lowest,factors[0]);
+                const rate = Math.max(0,Math.min(100,Math.round(Math.min(...factors.map(item=>item.value)))));
+                inputs.forEach(input => {
+                    const key=input.dataset.experimentInput;
+                    const output=experimentRoot.querySelector('[data-experiment-value="'+key+'"]');
+                    if(output) output.textContent=key==='temperature'?values[key]+'°C':values[key]+'%';
+                    const gauge=experimentRoot.querySelector('[data-experiment-gauge="'+key+'"]');
+                    if(gauge) gauge.textContent=(key==='temperature'?Math.round(thermalCapacity):values[key])+'%';
+                });
+                const rateNode=experimentRoot.querySelector('[data-experiment-rate]');
+                const meter=experimentRoot.querySelector('[data-experiment-meter]');
+                const limiter=experimentRoot.querySelector('[data-experiment-limiter]');
+                const explanation=experimentRoot.querySelector('[data-experiment-explain]');
+                if(rateNode) rateNode.textContent=rate+'%';
+                if(meter) meter.style.width=rate+'%';
+                if(limiter) limiter.textContent=limiting.label;
+                if(explanation) explanation.textContent=lang()==='fr'
+                    ? 'Dans ce modèle, '+limiting.label+' constitue le facteur le moins favorable et limite la vitesse relative.'
+                    : 'في هذا النموذج، تمثل '+limiting.label+' العامل الأقل ملاءمة، ولذلك يحد من الوتيرة النسبية.';
+            };
+            experimentRoot.addEventListener('input',updateExperiment);
+            const reset=experimentRoot.querySelector('.gs-experiment-reset');
+            if(reset) reset.addEventListener('click',function(){
+                inputs.forEach(input=>{input.value=input.dataset.experimentInput==='light'?'70':input.dataset.experimentInput==='co2'?'65':'25';});
+                updateExperiment();
+            });
+            updateExperiment();
+        }
         const microscopeData = {
             onion: {name: lang()==='fr'?'Épiderme d’oignon':'بشرة البصل',kind: lang()==='fr'?'Cellules végétales':'خلايا نباتية',observe: lang()==='fr'?'Paroi cellulaire · organisation en mosaïque':'الجدار الخلوي · تنظيم الخلايا كفسيفساء',detail: lang()==='fr'?'Cellules jointives, de forme polygonale, limitées par une paroi visible.':'خلايا متراصة متعددة الأضلاع تحدها جدران خلوية واضحة.',art: '<svg viewBox="0 0 520 300" role="img" aria-label="Cellules épidermiques"><g fill="#f3d9ee" stroke="#9a6d9a" stroke-width="4"><path d="M20 18L145 12 152 95 18 103Z"/><path d="M155 12L280 20 276 104 152 95Z"/><path d="M290 18L500 12 502 105 276 104Z"/><path d="M18 112L152 105 160 205 18 211Z"/><path d="M160 105L276 112 280 210 160 205Z"/><path d="M285 112L502 112 500 210 280 210Z"/><path d="M18 220L160 215 155 290 18 288Z"/><path d="M165 215L280 220 278 290 155 290Z"/><path d="M285 220L500 218 502 290 278 290Z"/></g><g fill="#9165a0"><circle cx="85" cy="59" r="9"/><circle cx="216" cy="58" r="9"/><circle cx="395" cy="58" r="9"/><circle cx="85" cy="160" r="9"/><circle cx="218" cy="160" r="9"/><circle cx="394" cy="160" r="9"/></g></svg>'},
             stomata: {name: lang()==='fr'?'Stomates foliaires':'ثغور الورقة',kind: lang()==='fr'?'Épiderme de feuille':'بشرة ورقية',observe: lang()==='fr'?'Cellules de garde · ostiole · échanges gazeux':'الخلايا الحارسة · الفتحة الثغرية · التبادلات الغازية',detail: lang()==='fr'?'Deux cellules de garde entourent une ouverture qui participe aux échanges gazeux.':'تحيط خليتان حارستان بفتحة تساهم في التبادلات الغازية والنتح.',art: '<svg viewBox="0 0 520 300" role="img" aria-label="Stomate"><path d="M125 55C40 80 65 220 175 245Q235 150 175 65Z M395 55C480 80 455 220 345 245Q285 150 345 65Z" fill="#b6d99b" stroke="#568b50" stroke-width="5"/><ellipse cx="260" cy="150" rx="35" ry="85" fill="#eaf6df" stroke="#578c53" stroke-width="4"/></svg>'},
