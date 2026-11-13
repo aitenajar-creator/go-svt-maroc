@@ -139,6 +139,24 @@ else:
             failures.append("Support-plan access must be limited to SELECT and INSERT")
             break
 
+
+# Private pedagogical notes: teachers may edit only content/category, never ownership.
+notes_migration = MIGRATIONS / "20261113000600_restrict_teacher_note_update_columns.sql"
+if not notes_migration.is_file():
+    failures.append("Missing private teacher-note column restriction migration")
+else:
+    notes_sql = notes_migration.read_text(encoding="utf-8").lower()
+    note_patterns = (
+        r"revoke\s+update\s+on\s+public\.teacher_student_notes\s+from\s+authenticated",
+        r"revoke\s+update\s*\(\s*id\s*,\s*class_id\s*,\s*student_id\s*,\s*teacher_id\s*,\s*note\s*,\s*note_type\s*,\s*created_at\s*,\s*updated_at\s*\)\s+on\s+public\.teacher_student_notes\s+from\s+authenticated",
+        r"grant\s+update\s*\(\s*note\s*,\s*note_type\s*\)\s+on\s+public\.teacher_student_notes\s+to\s+authenticated",
+    )
+    for pattern in note_patterns:
+        if not re.search(pattern, notes_sql):
+            failures.append("Private teacher-note updates must be limited to note and note_type")
+            break
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
