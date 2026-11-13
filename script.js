@@ -536,7 +536,11 @@ function openPreview(path) {
             : url;
         body.innerHTML = `<iframe src="${src}" title="PDF"></iframe>`;
     } else {
-        body.innerHTML = `<img src="${url}" alt="">`;
+        body.innerHTML = `<img src="${url}" alt="${escapeHtml(getFileTitle(path.split('/').pop()))}" decoding="async">`;
+        const previewImage = body.querySelector('img');
+        if (previewImage) previewImage.addEventListener('error', function() {
+            body.textContent = t('تعذر تحميل الصورة. تحقق من توفر الملف ثم أعد المحاولة.', 'Impossible de charger cette image. Vérifiez que le fichier est disponible puis réessayez.');
+        }, { once: true });
     }
     openModal('gs-preview');
     trackEvent('apercu', path);
@@ -810,6 +814,21 @@ function setupContactForm() {
 }
 
 // ---------- أحداث عامة ----------
+document.addEventListener('error', e => {
+    const image = e.target;
+    if (!image || image.tagName !== 'IMG' || !image.closest('.image-thumbnail[data-preview-path]')) return;
+    const thumbnail = image.closest('.image-thumbnail[data-preview-path]');
+    const fallback = document.createElement('span');
+    fallback.className = 'image-thumbnail-fallback';
+    fallback.setAttribute('role', 'status');
+    fallback.textContent = t('تعذر تحميل معاينة الصورة', 'Aperçu de l’image indisponible');
+    thumbnail.replaceChildren(fallback);
+    thumbnail.removeAttribute('data-preview-path');
+    thumbnail.removeAttribute('role');
+    thumbnail.removeAttribute('tabindex');
+    thumbnail.removeAttribute('aria-label');
+}, true);
+
 document.addEventListener('click', e => {
     const imagePreview = e.target.closest('.image-thumbnail[data-preview-path]');
     if (imagePreview) { openPreview(imagePreview.dataset.previewPath); return; }
