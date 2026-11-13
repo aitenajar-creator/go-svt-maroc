@@ -98,6 +98,7 @@ document.querySelectorAll('.gs-cell-type').forEach(btn=>btn.addEventListener('cl
  cell=btn.dataset.cell;
  document.querySelectorAll('.gs-cell-type').forEach(b=>{b.classList.toggle('is-active',b===btn);b.textContent=b.dataset[lang];});
  document.querySelectorAll('[data-cell-photo]').forEach(photo=>{photo.hidden=photo.dataset.cellPhoto!==cell;});
+ document.querySelectorAll('.gs-cell-plant-only').forEach(item=>{item.hidden=cell==='animal';});
  document.querySelectorAll('.gs-organelle-hit').forEach(hit=>{hit.hidden=cell==='animal'&&['chloroplast','vacuole'].includes(hit.dataset.organelle);hit.textContent=({nucleus:lang==='ar'?'النواة':'Noyau',vacuole:lang==='ar'?'الفجوة':'Vacuole',chloroplast:lang==='ar'?'البلاستيدة الخضراء':'Chloroplaste',mitochondria:lang==='ar'?'الميتوكندريا':'Mitochondrie'})[hit.dataset.organelle];});
  if(cell==='animal'){
   $('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';
