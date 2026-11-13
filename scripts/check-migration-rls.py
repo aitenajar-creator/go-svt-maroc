@@ -274,6 +274,22 @@ else:
             failures.append(f"Teacher-community helper {signature}: authenticated EXECUTE must remain granted")
 
 
+# Anonymous clients may read only deliberately public site metadata tables.
+anon_grants_migration = MIGRATIONS / "20261113001200_minimize_anonymous_table_grants.sql"
+if not anon_grants_migration.is_file():
+    failures.append("Missing anonymous table-grants minimization migration")
+else:
+    anon_grants_sql = anon_grants_migration.read_text(encoding="utf-8").lower()
+    if not re.search(r"revoke\\s+all\\s+privileges\\s+on\\s+all\\s+tables\\s+in\\s+schema\\s+public\\s+from\\s+anon", anon_grants_sql):
+        failures.append("Anonymous table grants: broad legacy privileges must be revoked")
+    for table in ("site_content_items", "site_founder_profile"):
+        if not re.search(
+            rf"grant\\s+select\\s+on\\s+table\\s+public\\.{table}\\s+to\\s+anon",
+            anon_grants_sql,
+        ):
+            failures.append(f"Anonymous table grants: public SELECT must remain on {table}")
+
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
