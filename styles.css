@@ -2382,3 +2382,26 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
         font-size: .78rem !important;
     }
 }
+
+
+/* Accessible in-site preview affordance for image resources. */
+.content-card.file-resource-card .image-thumbnail[data-preview-path] {
+    position: relative;
+    cursor: zoom-in;
+    outline-offset: -4px;
+}
+.content-card.file-resource-card .image-thumbnail[data-preview-path]:focus-visible {
+    outline: 3px solid #287a50;
+}
+.content-card.file-resource-card .image-thumbnail-hint {
+    position: absolute;
+    inset-inline-end: 12px;
+    bottom: 12px;
+    padding: .35rem .65rem;
+    border-radius: 999px;
+    color: #fff;
+    background: #173d2cdd;
+    font-size: .78rem;
+    font-weight: 700;
+    pointer-events: none;
+}
