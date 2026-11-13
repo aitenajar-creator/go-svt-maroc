@@ -395,6 +395,28 @@ else:
         failures.append("Owner-policy auth.uid() calls must use statement-level SELECT")
 
 
+# Remaining straightforward policies should also cache auth.uid() per statement.
+remaining_uid_migration = MIGRATIONS / "20261113001800_optimize_remaining_rls_initplans.sql"
+if not remaining_uid_migration.is_file():
+    failures.append("Missing remaining RLS auth.uid() initplan optimization")
+else:
+    remaining_uid_sql = remaining_uid_migration.read_text(encoding="utf-8").lower()
+    for table, policy in (
+        ("class_students", "class_students_read_related"),
+        ("class_teachers", "class_teachers_read_related"),
+        ("exercises", "exercises_read_allowed"),
+        ("profiles", "profiles_read_self_or_staff"),
+        ("profiles", "profiles_update_self"),
+        ("questions", "questions_read_allowed"),
+        ("student_answers", "answers_read_related"),
+        ("student_submissions", "submissions_read_related"),
+    ):
+        if policy not in remaining_uid_sql or f"on public.{table}" not in remaining_uid_sql:
+            failures.append(f"Missing remaining initplan policy rewrite: {table}.{policy}")
+            break
+    if remaining_uid_sql.count("(select auth.uid())") < 10:
+        failures.append("Remaining RLS auth.uid() calls must use statement-level SELECT")
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
