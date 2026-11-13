@@ -417,6 +417,35 @@ else:
     if remaining_uid_sql.count("(select auth.uid())") < 10:
         failures.append("Remaining RLS auth.uid() calls must use statement-level SELECT")
 
+
+# Consolidated overlapping SELECT policies without changing access semantics.
+read_policy_migration = MIGRATIONS / "20261113001900_consolidate_permissive_read_policies.sql"
+if not read_policy_migration.is_file():
+    failures.append("Missing permissive read-policy consolidation migration")
+else:
+    read_policy_sql = read_policy_migration.read_text(encoding="utf-8").lower()
+    required_policy_fragments = (
+        "alter policy site_content_admin_read",
+        "to authenticated",
+        "is_deleted = false or gosvt_is_site_admin()",
+        "alter policy site_content_public_read",
+        "to anon",
+        "create policy teacher_assignments_insert_manage_class",
+        "create policy teacher_assignments_update_manage_class",
+        "create policy teacher_assignments_delete_manage_class",
+        "drop policy teacher_assignments_manage_class",
+        "create policy teacher_review_sessions_insert_manage_teacher",
+        "create policy teacher_review_sessions_update_manage_teacher",
+        "create policy teacher_review_sessions_delete_manage_teacher",
+        "drop policy teacher_review_sessions_manage_teacher",
+        "gosvt_can_manage_class(class_id)",
+        "created_by = (select auth.uid())",
+    )
+    for fragment in required_policy_fragments:
+        if fragment not in read_policy_sql:
+            failures.append(f"Read-policy consolidation is missing required clause: {fragment}")
+            break
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
