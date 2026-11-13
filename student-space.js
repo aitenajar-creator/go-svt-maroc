@@ -1071,6 +1071,56 @@
         </section>`;
     }
 
+    // Interactive photosynthesis lab: stage selector with bilingual explanations.
+    function renderPhotosynthesisLab() {
+        const fr = lang() === 'fr';
+        const stages = fr
+          ? [
+              ['light','L’énergie lumineuse','La chlorophylle des chloroplastes capte l’énergie lumineuse nécessaire à la photosynthèse.'],
+              ['water','L’eau et les sels minéraux','L’eau absorbée par les racines rejoint les feuilles grâce aux vaisseaux conducteurs.'],
+              ['co2','Le dioxyde de carbone','Le CO₂ de l’air entre principalement dans la feuille par les stomates.'],
+              ['sugar','La matière organique','Dans les chloroplastes, l’énergie lumineuse permet de fabriquer des sucres à partir de CO₂ et d’eau.'],
+              ['oxygen','Le dioxygène','Du dioxygène est libéré dans l’atmosphère au cours de la photosynthèse.']
+            ]
+          : [
+              ['light','الطاقة الضوئية','يلتقط اليخضور الموجود في البلاستيدات الخضراء الطاقة الضوئية اللازمة للتركيب الضوئي.'],
+              ['water','الماء والأملاح المعدنية','تمتص الجذور الماء والأملاح المعدنية، ثم تنتقل نحو الأوراق عبر الأوعية الناقلة.'],
+              ['co2','ثاني أكسيد الكربون','يدخل غاز CO₂ من الهواء إلى الورقة أساساً عبر الثغور.'],
+              ['sugar','المادة العضوية','تستعمل البلاستيدات الخضراء الطاقة الضوئية لتصنيع السكريات انطلاقاً من الماء وCO₂.'],
+              ['oxygen','غاز الأكسجين','ينطلق غاز الأكسجين إلى الوسط الخارجي خلال عملية التركيب الضوئي.']
+            ];
+        return `<section class="gs-photo-lab" aria-labelledby="gs-photo-lab-title">
+          <div class="gs-photo-heading">
+            <div><span class="gs-eyebrow">GO SVT MAROC · INTERACTIVE LAB</span>
+              <h3 id="gs-photo-lab-title">${fr?'Le laboratoire de la photosynthèse':'مختبر التركيب الضوئي'}</h3>
+              <p>${fr?'Explorez les éléments nécessaires et les produits de la photosynthèse.':'اكتشف العناصر الضرورية للتركيب الضوئي والنواتج المتكونة.'}</p></div>
+            <span class="gs-photo-badge" aria-hidden="true">☀️</span>
+          </div>
+          <div class="gs-photo-scene">
+            <div class="gs-photo-sun" aria-hidden="true">☀</div>
+            <div class="gs-photo-leaf" aria-hidden="true">
+              <svg viewBox="0 0 340 220" role="img" aria-label="${fr?'Feuille verte, lieu principal de la photosynthèse':'ورقة خضراء، مقر أساسي للتركيب الضوئي'}">
+                <defs><linearGradient id="gsLeafGrad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a8dc77"/><stop offset="1" stop-color="#267b48"/></linearGradient></defs>
+                <path d="M28 178C42 50 186 5 310 28C291 147 172 231 28 178Z" fill="url(#gsLeafGrad)" stroke="#246b40" stroke-width="5"/>
+                <path d="M31 179Q157 110 303 31M111 137L93 75M155 116L164 48M198 94L244 55M117 137L173 181M173 108L225 149M224 81L270 112" fill="none" stroke="#e3f5c8" stroke-width="4" stroke-linecap="round"/>
+                <g fill="#e9f8d8" opacity=".8"><circle cx="88" cy="139" r="5"/><circle cx="145" cy="83" r="4"/><circle cx="220" cy="66" r="5"/></g>
+              </svg>
+            </div>
+            <div class="gs-photo-flow gs-flow-water"><span>💧</span><b>H₂O</b><small>${fr?'Depuis les racines':'من الجذور'}</small></div>
+            <div class="gs-photo-flow gs-flow-co2"><span>🌫️</span><b>CO₂</b><small>${fr?'Depuis l’air':'من الهواء'}</small></div>
+            <div class="gs-photo-flow gs-flow-light"><span>☀️</span><b>${fr?'Lumière':'ضوء'}</b></div>
+            <div class="gs-photo-flow gs-flow-sugar"><span>🍃</span><b>${fr?'Sucres':'سكريات'}</b><small>${fr?'Matière organique':'مادة عضوية'}</small></div>
+            <div class="gs-photo-flow gs-flow-o2"><span>🫧</span><b>O₂</b><small>${fr?'Vers l’air':'نحو الهواء'}</small></div>
+          </div>
+          <div class="gs-photo-stage-list" role="group" aria-label="${fr?'Étapes de la photosynthèse':'مراحل التركيب الضوئي'}">
+            ${stages.map((stage,i)=>`<button type="button" class="gs-photo-stage ${i===0?'is-active':''}" data-photo-stage="${stage[0]}" aria-pressed="${i===0?'true':'false'}"><span>0${i+1}</span>${stage[1]}</button>`).join('')}
+          </div>
+          <div class="gs-photo-explanation" aria-live="polite"><strong class="gs-photo-fact-title">${stages[0][1]}</strong><p class="gs-photo-fact-text">${stages[0][2]}</p></div>
+          <div class="gs-photo-equation"><span>${fr?'Équation simplifiée':'المعادلة الإجمالية المبسطة'}</span><strong>6 CO₂ + 6 H₂O + lumière → C₆H₁₂O₆ + 6 O₂</strong></div>
+          <p class="gs-photo-note">${fr?'Schéma de synthèse : la photosynthèse se déroule dans les chloroplastes des cellules chlorophylliennes.':'رسم تركيبي: تتم عملية التركيب الضوئي داخل البلاستيدات الخضراء للخلايا اليخضورية.'}</p>
+        </section>`;
+    }
+
     function renderDashboard() {
         const stats = getDashboardStats();
         const profiles = getProfiles();
@@ -1119,6 +1169,7 @@
                 <a class="gs-primary-link" href="#cours">${lang() === 'ar' ? 'ابدأ التعلم الآن' : 'Commencer'} <span aria-hidden="true">←</span></a>
             </section>
             ${renderPlantCellExplorer()}
+            ${renderPhotosynthesisLab()}
             <div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
                 <div class="gs-path-steps">
@@ -1779,6 +1830,33 @@
             const body = container.querySelector('.gs-cell-fact-text');
             if (title) title.textContent = fact[0];
             if (body) body.textContent = fact[1];
+        }));
+        const photoFacts = {
+            light: [lang()==='fr'?'L’énergie lumineuse':'الطاقة الضوئية', lang()==='fr'?'La chlorophylle des chloroplastes capte l’énergie lumineuse nécessaire à la photosynthèse.':'يلتقط اليخضور الموجود في البلاستيدات الخضراء الطاقة الضوئية اللازمة للتركيب الضوئي.'],
+            water: [lang()==='fr'?'L’eau et les sels minéraux':'الماء والأملاح المعدنية', lang()==='fr'?'L’eau absorbée par les racines rejoint les feuilles grâce aux vaisseaux conducteurs.':'تمتص الجذور الماء والأملاح المعدنية، ثم تنتقل نحو الأوراق عبر الأوعية الناقلة.'],
+            co2: [lang()==='fr'?'Le dioxyde de carbone':'ثاني أكسيد الكربون', lang()==='fr'?'Le CO₂ de l’air entre principalement dans la feuille par les stomates.':'يدخل غاز CO₂ من الهواء إلى الورقة أساساً عبر الثغور.'],
+            sugar: [lang()==='fr'?'La matière organique':'المادة العضوية', lang()==='fr'?'Dans les chloroplastes, l’énergie lumineuse permet de fabriquer des sucres à partir de CO₂ et d’eau.':'تستعمل البلاستيدات الخضراء الطاقة الضوئية لتصنيع السكريات انطلاقاً من الماء وCO₂.'],
+            oxygen: [lang()==='fr'?'Le dioxygène':'غاز الأكسجين', lang()==='fr'?'Du dioxygène est libéré dans l’atmosphère au cours de la photosynthèse.':'ينطلق غاز الأكسجين إلى الوسط الخارجي خلال عملية التركيب الضوئي.']
+        };
+        container.querySelectorAll('.gs-photo-stage').forEach(button => button.addEventListener('click', function () {
+            const fact = photoFacts[this.dataset.photoStage];
+            if (!fact) return;
+            container.querySelectorAll('.gs-photo-stage').forEach(item => {
+                const active = item === this;
+                item.classList.toggle('is-active', active);
+                item.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            const title = container.querySelector('.gs-photo-fact-title');
+            const body = container.querySelector('.gs-photo-fact-text');
+            if (title) title.textContent = fact[0];
+            if (body) body.textContent = fact[1];
+            const scene = container.querySelector('.gs-photo-scene');
+            if (scene) {
+                scene.dataset.activeStage = this.dataset.photoStage;
+                scene.classList.remove('gs-photo-pulse');
+                void scene.offsetWidth;
+                scene.classList.add('gs-photo-pulse');
+            }
         }));
         bindPlannerAndNotes(container);
         bindFavoritesPanel(container.querySelector('#panel-favorites'));
