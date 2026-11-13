@@ -315,6 +315,31 @@ function observePdfThumbnails(root = document) {
     nodes.forEach(queuePdfThumbnail);
 }
 
+
+let pdfThumbnailDomObserver = null;
+function startPdfThumbnailAutoObserver() {
+    if (pdfThumbnailDomObserver || !document.documentElement) return;
+    pdfThumbnailDomObserver = new MutationObserver(records => {
+        records.forEach(record => {
+            record.addedNodes.forEach(added => {
+                if (added.nodeType !== 1) return;
+                if (added.matches && added.matches('[data-pdf-thumbnail]')) {
+                    queuePdfThumbnail(added);
+                }
+                if (added.querySelectorAll) {
+                    added.querySelectorAll('[data-pdf-thumbnail]').forEach(queuePdfThumbnail);
+                }
+            });
+        });
+    });
+    pdfThumbnailDomObserver.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+    });
+    // Pick up previews that were inserted before the observer was attached.
+    document.querySelectorAll('[data-pdf-thumbnail]').forEach(queuePdfThumbnail);
+}
+
 // تحديد الشعبة من بنية مسار الملف، بما في ذلك مجلدات الامتحانات.
 function getTrackInfo(path) {
     const parts = String(path).replace(/^\/+/, '').split('/');
@@ -840,6 +865,9 @@ document.addEventListener('DOMContentLoaded', function () {
     setupTabs();
     setupNavigation();
     setupContactForm();
+    // Watch dynamically rendered content so PDF previews are queued even when
+    // a section is populated after its initial loading pass.
+    startPdfThumbnailAutoObserver();
 
     const initial = location.hash.substring(1);
     const target = initial && document.getElementById(initial);
