@@ -450,3 +450,100 @@ body{background:#f4f8f5}
  .gs-search-filters{grid-template-columns:1fr}
  #gs-search-results .content-grid{grid-template-columns:1fr}
 }
+
+
+/* GO SVT Maroc — photographic student dashboard and genuine SVG iconography */
+#student-space .gs-student-welcome{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  min-height:250px!important;padding:clamp(1.5rem,4vw,2.6rem)!important;
+  border:1px solid rgba(255,255,255,.18)!important;border-radius:24px!important;
+  color:#fff!important;
+  background-image:
+    linear-gradient(100deg,rgba(5,39,32,.96) 0%,rgba(9,70,52,.88) 53%,rgba(10,62,48,.48) 100%),
+    url('https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=1800&q=88')!important;
+  background-size:cover!important;background-position:center 44%!important;
+  box-shadow:0 18px 42px rgba(8,54,39,.22)!important
+}
+#student-space .gs-student-welcome:after{
+  content:""!important;position:absolute!important;z-index:-1!important;
+  inset:0 0 0 auto!important;width:min(42%,420px)!important;
+  background:linear-gradient(90deg,rgba(7,55,41,0),rgba(7,55,41,.08)),
+    url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=900&q=85') center/cover!important;
+  opacity:.34!important;mix-blend-mode:screen!important;pointer-events:none!important
+}
+#student-space .gs-student-welcome .gs-welcome-copy,
+#student-space .gs-student-welcome .gs-primary-link{position:relative!important;z-index:1!important}
+#student-space .gs-student-welcome .gs-eyebrow{color:#c5f3d5!important}
+#student-space .gs-student-welcome h2{color:#fff!important;text-shadow:0 2px 16px rgba(0,0,0,.2)}
+#student-space .gs-student-welcome p{color:rgba(255,255,255,.9)!important}
+#student-space .gs-welcome-tags span{
+  color:#f4fff7!important;background:rgba(255,255,255,.13)!important;
+  border-color:rgba(255,255,255,.3)!important;backdrop-filter:blur(8px)
+}
+#student-space .gs-primary-link{
+  border:1px solid rgba(255,255,255,.35)!important;
+  background:linear-gradient(135deg,#159765,#08744f)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.2)!important
+}
+
+/* SVG masks replace decorative emoji glyphs without changing labels or actions. */
+#student-space .gs-path-icon,
+#student-space .gs-quick-links>a>span,
+#student-space .stat-icon{
+  display:inline-grid!important;place-items:center!important;
+  color:#19724d!important;font-size:0!important;line-height:1!important
+}
+#student-space .gs-path-icon:before,
+#student-space .gs-quick-links>a>span:before,
+#student-space .stat-icon:before{
+  content:"";display:block;width:25px;height:25px;background:currentColor;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:center;mask-position:center;
+  -webkit-mask-size:contain;mask-size:contain
+}
+#student-space .gs-path-steps>a:nth-child(1) .gs-path-icon:before,
+#student-space .gs-quick-links>a:nth-child(1)>span:before,
+#student-space .stat-card:nth-child(1) .stat-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z'/%3E%3C/svg%3E")
+}
+#student-space .gs-path-steps>a:nth-child(2) .gs-path-icon:before,
+#student-space .gs-quick-links>a:nth-child(2)>span:before,
+#student-space .stat-card:nth-child(2) .stat-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3C/svg%3E")
+}
+#student-space .gs-path-steps>a:nth-child(3) .gs-path-icon:before,
+#student-space .gs-quick-links>a:nth-child(3)>span:before,
+#student-space .stat-card:nth-child(3) .stat-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 2-3 8h7L9 22l3-9H5l9-11Z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 2-3 8h7L9 22l3-9H5l9-11Z'/%3E%3C/svg%3E")
+}
+#student-space .gs-path-steps>a:nth-child(4) .gs-path-icon:before,
+#student-space .gs-quick-links>a:nth-child(4)>span:before,
+#student-space .stat-card:nth-child(4) .stat-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 21h8M12 17v4M7 4h10l4 4v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2Z'/%3E%3Cpath d='M14 4v5h5M8 13h8M8 9h2'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 21h8M12 17v4M7 4h10l4 4v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2Z'/%3E%3Cpath d='M14 4v5h5M8 13h8M8 9h2'/%3E%3C/svg%3E")
+}
+#student-space .stat-card:nth-child(5) .stat-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18M8 15l4-4 3 3 5-7'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18M8 15l4-4 3 3 5-7'/%3E%3C/svg%3E")
+}
+#student-space .stat-card:nth-child(6) .stat-icon:before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='12' cy='12' r='1'/%3E%3C/svg%3E")
+}
+#student-space .gs-path-icon{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#e4f5ea,#f7fcf8);box-shadow:inset 0 0 0 1px #d9ebdf}
+#student-space .gs-quick-links>a>span{width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:linear-gradient(145deg,#e3f5e9,#f7fcf8)}
+#student-space .stat-icon{width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#e4f5ea,#f7fcf8)}
+#student-space .stat-icon:before{width:24px;height:24px}
+#student-space .gs-path-steps>a:hover .gs-path-icon,
+#student-space .gs-quick-links>a:hover>span{color:#fff!important;background:linear-gradient(135deg,#176b4b,#31966a)!important}
+@media(max-width:600px){
+  #student-space .gs-student-welcome{min-height:220px!important;background-position:58% center!important}
+  #student-space .gs-student-welcome:after{width:38%!important;opacity:.22!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #student-space .gs-path-steps>a:hover .gs-path-icon,
+  #student-space .gs-quick-links>a:hover>span{transition:none!important}
+}
