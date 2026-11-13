@@ -119,6 +119,26 @@ else:
             failures.append("Classroom least-privilege UPDATE migration is missing a required column restriction or grant")
             break
 
+
+# Support plans are read/created by the current UI; unused mutation rights stay revoked.
+support_migration = MIGRATIONS / "20261113000500_limit_support_plan_permissions.sql"
+if not support_migration.is_file():
+    failures.append("Missing support-plan least-privilege migration")
+else:
+    support_sql = support_migration.read_text(encoding="utf-8").lower()
+    support_patterns = (
+        r"drop\s+policy\s+if\s+exists\s+teacher_support_plans_update\s+on\s+public\.teacher_student_support_plans",
+        r"drop\s+policy\s+if\s+exists\s+teacher_support_plans_delete\s+on\s+public\.teacher_student_support_plans",
+        r"revoke\s+update\s+on\s+public\.teacher_student_support_plans\s+from\s+authenticated",
+        r"revoke\s+update\s*\([\s\w,]+\)\s+on\s+public\.teacher_student_support_plans\s+from\s+authenticated",
+        r"revoke\s+delete\s+on\s+public\.teacher_student_support_plans\s+from\s+authenticated",
+        r"grant\s+select\s*,\s*insert\s+on\s+public\.teacher_student_support_plans\s+to\s+authenticated",
+    )
+    for pattern in support_patterns:
+        if not re.search(pattern, support_sql):
+            failures.append("Support-plan access must be limited to SELECT and INSERT")
+            break
+
 if failures:
     print("RLS migration coverage check failed:")
     print("\n".join(f"- {item}" for item in failures))
