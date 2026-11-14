@@ -2416,3 +2416,49 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
     text-align: center;
     font-weight: 700;
 }
+
+/* Final guard for the nested file-card markup.
+   Older PDF-card rules target direct children of .pdf-resource-card, while
+   current cards place preview/details inside .file-card-layout. Keep the
+   outer card out of the legacy PDF grid and reserve real width for details. */
+.content-card.file-resource-card.pdf-resource-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    grid-template-areas: none !important;
+    min-width: 0 !important;
+}
+.content-card.file-resource-card .file-card-layout {
+    display: grid !important;
+    direction: ltr !important;
+    grid-template-columns: minmax(0, 1.4fr) minmax(250px, .8fr) !important;
+    grid-template-areas: "preview details" !important;
+    align-items: stretch !important;
+    gap: clamp(.65rem, 1.2vw, 1rem) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+    grid-area: preview !important;
+    min-width: 0 !important;
+}
+.content-card.file-resource-card .file-info-panel {
+    grid-area: details !important;
+    direction: inherit !important;
+    min-width: 250px !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+@media (max-width: 720px) {
+    .content-card.file-resource-card .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas:
+            "preview"
+            "details" !important;
+    }
+    .content-card.file-resource-card .file-info-panel {
+        min-width: 0 !important;
+    }
+}
