@@ -2628,3 +2628,58 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
         padding: .7rem !important;
     }
 }
+
+/* Keep the review tools correctly arranged inside the nested information panel.
+   Older rules targeted direct children of the card and no longer match renderCard(). */
+.content-card.file-resource-card .file-info-panel > .gs-tools {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: .4rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: .65rem 0 0 !important;
+    padding: .55rem 0 0 !important;
+    border-top: 1px dashed rgba(90, 120, 95, .35) !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool {
+    display: inline-flex !important;
+    flex: 0 0 38px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 1px solid #cfdccb !important;
+    border-radius: 50% !important;
+    background: #f4f8f2 !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool.on {
+    background: #e5f4e9 !important;
+    border-color: #77ad86 !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions {
+    gap: .45rem !important;
+    margin-top: .65rem !important;
+    padding-top: 0 !important;
+}
+@media (max-width: 720px) {
+    .content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool {
+        flex-basis: 36px !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+    }
+}
