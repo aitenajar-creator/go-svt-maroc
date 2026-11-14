@@ -2505,3 +2505,6 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
         max-width: 100% !important;
     }
 }
+.content-card.file-resource-card .file-card-layout { direction: ltr !important; }
+html[dir="rtl"] .content-card.file-resource-card .file-info-panel { direction: rtl !important; }
+html[dir="ltr"] .content-card.file-resource-card .file-info-panel { direction: ltr !important; }
