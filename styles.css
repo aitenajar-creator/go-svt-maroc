@@ -2463,48 +2463,42 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
     }
 }
 
-/* Robust file-card geometry: use a bounded flex split instead of competing
-   legacy PDF grid tracks. The details rail must remain fully inside the card. */
+/* Final bounded grid: both tracks may shrink without clipping the details rail.
+   The preview occupies about two thirds; metadata and actions occupy one third. */
 .content-card.file-resource-card .file-card-layout {
-    display: flex !important;
-    flex-flow: row nowrap !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) !important;
+    grid-template-areas: "preview details" !important;
     align-items: stretch !important;
-    justify-content: stretch !important;
     gap: .85rem !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
-    overflow: hidden !important;
+    overflow: visible !important;
+    direction: ltr !important;
+}
+.content-card.file-resource-card .file-preview-panel,
+.content-card.file-resource-card .file-info-panel {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 .content-card.file-resource-card .file-preview-panel {
-    flex: 1 1 68% !important;
-    width: 68% !important;
-    min-width: 0 !important;
-    max-width: 68% !important;
-    box-sizing: border-box !important;
+    grid-area: preview !important;
 }
 .content-card.file-resource-card .file-info-panel {
-    flex: 0 0 30% !important;
-    width: 30% !important;
-    min-width: 220px !important;
-    max-width: 30% !important;
-    box-sizing: border-box !important;
+    grid-area: details !important;
     overflow-wrap: anywhere !important;
 }
-@media (max-width: 720px) {
-    .content-card.file-resource-card .file-card-layout {
-        flex-direction: column !important;
-        overflow: visible !important;
-    }
-    .content-card.file-resource-card .file-preview-panel,
-    .content-card.file-resource-card .file-info-panel {
-        flex: 0 0 auto !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-    }
-}
-.content-card.file-resource-card .file-card-layout { direction: ltr !important; }
 html[dir="rtl"] .content-card.file-resource-card .file-info-panel { direction: rtl !important; }
 html[dir="ltr"] .content-card.file-resource-card .file-info-panel { direction: ltr !important; }
+@media (max-width: 720px) {
+    .content-card.file-resource-card .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas:
+            "preview"
+            "details" !important;
+    }
+}
