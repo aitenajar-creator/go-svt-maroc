@@ -2700,3 +2700,55 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
         padding: .8rem !important;
     }
 }
+
+
+/* Accessible, clearly visible fallback and retry action for failed PDF previews. */
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail .thumbnail-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    width: 100%;
+    min-height: 180px;
+    padding: 1.25rem;
+    box-sizing: border-box;
+    color: var(--light-text, #52665a);
+    background: rgba(245, 249, 246, .96);
+    border: 1px dashed #b9cfc0;
+    border-radius: 12px;
+    line-height: 1.6;
+    text-align: center;
+}
+.content-card.file-resource-card .pdf-thumbnail .pdf-thumbnail-retry {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 132px;
+    min-height: 40px;
+    padding: .55rem 1rem;
+    border: 1px solid #176b45;
+    border-radius: 999px;
+    color: #fff;
+    background: #18764d;
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color .18s ease, transform .18s ease;
+}
+.content-card.file-resource-card .pdf-thumbnail .pdf-thumbnail-retry:hover {
+    background: #125d3c;
+}
+.content-card.file-resource-card .pdf-thumbnail .pdf-thumbnail-retry:active {
+    transform: translateY(1px);
+}
+.content-card.file-resource-card .pdf-thumbnail .pdf-thumbnail-retry:focus-visible {
+    outline: 3px solid #287a50;
+    outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .content-card.file-resource-card .pdf-thumbnail .pdf-thumbnail-retry {
+        transition: none;
+    }
+}
