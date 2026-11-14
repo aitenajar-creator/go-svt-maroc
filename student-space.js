@@ -1391,9 +1391,15 @@
                 card.setAttribute('aria-label', (page.title || '') + ' — ' + license);
                 if (credit) credit.textContent = (fr ? '© ' : '© ') + author + ' · ' + license;
             } catch (error) {
+                // A failed external image lookup must never turn the image card
+                // into an accidental navigation away from GO SVT Maroc.
+                card.href = '#';
+                card.removeAttribute('target');
+                card.dataset.previewUnavailable = 'true';
+                card.setAttribute('aria-disabled', 'true');
                 if (credit) credit.textContent = fr
-                    ? 'Aperçu indisponible · ouvrir la recherche Wikimedia'
-                    : 'تعذر تحميل المعاينة · افتح بحث ويكيميديا';
+                    ? 'Aperçu indisponible · réessayez plus tard'
+                    : 'المعاينة غير متاحة حالياً · حاول مرة أخرى لاحقاً';
                 const note = photo.querySelector('small');
                 if (note) note.textContent = fr ? 'Aperçu indisponible' : 'المعاينة غير متاحة حالياً';
             }
@@ -1425,8 +1431,14 @@ function openScientificPhotoPreview(card){
 
     if (!document.documentElement.dataset.gsPhotoPreviewBound) {
         document.addEventListener('click', function(event) {
-            const card = event.target.closest('.gs-science-media-card[data-real-image-url], .gs-micro-source-card[data-real-image-url], .gs-anatomy-photo-card[data-real-image-url], .gs-real-science-photo[data-real-image-url]');
+            const card = event.target.closest('.gs-science-media-card, .gs-micro-source-card, .gs-anatomy-photo-card, .gs-real-science-photo');
             if (!card) return;
+            // Keep the card in-site even when its remote preview could not load.
+            if (card.dataset.previewUnavailable === 'true') {
+                event.preventDefault();
+                return;
+            }
+            if (!card.dataset.realImageUrl) return;
             event.preventDefault();
             openScientificPhotoPreview(card);
         });
