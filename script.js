@@ -482,7 +482,7 @@ async function runSearch(query) {
     const results = document.getElementById('gs-search-results');
     if (!results) return;
     const requestId = ++searchRequestCounter;
-    const words = normalizeText(query).split(/\\s+/).filter(Boolean);
+    const words = normalizeText(query).split(/\s+/).filter(Boolean);
     const category = document.getElementById('gs-search-category')?.value || '';
     const level = document.getElementById('gs-search-level')?.value || '';
     const language = document.getElementById('gs-search-language')?.value || '';
