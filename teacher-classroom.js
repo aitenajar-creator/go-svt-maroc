@@ -137,16 +137,25 @@
   }
 
   async function loadStudent(host,user) {
+    const {data:academic,error:academicError}=await client.from('student_academic_profiles').select('study_level,study_track').eq('student_id',user.id).maybeSingle();
+    if(academicError)throw academicError;
     const {data:links,error}=await client.rpc('gosvt_student_classes');
     if(error) throw error;
     const classes=(links||[]).map(x=>({id:x.class_id,name:x.class_name,study_level:x.study_level,study_track:x.study_track}));
+    const academicSetup=academic?'':`<div class="gs-cl-card" style="margin-bottom:1rem"><h3>${tr('🎓 تثبيت المستوى والمسلك الدراسي','🎓 Confirmer le niveau et la filière')}</h3><p class="gs-cl-muted">${tr('هذه البيانات مطلوبة للانضمام إلى الأقسام. يمكنك تثبيتها مرة واحدة فقط، ولا يمكن تغييرها من هذا النموذج لاحقاً.','Ces informations sont nécessaires pour rejoindre une classe. Vous ne pouvez les confirmer qu’une seule fois et elles ne pourront plus être modifiées depuis ce formulaire.')}</p><label for="gs-cl-academic-level">${tr('المستوى','Niveau')}</label><select id="gs-cl-academic-level"><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option></select><label for="gs-cl-academic-track">${tr('المسلك','Filière')}</label><select id="gs-cl-academic-track"></select><button type="button" data-action="save-academic-profile">${tr('تأكيد بياناتي الدراسية','Confirmer mes informations scolaires')}</button></div>`;
     host.innerHTML=`
+      ${academicSetup}
       <div class="gs-cl-grid">
-        <div class="gs-cl-card"><h3>${tr('الانضمام إلى قسم','Rejoindre une classe')}</h3><p class="gs-cl-muted">${tr('أدخل رمز القسم الذي يمنحك إياه الأستاذ.','Saisissez le code fourni par votre enseignant.')}</p><label for="gs-cl-code">${tr('رمز الانضمام','Code de classe')}</label><input id="gs-cl-code" maxlength="20" autocomplete="off" placeholder="XXXXXXXXXXXXXXXXXXXX"><button type="button" data-action="join">${tr('الانضمام','Rejoindre')}</button></div>
+        <div class="gs-cl-card"><h3>${tr('الانضمام إلى قسم','Rejoindre une classe')}</h3><p class="gs-cl-muted">${tr('أدخل رمز القسم الذي يمنحك إياه الأستاذ.','Saisissez le code fourni par votre enseignant.')}</p><label for="gs-cl-code">${tr('رمز الانضمام','Code de classe')}</label><input id="gs-cl-code" maxlength="20" autocomplete="off" placeholder="XXXXXXXXXXXXXXXXXXXX"><button type="button" data-action="join" ${academic?'':'disabled'}>${tr('الانضمام','Rejoindre')}</button>${academic?'':'<p class="gs-cl-muted">'+tr('ثبّت المستوى والمسلك أولاً لتفعيل الانضمام.','Confirmez d’abord votre niveau et votre filière pour activer l’inscription.')+'</p>'}</div>
         <div class="gs-cl-card"><h3>${tr('أقسامك','Mes classes')}</h3><div class="gs-cl-list">${classes.length?classes.map(c=>`<div class="gs-cl-row"><strong>${esc(c.name)}</strong><p class="gs-cl-muted">${esc(c.study_level)} · ${esc(c.study_track)}</p></div>`).join(''):`<p class="gs-cl-muted">${tr('لم تنضم إلى أي قسم بعد.','Vous n’avez rejoint aucune classe.')}</p>`}</div></div>
       </div>
       <div class="gs-cl-card" style="margin-top:1rem"><h3>${tr('💬 اسأل أستاذك','💬 Poser une question')}</h3><label for="gs-cl-question-class">${tr('القسم','Classe')}</label><select id="gs-cl-question-class">${classes.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select><label for="gs-cl-question-title">${tr('موضوع السؤال','Sujet de la question')}</label><input id="gs-cl-question-title" maxlength="180" placeholder="${tr('مثلاً: صعوبة في درس المناعة','Ex. : difficulté sur l’immunité')}"><label for="gs-cl-question-body">${tr('اكتب سؤالك','Votre question')}</label><textarea id="gs-cl-question-body" maxlength="8000"></textarea><button type="button" data-action="ask" ${classes.length?'':'disabled'}>${tr('إرسال السؤال','Envoyer la question')}</button><p class="gs-cl-msg" role="status" aria-live="polite"></p></div>
       <div class="gs-cl-card" style="margin-top:1rem"><h3>${tr('أسئلتي ومناقشاتي','Mes questions et échanges')}</h3><div id="gs-cl-my-questions" class="gs-cl-list"><p class="gs-cl-muted">${tr('جارٍ التحميل...','Chargement...')}</p></div></div>`;
+    if(!academic){
+      const level=document.getElementById('gs-cl-academic-level'),track=document.getElementById('gs-cl-academic-track');
+      function fillAcademicTracks(){track.innerHTML=(tracks[level.value]||[]).map(x=>`<option value="${x[0]}">${esc(x[0])} — ${esc(x[1])}</option>`).join('');}
+      level.addEventListener('change',fillAcademicTracks);fillAcademicTracks();
+    }
     const {data:questions,error:qerr}=await client.from('teacher_questions').select('id,subject,body,status,created_at,class_id').eq('student_id',user.id).order('created_at',{ascending:false}).limit(40);
     if(qerr) throw qerr;
     const qhost=document.getElementById('gs-cl-my-questions');
@@ -343,11 +352,22 @@
       const user=await currentUser();if(!user)throw new Error(tr('يرجى تسجيل الدخول.','Veuillez vous connecter.'));
       if(action==='refresh-panel'){
         await refreshPanel();
+      } else if(action==='save-academic-profile'){
+        const study_level=document.getElementById('gs-cl-academic-level')?.value;
+        const study_track=document.getElementById('gs-cl-academic-track')?.value;
+        const {error}=await client.rpc('gosvt_set_student_academic_profile',{p_study_level:study_level,p_study_track:study_track});
+        if(error){
+          if(String(error.message||'').includes('academic_profile_already_set'))throw new Error(tr('تم تثبيت بياناتك الدراسية من قبل. أعد تحميل الصفحة.','Vos informations scolaires sont déjà confirmées. Actualisez la page.'));
+          throw error;
+        }
+        notice(tr('تم تثبيت المستوى والمسلك بنجاح.','Votre niveau et votre filière ont été confirmés.'));
+        await refreshPanel();
       } else if(action==='join'){
         const code=document.getElementById('gs-cl-code').value.trim();
         const {data,error}=await client.rpc('gosvt_join_teacher_class',{p_join_code:code});
         if(error){
           if(String(error.message||'').includes('join_rate_limited'))throw new Error(tr('تجاوزت عدد المحاولات المسموح بها. حاول مجدداً بعد 15 دقيقة.','Trop de tentatives. Réessayez dans 15 minutes.'));
+          if(String(error.message||'').includes('academic_profile_required'))throw new Error(tr('ثبّت المستوى والمسلك الدراسي أولاً.','Confirmez d’abord votre niveau et votre filière.'));
           throw error;
         }
         if(!data)throw new Error(tr('رمز غير صحيح أو لا يطابق مستواك ومسلكك الدراسي.','Code invalide ou incompatible avec votre niveau et votre filière.'));
