@@ -32,6 +32,7 @@ let requestCounter = 0;
 let fileDates = {};
 let deferredInstallPrompt = null;
 let searchTimer = null;
+let searchRequestCounter = 0;
 
 const t = (ar, fr) => (currentLang === 'ar' ? ar : fr);
 
@@ -480,6 +481,7 @@ function reloadAllSections() {
 async function runSearch(query) {
     const results = document.getElementById('gs-search-results');
     if (!results) return;
+    const requestId = ++searchRequestCounter;
     const words = normalizeText(query).split(/\s+/).filter(Boolean);
     const category = document.getElementById('gs-search-category')?.value || '';
     const level = document.getElementById('gs-search-level')?.value || '';
@@ -491,6 +493,8 @@ async function runSearch(query) {
     }
     try {
         const all = await loadManifest();
+        // A slower previous request must never overwrite the newest search/filter selection.
+        if (requestId !== searchRequestCounter) return;
         const matches = all.filter(p => {
             if (isHiddenDuplicateCourseCopy(p)) return false;
             const normalizedPath = normalizeText(p);
@@ -500,6 +504,7 @@ async function runSearch(query) {
             if (language && !p.toLowerCase().includes('/' + language + '/')) return false;
             return true;
         });
+        if (requestId !== searchRequestCounter) return;
         if (matches.length === 0) {
             results.innerHTML = `<p class="gs-search-hint">${t('لا توجد نتائج مطابقة لهذه الاختيارات', 'Aucun résultat pour ces critères')}</p>`;
             return;
@@ -511,6 +516,7 @@ async function runSearch(query) {
             matches.slice(0, 60).map(p => renderCard(p, describePath(p))).join('') + more;
         observePdfThumbnails(results);
     } catch (error) {
+        if (requestId !== searchRequestCounter) return;
         results.innerHTML = `<p class="gs-search-hint">${t('تعذر البحث حالياً', 'Recherche indisponible')}</p>`;
     }
 }
