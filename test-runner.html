@@ -60,7 +60,7 @@
         
         <button class="btn-run" onclick="runTests()">▶️ Exécuter tous les tests</button>
         
-        <div id="test-output">
+        <div id="test-output" aria-live="polite" aria-atomic="false">
             Cliquez sur "Exécuter tous les tests" pour commencer...
         </div>
     </div>
@@ -74,7 +74,7 @@
         function runTests() {
             const output = document.getElementById('test-output');
             const button = document.querySelector('.btn-run');
-            output.textContent = 'Exécution des tests...\\n\\n';
+            output.textContent = 'Exécution des tests...\n\n';
             if (button) button.disabled = true;
 
             // Keep this standalone audit page from permanently changing the site's
@@ -112,16 +112,16 @@
                     if (button) button.disabled = false;
                 }
 
-                let html = logs.join('\\n')
+                let html = logs.join('\n')
                     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                     .replace(/✅/g, '<span class="pass">✅</span>')
                     .replace(/❌/g, '<span class="fail">❌</span>');
                 if (failure) {
-                    html += '\\n\\nخطأ أثناء تشغيل الاختبارات: ' + String(failure.message || failure);
+                    html += '\n\nخطأ أثناء تشغيل الاختبارات: ' + String(failure.message || failure);
                 } else if (results) {
-                    html += '\\n\\n=== RÉSUMÉ ===\\n';
-                    html += `Tests réussis: ${results.passed}/${results.total}\\n`;
-                    html += '\\nتمت استعادة بيانات المتصفح التي كانت موجودة قبل الاختبار.';
+                    html += '\n\n=== RÉSUMÉ ===\n';
+                    html += `Tests réussis: ${results.passed}/${results.total}\n`;
+                    html += '\nتمت استعادة بيانات المتصفح التي كانت موجودة قبل الاختبار.';
                 }
                 output.innerHTML = html;
             }, 100);
