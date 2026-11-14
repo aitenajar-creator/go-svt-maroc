@@ -269,8 +269,8 @@ async function renderFirstPdfPage(container) {
         page.cleanup();
     } catch (error) {
         console.warn('PDF thumbnail unavailable:', container.dataset.path, error);
-        container.innerHTML = `<span class="thumbnail-fallback">${t('المعاينة غير متاحة لهذا الملف', 'Aperçu indisponible pour ce fichier')}</span>`;
-        container.dataset.rendered = 'true';
+        container.dataset.previewFailed = 'true';
+        container.innerHTML = `<div class="thumbnail-fallback" role="status"><span>${t('تعذرت معاينة هذا الملف حالياً.', 'Aperçu temporairement indisponible.')}</span><button type="button" class="pdf-thumbnail-retry">${t('إعادة المحاولة', 'Réessayer')} ↻</button></div>`;
     } finally {
         if (pdf) {
             try { await pdf.destroy(); } catch (cleanupError) { /* ignore cleanup errors */ }
@@ -836,6 +836,18 @@ document.addEventListener('error', e => {
 }, true);
 
 document.addEventListener('click', e => {
+    const retryPdf = e.target.closest('.pdf-thumbnail-retry');
+    if (retryPdf) {
+        const thumbnail = retryPdf.closest('[data-pdf-thumbnail]');
+        if (thumbnail) {
+            delete thumbnail.dataset.previewFailed;
+            delete thumbnail.dataset.rendered;
+            thumbnail.innerHTML = `<span class="thumbnail-loading">${t('جاري إعادة إعداد المعاينة...', 'Nouvelle tentative de préparation...')}</span>`;
+            queuePdfThumbnail(thumbnail);
+        }
+        return;
+    }
+
     const imagePreview = e.target.closest('.image-thumbnail[data-preview-path]');
     if (imagePreview) { openPreview(imagePreview.dataset.previewPath); return; }
 
