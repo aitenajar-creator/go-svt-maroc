@@ -95,7 +95,7 @@ begin
   ) then
     raise exception 'student_account_required';
   end if;
-  if not (
+  if p_study_level is null or p_study_track is null or not (
     (p_study_level = 'TC' and p_study_track in ('TCS','TCL'))
     or (p_study_level = '1BAC' and p_study_track in ('1BACSE','1BACSM','1BACL'))
     or (p_study_level = '2BAC' and p_study_track in ('2BACSVT','2BACSP','2BACSM'))
@@ -254,7 +254,7 @@ returns table (
 language plpgsql
 stable
 security definer
-set search_path = public, auth
+set search_path = pg_catalog, public, auth
 as $function$
 begin
   if not public.gosvt_is_site_admin() then
