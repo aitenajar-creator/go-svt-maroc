@@ -85,7 +85,10 @@
     };
     const getOffline = () => readList('gosvt-offline');
     let activeNoteUid = null;
-    const getNotes = () => readObject(activeNoteUid ? 'gosvt-notes:' + activeNoteUid : 'gosvt-notes');
+    const getNotes = () => {
+        if (activeNoteUid) return readObject('gosvt-notes:' + activeNoteUid);
+        return readObject(storage.get('gosvt-notes-legacy-owner') ? 'gosvt-notes:guest' : 'gosvt-notes');
+    };
 
     function activateNoteAccount(uid) {
         if (!uid) return;
@@ -264,7 +267,7 @@
         const notes = getNotes();
         const value = text.trim();
         if (value) notes[path] = value; else delete notes[path];
-        save(activeNoteUid ? 'gosvt-notes:' + activeNoteUid : 'gosvt-notes', notes);
+        save(activeNoteUid ? 'gosvt-notes:' + activeNoteUid : (storage.get('gosvt-notes-legacy-owner') ? 'gosvt-notes:guest' : 'gosvt-notes'), notes);
         byPath('.gs-note', path).forEach(b => b.classList.toggle('on', Boolean(value)));
         closeModal(modal);
         toast(value ? t('✅ تم حفظ الملاحظة', '✅ Note enregistrée') : t('حُذفت الملاحظة', 'Note supprimée'));
