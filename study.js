@@ -84,7 +84,40 @@
         set: paths => saveFavoriteList(paths, true)
     };
     const getOffline = () => readList('gosvt-offline');
-    const getNotes = () => readObject('gosvt-notes');
+    let activeNoteUid = null;
+    const getNotes = () => {
+        if (activeNoteUid) return readObject('gosvt-notes:' + activeNoteUid);
+        return readObject(storage.get('gosvt-notes-legacy-owner') ? 'gosvt-notes:guest' : 'gosvt-notes');
+    };
+
+    function activateNoteAccount(uid) {
+        if (!uid) return;
+        activeNoteUid = String(uid);
+        const accountKey = 'gosvt-notes:' + activeNoteUid;
+        const legacyOwner = storage.get('gosvt-notes-legacy-owner');
+        const migrated = storage.get('gosvt-notes-migrated:' + activeNoteUid) === 'true';
+        // Import device-wide legacy notes only for their first account owner.
+        if (!migrated && (!legacyOwner || legacyOwner === activeNoteUid)) {
+            if (!legacyOwner) {
+                save(accountKey, readObject('gosvt-notes'));
+                save('gosvt-notes-legacy-owner', activeNoteUid);
+            } else if (!readObject(accountKey) || !Object.keys(readObject(accountKey)).length) {
+                save(accountKey, readObject('gosvt-notes'));
+            }
+        }
+        save('gosvt-notes-migrated:' + activeNoteUid, true);
+        renderRevision();
+    }
+
+    function deactivateNoteAccount() {
+        activeNoteUid = null;
+        renderRevision();
+    }
+
+    window.GoSVTStudyNotes = {
+        activate: activateNoteAccount,
+        deactivate: deactivateNoteAccount
+    };
 
     const byPath = (selector, path) => document.querySelectorAll(`${selector}[data-path="${CSS.escape(path)}"]`);
     const fileUrl = path => new URL(buildFileUrl(path), location.origin).href;
@@ -234,7 +267,7 @@
         const notes = getNotes();
         const value = text.trim();
         if (value) notes[path] = value; else delete notes[path];
-        save('gosvt-notes', notes);
+        save(activeNoteUid ? 'gosvt-notes:' + activeNoteUid : (storage.get('gosvt-notes-legacy-owner') ? 'gosvt-notes:guest' : 'gosvt-notes'), notes);
         byPath('.gs-note', path).forEach(b => b.classList.toggle('on', Boolean(value)));
         closeModal(modal);
         toast(value ? t('✅ تم حفظ الملاحظة', '✅ Note enregistrée') : t('حُذفت الملاحظة', 'Note supprimée'));
@@ -478,7 +511,7 @@
         const delBtn = document.getElementById('gs-note-delete');
         if (delBtn) delBtn.textContent = t('🗑️ حذف', '🗑️ Supprimer');
         const hint = document.querySelector('#gs-note-modal .gs-note-hint');
-        if (hint) hint.textContent = t('تُحفظ ملاحظاتك في هذا الجهاز فقط.', 'Vos notes sont enregistrées uniquement sur cet appareil.');
+        if (hint) hint.textContent = t('تُحفظ ملاحظاتك على هذا الجهاز بشكل منفصل لكل حساب.', 'Vos notes sont enregistrées sur cet appareil, séparément pour chaque compte.');
         const area = document.getElementById('gs-note-text');
         if (area) area.placeholder = t('اكتب ملاحظتك هنا...', 'Écrivez votre note ici...');
         renderCountdown();
