@@ -2516,9 +2516,13 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel { direction: l
     max-width: 100% !important;
     box-sizing: border-box !important;
 }
+.content-card.file-resource-card {
+    container-name: file-resource-card;
+    container-type: inline-size;
+}
 .content-card.file-resource-card .file-card-layout {
     display: grid !important;
-    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr) !important;
+    grid-template-columns: minmax(0, 1.45fr) minmax(210px, 1fr) !important;
     grid-template-areas: "preview details" !important;
     align-items: stretch !important;
     gap: clamp(.55rem, 1.2vw, .9rem) !important;
@@ -2681,5 +2685,18 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
         max-width: 36px !important;
         height: 36px !important;
         min-height: 36px !important;
+    }
+}
+
+/* A resource card may be narrow even on a wide desktop when it sits in a
+   multi-column content grid. Adapt to the card's own width, not only viewport. */
+@container file-resource-card (max-width: 560px) {
+    .content-card.file-resource-card .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas: "preview" "details" !important;
+    }
+    .content-card.file-resource-card .file-info-panel {
+        min-width: 0 !important;
+        padding: .8rem !important;
     }
 }
