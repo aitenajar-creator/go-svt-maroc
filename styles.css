@@ -2462,3 +2462,46 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
         min-width: 0 !important;
     }
 }
+
+/* Robust file-card geometry: use a bounded flex split instead of competing
+   legacy PDF grid tracks. The details rail must remain fully inside the card. */
+.content-card.file-resource-card .file-card-layout {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    gap: .85rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+    flex: 1 1 68% !important;
+    width: 68% !important;
+    min-width: 0 !important;
+    max-width: 68% !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card .file-info-panel {
+    flex: 0 0 30% !important;
+    width: 30% !important;
+    min-width: 220px !important;
+    max-width: 30% !important;
+    box-sizing: border-box !important;
+    overflow-wrap: anywhere !important;
+}
+@media (max-width: 720px) {
+    .content-card.file-resource-card .file-card-layout {
+        flex-direction: column !important;
+        overflow: visible !important;
+    }
+    .content-card.file-resource-card .file-preview-panel,
+    .content-card.file-resource-card .file-info-panel {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+}
