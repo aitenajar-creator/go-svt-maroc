@@ -217,10 +217,42 @@
         }
     }
 
-    // بدون إنترنت: فتح ملف PDF مباشرة بدل المعاينة عبر Google
+    // Open saved PDFs inside the site's preview modal, without relying on an active service worker.
     const prevOpenPreview = openPreview;
-    openPreview = function (path) {
-        if (!navigator.onLine && getExt(path) === 'pdf') { window.open(fileUrl(path), '_blank'); return; }
+    const prevCloseModal = closeModal;
+    function releaseOfflinePreviewUrl(modal) {
+        if (!modal || !modal.dataset.offlineObjectUrl) return;
+        URL.revokeObjectURL(modal.dataset.offlineObjectUrl);
+        delete modal.dataset.offlineObjectUrl;
+    }
+    closeModal = function (modal) {
+        if (modal && modal.id === 'gs-preview') releaseOfflinePreviewUrl(modal);
+        prevCloseModal(modal);
+    };
+    openPreview = async function (path) {
+        const modal = document.getElementById('gs-preview');
+        if (modal) releaseOfflinePreviewUrl(modal);
+        if (!navigator.onLine && getExt(path) === 'pdf') {
+            if (!modal) return;
+            try {
+                const cache = await caches.open(STUDY.OFFLINE_CACHE);
+                const response = await cache.match(fileUrl(path), { ignoreSearch: true, ignoreVary: true });
+                if (!response) {
+                    toast(t('هذا الملف غير موجود في الحفظ دون إنترنت. اتصل بالإنترنت واحفظه مجدداً.', 'Ce fichier n’est pas disponible hors ligne. Reconnectez-vous et enregistrez-le à nouveau.'));
+                    return;
+                }
+                const objectUrl = URL.createObjectURL(await response.blob());
+                modal.dataset.offlineObjectUrl = objectUrl;
+                modal.querySelector('.gs-modal-title').textContent = fileTitle(path);
+                modal.querySelector('.gs-open-tab').href = objectUrl;
+                modal.querySelector('.gs-modal-body').innerHTML = `<iframe src="${objectUrl}" title="PDF"></iframe>`;
+                openModal('gs-preview');
+            } catch (error) {
+                console.warn('[GoSVT] Offline PDF preview failed:', error && error.message);
+                toast(t('تعذر فتح الملف المحفوظ. حاول حفظه مجدداً عند توفر الاتصال.', 'Impossible d’ouvrir le fichier hors ligne. Réenregistrez-le lorsque vous serez connecté.'));
+            }
+            return;
+        }
         prevOpenPreview(path);
     };
 
