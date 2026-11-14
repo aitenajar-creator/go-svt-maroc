@@ -86,6 +86,10 @@
           typeof window.GoSVTStudyFavorites.deactivate === 'function') {
         window.GoSVTStudyFavorites.deactivate();
       }
+      if (previousUid && window.GoSVTStudyNotes &&
+          typeof window.GoSVTStudyNotes.deactivate === 'function') {
+        window.GoSVTStudyNotes.deactivate();
+      }
     }
     user = sessionUser;
     profile = null;
@@ -133,6 +137,9 @@
         }
 
         window.StudentSpace.switchProfile(localProfileId);
+        if (window.GoSVTStudyNotes && typeof window.GoSVTStudyNotes.activate === 'function') {
+          window.GoSVTStudyNotes.activate(uid);
+        }
         const profileIdForSession = localProfileId;
 
         // Open the student space immediately from local data. Cloud restoration
