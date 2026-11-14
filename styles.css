@@ -2502,3 +2502,129 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel { direction: l
             "details" !important;
     }
 }
+
+ 
+/* Definitive file-card layout: the actual markup nests the preview and
+   information panels inside .file-card-layout. Avoid legacy direct-child
+   PDF selectors and allow both grid tracks and all descendants to shrink. */
+.content-card.file-resource-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card .file-card-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr) !important;
+    grid-template-areas: "preview details" !important;
+    align-items: stretch !important;
+    gap: clamp(.55rem, 1.2vw, .9rem) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    direction: ltr !important;
+}
+.content-card.file-resource-card .file-preview-panel,
+.content-card.file-resource-card .file-info-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+    grid-area: preview !important;
+    align-self: start !important;
+    height: auto !important;
+}
+.content-card.file-resource-card .file-info-panel {
+    grid-area: details !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: clamp(.55rem, 1.2vw, 1rem) !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+}
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail {
+    display: flex !important;
+    flex: 0 1 auto !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    aspect-ratio: auto !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    object-position: top center !important;
+}
+.content-card.file-resource-card .file-info-panel > h3,
+.content-card.file-resource-card .file-info-panel > .file-name {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions > .preview-btn,
+.content-card.file-resource-card .file-info-panel > .card-actions > .download-btn {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+html[dir="rtl"] .content-card.file-resource-card .file-info-panel {
+    direction: rtl !important;
+}
+html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
+    direction: ltr !important;
+}
+@media (max-width: 720px) {
+    .content-card.file-resource-card .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas: "preview" "details" !important;
+    }
+    .content-card.file-resource-card .file-info-panel {
+        min-width: 0 !important;
+        padding: .7rem !important;
+    }
+}
