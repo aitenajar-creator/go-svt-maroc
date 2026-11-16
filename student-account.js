@@ -170,7 +170,16 @@
             typeof window.GoSVTCloud.loadQuizAttempts === 'function' ? window.GoSVTCloud.loadQuizAttempts(uid) : Promise.resolve(null)
           ]).then(results => {
             if (generation !== sessionGeneration || !user || user.id !== uid) return;
-            const [cloudProgress, cloudNotes, cloudPlan, cloudQuizAttempts] = results;
+            const [cloudProgress, loadedNotes, loadedPlan, cloudQuizAttempts] = results;
+            const pendingFiltered = typeof window.StudentSpace.filterPendingCloudDeletions === 'function'
+              ? window.StudentSpace.filterPendingCloudDeletions(uid, loadedNotes, loadedPlan)
+              : { notes: loadedNotes, studyPlan: loadedPlan };
+            const cloudNotes = pendingFiltered.notes;
+            const cloudPlan = pendingFiltered.studyPlan;
+            // Filter first, then retry: an offline deletion must not reappear during restore.
+            if (typeof window.StudentSpace.retryPendingCloudDeletions === 'function') {
+              window.StudentSpace.retryPendingCloudDeletions(uid);
+            }
             if (cloudProgress && typeof window.StudentSpace.mergeCloudProgress === 'function') {
               window.StudentSpace.mergeCloudProgress(profileIdForSession, cloudProgress);
             }
