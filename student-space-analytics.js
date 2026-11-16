@@ -8,7 +8,7 @@
       eyebrow: 'تحليل أدائك الدراسي', title: 'تقدمك بالأرقام',
       subtitle: 'تابع تطور نتائجك وحدد ما يستحق مراجعة إضافية.',
       attempts: 'عدد المحاولات', average: 'المعدل العام', recent: 'معدل آخر 5 محاولات',
-      byQuiz: 'الأداء حسب الاختبار', quizScope: 'نعرض الاختبارات الثمانية الأقل متوسطاً من أصل', quizScopeSuffix: 'اختباراً، مرتبة من الأقل إلى الأعلى.', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة',
+      byQuiz: 'الأداء حسب الاختبار', quizScope: 'يعرض هذا الملخص', quizScopeSuffix: 'من أصل', quizScopeOrder: 'اختباراً، مرتبة من الأقل إلى الأعلى.', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة',
       linkedLesson: 'الدرس المرتبط', openLesson: 'فتح الدرس',
       best: 'أفضل نتيجة', chart: 'تطور نتائج الاختبارات', chartHint: 'يعرض الرسم آخر 8 محاولات بترتيبها الزمني.',
       noChart: 'أنجز اختباراً واحداً على الأقل ليظهر تطور نتائجك هنا.',
@@ -25,7 +25,7 @@
       eyebrow: 'ANALYSE DE VOS RÉSULTATS', title: 'Votre progression en chiffres',
       subtitle: 'Suivez vos résultats et repérez les notions à retravailler.',
       attempts: 'Tentatives', average: 'Moyenne générale', recent: 'Moyenne des 5 dernières',
-      byQuiz: 'Résultats par quiz', quizScope: 'Les 8 moyennes les plus faibles parmi', quizScopeSuffix: 'quiz, classés de la plus faible à la plus élevée.', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier',
+      byQuiz: 'Résultats par quiz', quizScope: 'Cette synthèse affiche', quizScopeSuffix: 'sur', quizScopeOrder: 'quiz, classés de la moyenne la plus faible à la plus élevée.', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier',
       linkedLesson: 'Cours associé', openLesson: 'Ouvrir le cours',
       best: 'Meilleur score', chart: 'Évolution des résultats', chartHint: 'Les 8 dernières tentatives sont affichées dans l’ordre chronologique.',
       noChart: 'Effectuez au moins un quiz pour afficher votre évolution.',
@@ -154,7 +154,7 @@
     const rows = allRows.slice(0, 8);
     if (!rows.length) return '';
     rows.forEach(row => { const key = row.id.replace(/^\/+/, ''); if (!quizMetadata.has(key)) loadQuizMetadata(row.id); row.metadata = quizMetadata.get(key) || null; });
-    const scope = '<p class="gs-pa-quiz-scope">' + esc(t.quizScope) + ' ' + allRows.length + ' ' + esc(t.quizScopeSuffix) + '</p>';
+    const scope = '<p class="gs-pa-quiz-scope">' + esc(t.quizScope) + ' ' + rows.length + ' ' + esc(t.quizScopeSuffix) + ' ' + allRows.length + ' ' + esc(t.quizScopeOrder) + '</p>';
     return '<div class="gs-pa-quiz-breakdown">' + scope + rows.map(row => {
       const meta = row.metadata && typeof row.metadata.then !== 'function' ? row.metadata : null;
       const displayName = meta && meta.title ? meta.title : row.name;
