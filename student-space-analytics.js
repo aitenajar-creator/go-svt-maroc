@@ -82,13 +82,13 @@
         if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
         const title = typeof data.titre === 'string' ? data.titre.trim().slice(0, 180) : '';
         const source = typeof data.source === 'string' ? data.source.trim().replace(/^\/+/, '') : '';
-        const safeSource = /^cours\/(?:arabe|francais)\/(?:TC|1BAC|2BAC)\/[A-Za-z0-9_\-./\u0600-\u06FF ()]+\.pdf$/i.test(source) &&
+        const safeSource = /^cours\/(?:arabe|francais)\/(?:TC|1BAC|2BAC)\/[A-Za-z0-9_\-./\u0600-\u06FF ()']+\.pdf$/i.test(source) &&
           !source.split('/').includes('..');
         return { title, source: safeSource ? '/' + source.split('/').map(encodeURIComponent).join('/') : '' };
       })
       .catch(() => null);
     quizMetadata.set(path, pending);
-    pending.then(() => schedule());
+    pending.then(metadata => { quizMetadata.set(path, metadata); schedule(); });
     return pending;
   }
 
@@ -143,7 +143,7 @@
       return { id, name, count: ordered.length, mean, best, latest: latest.percentage, date: latest.date };
     }).sort((a, b) => a.mean - b.mean || a.latest - b.latest || a.name.localeCompare(b.name)).slice(0, 8);
     if (!rows.length) return '';
-    rows.forEach(row => { row.metadata = quizMetadata.get(row.id) || null; if (!row.metadata) loadQuizMetadata(row.id); });
+    rows.forEach(row => { if (!quizMetadata.has(row.id)) loadQuizMetadata(row.id); row.metadata = quizMetadata.get(row.id) || null; });
     return '<div class="gs-pa-quiz-breakdown">' + rows.map(row => {
       const meta = row.metadata && typeof row.metadata.then !== 'function' ? row.metadata : null;
       const displayName = meta && meta.title ? meta.title : row.name;
