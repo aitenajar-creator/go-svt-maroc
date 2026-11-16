@@ -455,7 +455,21 @@ async function loadContentFromManifest(type, subject, level) {
             const examTrackName = examTrackNames[effectiveStudentTrack];
             if (examTrackName) files = files.filter(p => p.includes('/' + examTrackName + '/'));
         }
-        files = files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        files = files.sort((a, b) => {
+            if (type === 'examens') {
+                const metadata = path => {
+                    const labels = getExamFileMetadata(path) || [];
+                    const value = name => (labels.find(item => item.className === name) || {}).ar || '';
+                    return {year:Number(value('exam-year')) || 0, session:value('exam-session'), kind:value('exam-subject') ? 0 : value('exam-correction') ? 1 : 2};
+                };
+                const left = metadata(a);
+                const right = metadata(b);
+                if (left.year !== right.year) return right.year - left.year;
+                if (left.session !== right.session) return (left.session === 'الدورة العادية' ? 0 : 1) - (right.session === 'الدورة العادية' ? 0 : 1);
+                if (left.kind !== right.kind) return left.kind - right.kind;
+            }
+            return a.localeCompare(b, undefined, { numeric: true });
+        });
 
         if (files.length === 0) {
             container.innerHTML = `<p class="no-files">${t('لا توجد ملفات حالياً', 'Aucun fichier disponible pour le moment')}</p>`;
