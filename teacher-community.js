@@ -14,7 +14,7 @@
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, myOffset = 0, myHasMore = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -359,7 +359,7 @@
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
     $('tc-file').addEventListener('change',()=>{const f=$('tc-file').files[0];$('tc-file-hint').textContent=f?f.name+' · '+(f.size/1048576).toFixed(1)+' MB':'PDF وWord وPowerPoint وExcel وغيرها · الحد الأقصى 50 MB';});
-    $('tc-search').addEventListener('input',()=>loadLibrary(true)); $('tc-category').addEventListener('change',()=>loadLibrary(true));
+    $('tc-search').addEventListener('input',()=>{clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);}); $('tc-category').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
