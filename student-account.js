@@ -334,6 +334,9 @@
         if (window.GoSVTStudyFavorites && typeof window.GoSVTStudyFavorites.deactivate === 'function') {
           window.GoSVTStudyFavorites.deactivate();
         }
+        if (window.GoSVTStudyNotes && typeof window.GoSVTStudyNotes.deactivate === 'function') {
+          window.GoSVTStudyNotes.deactivate();
+        }
         // Invalidate any pending profile lookup or cloud restore from the old session.
         sessionGeneration++;
         sessionApply = null;
