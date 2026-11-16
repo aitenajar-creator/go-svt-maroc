@@ -2113,13 +2113,14 @@ function openScientificPhotoPreview(card){
         panel.querySelectorAll('.btn-remove-fav').forEach(button => {
             button.addEventListener('click', function () {
                 const path = this.dataset.path;
-                const storedFavorites = storage.get('gosvt-favs');
-                const favs = Array.isArray(storedFavorites) ? storedFavorites : [];
-                const nextFavorites = favs.filter(item => item !== path);
-                if (window.GoSVTStudyFavorites && typeof window.GoSVTStudyFavorites.set === 'function') {
-                    window.GoSVTStudyFavorites.set(nextFavorites);
+                if (window.GoSVTStudyFavorites && typeof window.GoSVTStudyFavorites.remove === 'function') {
+                    // Remove from the active account's own list, never from the
+                    // shared legacy key that another signed-in tab may overwrite.
+                    window.GoSVTStudyFavorites.remove(path);
                 } else {
-                    storage.set('gosvt-favs', nextFavorites);
+                    const storedFavorites = storage.get('gosvt-favs');
+                    const favs = Array.isArray(storedFavorites) ? storedFavorites : [];
+                    storage.set('gosvt-favs', favs.filter(item => item !== path));
                 }
                 panel.innerHTML = renderFavorites();
                 bindFavoritesPanel(panel);
