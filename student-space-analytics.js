@@ -84,7 +84,7 @@
         const source = typeof data.source === 'string' ? data.source.trim().replace(/^\/+/, '') : '';
         const safeSource = /^cours\/(?:arabe|francais)\/(?:TC|1BAC|2BAC)\/[A-Za-z0-9_\-./\u0600-\u06FF ()']+\.pdf$/i.test(source) &&
           !source.split('/').includes('..');
-        return { title, source: safeSource ? '/' + source.split('/').map(encodeURIComponent).join('/') : '' };
+        return { title, source: safeSource ? '/' + source : '' };
       })
       .catch(() => null);
     quizMetadata.set(path, pending);
