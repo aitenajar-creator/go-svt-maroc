@@ -404,11 +404,20 @@
 
     // =============== مراجعة أخطاء التلميذ من «مساحتي» ===============
     function startMistakesReview(items) {
+        // This public entry point validates independently of its current caller.
+        // Normalize accepted text without mutating the student's stored history.
         const safeItems = Array.isArray(items) ? items.filter(item =>
-            item && typeof item.question === 'string' &&
-            typeof item.selected === 'string' && typeof item.correct === 'string' &&
-            item.selected !== item.correct
-        ).slice(0, 50) : [];
+            item && typeof item === 'object' && !Array.isArray(item) &&
+            typeof item.question === 'string' && item.question.trim() &&
+            typeof item.selected === 'string' && item.selected.trim() &&
+            typeof item.correct === 'string' && item.correct.trim() &&
+            item.selected.trim() !== item.correct.trim()
+        ).slice(0, 50).map(item => ({
+            ...item,
+            question: item.question.trim(),
+            selected: item.selected.trim(),
+            correct: item.correct.trim()
+        })) : [];
         if (!safeItems.length) return false;
         if (!quizModal()) buildQuizModal();
 

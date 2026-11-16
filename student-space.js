@@ -1765,19 +1765,25 @@ function openScientificPhotoPreview(card){
     // ============================================
     function renderMistakes() {
         const profileData = getProfileData(currentProfileId);
-        const mistakes = profileData.mistakes || [];
+        // Render only usable mistake records; leave the stored history untouched.
+        const mistakes = (Array.isArray(profileData.mistakes) ? profileData.mistakes : [])
+            .filter(mistake => mistake && typeof mistake === 'object' && !Array.isArray(mistake) &&
+                typeof mistake.quizId === 'string' && mistake.quizId.trim() && mistake.quizId.trim().length <= 200 &&
+                typeof mistake.question === 'string' && mistake.question.trim() &&
+                typeof mistake.selected === 'string' && mistake.selected.trim() &&
+                typeof mistake.correct === 'string' && mistake.correct.trim() &&
+                mistake.selected.trim() !== mistake.correct.trim());
 
         if (mistakes.length === 0) {
             return `<p class="no-data">${t('noData')}</p>`;
         }
 
-        // Group mistakes by quiz ID
+        // Group validated mistakes by quiz ID without trusting stored object keys.
         const mistakesByQuiz = Object.create(null);
         mistakes.forEach(mistake => {
-            if (!mistakesByQuiz[mistake.quizId]) {
-                mistakesByQuiz[mistake.quizId] = [];
-            }
-            mistakesByQuiz[mistake.quizId].push(mistake);
+            const quizId = mistake.quizId.trim();
+            if (!mistakesByQuiz[quizId]) mistakesByQuiz[quizId] = [];
+            mistakesByQuiz[quizId].push(mistake);
         });
 
         let html = '<div class="mistakes-list">';
@@ -1813,7 +1819,7 @@ function openScientificPhotoPreview(card){
                             <div class="mistake-question">${escapeHtml(mistake.question || 'Question')}</div>
                             <div class="mistake-details">
                                 <span class="mistake-quiz">${getQuizDisplayName(mistake.quizId)}</span>
-                                <span class="mistake-date">${new Date(mistake.date).toLocaleDateString()}</span>
+                                <span class="mistake-date">${Number.isFinite(Number(mistake.date)) && Number(mistake.date) > 0 ? new Date(Number(mistake.date)).toLocaleDateString() : '—'}</span>
                             </div>
                             <div class="mistake-answers">
                                 <div class="mistake-wrong">❌ ${t('Réponse choisie:')} ${escapeHtml(mistake.selected)}</div>
