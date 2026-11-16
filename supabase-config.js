@@ -108,6 +108,50 @@
     },
 
 
+    // Account-scoped goals and learning streak. RLS limits this row to auth.uid().
+    async loadLearningState(expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
+      if (!studentId) return null;
+      const { data, error } = await client.from('student_learning_state')
+        .select('goals,streak,updated_at')
+        .eq('student_id', studentId).maybeSingle();
+      if (error) throw error;
+      if (!data) return { goals: [], streak: { current: 0, best: 0, lastVisit: null }, updatedAt: null };
+      const goals = Array.isArray(data.goals) ? data.goals.slice(0, 200) : [];
+      const raw = data.streak && typeof data.streak === 'object' && !Array.isArray(data.streak) ? data.streak : {};
+      const current = Number(raw.current), best = Number(raw.best), lastVisit = Number(raw.lastVisit);
+      return {
+        goals,
+        streak: {
+          current: Number.isInteger(current) && current >= 0 ? Math.min(current, 10000) : 0,
+          best: Number.isInteger(best) && best >= 0 ? Math.min(best, 10000) : 0,
+          lastVisit: Number.isFinite(lastVisit) && lastVisit > 0 ? lastVisit : null
+        },
+        updatedAt: data.updated_at || null
+      };
+    },
+
+    async syncLearningState(state, expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
+      if (!studentId || !state || typeof state !== 'object' || Array.isArray(state)) return false;
+      if (!Array.isArray(state.goals) || state.goals.length > 200) throw new Error('قائمة الأهداف غير صالحة للمزامنة.');
+      const streak = state.streak && typeof state.streak === 'object' && !Array.isArray(state.streak) ? state.streak : {};
+      const current = Number(streak.current), best = Number(streak.best);
+      const lastVisit = streak.lastVisit == null ? null : Number(streak.lastVisit);
+      if (!Number.isInteger(current) || current < 0 || current > 10000 ||
+          !Number.isInteger(best) || best < 0 || best > 10000 ||
+          (lastVisit !== null && (!Number.isFinite(lastVisit) || lastVisit <= 0))) {
+        throw new Error('بيانات سلسلة التعلّم غير صالحة.');
+      }
+      const goals = state.goals.filter(goal => goal && typeof goal === 'object' && !Array.isArray(goal)).slice(0, 200);
+      if (JSON.stringify(goals).length > 50000) throw new Error('حجم الأهداف يتجاوز الحد المسموح للمزامنة.');
+      const { error } = await client.from('student_learning_state').upsert({
+        student_id: studentId, goals, streak: { current, best, lastVisit }, updated_at: new Date().toISOString()
+      }, { onConflict: 'student_id' });
+      if (error) throw error;
+      return true;
+    },
+
     async loadProgress(expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
