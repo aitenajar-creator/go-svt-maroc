@@ -19,7 +19,7 @@
       quiz: 'اختبار', errors: 'أخطاء مسجلة', mean: 'متوسط النتائج', question: 'سؤال يحتاج إلى مراجعة',
       allGood: 'أداء جيد! حافظ على المراجعة المنتظمة.',
       goQuiz: 'استكشف الاختبارات', empty: 'ستظهر تحليلاتك بعد إنجاز أول اختبار.',
-      date: 'المحاولة'
+      date: 'المحاولة', details: 'عرض النتائج بالأرقام', attemptNumber: 'رقم المحاولة', score: 'النتيجة'
     },
     fr: {
       eyebrow: 'ANALYSE DE VOS RÉSULTATS', title: 'Votre progression en chiffres',
@@ -36,7 +36,7 @@
       quiz: 'Quiz', errors: 'erreurs enregistrées', mean: 'Moyenne', question: 'Question à retravailler',
       allGood: 'Bon travail ! Gardez un rythme de révision régulier.',
       goQuiz: 'Découvrir les quiz', empty: 'Vos analyses apparaîtront après votre premier quiz.',
-      date: 'Tentative'
+      date: 'Tentative', details: 'Afficher les résultats en chiffres', attemptNumber: 'N° de tentative', score: 'Résultat'
     }
   };
 
@@ -123,8 +123,16 @@
         '" y2="' + y + '" class="gs-pa-grid"/><text x="25" y="' + (y + 4) +
         '" text-anchor="end" class="gs-pa-axis">' + v + '</text>';
     }).join('');
+    const rows = shown.map((a, i) => {
+      const date = new Date(a.date).toLocaleString(fr ? 'fr-MA' : 'ar-MA');
+      return '<tr><th scope="row">' + (i + 1) + '</th><td>' + esc(date) + '</td><td>' + a.percentage + '%</td></tr>';
+    }).join('');
     return '<div class="gs-pa-chart-wrap"><svg class="gs-pa-chart" viewBox="0 0 ' + width + ' ' + height +
-      '" role="img" aria-label="' + esc(t.chart) + '">' + grid + bars + '</svg></div>';
+      '" role="img" aria-label="' + esc(t.chart) + '">' + grid + bars + '</svg></div>' +
+      '<details class="gs-pa-chart-details"><summary>' + esc(t.details) + '</summary>' +
+      '<div class="gs-pa-table-wrap"><table><thead><tr><th scope="col">' + esc(t.attemptNumber) +
+      '</th><th scope="col">' + esc(t.date) + '</th><th scope="col">' + esc(t.score) +
+      '</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
   }
   function quizBreakdownMarkup(attempts, t, fr) {
     const groups = new Map();
@@ -304,6 +312,13 @@
     .gs-pa-section-head h4{margin:0;color:#294d36;font-size:1rem}
     .gs-pa-chart-wrap{width:100%;overflow-x:auto}
     .gs-pa-chart{display:block;width:100%;min-width:300px;max-height:220px}
+    .gs-pa-chart-details{margin-top:.55rem;color:#526b56;font-size:.8rem}
+    .gs-pa-chart-details summary{width:max-content;max-width:100%;cursor:pointer;font-weight:700;padding:.35rem 0}
+    .gs-pa-table-wrap{width:100%;overflow-x:auto;margin-top:.35rem}
+    .gs-pa-chart-details table{width:100%;border-collapse:collapse;font-size:.78rem;text-align:start}
+    .gs-pa-chart-details th,.gs-pa-chart-details td{padding:.5rem .65rem;border-bottom:1px solid #e5ece2;text-align:start;white-space:nowrap}
+    .gs-pa-chart-details thead th{color:#526b56;background:#f3f7f1}
+    .gs-pa-chart-details tbody th{font-weight:700}
     .gs-pa-grid{stroke:#e7eee4;stroke-width:1;stroke-dasharray:4 4}
     .gs-pa-axis{fill:#718074;font-size:11px}
     .gs-pa-bar{fill:#69a66a}
@@ -333,6 +348,9 @@
     html.gs-dark .gs-pa-metrics strong,html.gs-dark .gs-pa-quiz-stats strong{color:#9fd89a}
     html.gs-dark .gs-pa-quiz-stats{color:#b8c9b8}html.gs-dark .gs-pa-quiz-track{background:#354a37}
     html.gs-dark .gs-pa-axis{fill:#b8c9b8}.gs-pa-bar{fill:#78b878}
+    html.gs-dark .gs-pa-chart-details{color:#c5d8c5}
+    html.gs-dark .gs-pa-chart-details th,html.gs-dark .gs-pa-chart-details td{border-color:#38543a}
+    html.gs-dark .gs-pa-chart-details thead th{color:#c5d8c5;background:#263b29}
     @media(max-width:650px){.gs-pa-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-pa-focus-item{align-items:flex-start;flex-wrap:wrap}.gs-pa-review{margin-inline-start:2.5rem}}
     @media(max-width:420px){.gs-performance-analytics{padding:.85rem}.gs-pa-section{padding:.75rem}.gs-pa-heading h3{font-size:1.03rem}}
   `;
