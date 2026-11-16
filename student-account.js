@@ -167,10 +167,11 @@
             typeof window.GoSVTCloud.loadProgress === 'function' ? window.GoSVTCloud.loadProgress(uid) : Promise.resolve(null),
             typeof window.GoSVTCloud.loadNotes === 'function' ? window.GoSVTCloud.loadNotes(uid) : Promise.resolve(null),
             typeof window.GoSVTCloud.loadStudyPlan === 'function' ? window.GoSVTCloud.loadStudyPlan(uid) : Promise.resolve(null),
-            typeof window.GoSVTCloud.loadQuizAttempts === 'function' ? window.GoSVTCloud.loadQuizAttempts(uid) : Promise.resolve(null)
+            typeof window.GoSVTCloud.loadQuizAttempts === 'function' ? window.GoSVTCloud.loadQuizAttempts(uid) : Promise.resolve(null),
+            typeof window.GoSVTCloud.loadLearningState === 'function' ? window.GoSVTCloud.loadLearningState(uid) : Promise.resolve(null)
           ]).then(results => {
             if (generation !== sessionGeneration || !user || user.id !== uid) return;
-            const [cloudProgress, loadedNotes, loadedPlan, cloudQuizAttempts] = results;
+            const [cloudProgress, loadedNotes, loadedPlan, cloudQuizAttempts, cloudLearningState] = results;
             const pendingFiltered = typeof window.StudentSpace.filterPendingCloudDeletions === 'function'
               ? window.StudentSpace.filterPendingCloudDeletions(uid, loadedNotes, loadedPlan)
               : { notes: loadedNotes, studyPlan: loadedPlan };
@@ -191,13 +192,17 @@
                 typeof window.StudentSpace.mergeCloudQuizAttempts === 'function') {
               window.StudentSpace.mergeCloudQuizAttempts(profileIdForSession, cloudQuizAttempts);
             }
+            if (cloudLearningState && typeof window.StudentSpace.mergeCloudLearningState === 'function') {
+              window.StudentSpace.mergeCloudLearningState(profileIdForSession, cloudLearningState);
+            }
             if (generation !== sessionGeneration || !user || user.id !== uid) return;
             const cached = window.StudentSpace.getProfileData(profileIdForSession);
             const syncJobs = [
               ['progress', 'syncProgress', cached.progress],
               ['notes', 'syncNotes', cached.notes],
               ['study plan', 'syncStudyPlan', cached.studyPlan],
-              ['quiz attempts', 'syncQuizAttempts', cached.quizResults]
+              ['quiz attempts', 'syncQuizAttempts', cached.quizResults],
+              ['learning state', 'syncLearningState', { goals: cached.goals, streak: cached.streak }]
             ];
             syncJobs.forEach(job => {
               if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
