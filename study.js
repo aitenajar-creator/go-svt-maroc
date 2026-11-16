@@ -602,6 +602,37 @@
         if (e.target.closest('#gs-note-delete')) saveNote('');
     });
 
+    // Keep file-tool indicators and the review list in sync when another tab
+    // changes this same account's local notes or favorites.
+    window.addEventListener('storage', event => {
+        const favoriteKey = activeFavoriteUid ? 'gosvt-favs:' + activeFavoriteUid : 'gosvt-favs';
+        const noteKey = activeNoteUid
+            ? 'gosvt-notes:' + activeNoteUid
+            : (storage.get('gosvt-notes-legacy-owner') ? 'gosvt-notes:guest' : 'gosvt-notes');
+        if (event.key !== favoriteKey && event.key !== noteKey) return;
+
+        if (event.key === favoriteKey) {
+            const favorites = new Set(getFavs());
+            document.querySelectorAll('.gs-fav[data-path]').forEach(button => {
+                const selected = favorites.has(button.dataset.path);
+                button.classList.toggle('on', selected);
+                button.textContent = selected ? '★' : '☆';
+            });
+        }
+
+        if (event.key === noteKey) {
+            const notes = getNotes();
+            document.querySelectorAll('.gs-note[data-path]').forEach(button => {
+                button.classList.toggle('on', Boolean(notes[button.dataset.path]));
+            });
+        }
+
+        renderRevision();
+        if (window.StudentSpace && typeof window.StudentSpace.refresh === 'function') {
+            window.StudentSpace.refresh();
+        }
+    });
+
     window.addEventListener('offline', () => toast(t('📴 أنت غير متصل: افتح "مراجعتي" لملفاتك المحفوظة', '📴 Hors ligne : ouvrez « Ma révision » pour vos fichiers enregistrés')));
     window.addEventListener('online', () => toast(t('✅ عاد الاتصال بالإنترنت', '✅ Connexion rétablie')));
 
