@@ -52,9 +52,15 @@
   }
   function validAttempts(data) {
     return (Array.isArray(data && data.quizResults) ? data.quizResults : [])
-      .filter(a => a && typeof a === 'object' &&
-        Number.isFinite(Number(a.percentage)) && Number(a.percentage) >= 0 &&
-        Number(a.percentage) <= 100 && Number.isFinite(Number(a.date)))
+      .filter(a => {
+        if (!a || typeof a !== 'object' || Array.isArray(a)) return false;
+        const quizId = typeof a.quizId === 'string' ? a.quizId.trim() : '';
+        const percentage = Number(a.percentage);
+        const date = Number(a.date);
+        return quizId.length > 0 && quizId.length <= 200 &&
+          Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
+          Number.isFinite(date) && date > 0;
+      })
       .map(a => ({ ...a, percentage: Number(a.percentage), date: Number(a.date) }))
       .sort((a, b) => a.date - b.date);
   }
