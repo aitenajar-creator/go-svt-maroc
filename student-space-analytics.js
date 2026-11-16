@@ -7,7 +7,7 @@
     ar: {
       eyebrow: 'تحليل أدائك الدراسي', title: 'تقدمك بالأرقام',
       subtitle: 'تابع تطور نتائجك وحدد ما يستحق مراجعة إضافية.',
-      attempts: 'عدد المحاولات', average: 'المعدل العام', recent: 'معدل آخر 5 محاولات',
+      attempts: 'عدد المحاولات', average: 'المعدل العام', recent: 'معدل آخر 5 محاولات', lastAttempt: 'آخر محاولة',
       byQuiz: 'الأداء حسب الاختبار', quizScope: 'يعرض هذا الملخص', quizScopeSuffix: 'من أصل', quizScopeOrder: 'اختباراً، مرتبة من الأقل إلى الأعلى.', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة', quizProgress: 'التطور', quizNotEnough: 'محاولة واحدة؛ لا توجد مقارنة بعد', quizImproved: 'تحسن', quizDeclined: 'تراجع', quizStable: 'مستقر',
       linkedLesson: 'الدرس المرتبط', openLesson: 'فتح الدرس',
       best: 'أفضل نتيجة', chart: 'تطور نتائج الاختبارات', chartHint: 'يعرض الرسم آخر 8 محاولات بترتيبها الزمني.',
@@ -24,7 +24,7 @@
     fr: {
       eyebrow: 'ANALYSE DE VOS RÉSULTATS', title: 'Votre progression en chiffres',
       subtitle: 'Suivez vos résultats et repérez les notions à retravailler.',
-      attempts: 'Tentatives', average: 'Moyenne générale', recent: 'Moyenne des 5 dernières',
+      attempts: 'Tentatives', average: 'Moyenne générale', recent: 'Moyenne des 5 dernières', lastAttempt: 'Dernière tentative',
       byQuiz: 'Résultats par quiz', quizScope: 'Cette synthèse affiche', quizScopeSuffix: 'sur', quizScopeOrder: 'quiz, classés de la moyenne la plus faible à la plus élevée.', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier', quizProgress: 'Évolution', quizNotEnough: 'Une seule tentative ; comparaison indisponible', quizImproved: 'En progrès', quizDeclined: 'En baisse', quizStable: 'Stable',
       linkedLesson: 'Cours associé', openLesson: 'Ouvrir le cours',
       best: 'Meilleur score', chart: 'Évolution des résultats', chartHint: 'Les 8 dernières tentatives sont affichées dans l’ordre chronologique.',
@@ -238,6 +238,7 @@
     const delta = recentFive.length === 5 && previousFive.length === 5
       ? recentAverage - average(previousFive) : null;
     const best = attempts.reduce((m, a) => Math.max(m, a.percentage), 0);
+    const lastAttemptDate = new Date(attempts[attempts.length - 1].date).toLocaleDateString(fr ? 'fr-MA' : 'ar-MA');
     const trend = delta === null ? t.noTrend : delta > 0
       ? t.trendUp + ' +' + delta : delta < 0 ? t.trendDown + ' ' + delta : t.trendFlat;
     const signature = JSON.stringify({
@@ -268,7 +269,7 @@
         '<div class="gs-pa-metrics"><div><span>' + t.attempts + '</span><strong>' + attempts.length +
         '</strong></div><div><span>' + t.average + '</span><strong>' + allAverage + '%</strong></div>' +
         '<div><span>' + t.recent + '</span><strong>' + recentAverage + '%</strong><small>' + esc(trend) +
-        '</small></div><div><span>' + t.best + '</span><strong>' + best + '%</strong></div></div>' +
+        '</small></div><div><span>' + t.best + '</span><strong>' + best + '%</strong></div><div><span>' + t.lastAttempt + '</span><strong class="gs-pa-date-metric">' + esc(lastAttemptDate) + '</strong></div></div>' +
         '<div class="gs-pa-section"><div class="gs-pa-section-head"><h4>' + t.chart +
         '</h4><p>' + t.chartHint + '</p></div>' + chartMarkup(attempts, t, fr) + '</div>' +
         '<div class="gs-pa-section"><div class="gs-pa-section-head"><h4>' + t.byQuiz +
@@ -314,10 +315,10 @@
     .gs-pa-heading h3{margin:.25rem 0;color:#244d37;font-size:1.18rem}
     .gs-pa-heading p,.gs-pa-section-head p{margin:.2rem 0;color:#718074;font-size:.84rem;line-height:1.6}
     .gs-pa-icon{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:14px;background:#eaf4e7;font-size:1.55rem}
-    .gs-pa-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.65rem;margin:1rem 0}
+    .gs-pa-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.65rem;margin:1rem 0}
     .gs-pa-metrics>div{display:flex;flex-direction:column;gap:.25rem;min-width:0;padding:.85rem;border:1px solid #e4ece1;border-radius:13px;background:#fff}
     .gs-pa-metrics span{color:#718074;font-size:.76rem;line-height:1.5}
-    .gs-pa-metrics strong{color:#236b43;font-size:1.55rem;font-variant-numeric:tabular-nums}
+    .gs-pa-metrics strong{color:#236b43;font-size:1.55rem;font-variant-numeric:tabular-nums}.gs-pa-metrics strong.gs-pa-date-metric{font-size:1rem;line-height:1.5}
     .gs-pa-metrics small{font-size:.72rem;line-height:1.5;color:#788579}
     .gs-pa-metrics small.is-up{color:#267344}.gs-pa-metrics small.is-down{color:#a45b32}
     .gs-pa-section{margin-top:1.2rem;padding:1rem;border:1px solid #e5ece2;border-radius:15px;background:rgba(255,255,255,.75)}
