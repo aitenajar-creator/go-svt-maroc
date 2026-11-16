@@ -1832,7 +1832,12 @@ function openScientificPhotoPreview(card){
     function retryMistakes(quizId) {
         const profileId = currentProfileId;
         const profileData = getProfileData(profileId);
-        const quizMistakes = profileData.mistakes.filter(m => m && m.quizId === quizId);
+        const quizMistakes = (Array.isArray(profileData.mistakes) ? profileData.mistakes : [])
+            .filter(m => m && m.quizId === quizId &&
+                typeof m.question === 'string' && m.question.trim() &&
+                typeof m.selected === 'string' && m.selected.trim() &&
+                typeof m.correct === 'string' && m.correct.trim() &&
+                m.selected.trim() !== m.correct.trim());
         if (quizMistakes.length === 0) return;
 
         // Launch a focused interactive review directly from the saved mistakes.
