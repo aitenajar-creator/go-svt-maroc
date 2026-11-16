@@ -2067,7 +2067,7 @@ function openScientificPhotoPreview(card){
                 <div class="history-item ${isBest ? 'best' : ''}">
                     <div class="history-info">
                         <span class="history-quiz">${getQuizDisplayName(r.quizId)}</span>
-                        <span class="history-date">${new Date(r.date).toLocaleDateString()}</span>
+                        <span class="history-date">${new Date(r.date).toLocaleDateString(lang() === 'ar' ? 'ar-MA' : 'fr-MA')}</span>
                     </div>
                     <div class="history-score">
                         <span class="score-value">${r.percentage}%</span>
