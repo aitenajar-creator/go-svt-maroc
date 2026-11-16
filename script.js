@@ -237,7 +237,7 @@ function renderCard(path, badgeText) {
             ? `<div class="content-card-thumbnail image-thumbnail" data-preview-path="${safePath}" role="button" tabindex="0" aria-label="${t('فتح معاينة الصورة', 'Ouvrir l’aperçu de l’image')}"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy" decoding="async"><span class="image-thumbnail-hint">${t('اضغط لمعاينة الصورة', 'Cliquer pour agrandir')}</span></div>`
             : `<div class="content-card-thumbnail file-thumbnail" aria-label="${t('نوع الملف', 'Type de fichier')}"><span>${getFileIcon(ext)}</span><small>${escapeHtml(ext.toUpperCase() || 'FILE')}</small></div>`;
     return `
-        <div class="content-card file-resource-card${ext === 'pdf' ? ' pdf-resource-card' : ''}">
+        <div class="content-card file-resource-card${ext === 'pdf' ? ' pdf-resource-card' : ''}" data-resource-path="${safePath}">
             <span class="level-badge">${escapeHtml(badgeText)}</span>${newBadge}
             <div class="file-card-layout">
                 <div class="file-preview-panel">${thumbnail}</div>
