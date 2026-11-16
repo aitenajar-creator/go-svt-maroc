@@ -30,6 +30,8 @@
     return actualStudentId;
   }
 
+  const learningStateSyncQueues = new Map();
+
   function parseNoteRow(row) {
     let value = {};
     try { value = JSON.parse(row.note); } catch (_) { value = { body: row.note }; }
@@ -135,9 +137,9 @@
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !state || typeof state !== 'object' || Array.isArray(state)) return false;
       if (!Array.isArray(state.goals) || state.goals.length > 200) throw new Error('قائمة الأهداف غير صالحة للمزامنة.');
-      const streak = state.streak && typeof state.streak === 'object' && !Array.isArray(state.streak) ? state.streak : {};
-      const current = Number(streak.current), best = Number(streak.best);
-      const lastVisit = streak.lastVisit == null ? null : Number(streak.lastVisit);
+      const incomingStreak = state.streak && typeof state.streak === 'object' && !Array.isArray(state.streak) ? state.streak : {};
+      const current = Number(incomingStreak.current), best = Number(incomingStreak.best);
+      const lastVisit = incomingStreak.lastVisit == null ? null : Number(incomingStreak.lastVisit);
       if (!Number.isInteger(current) || current < 0 || current > 10000 ||
           !Number.isInteger(best) || best < 0 || best > 10000 ||
           (lastVisit !== null && (!Number.isFinite(lastVisit) || lastVisit <= 0))) {
@@ -145,11 +147,62 @@
       }
       const goals = state.goals.filter(goal => goal && typeof goal === 'object' && !Array.isArray(goal)).slice(0, 200);
       if (JSON.stringify(goals).length > 50000) throw new Error('حجم الأهداف يتجاوز الحد المسموح للمزامنة.');
-      const { error } = await client.from('student_learning_state').upsert({
-        student_id: studentId, goals, streak: { current, best, lastVisit }, updated_at: new Date().toISOString()
-      }, { onConflict: 'student_id' });
-      if (error) throw error;
-      return true;
+
+      // Serialize writes per account and merge against the latest cloud row.
+      // This prevents two rapid local saves from completing out of order and
+      // replacing a newer device's goals or streak with an older snapshot.
+      const previous = learningStateSyncQueues.get(studentId) || Promise.resolve();
+      const operation = previous.catch(() => undefined).then(async () => {
+        const { data: existing, error: readError } = await client.from('student_learning_state')
+          .select('goals,streak').eq('student_id', studentId).maybeSingle();
+        if (readError) throw readError;
+        const mergedGoals = Array.isArray(existing && existing.goals) ? existing.goals.slice(0, 200) : [];
+        const goalKey = goal => {
+          if (!goal || typeof goal !== 'object' || Array.isArray(goal)) return null;
+          if (goal.id != null && String(goal.id).trim()) return 'id:' + String(goal.id).trim();
+          const title = String(goal.title || goal.name || '').trim().toLocaleLowerCase();
+          const created = Number(goal.createdAt || goal.created_at) || 0;
+          return title ? 'legacy:' + title + ':' + created : null;
+        };
+        const known = new Set(mergedGoals.map(goalKey).filter(Boolean));
+        goals.forEach(goal => {
+          const key = goalKey(goal);
+          if (!key || known.has(key)) return;
+          known.add(key);
+          if (mergedGoals.length < 200) mergedGoals.push(goal);
+        });
+        if (JSON.stringify(mergedGoals).length > 50000) throw new Error('حجم الأهداف المدمجة يتجاوز الحد المسموح.');
+
+        const remote = existing && existing.streak && typeof existing.streak === 'object' && !Array.isArray(existing.streak)
+          ? existing.streak : {};
+        const remoteCurrent = Number.isInteger(Number(remote.current)) && Number(remote.current) >= 0 ? Number(remote.current) : 0;
+        const remoteBest = Number.isInteger(Number(remote.best)) && Number(remote.best) >= 0 ? Number(remote.best) : 0;
+        const remoteVisit = Number(remote.lastVisit) > 0 ? Number(remote.lastVisit) : null;
+        let mergedCurrent = current;
+        let mergedVisit = lastVisit;
+        if (remoteVisit && (!mergedVisit || remoteVisit > mergedVisit)) {
+          mergedCurrent = remoteCurrent;
+          mergedVisit = remoteVisit;
+        } else if (remoteVisit && mergedVisit === remoteVisit) {
+          mergedCurrent = Math.max(mergedCurrent, remoteCurrent);
+        }
+        const mergedStreak = {
+          current: mergedCurrent,
+          best: Math.max(best, remoteBest, mergedCurrent, remoteCurrent),
+          lastVisit: mergedVisit
+        };
+        const { error } = await client.from('student_learning_state').upsert({
+          student_id: studentId, goals: mergedGoals, streak: mergedStreak, updated_at: new Date().toISOString()
+        }, { onConflict: 'student_id' });
+        if (error) throw error;
+        return true;
+      });
+      learningStateSyncQueues.set(studentId, operation);
+      try {
+        return await operation;
+      } finally {
+        if (learningStateSyncQueues.get(studentId) === operation) learningStateSyncQueues.delete(studentId);
+      }
     },
 
     async loadProgress(expectedStudentId) {
