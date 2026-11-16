@@ -114,7 +114,8 @@
       const date = new Date(a.date).toLocaleDateString(fr ? 'fr-MA' : 'ar-MA');
       bars += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) +
         '" height="' + bh.toFixed(1) + '" rx="6" class="gs-pa-bar"><title>' + esc(t.date + ' ' + date + ': ' + value + '%') +
-        '</title></rect><text x="' + (x + barW / 2).toFixed(1) + '" y="' + (height - 10) +
+        '</title></rect><text x="' + (x + barW / 2).toFixed(1) + '" y="' + Math.max(top + 10, y - 5).toFixed(1) +
+        '" text-anchor="middle" class="gs-pa-value">' + value + '%</text><text x="' + (x + barW / 2).toFixed(1) + '" y="' + (height - 10) +
         '" text-anchor="middle" class="gs-pa-axis">' + (i + 1) + '</text>';
     });
     const grid = [0, 50, 100].map(v => {
@@ -323,6 +324,7 @@
     .gs-pa-chart-details tbody th{font-weight:700}
     .gs-pa-grid{stroke:#e7eee4;stroke-width:1;stroke-dasharray:4 4}
     .gs-pa-axis{fill:#718074;font-size:11px}
+    .gs-pa-value{fill:#294d36;font-size:10px;font-weight:800}
     .gs-pa-bar{fill:#69a66a}
     .gs-pa-quiz-breakdown{display:grid;gap:.65rem;margin-top:.8rem}
     .gs-pa-quiz-scope{margin:0;color:#718074;font-size:.76rem;line-height:1.6}
@@ -353,7 +355,7 @@
     html.gs-dark .gs-pa-metrics strong,html.gs-dark .gs-pa-quiz-stats strong{color:#9fd89a}
     html.gs-dark .gs-pa-quiz-stats{color:#b8c9b8}html.gs-dark .gs-pa-quiz-track{background:#354a37}
     html.gs-dark .gs-pa-quiz-scope{color:#b8c9b8}
-    html.gs-dark .gs-pa-axis{fill:#b8c9b8}.gs-pa-bar{fill:#78b878}
+    html.gs-dark .gs-pa-axis{fill:#b8c9b8}html.gs-dark .gs-pa-value{fill:#e0eee0}.gs-pa-bar{fill:#78b878}
     html.gs-dark .gs-pa-chart-details{color:#c5d8c5}
     html.gs-dark .gs-pa-chart-details th,html.gs-dark .gs-pa-chart-details td{border-color:#38543a}
     html.gs-dark .gs-pa-chart-details thead th{color:#c5d8c5;background:#263b29}
