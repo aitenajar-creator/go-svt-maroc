@@ -14,7 +14,7 @@
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, myOffset = 0, myHasMore = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, myOffset = 0, myHasMore = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -117,26 +117,45 @@
   }
   async function loadLibrary(reset = true) {
     if (!user || !(isAdmin || (member && member.status === 'approved'))) return;
-    if (reset) { resources = []; libraryOffset = 0; libraryHasMore = false; }
-    const { data, error } = await client.from('teacher_community_resources')
-      .select('*').eq('status','published').eq('is_shared',true)
+    const requestId = ++libraryRequest;
+    if (reset) {
+      resources = []; libraryOffset = 0; libraryHasMore = false;
+      $('tc-resource-grid').replaceChildren();
+      $('tc-library-state').hidden = false;
+      $('tc-library-state').textContent = 'جارٍ البحث في جميع الموارد المشتركة...';
+      $('tc-library-more').hidden = true;
+    }
+    const rawSearch = ($('tc-search').value || '').trim();
+    // Restrict PostgREST filter syntax characters so user input remains plain search text.
+    const q = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+    const category = $('tc-category').value;
+    let query = client.from('teacher_community_resources')
+      .select('*').eq('status','published').eq('is_shared',true);
+    if (category) query = query.eq('category', category);
+    if (q) {
+      const pattern = '%' + q + '%';
+      query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
+    }
+    const { data, error } = await query
       .order('created_at',{ascending:false}).order('id',{ascending:false})
-      .range(libraryOffset, libraryOffset + PAGE_SIZE - 1);
-    if (error) { $('tc-library-state').textContent = 'تعذر تحميل المكتبة: ' + error.message; return; }
+      .range(reset ? 0 : libraryOffset, (reset ? 0 : libraryOffset) + PAGE_SIZE - 1);
+    if (requestId !== libraryRequest) return;
+    if (error) {
+      $('tc-library-state').hidden = false;
+      $('tc-library-state').textContent = 'تعذر تحميل المكتبة: ' + error.message;
+      return;
+    }
     const page = data || [];
     resources = reset ? page : resources.concat(page);
-    libraryOffset += page.length;
+    libraryOffset = (reset ? 0 : libraryOffset) + page.length;
     libraryHasMore = page.length === PAGE_SIZE;
     $('tc-library-more').hidden = !libraryHasMore;
     renderLibrary();
   }
   function renderLibrary() {
-    const q = ($('tc-search').value || '').trim().toLowerCase(), category = $('tc-category').value;
-    const filtered = resources.filter(r => (!category || r.category === category) &&
-      (!q || [r.title,r.description,r.file_name,categories[r.category]].join(' ').toLowerCase().includes(q)));
-    $('tc-library-state').hidden = filtered.length > 0;
-    $('tc-library-state').textContent = filtered.length ? '' : 'لا توجد موارد مطابقة حالياً. جرّب تغيير كلمات البحث أو التصنيف.';
-    $('tc-resource-grid').innerHTML = filtered.map(r => resourceCard(r, r.owner_id === user.id)).join('');
+    $('tc-library-state').hidden = resources.length > 0;
+    $('tc-library-state').textContent = resources.length ? '' : 'لا توجد موارد مطابقة. جرّب تغيير كلمات البحث أو التصنيف.';
+    $('tc-resource-grid').innerHTML = resources.map(r => resourceCard(r, r.owner_id === user.id)).join('');
   }
   async function loadMyResources(reset = true) {
     if (!user) return;
@@ -340,7 +359,7 @@
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
     $('tc-file').addEventListener('change',()=>{const f=$('tc-file').files[0];$('tc-file-hint').textContent=f?f.name+' · '+(f.size/1048576).toFixed(1)+' MB':'PDF وWord وPowerPoint وExcel وغيرها · الحد الأقصى 50 MB';});
-    $('tc-search').addEventListener('input',renderLibrary); $('tc-category').addEventListener('change',renderLibrary);
+    $('tc-search').addEventListener('input',()=>loadLibrary(true)); $('tc-category').addEventListener('change',()=>loadLibrary(true));
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
