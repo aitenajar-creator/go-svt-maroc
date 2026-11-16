@@ -844,6 +844,21 @@
     // ============================================
     // 6. DASHBOARD (لوحة القيادة)
     // ============================================
+    // Keep dashboard and history metrics based on complete, dated quiz attempts only.
+    // This also protects imported legacy profiles from malformed result entries.
+    function getValidQuizResults(profileData) {
+        const results = profileData && Array.isArray(profileData.quizResults) ? profileData.quizResults : [];
+        return results.filter(result => {
+            if (!result || typeof result !== 'object' || Array.isArray(result)) return false;
+            const quizId = typeof result.quizId === 'string' ? result.quizId.trim() : '';
+            const percentage = Number(result.percentage);
+            const date = Number(result.date);
+            return quizId.length > 0 && quizId.length <= 200 &&
+                Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
+                Number.isFinite(date) && date > 0;
+        });
+    }
+
     function getDashboardStats() {
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
@@ -851,9 +866,10 @@
         const lessonsViewed = Object.keys(profileData.progress.lessons).length;
         const completedLessons = Object.values(profileData.progress.lessons).filter(l => l.completed).length;
         const exercisesDone = Object.keys(profileData.progress.exercises).length;
-        const testsTaken = profileData.quizResults.length;
+        const quizResults = getValidQuizResults(profileData);
+        const testsTaken = quizResults.length;
         
-        const totalScore = profileData.quizResults.reduce((sum, r) => sum + r.percentage, 0);
+        const totalScore = quizResults.reduce((sum, r) => sum + Number(r.percentage), 0);
         const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
         
         const globalProgress = lessonsViewed > 0 ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
@@ -1708,7 +1724,7 @@ function openScientificPhotoPreview(card){
 
     function renderHistory() {
         const profileData = getProfileData(currentProfileId);
-        const results = profileData.quizResults || [];
+        const results = getValidQuizResults(profileData);
 
         if (results.length === 0) {
             return `<p class="no-data">${t('noData')}</p>`;
@@ -1766,8 +1782,8 @@ function openScientificPhotoPreview(card){
 
         let html = '<div class="mistakes-list">';
         Object.entries(mistakesByQuiz).forEach(([quizId, quizMistakes]) => {
-            const attempts = (profileData.quizResults || [])
-                .filter(result => result && result.quizId === quizId && Number.isFinite(result.percentage))
+            const attempts = getValidQuizResults(profileData)
+                .filter(result => result.quizId === quizId)
                 .sort((a, b) => a.date - b.date);
             const latest = attempts.length ? attempts[attempts.length - 1] : null;
             const previous = attempts.length > 1 ? attempts[attempts.length - 2] : null;
