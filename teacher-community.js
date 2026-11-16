@@ -12,7 +12,8 @@
   const icons = {pdf:'📕',doc:'📘',docx:'📘',ppt:'📊',pptx:'📊',xls:'📗',xlsx:'📗',odt:'📘',odp:'📊',jpg:'🖼️',jpeg:'🖼️',png:'🖼️',webp:'🖼️',zip:'🗜️',txt:'📄'};
   const allowed = new Set(['pdf','doc','docx','ppt','pptx','xls','xlsx','odt','odp','jpg','jpeg','png','webp','txt','zip']);
   const MAX_FILE = 50 * 1024 * 1024;
-  let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];\n  const PAGE_SIZE = 50;\n  let libraryOffset = 0, libraryHasMore = false, myOffset = 0, myHasMore = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
+  const PAGE_SIZE = 50;\n  let libraryOffset = 0, libraryHasMore = false, myOffset = 0, myHasMore = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -242,7 +243,8 @@
     if (members.error || docs.error) { console.error('[Teacher community admin]',members.error || docs.error); return; }
     const memberPage = members.data || [], resourcePage = docs.data || [];
     adminMembersOffset += memberPage.length; adminResourcesOffset += resourcePage.length;
-    adminMembersMore = memberPage.length === PAGE_SIZE; adminResourcesMore = resourcePage.length === PAGE_SIZE;
+    if (only !== 'resources') adminMembersMore = memberPage.length === PAGE_SIZE;
+    if (only !== 'members') adminResourcesMore = resourcePage.length === PAGE_SIZE;
     $('tc-admin-members').insertAdjacentHTML('beforeend', memberPage.map(m =>
       '<div class="tc-admin-row"><span><b>' + escapeHtml(m.display_name) + '</b><br>' + escapeHtml(m.professional_title || m.school_name || m.status) + '</span><span>' + escapeHtml(m.status) + '</span><span>' +
       (m.status !== 'approved' ? '<button data-approve-member="' + escapeHtml(m.user_id) + '">موافقة</button>' : '') +
@@ -251,8 +253,8 @@
     $('tc-admin-resources').insertAdjacentHTML('beforeend', resourcePage.map(r =>
       '<div class="tc-admin-row"><span><b>' + escapeHtml(r.title) + '</b><br>' + escapeHtml(r.file_name) + '</span><span>' + escapeHtml(r.status) + '</span><span><button data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'نشر' : 'إخفاء') + '</button><button class="danger" data-admin-delete="' + escapeHtml(r.id) + '">حذف نهائياً</button></span></div>'
     ).join(''));
-    if (reset && !memberPage.length) $('tc-admin-members').innerHTML = '<div class="tc-state">لا توجد طلبات.</div>';
-    if (reset && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد.</div>';
+    if (reset && only !== 'resources' && !memberPage.length) $('tc-admin-members').innerHTML = '<div class="tc-state">لا توجد طلبات.</div>';
+    if (reset && only !== 'members' && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد.</div>';
     $('tc-admin-members-more').hidden = !adminMembersMore;
     $('tc-admin-resources-more').hidden = !adminResourcesMore;
   }
