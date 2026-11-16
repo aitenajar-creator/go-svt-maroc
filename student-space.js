@@ -323,49 +323,102 @@
     }
 
     function mergeCloudQuizAttempts(profileId, cloudAttempts) {
-        if (!Array.isArray(cloudAttempts) || !getProfiles()[profileId]) return;
-        const data = getProfileData(profileId);
-        const byAttempt = new Map();
-        data.quizResults.forEach(function (attempt) {
-            if (attempt && attempt.attemptId) byAttempt.set(String(attempt.attemptId), attempt);
-        });
-        cloudAttempts.forEach(function (remote) {
-            if (!remote || !remote.attemptId || !remote.quizId) return;
-            const key = String(remote.attemptId);
-            if (!byAttempt.has(key)) {
-                const attempt = {
-                    attemptId: key,
-                    quizId: String(remote.quizId),
-                    score: Number(remote.score) || 0,
-                    total: Number(remote.total) || 0,
-                    percentage: Number(remote.percentage) || 0,
-                    date: Number(remote.date) || Date.now(),
-                    mistakes: Array.isArray(remote.mistakes) ? remote.mistakes : []
-                };
-                byAttempt.set(key, attempt);
+        if (typeof profileId !== 'string' || !getProfiles()[profileId] || !Array.isArray(cloudAttempts)) return;
+        const prefix = profileId + '_';
+
+        function readLocalArray(storageKey) {
+            const raw = localStorage.getItem(prefix + storageKey);
+            if (raw === null) return [];
+            try {
+                const value = JSON.parse(raw);
+                return Array.isArray(value) ? value : null;
+            } catch (e) {
+                return null;
             }
-        });
-        data.quizResults = Array.from(byAttempt.values()).sort((a, b) => (Number(a.date) || 0) - (Number(b.date) || 0));
-        const mistakeKeys = new Set(data.mistakes.map(m =>
-            [m && m.quizId, m && m.question, m && m.selected, m && m.correct, m && m.date].join('|')
-        ));
-        data.quizResults.forEach(function (attempt) {
-            (Array.isArray(attempt.mistakes) ? attempt.mistakes : []).forEach(function (mistake) {
-                const normalized = {
-                    question: String(mistake && mistake.question || '').slice(0, 2000),
-                    selected: String(mistake && mistake.selected || '').slice(0, 1000),
-                    correct: String(mistake && mistake.correct || '').slice(0, 1000),
-                    quizId: String(attempt.quizId),
-                    date: Number(mistake && mistake.date) || Number(attempt.date) || Date.now()
-                };
-                const key = [normalized.quizId, normalized.question, normalized.selected, normalized.correct, normalized.date].join('|');
-                if (!mistakeKeys.has(key)) {
-                    mistakeKeys.add(key);
-                    data.mistakes.push(normalized);
-                }
+        }
+
+        const localAttempts = readLocalArray(STORAGE_KEYS.QUIZ_RESULTS);
+        const localMistakes = readLocalArray(STORAGE_KEYS.MISTAKES);
+        const validCloudAttempts = [];
+        cloudAttempts.forEach(function (remote) {
+            if (!remote || typeof remote !== 'object' || Array.isArray(remote) ||
+                typeof remote.attemptId !== 'string' || !remote.attemptId.trim() || remote.attemptId.length > 200 ||
+                typeof remote.quizId !== 'string' || !remote.quizId.trim() || remote.quizId.length > 200) return;
+            const score = Number(remote.score);
+            const total = Number(remote.total);
+            const percentage = Number(remote.percentage);
+            const date = Number(remote.date);
+            if (!Number.isInteger(score) || !Number.isInteger(total) || total <= 0 || score < 0 || score > total ||
+                !Number.isFinite(percentage) || percentage < 0 || percentage > 100 ||
+                !Number.isFinite(date) || date <= 0) return;
+            validCloudAttempts.push({
+                attemptId: remote.attemptId.trim(),
+                quizId: remote.quizId.trim(),
+                score: score,
+                total: total,
+                percentage: percentage,
+                date: date,
+                mistakes: Array.isArray(remote.mistakes) ? remote.mistakes : []
             });
         });
-        saveProfileData(profileId, data);
+
+        if (Array.isArray(localAttempts)) {
+            const mergedAttempts = localAttempts.slice();
+            const attemptIds = new Set();
+            mergedAttempts.forEach(function (attempt) {
+                if (attempt && typeof attempt === 'object' && !Array.isArray(attempt) &&
+                    typeof attempt.attemptId === 'string' && attempt.attemptId.trim()) {
+                    attemptIds.add(attempt.attemptId.trim());
+                }
+            });
+            let attemptsChanged = false;
+            validCloudAttempts.forEach(function (attempt) {
+                if (attemptIds.has(attempt.attemptId)) return;
+                attemptIds.add(attempt.attemptId);
+                mergedAttempts.push(attempt);
+                attemptsChanged = true;
+            });
+            if (attemptsChanged) {
+                mergedAttempts.sort(function (a, b) {
+                    const aDate = a && typeof a === 'object' && Number.isFinite(Number(a.date)) ? Number(a.date) : 0;
+                    const bDate = b && typeof b === 'object' && Number.isFinite(Number(b.date)) ? Number(b.date) : 0;
+                    return aDate - bDate;
+                });
+                storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, mergedAttempts);
+            }
+        }
+
+        if (Array.isArray(localMistakes)) {
+            const mergedMistakes = localMistakes.slice();
+            const mistakeKeys = new Set();
+            mergedMistakes.forEach(function (mistake) {
+                if (!mistake || typeof mistake !== 'object' || Array.isArray(mistake)) return;
+                mistakeKeys.add([mistake.quizId, mistake.question, mistake.selected, mistake.correct, mistake.date].join('|'));
+            });
+            let mistakesChanged = false;
+            validCloudAttempts.forEach(function (attempt) {
+                attempt.mistakes.forEach(function (mistake) {
+                    if (!mistake || typeof mistake !== 'object' || Array.isArray(mistake) ||
+                        typeof mistake.question !== 'string' || !mistake.question.trim() ||
+                        typeof mistake.selected !== 'string' || !mistake.selected.trim() ||
+                        typeof mistake.correct !== 'string' || !mistake.correct.trim() ||
+                        mistake.selected.trim() === mistake.correct.trim()) return;
+                    const normalized = {
+                        question: mistake.question.slice(0, 2000),
+                        selected: mistake.selected.slice(0, 1000),
+                        correct: mistake.correct.slice(0, 1000),
+                        quizId: attempt.quizId,
+                        date: Number(mistake.date) > 0 && Number.isFinite(Number(mistake.date)) ? Number(mistake.date) : attempt.date
+                    };
+                    const key = [normalized.quizId, normalized.question, normalized.selected, normalized.correct, normalized.date].join('|');
+                    if (mistakeKeys.has(key)) return;
+                    mistakeKeys.add(key);
+                    mergedMistakes.push(normalized);
+                    mistakesChanged = true;
+                });
+            });
+            if (mistakesChanged) storage.set(prefix + STORAGE_KEYS.MISTAKES, mergedMistakes);
+        }
     }
 
     function saveProfileData(profileId, data) {
