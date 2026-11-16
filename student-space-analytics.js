@@ -99,6 +99,11 @@
   function chartMarkup(items, t, fr) {
     if (!items.length) return '<p class="gs-pa-empty">' + t.noChart + '</p>';
     const shown = items.slice(-8);
+    // Give screen-reader users the same date-and-score information shown visually.
+    const chartSummary = shown.map((a, i) => {
+      const date = new Date(a.date).toLocaleDateString(fr ? 'fr-MA' : 'ar-MA');
+      return (fr ? 'Tentative ' : 'المحاولة ') + (i + 1) + ': ' + date + ', ' + a.percentage + '%';
+    }).join('; ');
     const width = 620, height = 190, left = 34, right = 12, top = 14, bottom = 32;
     const plotH = height - top - bottom;
     const gap = 12;
@@ -129,7 +134,7 @@
       return '<tr><th scope="row">' + (i + 1) + '</th><td>' + esc(date) + '</td><td>' + a.percentage + '%</td></tr>';
     }).join('');
     return '<div class="gs-pa-chart-wrap"><svg class="gs-pa-chart" viewBox="0 0 ' + width + ' ' + height +
-      '" role="img" aria-label="' + esc(t.chart) + '">' + grid + bars + '</svg></div>' +
+      '" role="img" aria-label="' + esc(t.chart + '. ' + chartSummary) + '">' + grid + bars + '</svg></div>' +
       '<details class="gs-pa-chart-details"><summary>' + esc(t.details) + '</summary>' +
       '<div class="gs-pa-table-wrap"><table><thead><tr><th scope="col">' + esc(t.attemptNumber) +
       '</th><th scope="col">' + esc(t.date) + '</th><th scope="col">' + esc(t.score) +
