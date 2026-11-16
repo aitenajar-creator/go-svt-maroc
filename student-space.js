@@ -533,8 +533,14 @@
         const now = Date.now();
         meta = meta || {};
 
+        const hasEntry = Object.prototype.hasOwnProperty.call(bucket, key);
         let entry = bucket[key];
-        const isNew = !entry;
+        // Do not overwrite an existing malformed legacy value: preserve it and
+        // skip this tracking update rather than silently replacing stored data.
+        if (hasEntry && (!entry || typeof entry !== 'object' || Array.isArray(entry))) {
+            return null;
+        }
+        const isNew = !hasEntry;
         if (isNew) {
             entry = bucket[key] = {
                 id: key,
@@ -570,14 +576,19 @@
     }
 
     function markLessonComplete(lessonId) {
-        if (!canTrack()) return;
+        if (!canTrack()) return false;
         const profileData = getProfileData(currentProfileId);
-        if (profileData.progress.lessons[lessonId]) {
-            profileData.progress.lessons[lessonId].completed = true;
-            profileData.progress.lessons[lessonId].completedAt = Date.now();
-            saveProfileData(currentProfileId, profileData);
-            updateStreak();
-        }
+        const lessons = profileData.progress.lessons;
+        if (!Object.prototype.hasOwnProperty.call(lessons, lessonId)) return false;
+        const entry = lessons[lessonId];
+        // Keep malformed legacy records untouched instead of throwing or
+        // replacing them while marking a lesson complete.
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+        entry.completed = true;
+        entry.completedAt = Date.now();
+        saveProfileData(currentProfileId, profileData);
+        updateStreak();
+        return true;
     }
 
     // Réaffiche l'espace élève (sans recharger la page) en conservant l'onglet interne actif
