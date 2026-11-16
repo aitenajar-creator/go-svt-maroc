@@ -369,6 +369,7 @@
     html.gs-dark .gs-pa-chart-details{color:#c5d8c5}
     html.gs-dark .gs-pa-chart-details th,html.gs-dark .gs-pa-chart-details td{border-color:#38543a}
     html.gs-dark .gs-pa-chart-details thead th{color:#c5d8c5;background:#263b29}
+    @media(min-width:651px) and (max-width:900px){.gs-pa-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
     @media(max-width:650px){.gs-pa-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-pa-focus-item{align-items:flex-start;flex-wrap:wrap}.gs-pa-review{margin-inline-start:2.5rem}}
     @media(max-width:420px){.gs-performance-analytics{padding:.85rem}.gs-pa-section{padding:.75rem}.gs-pa-heading h3{font-size:1.03rem}}
   `;
