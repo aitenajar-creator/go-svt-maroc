@@ -103,9 +103,10 @@
       const quizId = String(a.quizId || '');
       if (!quizId || !Array.isArray(a.mistakes)) return;
       a.mistakes.forEach(m => {
-        if (!m || typeof m.question !== 'string' ||
-            typeof m.selected !== 'string' || typeof m.correct !== 'string' ||
-            m.selected === m.correct) return;
+        if (!m || typeof m.question !== 'string' || !m.question.trim() ||
+            typeof m.selected !== 'string' || !m.selected.trim() ||
+            typeof m.correct !== 'string' || !m.correct.trim() ||
+            m.selected.trim() === m.correct.trim()) return;
         const question = m.question.replace(/\s+/g, ' ').trim();
         const key = quizId + '|' + (question.toLocaleLowerCase() || '__unknown__');
         if (!groups.has(key)) groups.set(key, { quizId, question, errors: 0, lastDate: 0, scores: [] });
