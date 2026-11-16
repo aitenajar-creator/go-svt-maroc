@@ -79,7 +79,7 @@ function isContentFile(path) {
     // Jekyll static_files paths normally start with "/". Normalize the
     // leading slash so both root-level resources (e.g. /divers/file.pdf)
     // and nested resources use the same section lookup.
-    const parts = String(path).replace(/^\\/+/, '').split('/');
+    const parts = String(path).replace(/^\/+/, '').split('/');
     return parts.length >= 2 && Boolean(SECTION_NAMES[parts[0]]) &&
         Boolean(parts[parts.length - 1]) && !parts[parts.length - 1].startsWith('.');
 }
