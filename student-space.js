@@ -862,17 +862,24 @@
     function getDashboardStats() {
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
-        
-        const lessonsViewed = Object.keys(profileData.progress.lessons).length;
-        const completedLessons = Object.values(profileData.progress.lessons).filter(l => l.completed).length;
-        const exercisesDone = Object.keys(profileData.progress.exercises).length;
+
+        // Count only actual records. Legacy/imported nulls, arrays and primitives
+        // must not inflate progress or cause the dashboard to throw.
+        const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
+        const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord);
+        const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord);
+        const lessonsViewed = lessonRecords.length;
+        const completedLessons = lessonRecords.filter(item => item.completed === true).length;
+        const exercisesDone = exerciseRecords.length;
         const quizResults = getValidQuizResults(profileData);
         const testsTaken = quizResults.length;
-        
-        const totalScore = quizResults.reduce((sum, r) => sum + Number(r.percentage), 0);
+
+        const totalScore = quizResults.reduce((sum, result) => sum + result.percentage, 0);
         const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
-        
-        const globalProgress = lessonsViewed > 0 ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
+        const globalProgress = lessonsViewed > 0
+            ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
+        const streak = Number(profileData.streak.current);
+        const bestStreak = Number(profileData.streak.best);
 
         return {
             lessonsViewed,
@@ -881,8 +888,8 @@
             testsTaken,
             averageScore,
             globalProgress,
-            streak: profileData.streak.current,
-            bestStreak: profileData.streak.best
+            streak: Number.isFinite(streak) && streak >= 0 ? streak : 0,
+            bestStreak: Number.isFinite(bestStreak) && bestStreak >= 0 ? bestStreak : 0
         };
     }
 
