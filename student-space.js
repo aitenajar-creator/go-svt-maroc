@@ -627,6 +627,7 @@
             exercisesDone: 'التمارين التي تمت مشاهدتها',
             testsTaken: 'الاختبارات المجراة',
             averageScore: 'المعدل',
+            uniqueTests: 'اختبارات مختلفة',
             globalProgress: 'التقدم العام',
             completedLessons: 'الدروس المكتملة',
             byTrack: 'حسب المستوى والشعبة',
@@ -698,6 +699,7 @@
             exercisesDone: 'Exercices consultés',
             testsTaken: 'Tests effectués',
             averageScore: 'Score moyen',
+            uniqueTests: 'Quiz différents',
             globalProgress: 'Progression globale',
             completedLessons: 'Leçons terminées',
             byTrack: 'Par niveau et filière',
@@ -2021,18 +2023,47 @@ function openScientificPhotoPreview(card){
         }
 
         const sorted = [...results].sort((a, b) => b.date - a.date);
-        const bestScores = {};
-
+        const bestScores = Object.create(null);
         sorted.forEach(r => {
             if (!bestScores[r.quizId] || r.percentage > bestScores[r.quizId].percentage) {
                 bestScores[r.quizId] = r;
             }
         });
 
-        let html = '<div class="history-list">';
+        const uniqueTests = new Set(sorted.map(r => r.quizId)).size;
+        const average = Math.round(sorted.reduce((sum, r) => sum + r.percentage, 0) / sorted.length);
+        const best = Math.max(...sorted.map(r => r.percentage));
+
+        let html = `
+            <div class="dashboard-grid history-summary" aria-label="${lang() === 'ar' ? 'ملخص نتائج الاختبارات' : 'Résumé des résultats des quiz'}">
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value">${sorted.length}</div>
+                    <div class="stat-label">${t('testsTaken')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value">${average}%</div>
+                    <div class="stat-label">${t('averageScore')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value">${best}%</div>
+                    <div class="stat-label">${t('best')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value">${uniqueTests}</div>
+                    <div class="stat-label">${t('uniqueTests')}</div>
+                </div>
+            </div>
+            <h3 class="gs-section-title">${lang() === 'ar' ? 'أحدث المحاولات' : 'Tentatives récentes'}</h3>
+        `;
+
+        let listHtml = '<div class="history-list">';
         sorted.slice(0, 10).forEach(r => {
             const isBest = bestScores[r.quizId] === r;
-            html += `
+            listHtml += `
                 <div class="history-item ${isBest ? 'best' : ''}">
                     <div class="history-info">
                         <span class="history-quiz">${getQuizDisplayName(r.quizId)}</span>
@@ -2045,11 +2076,15 @@ function openScientificPhotoPreview(card){
                 </div>
             `;
         });
-        html += '</div>';
+        html += listHtml + '</div>';
 
+        if (sorted.length > 10) {
+            html += `<p class="history-more">${lang() === 'ar'
+                ? 'يتم عرض أحدث 10 محاولات من أصل ' + sorted.length + ' محاولة. جميع النتائج محفوظة.'
+                : 'Affichage des 10 dernières tentatives sur ' + sorted.length + '. Tous les résultats sont conservés.'}</p>`;
+        }
         return html;
     }
-
     // ============================================
     // 9. MISTAKES (أخطائي)
     // ============================================
