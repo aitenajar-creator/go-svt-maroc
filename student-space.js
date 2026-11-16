@@ -1167,7 +1167,9 @@
                 },
                 goals: d.goals,
                 notes: Array.isArray(d.notes) ? d.notes.filter(n => n && typeof n === 'object').slice(0, 500) : [],
-                studyPlan: Array.isArray(d.studyPlan) ? d.studyPlan.filter(item => item && typeof item === 'object').slice(0, 500) : []
+                studyPlan: Array.isArray(d.studyPlan) ? d.studyPlan.filter(item => item && typeof item === 'object').slice(0, 500) : [],
+                dailyChallenges: d.dailyChallenges && typeof d.dailyChallenges === 'object' && !Array.isArray(d.dailyChallenges)
+                    ? d.dailyChallenges : {}
             };
             const profiles = getProfiles();
             const existing = profiles[p.id];
