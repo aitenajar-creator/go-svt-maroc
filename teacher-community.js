@@ -234,9 +234,9 @@
       $('tc-admin-members').replaceChildren(); $('tc-admin-resources').replaceChildren();
     }
     const [members, docs] = await Promise.all([
-      client.from('teacher_community_members').select('*').order('created_at',{ascending:false}).order('user_id',{ascending:false})
+      only === 'resources' ? Promise.resolve({data:[],error:null}) : client.from('teacher_community_members').select('*').order('created_at',{ascending:false}).order('user_id',{ascending:false})
         .range(adminMembersOffset, adminMembersOffset + PAGE_SIZE - 1),
-      client.from('teacher_community_resources').select('*').order('created_at',{ascending:false}).order('id',{ascending:false})
+      only === 'members' ? Promise.resolve({data:[],error:null}) : client.from('teacher_community_resources').select('*').order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(adminResourcesOffset, adminResourcesOffset + PAGE_SIZE - 1)
     ]);
     if (members.error || docs.error) { console.error('[Teacher community admin]',members.error || docs.error); return; }
