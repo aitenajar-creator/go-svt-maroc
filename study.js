@@ -21,7 +21,21 @@
     }
     const save = (key, value) => storage.set(key, JSON.stringify(value));
     let activeFavoriteUid = null;
+    let favoriteSyncQueue = Promise.resolve();
     const getFavs = () => readList('gosvt-favs');
+
+    // Serialize full-list reconciliations so rapid favorite changes cannot
+    // finish out of order and leave an older snapshot as the cloud's final state.
+    function syncFavoriteSnapshot(paths, uid, warningLabel) {
+        if (!uid || !window.GoSVTCloud || typeof window.GoSVTCloud.syncFavorites !== 'function') return;
+        const snapshot = Array.isArray(paths) ? paths.slice() : [];
+        favoriteSyncQueue = favoriteSyncQueue.catch(() => {}).then(() => {
+            if (activeFavoriteUid !== uid || !window.GoSVTCloud ||
+                typeof window.GoSVTCloud.syncFavorites !== 'function') return;
+            return window.GoSVTCloud.syncFavorites(snapshot, uid);
+        }).catch(err => console.warn(warningLabel, err && err.message));
+        return favoriteSyncQueue;
+    }
 
     function saveFavoriteList(paths, syncCloud) {
         const clean = Array.from(new Set((Array.isArray(paths) ? paths : [])
@@ -29,10 +43,8 @@
             .map(path => path.trim().slice(0, 500))));
         save('gosvt-favs', clean);
         if (activeFavoriteUid) save('gosvt-favs:' + activeFavoriteUid, clean);
-        if (syncCloud !== false && activeFavoriteUid && window.GoSVTCloud &&
-            typeof window.GoSVTCloud.syncFavorites === 'function') {
-            window.GoSVTCloud.syncFavorites(clean, activeFavoriteUid)
-                .catch(err => console.warn('[GoSVT] Favorites cloud sync deferred:', err && err.message));
+        if (syncCloud !== false && activeFavoriteUid) {
+            syncFavoriteSnapshot(clean, activeFavoriteUid, '[GoSVT] Favorites cloud sync deferred:');
         }
         renderRevision();
         if (window.StudentSpace && typeof window.StudentSpace.refresh === 'function') {
@@ -61,10 +73,8 @@
         // Only reconcile the cloud after a successful cloud read. A null value
         // means restoration failed or was unavailable; syncing local cache then
         // could delete favorites that still exist remotely.
-        if (Array.isArray(cloudPaths) && window.GoSVTCloud &&
-            typeof window.GoSVTCloud.syncFavorites === 'function') {
-            window.GoSVTCloud.syncFavorites(merged, activeFavoriteUid)
-                .catch(err => console.warn('[GoSVT] Initial favorites sync deferred:', err && err.message));
+        if (Array.isArray(cloudPaths)) {
+            syncFavoriteSnapshot(merged, activeFavoriteUid, '[GoSVT] Initial favorites sync deferred:');
         }
         renderRevision();
         if (window.StudentSpace && typeof window.StudentSpace.refresh === 'function') {
@@ -179,8 +189,8 @@
         if (on) favs.unshift(path); else favs.splice(index, 1);
         save('gosvt-favs', favs);
         if (activeFavoriteUid) save('gosvt-favs:' + activeFavoriteUid, favs);
-        if (activeFavoriteUid && window.GoSVTCloud && typeof window.GoSVTCloud.syncFavorites === 'function') {
-            window.GoSVTCloud.syncFavorites(favs, activeFavoriteUid).catch(err => console.warn('[GoSVT] Favorite toggle sync deferred:', err && err.message));
+        if (activeFavoriteUid) {
+            syncFavoriteSnapshot(favs, activeFavoriteUid, '[GoSVT] Favorite toggle sync deferred:');
         }
         byPath('.gs-fav', path).forEach(b => { b.classList.toggle('on', on); b.textContent = on ? '★' : '☆'; });
         toast(on ? t('⭐ أُضيف إلى مراجعتي', '⭐ Ajouté à Ma révision') : t('حُذف من المفضلة', 'Retiré des favoris'));
