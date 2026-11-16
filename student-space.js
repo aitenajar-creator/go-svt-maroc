@@ -2202,15 +2202,19 @@ function openScientificPhotoPreview(card){
         const goalCount = goals.length;
         const isFr = lang() === 'fr';
         const goalTitle = goal => String(goal && (goal.title || goal.name || goal.text) || '');
-        const goalRows = goals.map(goal => {
-            if (!goal || typeof goal !== 'object') return '';
-            const id = String(goal.id || '');
-            const title = escapeHtml(goalTitle(goal));
-            const done = !!goal.completed;
+        const goalRows = goals.map((goal, index) => {
+            if (goal == null) return '';
+            const id = String(goal && typeof goal === 'object' ? goal.id || '' : '');
+            const title = escapeHtml(goalTitle(goal) || (typeof goal === 'string' ? goal : ''));
+            if (!title) return '';
+            const done = !!(goal && typeof goal === 'object' && goal.completed);
             return '<li class="gs-goal-item' + (done ? ' is-done' : '') + '">' +
                 '<span class="gs-goal-status">' + (done ? '✓' : '○') + '</span>' +
                 '<span class="gs-goal-title">' + title + '</span>' +
-                (id ? '<button type="button" class="gs-goal-toggle" data-goal-id="' + escapeHtml(id) + '" aria-label="' + (done ? (isFr ? 'Marquer comme non terminé' : 'إعادة فتح الهدف') : (isFr ? 'Marquer comme terminé' : 'تحديد الهدف كمكتمل')) + '">' + (done ? (isFr ? 'À reprendre' : 'إعادة فتح') : (isFr ? 'Terminé' : 'إتمام')) + '</button>' : '') +
+                '<button type="button" class="gs-goal-toggle" data-goal-index="' + index + '"' +
+                (id ? ' data-goal-id="' + escapeHtml(id) + '"' : '') +
+                ' aria-label="' + (done ? (isFr ? 'Marquer comme non terminé' : 'إعادة فتح الهدف') : (isFr ? 'Marquer comme terminé' : 'تحديد الهدف كمكتمل')) + '">' +
+                (done ? (isFr ? 'À reprendre' : 'إعادة فتح') : (isFr ? 'Terminé' : 'إتمام')) + '</button>' +
                 '</li>';
         }).join('');
 
@@ -2258,6 +2262,7 @@ function openScientificPhotoPreview(card){
                     <label for="gs-new-goal">${isFr ? 'Nouvel objectif' : 'هدف جديد'}</label>
                     <input id="gs-new-goal" name="goal" type="text" maxlength="120" required placeholder="${isFr ? 'Ex. Réviser la photosynthèse' : 'مثال: مراجعة درس التركيب الضوئي'}">
                     <button type="submit">${isFr ? 'Ajouter' : 'إضافة الهدف'}</button>
+                    <p class="gs-goal-feedback" role="status" aria-live="polite"></p>
                 </form>
                 ${goalRows ? '<ul class="gs-goals-list">' + goalRows + '</ul>' : '<p class="gs-goals-empty">' + (isFr ? 'Aucun objectif pour le moment. Ajoute ton premier objectif !' : 'لا توجد أهداف بعد. أضف هدفك الأول وابدأ التقدم!') + '</p>'}
             </section>
@@ -2276,24 +2281,39 @@ function openScientificPhotoPreview(card){
             if (!title || title.length > 120) return;
             const data = getProfileData(currentProfileId);
             const goals = Array.isArray(data.goals) ? data.goals.slice() : [];
+            const feedback = form.querySelector('.gs-goal-feedback');
+            if (goals.length >= 200) {
+                if (feedback) feedback.textContent = lang() === 'fr'
+                    ? 'La limite de 200 objectifs est atteinte. Termine un objectif existant avant d’en ajouter un autre.'
+                    : 'بلغت الحد الأقصى وهو 200 هدف. يمكنك متابعة أهدافك الحالية قبل إضافة المزيد.';
+                return;
+            }
             const now = Date.now();
             const id = 'goal_' + (window.crypto && typeof window.crypto.randomUUID === 'function'
                 ? window.crypto.randomUUID()
                 : now.toString(36) + '_' + Math.random().toString(36).slice(2, 10));
             goals.push({ id, title, completed: false, createdAt: now, updatedAt: now });
-            data.goals = goals.slice(-200);
+            data.goals = goals;
             saveProfileData(currentProfileId, data);
             panel.innerHTML = renderMotivation();
             bindGoalControls(panel);
         });
         panel.querySelectorAll('.gs-goal-toggle').forEach(button => button.addEventListener('click', function() {
             const goalId = this.dataset.goalId;
+            const goalIndex = Number(this.dataset.goalIndex);
             const data = getProfileData(currentProfileId);
             const goals = Array.isArray(data.goals) ? data.goals.slice() : [];
-            const index = goals.findIndex(goal => goal && String(goal.id || '') === goalId);
-            if (index < 0) return;
-            goals[index] = Object.assign({}, goals[index], {
-                completed: !goals[index].completed,
+            const index = Number.isInteger(goalIndex) && goalIndex >= 0 && goalIndex < goals.length
+                ? goalIndex
+                : goals.findIndex(goal => goal && String(goal.id || '') === goalId);
+            if (index < 0 || index >= goals.length) return;
+            const previous = goals[index];
+            const previousTitle = typeof previous === 'string' ? previous : String(previous && (previous.title || previous.name || previous.text) || '');
+            goals[index] = Object.assign({}, previous && typeof previous === 'object' ? previous : {}, {
+                id: previous && typeof previous === 'object' && previous.id ? previous.id :
+                    'goal_legacy_' + index + '_' + (Number(previous && (previous.createdAt || previous.created_at)) || 0),
+                title: previousTitle,
+                completed: !(previous && typeof previous === 'object' && previous.completed),
                 updatedAt: Date.now()
             });
             data.goals = goals;
