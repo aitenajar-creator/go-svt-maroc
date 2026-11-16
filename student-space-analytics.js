@@ -339,7 +339,7 @@
     .gs-pa-quiz-breakdown{display:grid;gap:.65rem;margin-top:.8rem}
     .gs-pa-quiz-scope{margin:0;color:#718074;font-size:.76rem;line-height:1.6}
     .gs-pa-quiz-row{min-width:0;padding:.8rem;border:1px solid #e6ede3;border-radius:12px;background:#fff}
-    .gs-pa-quiz-name{overflow:hidden;color:#294d36;font-size:.88rem;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
+    .gs-pa-quiz-name{min-width:0;color:#294d36;font-size:.88rem;font-weight:800;line-height:1.5;overflow-wrap:anywhere;white-space:normal}
     .gs-pa-quiz-stats{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin:.45rem 0;color:#718074;font-size:.74rem}
     .gs-pa-quiz-stats strong{color:#236b43;font-variant-numeric:tabular-nums}
     .gs-pa-quiz-track{height:7px;overflow:hidden;border-radius:99px;background:#eaf0e7}
