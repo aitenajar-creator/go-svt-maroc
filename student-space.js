@@ -1928,17 +1928,31 @@ function openScientificPhotoPreview(card){
     // ============================================
     function renderProgress() {
         const profileData = getProfileData(currentProfileId);
-        const lessons = Object.entries(profileData.progress.lessons || {});
-
-        if (lessons.length === 0) {
-            return `<p class="no-data">${t('noData')}</p>`;
-        }
-
+        const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
+        const lessons = Object.entries(profileData.progress.lessons || {}).filter(([id, data]) => isRecord(data));
+        const exercises = Object.values(profileData.progress.exercises || {}).filter(isRecord);
+        const completed = lessons.filter(([id, data]) => data.completed === true);
+        const pending = lessons.filter(([id, data]) => data.completed !== true);
+        const completionRate = lessons.length ? Math.round(completed.length / lessons.length * 100) : 0;
+        const isFr = lang() === 'fr';
         const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-        const completed = lessons.filter(([id, data]) => data.completed);
-        const pending = lessons.filter(([id, data]) => !data.completed);
 
         let html = '<div class="progress-section">';
+        html += `<section class="gs-progress-overview" aria-label="${isFr ? 'Vue d’ensemble de votre progression' : 'نظرة عامة على تقدمك'}">
+            <div class="gs-progress-overview-head">
+                <div><span class="gs-eyebrow">${isFr ? 'VOTRE PARCOURS' : 'مسارك الدراسي'}</span>
+                <h3>${isFr ? 'Votre progression' : 'تقدمك الدراسي'}</h3>
+                <p>${isFr ? 'Un aperçu de votre activité enregistrée.' : 'ملخص لنشاطك الدراسي المسجل.'}</p></div>
+                <strong class="gs-progress-rate">${completionRate}%</strong>
+            </div>
+            <div class="gs-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${completionRate}" aria-label="${isFr ? 'Taux de leçons terminées' : 'نسبة الدروس المكتملة'}"><span style="width:${completionRate}%"></span></div>
+            <div class="gs-progress-metrics">
+                <div><strong>${completed.length}</strong><span>${isFr ? 'Leçons terminées' : 'دروس مكتملة'}</span></div>
+                <div><strong>${pending.length}</strong><span>${isFr ? 'À terminer' : 'دروس قيد الإنجاز'}</span></div>
+                <div><strong>${exercises.length}</strong><span>${isFr ? 'Exercices consultés' : 'تمارين تمت متابعتها'}</span></div>
+            </div>
+            <p class="gs-progress-footnote">${lessons.length ? (isFr ? 'Calculé à partir des leçons enregistrées dans votre espace.' : 'يُحتسب اعتماداً على الدروس المسجلة في مساحتك.') : (isFr ? 'Votre progression apparaîtra ici dès que vous commencerez à consulter des leçons.' : 'سيظهر تقدمك هنا بمجرد البدء في متابعة الدروس.')}</p>
+        </section>`;
         
         html += '<h3>✅ ' + t('completedLessons') + '</h3>';
         html += '<div class="lesson-list">';
@@ -1946,7 +1960,7 @@ function openScientificPhotoPreview(card){
             html += `
                 <div class="lesson-item completed">
                     <span title="${esc(id)}">${esc(data.title || id)}</span>
-                    <span class="lesson-date">${new Date(data.completedAt).toLocaleDateString()}</span>
+                    <span class="lesson-date">${Number(data.completedAt) > 0 && Number.isFinite(Number(data.completedAt)) ? new Date(Number(data.completedAt)).toLocaleDateString() : (isFr ? 'Terminée' : 'مكتمل')}</span>
                 </div>
             `;
         });
@@ -3117,6 +3131,20 @@ function openScientificPhotoPreview(card){
             padding: 1.5rem;
             border-radius: 12px;
         }
+        .gs-progress-overview{margin-bottom:1.5rem;padding:1.25rem;border:1px solid #e4ecdf;border-radius:14px;background:linear-gradient(135deg,#f7fbf4,#fff)}
+        .gs-progress-overview-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+        .gs-progress-overview-head h3{margin:.25rem 0;font-size:1.2rem;color:#294d2b}
+        .gs-progress-overview-head p{margin:.25rem 0;color:#71806d}
+        .gs-progress-rate{font-size:2rem;color:#2d6a35}
+        .gs-progress-track{height:11px;margin:1rem 0;background:#e5ecdf;border-radius:20px;overflow:hidden}
+        .gs-progress-track span{display:block;height:100%;background:linear-gradient(90deg,#75ad57,#2e7d43);border-radius:20px;transition:width .25s ease}
+        .gs-progress-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+        .gs-progress-metrics div{display:flex;flex-direction:column;gap:.2rem;padding:.8rem;background:#fff;border:1px solid #edf1e9;border-radius:10px}
+        .gs-progress-metrics strong{font-size:1.35rem;color:#315c34}
+        .gs-progress-metrics span{font-size:.88rem;color:#697767}
+        .gs-progress-footnote{margin:.8rem 0 0;color:#788575;font-size:.85rem}
+        @media(max-width:560px){.gs-progress-overview{padding:1rem}.gs-progress-metrics{grid-template-columns:1fr}.gs-progress-overview-head{align-items:flex-start}}
+
         .lesson-list {
             margin-top: 1rem;
         }
