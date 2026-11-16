@@ -255,6 +255,67 @@
         if (changed) storage.set(progressKey, progress);
     }
 
+    // Persist cloud deletions locally so an offline delete cannot be undone by
+    // the next cloud restore. Queue entries are scoped to the authenticated UID.
+    const CLOUD_DELETE_QUEUE_PREFIX = 'gosvt_cloud_delete_queue:';
+
+    function readCloudDeleteQueue(uid) {
+        const value = uid ? storage.get(CLOUD_DELETE_QUEUE_PREFIX + uid) : null;
+        return {
+            notes: Array.isArray(value && value.notes) ? value.notes.filter(id => typeof id === 'string') : [],
+            studyPlan: Array.isArray(value && value.studyPlan) ? value.studyPlan.filter(id => typeof id === 'string') : []
+        };
+    }
+
+    function clearCloudDelete(uid, kind, id) {
+        const queue = readCloudDeleteQueue(uid);
+        queue[kind] = queue[kind].filter(item => item !== id);
+        if (queue.notes.length || queue.studyPlan.length) storage.set(CLOUD_DELETE_QUEUE_PREFIX + uid, queue);
+        else if (uid) {
+            try { localStorage.removeItem(CLOUD_DELETE_QUEUE_PREFIX + uid); } catch (_) {}
+        }
+    }
+
+    function queueCloudDeletion(kind, id, uid) {
+        if (!uid || !id || !['notes', 'studyPlan'].includes(kind)) return Promise.resolve();
+        const queue = readCloudDeleteQueue(uid);
+        if (!queue[kind].includes(String(id))) queue[kind].push(String(id));
+        storage.set(CLOUD_DELETE_QUEUE_PREFIX + uid, queue);
+        const method = kind === 'notes' ? 'deleteNote' : 'deleteStudyPlanItem';
+        if (!window.GoSVTCloud || typeof window.GoSVTCloud[method] !== 'function') return Promise.resolve();
+        return Promise.resolve().then(() => window.GoSVTCloud[method](String(id), uid)).then(deleted => {
+            if (deleted === true) clearCloudDelete(uid, kind, String(id));
+        }).catch(err => console.warn('[GoSVT] Cloud deletion queued for retry:', err && err.message));
+    }
+
+    function filterPendingCloudDeletions(uid, cloudNotes, cloudPlan) {
+        const queue = readCloudDeleteQueue(uid);
+        const noteIds = new Set(queue.notes);
+        const planIds = new Set(queue.studyPlan);
+        return {
+            notes: Array.isArray(cloudNotes) ? cloudNotes.filter(item => !item || !noteIds.has(String(item.id))) : cloudNotes,
+            studyPlan: Array.isArray(cloudPlan) ? cloudPlan.filter(item => !item || !planIds.has(String(item.id))) : cloudPlan
+        };
+    }
+
+    async function retryPendingCloudDeletions(uid) {
+        if (!uid || !window.GoSVTCloud) return;
+        const queue = readCloudDeleteQueue(uid);
+        const jobs = [
+            ...queue.notes.map(id => ['notes', 'deleteNote', id]),
+            ...queue.studyPlan.map(id => ['studyPlan', 'deleteStudyPlanItem', id])
+        ];
+        for (const [kind, method, id] of jobs) {
+            if (typeof window.GoSVTCloud[method] !== 'function') continue;
+            try {
+                const deleted = await window.GoSVTCloud[method](id, uid);
+                if (deleted === true) clearCloudDelete(uid, kind, id);
+            } catch (err) {
+                console.warn('[GoSVT] Pending cloud deletion will be retried:', err && err.message);
+            }
+        }
+    }
+
     function mergeCloudCollections(profileId, cloudNotes, cloudPlan) {
         if (typeof profileId !== 'string' || !getProfiles()[profileId]) return;
         const prefix = profileId + '_';
@@ -2219,9 +2280,9 @@ function openScientificPhotoPreview(card){
             const deletedId = this.dataset.taskId;
             data.studyPlan = data.studyPlan.filter(x => x.id !== deletedId);
             saveProfileData(currentProfileId, data);
-            if (window.GoSVTCloud && typeof window.GoSVTCloud.deleteStudyPlanItem === 'function') {
-                window.GoSVTCloud.deleteStudyPlanItem(deletedId, window.StudentAccount && window.StudentAccount.getUser() && window.StudentAccount.getUser().id).catch(err => console.warn('[GoSVT] Cloud planner delete deferred:', err && err.message));
-            }
+            const account = window.StudentAccount;
+            const uid = account && account.isLoggedIn() && account.getUser() && account.getUser().id;
+            queueCloudDeletion('studyPlan', deletedId, uid);
             refreshStudentSpaceView();
         }));
         container.querySelectorAll('.gs-note-delete').forEach(button => button.addEventListener('click', function () {
@@ -2229,9 +2290,9 @@ function openScientificPhotoPreview(card){
             const deletedId = this.dataset.noteId;
             data.notes = data.notes.filter(x => x.id !== deletedId);
             saveProfileData(currentProfileId, data);
-            if (window.GoSVTCloud && typeof window.GoSVTCloud.deleteNote === 'function') {
-                window.GoSVTCloud.deleteNote(deletedId, window.StudentAccount && window.StudentAccount.getUser() && window.StudentAccount.getUser().id).catch(err => console.warn('[GoSVT] Cloud note delete deferred:', err && err.message));
-            }
+            const account = window.StudentAccount;
+            const uid = account && account.isLoggedIn() && account.getUser() && account.getUser().id;
+            queueCloudDeletion('notes', deletedId, uid);
             refreshStudentSpaceView();
         }));
     }
@@ -3276,6 +3337,8 @@ function openScientificPhotoPreview(card){
         getProfileData,
         mergeCloudProgress,
         mergeCloudCollections,
+        filterPendingCloudDeletions,
+        retryPendingCloudDeletions,
         mergeCloudQuizAttempts,
         exportProfileData,
         importProfileData,
