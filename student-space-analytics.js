@@ -143,7 +143,7 @@
       return { id, name, count: ordered.length, mean, best, latest: latest.percentage, date: latest.date };
     }).sort((a, b) => a.mean - b.mean || a.latest - b.latest || a.name.localeCompare(b.name)).slice(0, 8);
     if (!rows.length) return '';
-    rows.forEach(row => { const key = row.id.replace(/^\\/+/, ''); if (!quizMetadata.has(key)) loadQuizMetadata(row.id); row.metadata = quizMetadata.get(key) || null; });
+    rows.forEach(row => { const key = row.id.replace(/^\/+/, ''); if (!quizMetadata.has(key)) loadQuizMetadata(row.id); row.metadata = quizMetadata.get(key) || null; });
     return '<div class="gs-pa-quiz-breakdown">' + rows.map(row => {
       const meta = row.metadata && typeof row.metadata.then !== 'function' ? row.metadata : null;
       const displayName = meta && meta.title ? meta.title : row.name;
