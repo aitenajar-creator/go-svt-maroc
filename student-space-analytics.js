@@ -8,6 +8,7 @@
       eyebrow: 'تحليل أدائك الدراسي', title: 'تقدمك بالأرقام',
       subtitle: 'تابع تطور نتائجك وحدد ما يستحق مراجعة إضافية.',
       attempts: 'عدد المحاولات', average: 'المعدل العام', recent: 'معدل آخر 5 محاولات',
+      byQuiz: 'الأداء حسب الاختبار', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة',
       best: 'أفضل نتيجة', chart: 'تطور نتائج الاختبارات', chartHint: 'يعرض الرسم آخر 8 محاولات بترتيبها الزمني.',
       noChart: 'أنجز اختباراً واحداً على الأقل ليظهر تطور نتائجك هنا.',
       trendUp: 'تحسن', trendDown: 'انخفاض', trendFlat: 'مستقر', noTrend: 'تحتاج إلى محاولات أكثر للمقارنة',
@@ -23,6 +24,7 @@
       eyebrow: 'ANALYSE DE VOS RÉSULTATS', title: 'Votre progression en chiffres',
       subtitle: 'Suivez vos résultats et repérez les notions à retravailler.',
       attempts: 'Tentatives', average: 'Moyenne générale', recent: 'Moyenne des 5 dernières',
+      byQuiz: 'Résultats par quiz', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier',
       best: 'Meilleur score', chart: 'Évolution des résultats', chartHint: 'Les 8 dernières tentatives sont affichées dans l’ordre chronologique.',
       noChart: 'Effectuez au moins un quiz pour afficher votre évolution.',
       trendUp: 'En hausse', trendDown: 'En baisse', trendFlat: 'Stable', noTrend: 'Plus de tentatives sont nécessaires pour comparer',
@@ -97,6 +99,34 @@
     return '<div class="gs-pa-chart-wrap"><svg class="gs-pa-chart" viewBox="0 0 ' + width + ' ' + height +
       '" role="img" aria-label="' + esc(t.chart) + '">' + grid + bars + '</svg></div>';
   }
+  function quizBreakdownMarkup(attempts, t, fr) {
+    const groups = new Map();
+    attempts.forEach(attempt => {
+      const id = String(attempt.quizId || '').trim();
+      if (!id) return;
+      if (!groups.has(id)) groups.set(id, []);
+      groups.get(id).push(attempt);
+    });
+    const rows = Array.from(groups.entries()).map(([id, items]) => {
+      const ordered = items.slice().sort((a, b) => a.date - b.date);
+      const mean = average(ordered);
+      const best = ordered.reduce((value, item) => Math.max(value, item.percentage), 0);
+      const latest = ordered[ordered.length - 1];
+      const rawName = id.split('/').pop().replace(/\.json$/i, '').replace(/[_-]+/g, ' ');
+      const name = rawName.length > 64 ? rawName.slice(0, 61) + '…' : rawName;
+      return { id, name, count: ordered.length, mean, best, latest: latest.percentage, date: latest.date };
+    }).sort((a, b) => a.mean - b.mean || a.latest - b.latest || a.name.localeCompare(b.name)).slice(0, 8);
+    if (!rows.length) return '';
+    return '<div class="gs-pa-quiz-breakdown">' + rows.map(row =>
+      '<article class="gs-pa-quiz-row"><div class="gs-pa-quiz-name" title="' + esc(row.name) + '">' + esc(row.name) +
+      '</div><div class="gs-pa-quiz-stats"><span>' + t.quizAttempts + ': <strong>' + row.count +
+      '</strong></span><span>' + t.quizAverage + ': <strong>' + row.mean + '%</strong></span>' +
+      '<span>' + t.quizBest + ': <strong>' + row.best + '%</strong></span><span>' + t.quizLatest +
+      ': <strong>' + row.latest + '%</strong></span></div><div class="gs-pa-quiz-track" role="img" aria-label="' +
+      esc(row.name + ': ' + row.mean + '%') + '"><i style="width:' + row.mean + '%"></i></div></article>'
+    ).join('') + '</div>';
+  }
+
   function buildFocus(data, attempts, t, fr) {
     const groups = new Map();
     attempts.forEach(a => {
@@ -180,6 +210,8 @@
         '</small></div><div><span>' + t.best + '</span><strong>' + best + '%</strong></div></div>' +
         '<div class="gs-pa-section"><div class="gs-pa-section-head"><h4>' + t.chart +
         '</h4><p>' + t.chartHint + '</p></div>' + chartMarkup(attempts, t, fr) + '</div>' +
+        '<div class="gs-pa-section"><div class="gs-pa-section-head"><h4>' + t.byQuiz +
+        '</h4></div>' + quizBreakdownMarkup(attempts, t, fr) + '</div>' +
         '<div class="gs-pa-section"><div class="gs-pa-section-head"><h4>' + t.focus +
         '</h4><p>' + t.focusHint + '</p></div>' + buildFocus(data, attempts, t, fr) + '</div>';
       const deltaNode = card.querySelector('.gs-pa-metrics small');
@@ -226,6 +258,13 @@
     .gs-pa-grid{stroke:#e7eee4;stroke-width:1;stroke-dasharray:4 4}
     .gs-pa-axis{fill:#718074;font-size:11px}
     .gs-pa-bar{fill:#69a66a}
+    .gs-pa-quiz-breakdown{display:grid;gap:.65rem;margin-top:.8rem}
+    .gs-pa-quiz-row{min-width:0;padding:.8rem;border:1px solid #e6ede3;border-radius:12px;background:#fff}
+    .gs-pa-quiz-name{overflow:hidden;color:#294d36;font-size:.88rem;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
+    .gs-pa-quiz-stats{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin:.45rem 0;color:#718074;font-size:.74rem}
+    .gs-pa-quiz-stats strong{color:#236b43;font-variant-numeric:tabular-nums}
+    .gs-pa-quiz-track{height:7px;overflow:hidden;border-radius:99px;background:#eaf0e7}
+    .gs-pa-quiz-track i{display:block;height:100%;border-radius:inherit;background:#69a66a}
     .gs-pa-focus-list{display:grid;gap:.6rem;margin-top:.8rem}
     .gs-pa-focus-item{display:flex;align-items:center;gap:.7rem;padding:.8rem;border:1px solid #e6ede3;border-radius:12px;background:#fff}
     .gs-pa-focus-rank{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:#edf5e9;color:#32633b;font-weight:800}
@@ -238,10 +277,11 @@
     .gs-pa-no-focus>span{font-size:1.45rem}.gs-pa-no-focus p{flex:1;margin:0}
     .gs-pa-no-focus a{color:#236b43;font-weight:700;text-decoration:none;white-space:nowrap}
     html.gs-dark .gs-performance-analytics{background:linear-gradient(145deg,#17251a,#1b261c);border-color:#38543a;color:#dce9dc}
-    html.gs-dark .gs-pa-heading h3,html.gs-dark .gs-pa-section-head h4,html.gs-dark .gs-pa-focus-copy strong{color:#dce9dc}
+    html.gs-dark .gs-pa-heading h3,html.gs-dark .gs-pa-section-head h4,html.gs-dark .gs-pa-focus-copy strong,html.gs-dark .gs-pa-quiz-name{color:#dce9dc}
     html.gs-dark .gs-pa-heading p,html.gs-dark .gs-pa-section-head p,html.gs-dark .gs-pa-metrics span,html.gs-dark .gs-pa-focus-copy span,html.gs-dark .gs-pa-no-focus,html.gs-dark .gs-pa-empty{color:#b8c9b8}
-    html.gs-dark .gs-pa-metrics>div,html.gs-dark .gs-pa-section,html.gs-dark .gs-pa-focus-item{background:#1d2c20;border-color:#38543a}
-    html.gs-dark .gs-pa-metrics strong{color:#9fd89a}
+    html.gs-dark .gs-pa-metrics>div,html.gs-dark .gs-pa-section,html.gs-dark .gs-pa-focus-item,html.gs-dark .gs-pa-quiz-row{background:#1d2c20;border-color:#38543a}
+    html.gs-dark .gs-pa-metrics strong,html.gs-dark .gs-pa-quiz-stats strong{color:#9fd89a}
+    html.gs-dark .gs-pa-quiz-stats{color:#b8c9b8}html.gs-dark .gs-pa-quiz-track{background:#354a37}
     html.gs-dark .gs-pa-axis{fill:#b8c9b8}.gs-pa-bar{fill:#78b878}
     @media(max-width:650px){.gs-pa-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-pa-focus-item{align-items:flex-start;flex-wrap:wrap}.gs-pa-review{margin-inline-start:2.5rem}}
     @media(max-width:420px){.gs-performance-analytics{padding:.85rem}.gs-pa-section{padding:.75rem}.gs-pa-heading h3{font-size:1.03rem}}
