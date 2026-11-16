@@ -2080,8 +2080,12 @@ function openScientificPhotoPreview(card){
     // 10. FAVORITES INTEGRATION (تكامل المفضلة)
     // ============================================
     function renderFavorites() {
-        // study.js stores favorites as file paths in the "gosvt-favs" key.
-        const storedFavorites = storage.get('gosvt-favs');
+        // Read through the account-aware favorites module. The shared legacy
+        // key can belong to another signed-in tab, so use it only as a fallback.
+        const storedFavorites = window.GoSVTStudyFavorites &&
+            typeof window.GoSVTStudyFavorites.get === 'function'
+            ? window.GoSVTStudyFavorites.get()
+            : storage.get('gosvt-favs');
         const favs = Array.isArray(storedFavorites)
             ? storedFavorites.filter(path => typeof path === 'string' && path.trim())
             : [];
