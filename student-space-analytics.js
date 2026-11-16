@@ -84,6 +84,7 @@
         const source = typeof data.source === 'string' ? data.source.trim().replace(/^\/+/, '') : '';
         const safeSource = /^cours\/(?:arabe|francais)\/(?:TC|1BAC|2BAC)\/[A-Za-z0-9_\-./\u0600-\u06FF ()']+\.pdf$/i.test(source) &&
           !source.split('/').includes('..');
+        // Keep the decoded repository path: openPreview() accepts the same path shape as lesson cards.
         return { title, source: safeSource ? '/' + source : '' };
       })
       .catch(() => null);
