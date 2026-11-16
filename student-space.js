@@ -194,19 +194,65 @@
     }
 
     function mergeCloudProgress(profileId, cloudProgress) {
-        if (!cloudProgress || typeof cloudProgress !== 'object' || !getProfiles()[profileId]) return;
-        const data = getProfileData(profileId);
+        if (!cloudProgress || typeof cloudProgress !== 'object' || Array.isArray(cloudProgress) ||
+            typeof profileId !== 'string' || !getProfiles()[profileId]) return;
+
+        const progressKey = profileId + '_' + STORAGE_KEYS.PROGRESS;
+        let progress;
+        const storedProgress = localStorage.getItem(progressKey);
+        if (storedProgress === null) {
+            progress = {};
+        } else {
+            try {
+                progress = JSON.parse(storedProgress);
+            } catch (e) {
+                // Do not replace an unreadable local record during cloud hydration.
+                return;
+            }
+            if (!progress || typeof progress !== 'object' || Array.isArray(progress)) return;
+        }
+
+        let changed = false;
         ['lessons', 'exercises', 'tests'].forEach(function (bucket) {
-            const incoming = cloudProgress[bucket] && typeof cloudProgress[bucket] === 'object' ? cloudProgress[bucket] : {};
+            const hasBucket = Object.prototype.hasOwnProperty.call(progress, bucket);
+            if (hasBucket && (!progress[bucket] || typeof progress[bucket] !== 'object' || Array.isArray(progress[bucket]))) {
+                return;
+            }
+
+            const incoming = cloudProgress[bucket];
+            if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return;
+            if (!hasBucket) progress[bucket] = {};
+
             Object.keys(incoming).forEach(function (key) {
-                const remote = incoming[key] || {};
-                const local = data.progress[bucket][key] || { id: key };
-                if (remote.completed === true) local.completed = true;
-                if (remote.cloudUpdatedAt) local.cloudUpdatedAt = remote.cloudUpdatedAt;
-                data.progress[bucket][key] = local;
+                const remote = incoming[key];
+                if (!remote || typeof remote !== 'object' || Array.isArray(remote)) return;
+
+                const hasLocal = Object.prototype.hasOwnProperty.call(progress[bucket], key);
+                if (hasLocal && (!progress[bucket][key] || typeof progress[bucket][key] !== 'object' || Array.isArray(progress[bucket][key]))) {
+                    return;
+                }
+
+                const local = hasLocal ? progress[bucket][key] : { id: key };
+                let recordChanged = false;
+                if (remote.completed === true && local.completed !== true) {
+                    local.completed = true;
+                    recordChanged = true;
+                }
+                if ((typeof remote.cloudUpdatedAt === 'string' && remote.cloudUpdatedAt) ||
+                    (typeof remote.cloudUpdatedAt === 'number' && Number.isFinite(remote.cloudUpdatedAt))) {
+                    if (local.cloudUpdatedAt !== remote.cloudUpdatedAt) {
+                        local.cloudUpdatedAt = remote.cloudUpdatedAt;
+                        recordChanged = true;
+                    }
+                }
+                if (!hasLocal || recordChanged) {
+                    progress[bucket][key] = local;
+                    changed = true;
+                }
             });
         });
-        saveProfileData(profileId, data);
+
+        if (changed) storage.set(progressKey, progress);
     }
 
     function mergeCloudCollections(profileId, cloudNotes, cloudPlan) {
