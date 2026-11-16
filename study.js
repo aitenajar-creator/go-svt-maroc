@@ -94,10 +94,17 @@
         }
     }
 
+    function removeFavoritePath(path) {
+        if (typeof path !== 'string' || !path) return getFavs();
+        return saveFavoriteList(getFavs().filter(item => item !== path), true);
+    }
+
     window.GoSVTStudyFavorites = {
         activate: activateFavoriteAccount,
         deactivate: deactivateFavoriteAccount,
-        set: paths => saveFavoriteList(paths, true)
+        set: paths => saveFavoriteList(paths, true),
+        get: () => getFavs().slice(),
+        remove: removeFavoritePath
     };
     const getOffline = () => readList('gosvt-offline');
     let activeNoteUid = null;
