@@ -73,8 +73,16 @@
       return;
     }
 
-    const lessons = Object.values((data.progress && data.progress.lessons) || {});
-    const exercises = Object.values((data.progress && data.progress.exercises) || {});
+    // Count only actual progress records; ignore nulls, arrays, and malformed legacy values.
+    function isProgressRecord(item) {
+      return !!item && typeof item === 'object' && !Array.isArray(item);
+    }
+    const progress = data.progress && typeof data.progress === 'object' && !Array.isArray(data.progress)
+      ? data.progress : {};
+    const lessons = Object.values(progress.lessons && typeof progress.lessons === 'object' && !Array.isArray(progress.lessons)
+      ? progress.lessons : {}).filter(isProgressRecord);
+    const exercises = Object.values(progress.exercises && typeof progress.exercises === 'object' && !Array.isArray(progress.exercises)
+      ? progress.exercises : {}).filter(isProgressRecord);
     const recent = lessons.filter(function (item) {
       return item && item.path && /^cours\//.test(item.path);
     }).sort(function (a, b) {
