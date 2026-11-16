@@ -14,6 +14,7 @@ const SECTION_NAMES = {
     exercices: { ar: 'التمارين', fr: 'Exercices' },
     examens: { ar: 'الامتحانات', fr: 'Examens' },
     fiches: { ar: 'الملخصات', fr: 'Fiches' },
+    resumes: { ar: 'الملخصات', fr: 'Résumés' },
     documents: { ar: 'الوثائق', fr: 'Documents' },
     ressources: { ar: 'الموارد', fr: 'Ressources' },
     divers: { ar: 'متنوعات', fr: 'Divers' }
