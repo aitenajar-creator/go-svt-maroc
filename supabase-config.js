@@ -230,6 +230,7 @@
       const { error } = await client.from('student_notes').delete()
         .eq('student_id', studentId).eq('content_key', String(noteId));
       if (error) throw error;
+      return true;
     },
 
     // Favorites are stored as resource paths and isolated by the authenticated Supabase user.
@@ -303,6 +304,7 @@
       const { error } = await client.from('student_study_plan').delete()
         .eq('student_id', studentId).eq('item_key', String(itemId));
       if (error) throw error;
+      return true;
     },
 
   };
