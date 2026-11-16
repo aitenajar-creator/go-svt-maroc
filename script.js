@@ -389,7 +389,7 @@ async function loadContentFromManifest(type, subject, level) {
         if (container.dataset.requestId !== requestId) return;
 
         let files = allFiles.filter(p => p.startsWith(prefix) && !isHiddenDuplicateCourseCopy(p));
-        if (academic && effectiveStudentTrack && type === 'examens') {
+        if (effectiveStudentTrack && type === 'examens') {
             const examTrackNames = { '2BACSVT': '2BAC SVT', '2BACSP': '2BAC SP', '2BACSM': '2BAC SM' };
             const examTrackName = examTrackNames[effectiveStudentTrack];
             if (examTrackName) files = files.filter(p => p.includes('/' + examTrackName + '/'));
