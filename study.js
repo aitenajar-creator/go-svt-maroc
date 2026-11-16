@@ -22,7 +22,9 @@
     const save = (key, value) => storage.set(key, JSON.stringify(value));
     let activeFavoriteUid = null;
     let favoriteSyncQueue = Promise.resolve();
-    const getFavs = () => readList('gosvt-favs');
+    // Each browser tab may be signed into a different account. Never read the
+    // shared legacy key while authenticated; it is only a migration/guest fallback.
+    const getFavs = () => readList(activeFavoriteUid ? 'gosvt-favs:' + activeFavoriteUid : 'gosvt-favs');
 
     // Serialize full-list reconciliations so rapid favorite changes cannot
     // finish out of order and leave an older snapshot as the cloud's final state.
