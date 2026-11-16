@@ -256,29 +256,70 @@
     }
 
     function mergeCloudCollections(profileId, cloudNotes, cloudPlan) {
-        if (!getProfiles()[profileId]) return;
+        if (typeof profileId !== 'string' || !getProfiles()[profileId]) return;
         const prefix = profileId + '_';
-        const data = getProfileData(profileId);
-        function mergeById(localItems, remoteItems) {
-            const merged = new Map();
-            (Array.isArray(localItems) ? localItems : []).forEach(function (item) {
-                if (item && item.id) merged.set(String(item.id), item);
+
+        function mergeCollection(storageKey, remoteItems, kind) {
+            if (!Array.isArray(remoteItems)) return;
+
+            const key = prefix + storageKey;
+            const stored = localStorage.getItem(key);
+            let localItems = [];
+            if (stored !== null) {
+                try {
+                    localItems = JSON.parse(stored);
+                } catch (e) {
+                    // Preserve unreadable local collections; cloud hydration must not erase them.
+                    return;
+                }
+                if (!Array.isArray(localItems)) return;
+            }
+
+            const merged = localItems.slice();
+            const positions = new Map();
+            merged.forEach(function (item, index) {
+                if (item && typeof item === 'object' && !Array.isArray(item) &&
+                    typeof item.id === 'string' && item.id.trim()) {
+                    const id = item.id.trim();
+                    if (!positions.has(id)) positions.set(id, index);
+                }
             });
-            (Array.isArray(remoteItems) ? remoteItems : []).forEach(function (remote) {
-                if (!remote || !remote.id) return;
-                const key = String(remote.id);
-                const local = merged.get(key);
-                const localTime = Number(local && (local.updatedAt || local.createdAt)) || 0;
-                const remoteTime = Number(remote.updatedAt || remote.createdAt) || 0;
-                if (!local || remoteTime > localTime) merged.set(key, remote);
+
+            let changed = false;
+            remoteItems.forEach(function (remote) {
+                if (!remote || typeof remote !== 'object' || Array.isArray(remote) ||
+                    typeof remote.id !== 'string' || !remote.id.trim()) return;
+                if (kind === 'note' &&
+                    (typeof remote.title !== 'string' || typeof remote.body !== 'string')) return;
+                if (kind === 'plan' &&
+                    (typeof remote.title !== 'string' || typeof remote.date !== 'string')) return;
+
+                const id = remote.id.trim();
+                const index = positions.get(id);
+                if (index === undefined) {
+                    positions.set(id, merged.length);
+                    merged.push(remote);
+                    changed = true;
+                    return;
+                }
+
+                const local = merged[index];
+                if (!local || typeof local !== 'object' || Array.isArray(local)) return;
+                const localTime = Number(local.updatedAt || local.createdAt);
+                const remoteTime = Number(remote.updatedAt || remote.createdAt);
+                const safeLocalTime = Number.isFinite(localTime) ? localTime : 0;
+                const safeRemoteTime = Number.isFinite(remoteTime) ? remoteTime : 0;
+                if (safeRemoteTime > safeLocalTime) {
+                    merged[index] = remote;
+                    changed = true;
+                }
             });
-            return Array.from(merged.values());
+
+            if (changed) storage.set(key, merged);
         }
-        if (Array.isArray(cloudNotes)) data.notes = mergeById(data.notes, cloudNotes);
-        if (Array.isArray(cloudPlan)) data.studyPlan = mergeById(data.studyPlan, cloudPlan);
-        storage.set(prefix + STORAGE_KEYS.NOTES, data.notes);
-        storage.set(prefix + STORAGE_KEYS.STUDY_PLAN, data.studyPlan);
-        saveProfileData(profileId, data);
+
+        mergeCollection(STORAGE_KEYS.NOTES, cloudNotes, 'note');
+        mergeCollection(STORAGE_KEYS.STUDY_PLAN, cloudPlan, 'plan');
     }
 
     function mergeCloudQuizAttempts(profileId, cloudAttempts) {
