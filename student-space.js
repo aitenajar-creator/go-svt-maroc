@@ -207,12 +207,26 @@
             const created = Number(goal.createdAt || goal.created_at) || 0;
             return title ? 'legacy:' + title + ':' + created : null;
         };
-        const known = new Set(goals.map(goalKey).filter(Boolean));
+        const goalIndexes = new Map();
+        goals.forEach(function (goal, index) {
+            const key = goalKey(goal);
+            if (key) goalIndexes.set(key, index);
+        });
         remoteGoals.forEach(function (goal) {
             const key = goalKey(goal);
-            if (!key || known.has(key)) return;
-            known.add(key);
-            goals.push(goal);
+            if (!key) return;
+            const index = goalIndexes.get(key);
+            if (index === undefined) {
+                if (goals.length < 200) {
+                    goalIndexes.set(key, goals.length);
+                    goals.push(goal);
+                }
+                return;
+            }
+            const oldGoal = goals[index];
+            const oldUpdated = Number(oldGoal && (oldGoal.updatedAt || oldGoal.updated_at)) || 0;
+            const newUpdated = Number(goal && (goal.updatedAt || goal.updated_at)) || 0;
+            if (newUpdated > oldUpdated) goals[index] = goal;
         });
         const localStreak = local.streak && typeof local.streak === 'object' ? local.streak : {};
         const remoteStreak = cloudState.streak && typeof cloudState.streak === 'object' && !Array.isArray(cloudState.streak) ? cloudState.streak : {};
@@ -2183,7 +2197,22 @@ function openScientificPhotoPreview(card){
     function renderMotivation() {
         const profileData = getProfileData(currentProfileId);
         const streak = profileData.streak || { current: 0, best: 0 };
-        const goals = profileData.goals || [];
+        const goals = Array.isArray(profileData.goals) ? profileData.goals : [];
+        const completedGoals = goals.filter(goal => goal && goal.completed).length;
+        const goalCount = goals.length;
+        const isFr = lang() === 'fr';
+        const goalTitle = goal => String(goal && (goal.title || goal.name || goal.text) || '');
+        const goalRows = goals.map(goal => {
+            if (!goal || typeof goal !== 'object') return '';
+            const id = String(goal.id || '');
+            const title = escapeHtml(goalTitle(goal));
+            const done = !!goal.completed;
+            return '<li class="gs-goal-item' + (done ? ' is-done' : '') + '">' +
+                '<span class="gs-goal-status">' + (done ? '✓' : '○') + '</span>' +
+                '<span class="gs-goal-title">' + title + '</span>' +
+                (id ? '<button type="button" class="gs-goal-toggle" data-goal-id="' + escapeHtml(id) + '" aria-label="' + (done ? (isFr ? 'Marquer comme non terminé' : 'إعادة فتح الهدف') : (isFr ? 'Marquer comme terminé' : 'تحديد الهدف كمكتمل')) + '">' + (done ? (isFr ? 'À reprendre' : 'إعادة فتح') : (isFr ? 'Terminé' : 'إتمام')) + '</button>' : '') +
+                '</li>';
+        }).join('');
 
         const messages = {
             ar: [
@@ -2216,9 +2245,62 @@ function openScientificPhotoPreview(card){
                     <p>💪 ${randomMessage}</p>
                 </div>
             </div>
+            <section class="gs-goals-module" aria-labelledby="gs-goals-heading">
+                <div class="gs-goals-heading">
+                    <div><h3 id="gs-goals-heading">${isFr ? 'Mes objectifs d’apprentissage' : 'أهدافي التعليمية'}</h3>
+                    <p>${isFr ? 'Avance à ton rythme, un objectif à la fois.' : 'تقدم وفق وتيرتك، هدفاً بعد هدف.'}</p></div>
+                    <span class="gs-goals-count">${completedGoals}/${goalCount} ${isFr ? 'terminés' : 'مكتملة'}</span>
+                </div>
+                <div class="gs-goals-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${goalCount ? Math.round(completedGoals / goalCount * 100) : 0}">
+                    <span style="width:${goalCount ? Math.round(completedGoals / goalCount * 100) : 0}%"></span>
+                </div>
+                <form class="gs-goal-form">
+                    <label for="gs-new-goal">${isFr ? 'Nouvel objectif' : 'هدف جديد'}</label>
+                    <input id="gs-new-goal" name="goal" type="text" maxlength="120" required placeholder="${isFr ? 'Ex. Réviser la photosynthèse' : 'مثال: مراجعة درس التركيب الضوئي'}">
+                    <button type="submit">${isFr ? 'Ajouter' : 'إضافة الهدف'}</button>
+                </form>
+                ${goalRows ? '<ul class="gs-goals-list">' + goalRows + '</ul>' : '<p class="gs-goals-empty">' + (isFr ? 'Aucun objectif pour le moment. Ajoute ton premier objectif !' : 'لا توجد أهداف بعد. أضف هدفك الأول وابدأ التقدم!') + '</p>'}
+            </section>
         `;
 
         return html;
+    }
+
+    function bindGoalControls(panel) {
+        if (!panel) return;
+        const form = panel.querySelector('.gs-goal-form');
+        if (form) form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const input = form.querySelector('[name="goal"]');
+            const title = String(input && input.value || '').trim();
+            if (!title || title.length > 120) return;
+            const data = getProfileData(currentProfileId);
+            const goals = Array.isArray(data.goals) ? data.goals.slice() : [];
+            const now = Date.now();
+            const id = 'goal_' + (window.crypto && typeof window.crypto.randomUUID === 'function'
+                ? window.crypto.randomUUID()
+                : now.toString(36) + '_' + Math.random().toString(36).slice(2, 10));
+            goals.push({ id, title, completed: false, createdAt: now, updatedAt: now });
+            data.goals = goals.slice(-200);
+            saveProfileData(currentProfileId, data);
+            panel.innerHTML = renderMotivation();
+            bindGoalControls(panel);
+        });
+        panel.querySelectorAll('.gs-goal-toggle').forEach(button => button.addEventListener('click', function() {
+            const goalId = this.dataset.goalId;
+            const data = getProfileData(currentProfileId);
+            const goals = Array.isArray(data.goals) ? data.goals.slice() : [];
+            const index = goals.findIndex(goal => goal && String(goal.id || '') === goalId);
+            if (index < 0) return;
+            goals[index] = Object.assign({}, goals[index], {
+                completed: !goals[index].completed,
+                updatedAt: Date.now()
+            });
+            data.goals = goals;
+            saveProfileData(currentProfileId, data);
+            panel.innerHTML = renderMotivation();
+            bindGoalControls(panel);
+        }));
     }
 
     // ============================================
@@ -2897,6 +2979,7 @@ function openScientificPhotoPreview(card){
             renderQuizStep();
         }
         bindPlannerAndNotes(container);
+        bindGoalControls(container.querySelector('#panel-motivation'));
         bindFavoritesPanel(container.querySelector('#panel-favorites'));
         hydrateDailyChallenge();
         container.querySelectorAll('.gs-daily-option').forEach(button => {
@@ -3157,6 +3240,21 @@ function openScientificPhotoPreview(card){
             font-size: 1.5rem;
             font-weight: 600;
         }
+        .gs-goals-module{margin-top:1.25rem;padding:1.35rem;background:#fff;border:1px solid #e4eadf;border-radius:16px;color:#294d2b;text-align:start;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+        .gs-goals-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+        .gs-goals-heading h3{margin:0;font-size:1.15rem}.gs-goals-heading p{margin:.35rem 0;color:#71806d}
+        .gs-goals-count{padding:.4rem .7rem;border-radius:20px;background:#edf6e9;color:#315b31;font-weight:700;white-space:nowrap}
+        .gs-goals-progress{height:8px;margin:.9rem 0 1rem;background:#edf0ea;border-radius:10px;overflow:hidden}.gs-goals-progress span{display:block;height:100%;background:#4f9a52;border-radius:10px;transition:width .2s ease}
+        .gs-goal-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.55rem;align-items:end;margin:.8rem 0 1rem}
+        .gs-goal-form label{grid-column:1/-1;font-weight:700;color:#425442}
+        .gs-goal-form input{min-width:0;padding:.75rem;border:1px solid #d8dfd3;border-radius:8px;font:inherit}
+        .gs-goal-form button,.gs-goal-toggle{padding:.7rem .9rem;border:0;border-radius:8px;background:#2d5a27;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+        .gs-goals-list{list-style:none;padding:0;margin:0}.gs-goal-item{display:flex;align-items:center;gap:.7rem;padding:.8rem .2rem;border-top:1px solid #edf0ea}
+        .gs-goal-status{font-size:1.2rem;color:#4b8a48;font-weight:800}.gs-goal-title{flex:1;overflow-wrap:anywhere}.gs-goal-item.is-done .gs-goal-title{text-decoration:line-through;color:#879184}
+        .gs-goal-item.is-done .gs-goal-status{color:#23834b}.gs-goal-toggle{padding:.45rem .7rem;background:#eaf2e7;color:#285329;font-size:.88rem}
+        .gs-goals-empty{padding:.9rem;text-align:center;color:#71806d;background:#f7faf5;border-radius:10px}
+        @media(max-width:560px){.gs-goals-module{padding:1rem}.gs-goals-heading{align-items:flex-start;flex-direction:column}.gs-goal-form{grid-template-columns:1fr}.gs-goal-form label{grid-column:auto}.gs-goal-item{align-items:flex-start;flex-wrap:wrap}.gs-goal-title{min-width:65%}}
+
         .no-data {
             text-align: center;
             padding: 2rem;
