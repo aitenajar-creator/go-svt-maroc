@@ -8,7 +8,7 @@
       eyebrow: 'تحليل أدائك الدراسي', title: 'تقدمك بالأرقام',
       subtitle: 'تابع تطور نتائجك وحدد ما يستحق مراجعة إضافية.',
       attempts: 'عدد المحاولات', average: 'المعدل العام', recent: 'معدل آخر 5 محاولات',
-      byQuiz: 'الأداء حسب الاختبار', quizScope: 'يعرض هذا الملخص', quizScopeSuffix: 'من أصل', quizScopeOrder: 'اختباراً، مرتبة من الأقل إلى الأعلى.', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة',
+      byQuiz: 'الأداء حسب الاختبار', quizScope: 'يعرض هذا الملخص', quizScopeSuffix: 'من أصل', quizScopeOrder: 'اختباراً، مرتبة من الأقل إلى الأعلى.', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة', quizProgress: 'التطور', quizNotEnough: 'محاولة واحدة؛ لا توجد مقارنة بعد', quizImproved: 'تحسن', quizDeclined: 'تراجع', quizStable: 'مستقر',
       linkedLesson: 'الدرس المرتبط', openLesson: 'فتح الدرس',
       best: 'أفضل نتيجة', chart: 'تطور نتائج الاختبارات', chartHint: 'يعرض الرسم آخر 8 محاولات بترتيبها الزمني.',
       noChart: 'أنجز اختباراً واحداً على الأقل ليظهر تطور نتائجك هنا.',
@@ -25,7 +25,7 @@
       eyebrow: 'ANALYSE DE VOS RÉSULTATS', title: 'Votre progression en chiffres',
       subtitle: 'Suivez vos résultats et repérez les notions à retravailler.',
       attempts: 'Tentatives', average: 'Moyenne générale', recent: 'Moyenne des 5 dernières',
-      byQuiz: 'Résultats par quiz', quizScope: 'Cette synthèse affiche', quizScopeSuffix: 'sur', quizScopeOrder: 'quiz, classés de la moyenne la plus faible à la plus élevée.', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier',
+      byQuiz: 'Résultats par quiz', quizScope: 'Cette synthèse affiche', quizScopeSuffix: 'sur', quizScopeOrder: 'quiz, classés de la moyenne la plus faible à la plus élevée.', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier', quizProgress: 'Évolution', quizNotEnough: 'Une seule tentative ; comparaison indisponible', quizImproved: 'En progrès', quizDeclined: 'En baisse', quizStable: 'Stable',
       linkedLesson: 'Cours associé', openLesson: 'Ouvrir le cours',
       best: 'Meilleur score', chart: 'Évolution des résultats', chartHint: 'Les 8 dernières tentatives sont affichées dans l’ordre chronologique.',
       noChart: 'Effectuez au moins un quiz pour afficher votre évolution.',
@@ -153,9 +153,13 @@
       const mean = average(ordered);
       const best = ordered.reduce((value, item) => Math.max(value, item.percentage), 0);
       const latest = ordered[ordered.length - 1];
+      const change = latest.percentage - ordered[0].percentage;
+      const progress = ordered.length < 2 ? t.quizNotEnough : change > 0
+        ? t.quizImproved + ' +' + change + ' pts' : change < 0
+          ? t.quizDeclined + ' ' + change + ' pts' : t.quizStable + ' (0 pts)';
       const rawName = id.split('/').pop().replace(/\.json$/i, '').replace(/[_-]+/g, ' ');
       const name = rawName.length > 64 ? rawName.slice(0, 61) + '…' : rawName;
-      return { id, name, count: ordered.length, mean, best, latest: latest.percentage, date: latest.date };
+      return { id, name, count: ordered.length, mean, best, latest: latest.percentage, progress, date: latest.date };
     }).sort((a, b) => a.mean - b.mean || a.latest - b.latest || a.name.localeCompare(b.name));
     const rows = allRows.slice(0, 8);
     if (!rows.length) return '';
@@ -172,7 +176,7 @@
       '<div class="gs-pa-quiz-stats"><span>' + t.quizAttempts + ': <strong>' + row.count +
       '</strong></span><span>' + t.quizAverage + ': <strong>' + row.mean + '%</strong></span>' +
       '<span>' + t.quizBest + ': <strong>' + row.best + '%</strong></span><span>' + t.quizLatest +
-      ': <strong>' + row.latest + '%</strong></span></div><div class="gs-pa-quiz-track" role="img" aria-label="' +
+      ': <strong>' + row.latest + '%</strong></span><span>' + t.quizProgress + ': <strong>' + esc(row.progress) + '</strong></span></div><div class="gs-pa-quiz-track" role="img" aria-label="' +
       esc(displayName + ': ' + row.mean + '%') + '"><i style="width:' + row.mean + '%"></i></div>' +
       lessonAction + '</article>';
     }).join('') + '</div>';
