@@ -104,8 +104,18 @@
     // Keep this selection consistent with the analytics panel: only dated quiz
     // attempts are eligible, and dates are numeric millisecond timestamps.
     const latestWithMistakes = attempts.filter(function (item) {
-      return item && item.quizId && Number.isFinite(Number(item.date)) &&
-        Array.isArray(item.mistakes) && item.mistakes.length;
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+      const quizId = typeof item.quizId === 'string' ? item.quizId.trim() : '';
+      const percentage = Number(item.percentage);
+      const date = Number(item.date);
+      const hasReviewableMistake = Array.isArray(item.mistakes) && item.mistakes.some(function (mistake) {
+        return mistake && typeof mistake.question === 'string' &&
+          typeof mistake.selected === 'string' && typeof mistake.correct === 'string' &&
+          mistake.selected !== mistake.correct;
+      });
+      return quizId.length > 0 && quizId.length <= 200 &&
+        Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
+        Number.isFinite(date) && date > 0 && hasReviewableMistake;
     }).sort(function (a, b) { return Number(b.date) - Number(a.date); })[0];
     const recommendation = latestWithMistakes
       ? { icon: '🧠', title: isFrench ? 'Revoir les erreurs de votre dernier quiz' : 'راجع أخطاء آخر اختبار أنجزته', href: '#gs-performance-analytics', label: isFrench ? 'Voir mon analyse' : 'عرض تحليل أدائي' }

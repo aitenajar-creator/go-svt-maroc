@@ -103,12 +103,15 @@
       const quizId = String(a.quizId || '');
       if (!quizId || !Array.isArray(a.mistakes)) return;
       a.mistakes.forEach(m => {
-        const question = String(m && m.question || '').replace(/\s+/g, ' ').trim();
+        if (!m || typeof m.question !== 'string' ||
+            typeof m.selected !== 'string' || typeof m.correct !== 'string' ||
+            m.selected === m.correct) return;
+        const question = m.question.replace(/\s+/g, ' ').trim();
         const key = quizId + '|' + (question.toLocaleLowerCase() || '__unknown__');
         if (!groups.has(key)) groups.set(key, { quizId, question, errors: 0, lastDate: 0, scores: [] });
         const group = groups.get(key);
         group.errors += 1;
-        group.lastDate = Math.max(group.lastDate, Number(m && m.date) || a.date || 0);
+        group.lastDate = Math.max(group.lastDate, Number(m.date) || a.date || 0);
       });
     });
     groups.forEach(group => {
