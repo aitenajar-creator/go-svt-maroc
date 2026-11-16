@@ -112,7 +112,7 @@
       const mean = average(ordered);
       const best = ordered.reduce((value, item) => Math.max(value, item.percentage), 0);
       const latest = ordered[ordered.length - 1];
-      const rawName = id.split('/').pop().replace(/\\.json$/i, '').replace(/[_-]+/g, ' ');
+      const rawName = id.split('/').pop().replace(/\.json$/i, '').replace(/[_-]+/g, ' ');
       const name = rawName.length > 64 ? rawName.slice(0, 61) + '…' : rawName;
       return { id, name, count: ordered.length, mean, best, latest: latest.percentage, date: latest.date };
     }).sort((a, b) => a.mean - b.mean || a.latest - b.latest || a.name.localeCompare(b.name)).slice(0, 8);
