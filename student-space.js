@@ -207,12 +207,26 @@
             const created = Number(goal.createdAt || goal.created_at) || 0;
             return title ? 'legacy:' + title + ':' + created : null;
         };
-        const known = new Set(goals.map(goalKey).filter(Boolean));
+        const goalIndexes = new Map();
+        goals.forEach(function (goal, index) {
+            const key = goalKey(goal);
+            if (key) goalIndexes.set(key, index);
+        });
         remoteGoals.forEach(function (goal) {
             const key = goalKey(goal);
-            if (!key || known.has(key)) return;
-            known.add(key);
-            goals.push(goal);
+            if (!key) return;
+            const index = goalIndexes.get(key);
+            if (index === undefined) {
+                if (goals.length < 200) {
+                    goalIndexes.set(key, goals.length);
+                    goals.push(goal);
+                }
+                return;
+            }
+            const oldGoal = goals[index];
+            const oldUpdated = Number(oldGoal && (oldGoal.updatedAt || oldGoal.updated_at)) || 0;
+            const newUpdated = Number(goal && (goal.updatedAt || goal.updated_at)) || 0;
+            if (newUpdated > oldUpdated) goals[index] = goal;
         });
         const localStreak = local.streak && typeof local.streak === 'object' ? local.streak : {};
         const remoteStreak = cloudState.streak && typeof cloudState.streak === 'object' && !Array.isArray(cloudState.streak) ? cloudState.streak : {};
