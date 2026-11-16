@@ -13,6 +13,8 @@
   const allowed = new Set(['pdf','doc','docx','ppt','pptx','xls','xlsx','odt','odp','jpg','jpeg','png','webp','txt','zip']);
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
+  const PAGE_SIZE = 50;
+  let libraryOffset = 0, libraryHasMore = false, myOffset = 0, myHasMore = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -113,12 +115,19 @@
       ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
       '</div></article>';
   }
-  async function loadLibrary() {
+  async function loadLibrary(reset = true) {
     if (!user || !(isAdmin || (member && member.status === 'approved'))) return;
+    if (reset) { resources = []; libraryOffset = 0; libraryHasMore = false; }
     const { data, error } = await client.from('teacher_community_resources')
-      .select('*').eq('status','published').eq('is_shared',true).order('created_at',{ascending:false}).limit(150);
+      .select('*').eq('status','published').eq('is_shared',true)
+      .order('created_at',{ascending:false}).order('id',{ascending:false})
+      .range(libraryOffset, libraryOffset + PAGE_SIZE - 1);
     if (error) { $('tc-library-state').textContent = 'تعذر تحميل المكتبة: ' + error.message; return; }
-    resources = data || [];
+    const page = data || [];
+    resources = reset ? page : resources.concat(page);
+    libraryOffset += page.length;
+    libraryHasMore = page.length === PAGE_SIZE;
+    $('tc-library-more').hidden = !libraryHasMore;
     renderLibrary();
   }
   function renderLibrary() {
@@ -129,12 +138,18 @@
     $('tc-library-state').textContent = filtered.length ? '' : 'لا توجد موارد مطابقة حالياً. جرّب تغيير كلمات البحث أو التصنيف.';
     $('tc-resource-grid').innerHTML = filtered.map(r => resourceCard(r, r.owner_id === user.id)).join('');
   }
-  async function loadMyResources() {
+  async function loadMyResources(reset = true) {
     if (!user) return;
+    if (reset) { myOffset = 0; myHasMore = false; $('tc-my-resources').replaceChildren(); }
     const { data, error } = await client.from('teacher_community_resources').select('*')
-      .eq('owner_id',user.id).order('created_at',{ascending:false}).limit(100);
+      .eq('owner_id',user.id).order('created_at',{ascending:false}).order('id',{ascending:false})
+      .range(myOffset, myOffset + PAGE_SIZE - 1);
     if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state">تعذر تحميل ملفاتك.</div>'; return; }
-    $('tc-my-resources').innerHTML = data && data.length ? data.map(r => resourceCard(r,true)).join('') : '<div class="tc-state">لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.</div>';
+    const page = data || [];
+    myOffset += page.length; myHasMore = page.length === PAGE_SIZE;
+    $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
+    $('tc-my-resources-more').hidden = !myHasMore;
+    if (reset && !page.length) $('tc-my-resources').innerHTML = '<div class="tc-state">لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.</div>';
   }
   async function downloadResource(id) {
     // Open the tab during the original click gesture; browsers may block window.open
@@ -214,20 +229,35 @@
     if (error) throw error;
     await Promise.all([loadLibrary(),loadMyResources()]);
   }
-  async function loadAdmin() {
+  async function loadAdmin(reset = true, only = 'both') {
+    if (reset) {
+      adminMembersOffset = 0; adminResourcesOffset = 0;
+      adminMembersMore = false; adminResourcesMore = false;
+      $('tc-admin-members').replaceChildren(); $('tc-admin-resources').replaceChildren();
+    }
     const [members, docs] = await Promise.all([
-      client.from('teacher_community_members').select('*').order('created_at',{ascending:false}).limit(100),
-      client.from('teacher_community_resources').select('*').order('created_at',{ascending:false}).limit(100)
+      only === 'resources' ? Promise.resolve({data:[],error:null}) : client.from('teacher_community_members').select('*').order('created_at',{ascending:false}).order('user_id',{ascending:false})
+        .range(adminMembersOffset, adminMembersOffset + PAGE_SIZE - 1),
+      only === 'members' ? Promise.resolve({data:[],error:null}) : client.from('teacher_community_resources').select('*').order('created_at',{ascending:false}).order('id',{ascending:false})
+        .range(adminResourcesOffset, adminResourcesOffset + PAGE_SIZE - 1)
     ]);
-    if (members.error || docs.error) return;
-    $('tc-admin-members').innerHTML = (members.data || []).map(m =>
+    if (members.error || docs.error) { console.error('[Teacher community admin]',members.error || docs.error); return; }
+    const memberPage = members.data || [], resourcePage = docs.data || [];
+    adminMembersOffset += memberPage.length; adminResourcesOffset += resourcePage.length;
+    if (only !== 'resources') adminMembersMore = memberPage.length === PAGE_SIZE;
+    if (only !== 'members') adminResourcesMore = resourcePage.length === PAGE_SIZE;
+    $('tc-admin-members').insertAdjacentHTML('beforeend', memberPage.map(m =>
       '<div class="tc-admin-row"><span><b>' + escapeHtml(m.display_name) + '</b><br>' + escapeHtml(m.professional_title || m.school_name || m.status) + '</span><span>' + escapeHtml(m.status) + '</span><span>' +
       (m.status !== 'approved' ? '<button data-approve-member="' + escapeHtml(m.user_id) + '">موافقة</button>' : '') +
       (m.status !== 'suspended' ? '<button class="reject" data-suspend-member="' + escapeHtml(m.user_id) + '">تعليق</button>' : '') + '</span></div>'
-    ).join('') || '<div class="tc-state">لا توجد طلبات.</div>';
-    $('tc-admin-resources').innerHTML = (docs.data || []).map(r =>
+    ).join(''));
+    $('tc-admin-resources').insertAdjacentHTML('beforeend', resourcePage.map(r =>
       '<div class="tc-admin-row"><span><b>' + escapeHtml(r.title) + '</b><br>' + escapeHtml(r.file_name) + '</span><span>' + escapeHtml(r.status) + '</span><span><button data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'نشر' : 'إخفاء') + '</button><button class="danger" data-admin-delete="' + escapeHtml(r.id) + '">حذف نهائياً</button></span></div>'
-    ).join('') || '<div class="tc-state">لا توجد موارد.</div>';
+    ).join(''));
+    if (reset && only !== 'resources' && !memberPage.length) $('tc-admin-members').innerHTML = '<div class="tc-state">لا توجد طلبات.</div>';
+    if (reset && only !== 'members' && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد.</div>';
+    $('tc-admin-members-more').hidden = !adminMembersMore;
+    $('tc-admin-resources-more').hidden = !adminResourcesMore;
   }
   async function handleAuth(e) {
     e.preventDefault(); message('tc-auth-message','');
@@ -316,6 +346,10 @@
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
     document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x===b));['mine','pending','admin'].forEach(p=>$( 'tc-'+p+'-panel').hidden=p!==b.dataset.panel);}));
     $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin)loadAdmin();});
+    $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
+    $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
+    $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
+    $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b)return;
