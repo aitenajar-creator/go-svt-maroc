@@ -9,6 +9,7 @@
       subtitle: 'تابع تطور نتائجك وحدد ما يستحق مراجعة إضافية.',
       attempts: 'عدد المحاولات', average: 'المعدل العام', recent: 'معدل آخر 5 محاولات',
       byQuiz: 'الأداء حسب الاختبار', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة',
+      linkedLesson: 'الدرس المرتبط', openLesson: 'فتح الدرس',
       best: 'أفضل نتيجة', chart: 'تطور نتائج الاختبارات', chartHint: 'يعرض الرسم آخر 8 محاولات بترتيبها الزمني.',
       noChart: 'أنجز اختباراً واحداً على الأقل ليظهر تطور نتائجك هنا.',
       trendUp: 'تحسن', trendDown: 'انخفاض', trendFlat: 'مستقر', noTrend: 'تحتاج إلى محاولات أكثر للمقارنة',
@@ -25,6 +26,7 @@
       subtitle: 'Suivez vos résultats et repérez les notions à retravailler.',
       attempts: 'Tentatives', average: 'Moyenne générale', recent: 'Moyenne des 5 dernières',
       byQuiz: 'Résultats par quiz', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier',
+      linkedLesson: 'Cours associé', openLesson: 'Ouvrir le cours',
       best: 'Meilleur score', chart: 'Évolution des résultats', chartHint: 'Les 8 dernières tentatives sont affichées dans l’ordre chronologique.',
       noChart: 'Effectuez au moins un quiz pour afficher votre évolution.',
       trendUp: 'En hausse', trendDown: 'En baisse', trendFlat: 'Stable', noTrend: 'Plus de tentatives sont nécessaires pour comparer',
@@ -66,6 +68,31 @@
       .map(a => ({ ...a, percentage: Number(a.percentage), date: Number(a.date) }))
       .sort((a, b) => a.date - b.date);
   }
+  // Metadata is loaded only for modern quiz IDs that are safe site-local paths.
+  // Legacy hash IDs remain untouched and never receive guessed lesson links.
+  const quizMetadata = new Map();
+  function loadQuizMetadata(id) {
+    const path = String(id || '').trim().replace(/^\/+/, '');
+    if (!/^quiz\/(?:arabe|francais)\/(?:TC|1BAC|2BAC)\/[A-Za-z0-9_\-./\u0600-\u06FF ]+\.json$/i.test(path) ||
+        path.split('/').includes('..')) return Promise.resolve(null);
+    if (quizMetadata.has(path)) return quizMetadata.get(path);
+    const pending = fetch('/' + path.split('/').map(encodeURIComponent).join('/'), { credentials: 'same-origin' })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+        const title = typeof data.titre === 'string' ? data.titre.trim().slice(0, 180) : '';
+        const source = typeof data.source === 'string' ? data.source.trim().replace(/^\/+/, '') : '';
+        const safeSource = /^cours\/(?:arabe|francais)\/(?:TC|1BAC|2BAC)\/[A-Za-z0-9_\-./\u0600-\u06FF ()']+\.pdf$/i.test(source) &&
+          !source.split('/').includes('..');
+        // Keep the decoded repository path: openPreview() accepts the same path shape as lesson cards.
+        return { title, source: safeSource ? '/' + source : '' };
+      })
+      .catch(() => null);
+    quizMetadata.set(path, pending);
+    pending.then(metadata => { quizMetadata.set(path, metadata); schedule(); });
+    return pending;
+  }
+
   function average(items) {
     return items.length ? Math.round(items.reduce((sum, a) => sum + a.percentage, 0) / items.length) : 0;
   }
@@ -117,14 +144,22 @@
       return { id, name, count: ordered.length, mean, best, latest: latest.percentage, date: latest.date };
     }).sort((a, b) => a.mean - b.mean || a.latest - b.latest || a.name.localeCompare(b.name)).slice(0, 8);
     if (!rows.length) return '';
-    return '<div class="gs-pa-quiz-breakdown">' + rows.map(row =>
-      '<article class="gs-pa-quiz-row"><div class="gs-pa-quiz-name" title="' + esc(row.name) + '">' + esc(row.name) +
-      '</div><div class="gs-pa-quiz-stats"><span>' + t.quizAttempts + ': <strong>' + row.count +
+    rows.forEach(row => { const key = row.id.replace(/^\/+/, ''); if (!quizMetadata.has(key)) loadQuizMetadata(row.id); row.metadata = quizMetadata.get(key) || null; });
+    return '<div class="gs-pa-quiz-breakdown">' + rows.map(row => {
+      const meta = row.metadata && typeof row.metadata.then !== 'function' ? row.metadata : null;
+      const displayName = meta && meta.title ? meta.title : row.name;
+      const lessonAction = meta && meta.source
+        ? '<button type="button" class="gs-pa-open-lesson" data-open-lesson="' + esc(meta.source) + '">' + esc(t.openLesson) + '</button>'
+        : '';
+      return '<article class="gs-pa-quiz-row"><div class="gs-pa-quiz-name" title="' + esc(displayName) + '">' + esc(displayName) +
+      '</div>' + (meta && meta.source ? '<div class="gs-pa-lesson-label">' + esc(t.linkedLesson) + '</div>' : '') +
+      '<div class="gs-pa-quiz-stats"><span>' + t.quizAttempts + ': <strong>' + row.count +
       '</strong></span><span>' + t.quizAverage + ': <strong>' + row.mean + '%</strong></span>' +
       '<span>' + t.quizBest + ': <strong>' + row.best + '%</strong></span><span>' + t.quizLatest +
       ': <strong>' + row.latest + '%</strong></span></div><div class="gs-pa-quiz-track" role="img" aria-label="' +
-      esc(row.name + ': ' + row.mean + '%') + '"><i style="width:' + row.mean + '%"></i></div></article>'
-    ).join('') + '</div>';
+      esc(displayName + ': ' + row.mean + '%') + '"><i style="width:' + row.mean + '%"></i></div>' +
+      lessonAction + '</article>';
+    }).join('') + '</div>';
   }
 
   function buildFocus(data, attempts, t, fr) {
@@ -186,7 +221,13 @@
     const trend = delta === null ? t.noTrend : delta > 0
       ? t.trendUp + ' +' + delta : delta < 0 ? t.trendDown + ' ' + delta : t.trendFlat;
     const signature = JSON.stringify({
-      lang: fr, attempts: attempts.map(a => [a.attemptId, a.percentage, a.date, a.quizId,
+      lang: fr,
+      quizMetadata: attempts.map(a => {
+        const key = String(a.quizId || '').trim().replace(/^\/+/, '');
+        const meta = quizMetadata.get(key);
+        return [key, meta && typeof meta.then !== 'function' ? meta.title : '', meta && typeof meta.then !== 'function' ? meta.source : ''];
+      }),
+      attempts: attempts.map(a => [a.attemptId, a.percentage, a.date, a.quizId,
         Array.isArray(a.mistakes) ? a.mistakes.map(m => m && typeof m === 'object' ? [
           m.question, m.selected, m.correct, m.date
         ] : m) : []])
@@ -225,6 +266,14 @@
       if (anchor) anchor.insertAdjacentElement('beforebegin', card);
       else dashboard.appendChild(card);
     }
+    card.querySelectorAll('[data-open-lesson]').forEach(button => {
+      button.addEventListener('click', function () {
+        const source = this.getAttribute('data-open-lesson') || '';
+        if (!/^\/cours\//.test(source) || source.split('/').includes('..')) return;
+        if (typeof window.openPreview === 'function') window.openPreview(source);
+        else if (typeof window.openFile === 'function') window.openFile(source);
+      });
+    });
     card.querySelectorAll('[data-review-quiz]').forEach(button => {
       button.addEventListener('click', function () {
         const latestData = getData();
@@ -265,6 +314,7 @@
     .gs-pa-quiz-stats strong{color:#236b43;font-variant-numeric:tabular-nums}
     .gs-pa-quiz-track{height:7px;overflow:hidden;border-radius:99px;background:#eaf0e7}
     .gs-pa-quiz-track i{display:block;height:100%;border-radius:inherit;background:#69a66a}
+    .gs-pa-lesson-label{margin:.25rem 0;color:#718074;font-size:.74rem}.gs-pa-open-lesson{margin-top:.6rem;padding:.45rem .7rem;border:1px solid #b9d4b5;border-radius:8px;background:#f3f8f0;color:#236b43;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}html.gs-dark .gs-pa-lesson-label{color:#b8c9b8}html.gs-dark .gs-pa-open-lesson{background:#263b29;border-color:#49694b;color:#bce5b8}
     .gs-pa-focus-list{display:grid;gap:.6rem;margin-top:.8rem}
     .gs-pa-focus-item{display:flex;align-items:center;gap:.7rem;padding:.8rem;border:1px solid #e6ede3;border-radius:12px;background:#fff}
     .gs-pa-focus-rank{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:#edf5e9;color:#32633b;font-weight:800}
