@@ -191,16 +191,17 @@
     if (!window.confirm('هل تريد حذف هذه الوثيقة نهائياً؟')) return;
 
     if (!isAdmin && member && member.status === 'suspended') {
-      // Suspended owners cannot UPDATE metadata. Remove the row first so
-      // Storage read policies immediately stop issuing access to this object.
-      const deleted = await client.from('teacher_community_resources')
-        .delete().eq('id',r.id).select('id').maybeSingle();
-      if (deleted.error) throw new Error('تعذر حذف بيانات الوثيقة: ' + deleted.error.message);
-      if (!deleted.data) throw new Error('لم تعد الوثيقة متاحة للحذف أو لا تملك صلاحية إدارتها.');
+      // Suspended owners cannot UPDATE metadata. Delete the private object first:
+      // this also invalidates any previously issued signed download URL.
+      // Keep the metadata row until Storage confirms deletion so the owner can retry.
       const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
       if (removed.error) {
-        throw new Error('حُذفت بيانات الوثيقة وأصبح ملفها غير متاح عبر المكتبة، لكن تعذر تنظيف ملف التخزين. تواصل مع الإدارة لإتمام التنظيف.');
+        throw new Error('تعذر حذف الملف من التخزين؛ لم نحذف بيانات الوثيقة حتى تتمكن من إعادة المحاولة. ' + removed.error.message);
       }
+      const deleted = await client.from('teacher_community_resources')
+        .delete().eq('id',r.id).select('id').maybeSingle();
+      if (deleted.error) throw new Error('حُذف الملف من التخزين، لكن تعذر حذف بيانات الوثيقة. أبلغ الإدارة لتنظيف السجل المتبقي.');
+      if (!deleted.data) throw new Error('حُذف الملف من التخزين، لكن تعذر العثور على سجل الوثيقة لإزالته. أبلغ الإدارة.');
     } else {
       await safelyDeleteResource(r);
     }
