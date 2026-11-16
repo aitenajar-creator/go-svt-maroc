@@ -157,7 +157,9 @@
       ? t.trendUp + ' +' + delta : delta < 0 ? t.trendDown + ' ' + delta : t.trendFlat;
     const signature = JSON.stringify({
       lang: fr, attempts: attempts.map(a => [a.attemptId, a.percentage, a.date, a.quizId,
-        Array.isArray(a.mistakes) ? a.mistakes.length : 0])
+        Array.isArray(a.mistakes) ? a.mistakes.map(m => m && typeof m === 'object' ? [
+          m.question, m.selected, m.correct, m.date
+        ] : m) : []])
     });
     const card = document.createElement('section');
     card.id = ROOT_ID;
