@@ -76,8 +76,12 @@ function trackEvent(kind, path) {
 
 // ---------- قائمة الملفات ----------
 function isContentFile(path) {
-    const parts = path.split('/');
-    return parts.length >= 3 && SECTION_NAMES[parts[1]] && !parts[parts.length - 1].startsWith('.');
+    // Jekyll static_files paths normally start with "/". Normalize the
+    // leading slash so both root-level resources (e.g. /divers/file.pdf)
+    // and nested resources use the same section lookup.
+    const parts = String(path).replace(/^\/+/, '').split('/');
+    return parts.length >= 2 && Boolean(SECTION_NAMES[parts[0]]) &&
+        Boolean(parts[parts.length - 1]) && !parts[parts.length - 1].startsWith('.');
 }
 
 function loadManifest() {
@@ -672,8 +676,10 @@ function buildUI() {
                     <option value="exercices">${t('التمارين', 'Exercices')}</option>
                     <option value="examens">${t('الامتحانات', 'Examens')}</option>
                     <option value="fiches">${t('الملخصات', 'Fiches')}</option>
+                    <option value="resumes">${t('الملخصات', 'Résumés')}</option>
                     <option value="documents">${t('الوثائق', 'Documents')}</option>
                     <option value="ressources">${t('الموارد', 'Ressources')}</option>
+                    <option value="divers">${t('متنوعات', 'Divers')}</option>
                 </select>
                 <select id="gs-search-level" aria-label="Niveau scolaire">
                     <option value="">${t('كل المستويات', 'Tous les niveaux')}</option>
