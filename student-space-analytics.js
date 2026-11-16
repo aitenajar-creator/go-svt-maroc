@@ -221,7 +221,13 @@
     const trend = delta === null ? t.noTrend : delta > 0
       ? t.trendUp + ' +' + delta : delta < 0 ? t.trendDown + ' ' + delta : t.trendFlat;
     const signature = JSON.stringify({
-      lang: fr, attempts: attempts.map(a => [a.attemptId, a.percentage, a.date, a.quizId,
+      lang: fr,
+      quizMetadata: attempts.map(a => {
+        const key = String(a.quizId || '').trim().replace(/^\\/+/, '');
+        const meta = quizMetadata.get(key);
+        return [key, meta && typeof meta.then !== 'function' ? meta.title : '', meta && typeof meta.then !== 'function' ? meta.source : ''];
+      }),
+      attempts: attempts.map(a => [a.attemptId, a.percentage, a.date, a.quizId,
         Array.isArray(a.mistakes) ? a.mistakes.map(m => m && typeof m === 'object' ? [
           m.question, m.selected, m.correct, m.date
         ] : m) : []])
