@@ -204,7 +204,7 @@ function addExamLibraryFilters(container, files) {
         bar.querySelectorAll('select').forEach(item => {chosen[item.dataset.filter] = item.value;});
         let visible = 0;
         rows.forEach(row => {
-            const card = [...container.querySelectorAll('.file-resource-card')].find(item => item.querySelector('.file-name') && item.querySelector('.file-name').textContent === row.path.split('/').pop());
+            const card = container.querySelector('.file-resource-card[data-resource-path="' + CSS.escape(row.path) + '"]');
             if (!card) return;
             const show = (!chosen.year || row.year === chosen.year) && (!chosen.session || row.session === chosen.session) && (!chosen.kind || row.kind === chosen.kind);
             card.hidden = !show;
