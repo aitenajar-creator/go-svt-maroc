@@ -3171,10 +3171,14 @@ function openScientificPhotoPreview(card){
     // 14. INITIALIZATION (التهيئة)
     // ============================================
     function init() {
-        // Profil / progression modifiés depuis un autre onglet -> resynchroniser et réafficher
+        // Refresh when the active profile changes in another tab, including
+        // quiz history, mistakes, notes, study plans and goals (not only progress).
         window.addEventListener('storage', function (e) {
-            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE || e.key.endsWith('_' + STORAGE_KEYS.PROGRESS)) {
-                syncCurrentProfile();
+            const activeId = syncCurrentProfile();
+            const activePrefix = activeId + '_';
+            const isActiveProfileData = typeof e.key === 'string' && e.key.startsWith(activePrefix);
+            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE ||
+                e.key === STORAGE_KEYS.PROFILES || isActiveProfileData) {
                 refreshStudentSpaceView();
             }
         });
