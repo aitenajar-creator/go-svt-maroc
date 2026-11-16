@@ -189,7 +189,21 @@
     const r = await findResource(id); if (!r) return;
     if (r.owner_id !== user.id && !isAdmin) throw new Error('لا يمكنك حذف ملف أستاذ آخر.');
     if (!window.confirm('هل تريد حذف هذه الوثيقة نهائياً؟')) return;
-    await safelyDeleteResource(r);
+
+    if (!isAdmin && member && member.status === 'suspended') {
+      // Suspended owners cannot UPDATE metadata. Remove the row first so
+      // Storage read policies immediately stop issuing access to this object.
+      const deleted = await client.from('teacher_community_resources')
+        .delete().eq('id',r.id).select('id').maybeSingle();
+      if (deleted.error) throw new Error('تعذر حذف بيانات الوثيقة: ' + deleted.error.message);
+      if (!deleted.data) throw new Error('لم تعد الوثيقة متاحة للحذف أو لا تملك صلاحية إدارتها.');
+      const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
+      if (removed.error) {
+        throw new Error('حُذفت بيانات الوثيقة وأصبح ملفها غير متاح عبر المكتبة، لكن تعذر تنظيف ملف التخزين. تواصل مع الإدارة لإتمام التنظيف.');
+      }
+    } else {
+      await safelyDeleteResource(r);
+    }
     await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdmin() : Promise.resolve()]);
   }
   async function toggleShare(id) {
