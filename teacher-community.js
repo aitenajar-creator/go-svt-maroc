@@ -110,7 +110,7 @@
       '<div class="tc-resource-meta"><span>' + escapeHtml(r.file_name) + '</span>' + (r.status === 'hidden' ? '<span class="tc-pill">مخفي</span>' : (r.is_shared ? '<span class="tc-pill">مشترك</span>' : '<span class="tc-pill">خاص</span>')) + '</div>' +
       '<div class="tc-resource-actions"><button type="button" data-download="' + escapeHtml(r.id) + '">⬇ تحميل</button>' +
       ((own || isAdmin) ? '<button type="button" class="danger" data-delete="' + escapeHtml(r.id) + '">حذف</button>' : '') +
-      ((own || isAdmin) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
+      ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
       '</div></article>';
   }
   async function loadLibrary() {
