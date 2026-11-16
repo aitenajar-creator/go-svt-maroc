@@ -58,7 +58,11 @@
         save('gosvt-favs:' + activeFavoriteUid, merged);
         save('gosvt-favs-migrated:' + activeFavoriteUid, true);
         save('gosvt-favs', merged);
-        if (window.GoSVTCloud && typeof window.GoSVTCloud.syncFavorites === 'function') {
+        // Only reconcile the cloud after a successful cloud read. A null value
+        // means restoration failed or was unavailable; syncing local cache then
+        // could delete favorites that still exist remotely.
+        if (Array.isArray(cloudPaths) && window.GoSVTCloud &&
+            typeof window.GoSVTCloud.syncFavorites === 'function') {
             window.GoSVTCloud.syncFavorites(merged, activeFavoriteUid)
                 .catch(err => console.warn('[GoSVT] Initial favorites sync deferred:', err && err.message));
         }
