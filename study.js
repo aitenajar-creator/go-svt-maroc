@@ -299,6 +299,9 @@
         const modal = document.getElementById('gs-note-modal');
         if (!modal) return;
         modal.dataset.path = path;
+        // Bind the editor to the account that opened it. A later account
+        // switch must never redirect this draft into another student's notes.
+        modal.dataset.ownerUid = activeNoteUid || '';
         modal.querySelector('.gs-modal-title').textContent = `📝 ${fileTitle(path)}`;
         const area = document.getElementById('gs-note-text');
         area.value = getNotes()[path] || '';
@@ -310,6 +313,16 @@
         const modal = document.getElementById('gs-note-modal');
         const path = modal && modal.dataset.path;
         if (!path) return;
+        // The user may have signed out or switched accounts while the editor
+        // was open. Discard this stale save rather than writing into the new
+        // account (or the guest notes bucket).
+        if ((modal.dataset.ownerUid || '') !== (activeNoteUid || '')) {
+            closeModal(modal);
+            delete modal.dataset.path;
+            delete modal.dataset.ownerUid;
+            toast(t('تغير الحساب؛ لم تُحفظ الملاحظة في الحساب الآخر.', 'Le compte a changé ; la note n’a pas été enregistrée dans l’autre compte.'));
+            return;
+        }
         const notes = getNotes();
         const value = text.trim();
         if (value) notes[path] = value; else delete notes[path];
