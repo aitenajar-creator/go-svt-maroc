@@ -163,11 +163,28 @@ function describePath(path) {
     return labels.concat(rest.filter(segment => !isCloudInternalSegment(segment))).join(' · ');
 }
 
+// Exam metadata is inferred only from explicit filename markers.
+function getExamFileMetadata(path) {
+    const normalizedPath = String(path).replace(/^\\/+/, '');
+    if (!normalizedPath.startsWith('examens/')) return null;
+    const filename = normalizedPath.split('/').pop().replace(/\\.[^.]+$/, '').toLowerCase();
+    const yearMatch = filename.match(/(?:^|[-_ ])((?:19|20)\\d{2})(?=$|[-_ ])/);
+    const sessionMatch = filename.match(/(?:^|[-_ ])(normale|rattrapage)(?=$|[-_ ])/);
+    const kindMatch = filename.match(/(?:^|[-_ ])(corrige|sujet)(?=$|[-_ ])/);
+    if (!yearMatch && !sessionMatch && !kindMatch) return null;
+    const labels = [];
+    if (yearMatch) labels.push({ ar: yearMatch[1], fr: yearMatch[1], className: 'exam-year' });
+    if (sessionMatch) labels.push({ ar: sessionMatch[1] === 'normale' ? 'الدورة العادية' : 'الدورة الاستدراكية', fr: sessionMatch[1] === 'normale' ? 'Session normale' : 'Session de rattrapage', className: 'exam-session' });
+    if (kindMatch) labels.push({ ar: kindMatch[1] === 'sujet' ? 'موضوع الامتحان' : 'التصحيح', fr: kindMatch[1] === 'sujet' ? 'Sujet' : 'Corrigé', className: kindMatch[1] === 'sujet' ? 'exam-subject' : 'exam-correction' });
+    return labels;
+}
 function renderCard(path, badgeText) {
     const fileName = path.split('/').pop();
     const ext = getExt(fileName);
     const safePath = escapeHtml(path);
     const newBadge = isNew(path) ? `<span class="new-badge">${t('جديد', 'Nouveau')}</span>` : '';
+    const examMetadata = getExamFileMetadata(path);
+    const examBadges = examMetadata ? `<div class="exam-metadata" aria-label="${t('معلومات الامتحان', 'Informations sur l’examen')}">${examMetadata.map(item => `<span class="exam-meta-badge ${item.className}">${escapeHtml(currentLang === 'ar' ? item.ar : item.fr)}</span>`).join('')}</div>` : '';
     const previewBtn = PREVIEWABLE.includes(ext)
         ? `<button type="button" class="preview-btn" data-path="${safePath}">👁️ ${t('معاينة', 'Aperçu')}</button>`
         : '';
@@ -183,6 +200,7 @@ function renderCard(path, badgeText) {
                 <div class="file-preview-panel">${thumbnail}</div>
                 <div class="file-info-panel">
                     <h3>${escapeHtml(getFileTitle(fileName))}</h3>
+                    ${examBadges}
                     <p class="file-name">${escapeHtml(fileName)}</p>
                     <div class="card-actions">
                         ${previewBtn}
