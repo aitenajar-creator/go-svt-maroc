@@ -812,3 +812,20 @@ html.gs-dark .exam-meta-badge.exam-year{background:#263448;border-color:#3d5574;
 html.gs-dark .exam-meta-badge.exam-session{background:#403824;border-color:#645638;color:#f0dfb5}
 html.gs-dark .exam-meta-badge.exam-subject{background:#233b2b;border-color:#3d6548;color:#d1ecd7}
 html.gs-dark .exam-meta-badge.exam-correction{background:#332d45;border-color:#51456e;color:#e0d8f5}
+
+
+/* Exam library filters */
+.gs-exam-filters{display:flex;align-items:end;flex-wrap:wrap;gap:.7rem;padding:1rem;margin:.8rem 0 1rem;border:1px solid #dce8dc;border-radius:15px;background:#f7faf6}
+.gs-exam-filter{display:flex;flex:1 1 150px;min-width:130px;flex-direction:column;gap:.3rem;color:#355b40;font-size:.82rem;font-weight:700}
+.gs-exam-filter select{width:100%;min-height:42px;padding:.55rem .7rem;border:1px solid #cbdacb;border-radius:9px;background:#fff;color:#263b2b;font:inherit}
+.gs-exam-reset{min-height:42px;padding:.55rem .9rem;border:1px solid #39764a;border-radius:9px;background:#fff;color:#28633c;font:inherit;font-weight:700;cursor:pointer}
+.gs-exam-reset:hover{background:#28633c;color:#fff}
+.gs-exam-filter-empty{padding:1rem;border:1px dashed #d3dfd2;border-radius:12px;color:#68796b;text-align:center}
+.file-resource-card[hidden],.track-content-group[hidden]{display:none!important}
+html.gs-dark .gs-exam-filters{background:#1b2a20;border-color:#3d5a3e}
+html.gs-dark .gs-exam-filter{color:#cce5c9}
+html.gs-dark .gs-exam-filter select{background:#142018;border-color:#49634d;color:#e6f1e5}
+html.gs-dark .gs-exam-reset{background:#1b2a20;color:#b9e3b3;border-color:#56845b}
+html.gs-dark .gs-exam-reset:hover{background:#34794b;color:#fff}
+html.gs-dark .gs-exam-filter-empty{border-color:#49634d;color:#c5d3c5}
+@media(max-width:520px){.gs-exam-filters{align-items:stretch;gap:.55rem;padding:.75rem}.gs-exam-filter{flex-basis:100%}.gs-exam-reset{width:100%}}

@@ -179,6 +179,48 @@ function getExamFileMetadata(path) {
     return labels;
 }
 
+function addExamLibraryFilters(container, files) {
+    const rows = files.map(path => {
+        const filename = path.split('/').pop().toLowerCase();
+        const tokens = filename.split(/[-_ .]+/);
+        const year = tokens.find(token => /^(19|20)\d{2}$/.test(token)) || '';
+        const session = tokens.includes('normale') ? 'normale' : tokens.includes('rattrapage') ? 'rattrapage' : '';
+        const kind = tokens.includes('sujet') ? 'sujet' : tokens.includes('corrige') ? 'corrige' : '';
+        return {path,year,session,kind};
+    });
+    const values = key => [...new Set(rows.map(row => row[key]).filter(Boolean))];
+    const years = values('year').sort((a,b) => Number(b)-Number(a));
+    const sessions = values('session');
+    const kinds = values('kind');
+    if (!years.length && !sessions.length && !kinds.length) return;
+    const select = (key,label,items) => items.length ? '<label class="gs-exam-filter"><span>' + label + '</span><select data-filter="' + key + '"><option value="">' + t('الكل','Tous') + '</option>' + items.map(value => '<option value="' + value + '">' + (key === 'session' ? (value === 'normale' ? t('العادية','Normale') : t('الاستدراكية','Rattrapage')) : key === 'kind' ? (value === 'sujet' ? t('الموضوع','Sujet') : t('التصحيح','Corrigé')) : value) + '</option>').join('') + '</select></label>' : '';
+    const bar = document.createElement('div');
+    bar.className = 'gs-exam-filters';
+    bar.innerHTML = select('year',t('السنة','Année'),years) + select('session',t('الدورة','Session'),sessions) + select('kind',t('نوع الملف','Type'),kinds) + '<button type="button" class="gs-exam-reset">' + t('إعادة ضبط','Réinitialiser') + '</button>';
+    const count = container.querySelector('.files-count');
+    if (count) count.after(bar); else container.prepend(bar);
+    const apply = () => {
+        const chosen = {};
+        bar.querySelectorAll('select').forEach(item => {chosen[item.dataset.filter] = item.value;});
+        let visible = 0;
+        rows.forEach(row => {
+            const card = container.querySelector('.file-resource-card[data-resource-path="' + CSS.escape(row.path) + '"]');
+            if (!card) return;
+            const show = (!chosen.year || row.year === chosen.year) && (!chosen.session || row.session === chosen.session) && (!chosen.kind || row.kind === chosen.kind);
+            card.hidden = !show;
+            if (show) visible++;
+        });
+        container.querySelectorAll('.track-content-group').forEach(group => {group.hidden = !group.querySelector('.file-resource-card:not([hidden])');});
+        if (count) count.textContent = visible + ' ' + t('ملف','fichier(s)');
+        let empty = container.querySelector('.gs-exam-filter-empty');
+        if (!empty) {empty = document.createElement('p'); empty.className = 'gs-exam-filter-empty'; bar.after(empty);}
+        empty.hidden = visible > 0;
+        empty.textContent = t('لا توجد ملفات مطابقة.','Aucun fichier correspondant.');
+    };
+    bar.querySelectorAll('select').forEach(item => item.addEventListener('change',apply));
+    bar.querySelector('.gs-exam-reset').addEventListener('click',() => {bar.querySelectorAll('select').forEach(item => {item.value='';}); apply();});
+}
+
 function renderCard(path, badgeText) {
     const fileName = path.split('/').pop();
     const ext = getExt(fileName);
@@ -195,7 +237,7 @@ function renderCard(path, badgeText) {
             ? `<div class="content-card-thumbnail image-thumbnail" data-preview-path="${safePath}" role="button" tabindex="0" aria-label="${t('فتح معاينة الصورة', 'Ouvrir l’aperçu de l’image')}"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy" decoding="async"><span class="image-thumbnail-hint">${t('اضغط لمعاينة الصورة', 'Cliquer pour agrandir')}</span></div>`
             : `<div class="content-card-thumbnail file-thumbnail" aria-label="${t('نوع الملف', 'Type de fichier')}"><span>${getFileIcon(ext)}</span><small>${escapeHtml(ext.toUpperCase() || 'FILE')}</small></div>`;
     return `
-        <div class="content-card file-resource-card${ext === 'pdf' ? ' pdf-resource-card' : ''}">
+        <div class="content-card file-resource-card${ext === 'pdf' ? ' pdf-resource-card' : ''}" data-resource-path="${safePath}">
             <span class="level-badge">${escapeHtml(badgeText)}</span>${newBadge}
             <div class="file-card-layout">
                 <div class="file-preview-panel">${thumbnail}</div>
@@ -443,6 +485,7 @@ async function loadContentFromManifest(type, subject, level) {
 
         if (!hasTrackGroups) {
             container.innerHTML = count + renderFiles(files);
+            if (type === 'examens') addExamLibraryFilters(container, files);
             observePdfThumbnails(container);
             return;
         }
@@ -458,6 +501,7 @@ async function loadContentFromManifest(type, subject, level) {
                 : t('ملفات مشتركة بين الشعب', 'Ressources communes');
             return `<section class="track-content-group"><h3 class="track-content-heading">${escapeHtml(heading)}</h3><div class="content-grid">${renderFiles(group.files)}</div></section>`;
         }).join('');
+        if (type === 'examens') addExamLibraryFilters(container, files);
         observePdfThumbnails(container);
     } catch (error) {
         console.error('Error loading content:', error);
