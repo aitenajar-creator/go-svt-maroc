@@ -164,12 +164,26 @@
           const created = Number(goal.createdAt || goal.created_at) || 0;
           return title ? 'legacy:' + title + ':' + created : null;
         };
-        const known = new Set(mergedGoals.map(goalKey).filter(Boolean));
+        const goalIndexes = new Map();
+        mergedGoals.forEach((goal, index) => {
+          const key = goalKey(goal);
+          if (key) goalIndexes.set(key, index);
+        });
         goals.forEach(goal => {
           const key = goalKey(goal);
-          if (!key || known.has(key)) return;
-          known.add(key);
-          if (mergedGoals.length < 200) mergedGoals.push(goal);
+          if (!key) return;
+          const index = goalIndexes.get(key);
+          if (index === undefined) {
+            if (mergedGoals.length < 200) {
+              goalIndexes.set(key, mergedGoals.length);
+              mergedGoals.push(goal);
+            }
+            return;
+          }
+          const oldGoal = mergedGoals[index];
+          const oldUpdated = Number(oldGoal && (oldGoal.updatedAt || oldGoal.updated_at)) || 0;
+          const newUpdated = Number(goal && (goal.updatedAt || goal.updated_at)) || 0;
+          if (newUpdated > oldUpdated) mergedGoals[index] = goal;
         });
         if (JSON.stringify(mergedGoals).length > 50000) throw new Error('حجم الأهداف المدمجة يتجاوز الحد المسموح.');
 
