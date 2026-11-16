@@ -176,7 +176,7 @@
       '<div class="gs-pa-quiz-stats"><span>' + t.quizAttempts + ': <strong>' + row.count +
       '</strong></span><span>' + t.quizAverage + ': <strong>' + row.mean + '%</strong></span>' +
       '<span>' + t.quizBest + ': <strong>' + row.best + '%</strong></span><span>' + t.quizLatest +
-      ': <strong>' + row.latest + '%</strong></span><span>' + t.quizProgress + ': <strong>' + esc(row.progress) + '</strong></span></div><div class="gs-pa-quiz-track" role="img" aria-label="'
+      ': <strong>' + row.latest + '%</strong></span><span>' + t.quizProgress + ': <strong>' + esc(row.progress) + '</strong></span></div><div class="gs-pa-quiz-track" role="img" aria-label="' +
       esc(displayName + ': ' + row.mean + '%') + '"><i style="width:' + row.mean + '%"></i></div>' +
       lessonAction + '</article>';
     }).join('') + '</div>';
