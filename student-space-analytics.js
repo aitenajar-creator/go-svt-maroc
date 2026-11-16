@@ -8,7 +8,7 @@
       eyebrow: 'تحليل أدائك الدراسي', title: 'تقدمك بالأرقام',
       subtitle: 'تابع تطور نتائجك وحدد ما يستحق مراجعة إضافية.',
       attempts: 'عدد المحاولات', average: 'المعدل العام', recent: 'معدل آخر 5 محاولات',
-      byQuiz: 'الأداء حسب الاختبار', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة',
+      byQuiz: 'الأداء حسب الاختبار', quizScope: 'يعرض هذا الملخص', quizScopeSuffix: 'من أصل', quizScopeOrder: 'اختباراً، مرتبة من الأقل إلى الأعلى.', quizAttempts: 'محاولة', quizAverage: 'المتوسط', quizBest: 'الأفضل', quizLatest: 'الأخيرة',
       linkedLesson: 'الدرس المرتبط', openLesson: 'فتح الدرس',
       best: 'أفضل نتيجة', chart: 'تطور نتائج الاختبارات', chartHint: 'يعرض الرسم آخر 8 محاولات بترتيبها الزمني.',
       noChart: 'أنجز اختباراً واحداً على الأقل ليظهر تطور نتائجك هنا.',
@@ -25,7 +25,7 @@
       eyebrow: 'ANALYSE DE VOS RÉSULTATS', title: 'Votre progression en chiffres',
       subtitle: 'Suivez vos résultats et repérez les notions à retravailler.',
       attempts: 'Tentatives', average: 'Moyenne générale', recent: 'Moyenne des 5 dernières',
-      byQuiz: 'Résultats par quiz', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier',
+      byQuiz: 'Résultats par quiz', quizScope: 'Cette synthèse affiche', quizScopeSuffix: 'sur', quizScopeOrder: 'quiz, classés de la moyenne la plus faible à la plus élevée.', quizAttempts: 'tentatives', quizAverage: 'Moyenne', quizBest: 'Meilleur', quizLatest: 'Dernier',
       linkedLesson: 'Cours associé', openLesson: 'Ouvrir le cours',
       best: 'Meilleur score', chart: 'Évolution des résultats', chartHint: 'Les 8 dernières tentatives sont affichées dans l’ordre chronologique.',
       noChart: 'Effectuez au moins un quiz pour afficher votre évolution.',
@@ -142,7 +142,7 @@
       if (!groups.has(id)) groups.set(id, []);
       groups.get(id).push(attempt);
     });
-    const rows = Array.from(groups.entries()).map(([id, items]) => {
+    const allRows = Array.from(groups.entries()).map(([id, items]) => {
       const ordered = items.slice().sort((a, b) => a.date - b.date);
       const mean = average(ordered);
       const best = ordered.reduce((value, item) => Math.max(value, item.percentage), 0);
@@ -150,10 +150,12 @@
       const rawName = id.split('/').pop().replace(/\.json$/i, '').replace(/[_-]+/g, ' ');
       const name = rawName.length > 64 ? rawName.slice(0, 61) + '…' : rawName;
       return { id, name, count: ordered.length, mean, best, latest: latest.percentage, date: latest.date };
-    }).sort((a, b) => a.mean - b.mean || a.latest - b.latest || a.name.localeCompare(b.name)).slice(0, 8);
+    }).sort((a, b) => a.mean - b.mean || a.latest - b.latest || a.name.localeCompare(b.name));
+    const rows = allRows.slice(0, 8);
     if (!rows.length) return '';
     rows.forEach(row => { const key = row.id.replace(/^\/+/, ''); if (!quizMetadata.has(key)) loadQuizMetadata(row.id); row.metadata = quizMetadata.get(key) || null; });
-    return '<div class="gs-pa-quiz-breakdown">' + rows.map(row => {
+    const scope = '<p class="gs-pa-quiz-scope">' + esc(t.quizScope) + ' ' + rows.length + ' ' + esc(t.quizScopeSuffix) + ' ' + allRows.length + ' ' + esc(t.quizScopeOrder) + '</p>';
+    return '<div class="gs-pa-quiz-breakdown">' + scope + rows.map(row => {
       const meta = row.metadata && typeof row.metadata.then !== 'function' ? row.metadata : null;
       const displayName = meta && meta.title ? meta.title : row.name;
       const lessonAction = meta && meta.source
@@ -323,6 +325,7 @@
     .gs-pa-axis{fill:#718074;font-size:11px}
     .gs-pa-bar{fill:#69a66a}
     .gs-pa-quiz-breakdown{display:grid;gap:.65rem;margin-top:.8rem}
+    .gs-pa-quiz-scope{margin:0;color:#718074;font-size:.76rem;line-height:1.6}
     .gs-pa-quiz-row{min-width:0;padding:.8rem;border:1px solid #e6ede3;border-radius:12px;background:#fff}
     .gs-pa-quiz-name{overflow:hidden;color:#294d36;font-size:.88rem;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
     .gs-pa-quiz-stats{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin:.45rem 0;color:#718074;font-size:.74rem}
@@ -347,6 +350,7 @@
     html.gs-dark .gs-pa-metrics>div,html.gs-dark .gs-pa-section,html.gs-dark .gs-pa-focus-item,html.gs-dark .gs-pa-quiz-row{background:#1d2c20;border-color:#38543a}
     html.gs-dark .gs-pa-metrics strong,html.gs-dark .gs-pa-quiz-stats strong{color:#9fd89a}
     html.gs-dark .gs-pa-quiz-stats{color:#b8c9b8}html.gs-dark .gs-pa-quiz-track{background:#354a37}
+    html.gs-dark .gs-pa-quiz-scope{color:#b8c9b8}
     html.gs-dark .gs-pa-axis{fill:#b8c9b8}.gs-pa-bar{fill:#78b878}
     html.gs-dark .gs-pa-chart-details{color:#c5d8c5}
     html.gs-dark .gs-pa-chart-details th,html.gs-dark .gs-pa-chart-details td{border-color:#38543a}
