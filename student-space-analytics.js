@@ -315,7 +315,7 @@
     .gs-pa-chart-wrap{width:100%;overflow-x:auto}
     .gs-pa-chart{display:block;width:100%;min-width:300px;max-height:220px}
     .gs-pa-chart-details{margin-top:.55rem;color:#526b56;font-size:.8rem}
-    .gs-pa-chart-details summary{width:max-content;max-width:100%;cursor:pointer;font-weight:700;padding:.35rem 0}
+    .gs-pa-chart-details summary{display:flex;align-items:center;width:max-content;max-width:100%;min-height:44px;cursor:pointer;font-weight:700;padding:.35rem 0}
     .gs-pa-table-wrap{width:100%;overflow-x:auto;margin-top:.35rem}
     .gs-pa-chart-details table{width:100%;border-collapse:collapse;font-size:.78rem;text-align:start}
     .gs-pa-chart-details th,.gs-pa-chart-details td{padding:.5rem .65rem;border-bottom:1px solid #e5ece2;text-align:start;white-space:nowrap}
@@ -332,18 +332,20 @@
     .gs-pa-quiz-stats strong{color:#236b43;font-variant-numeric:tabular-nums}
     .gs-pa-quiz-track{height:7px;overflow:hidden;border-radius:99px;background:#eaf0e7}
     .gs-pa-quiz-track i{display:block;height:100%;border-radius:inherit;background:#69a66a}
-    .gs-pa-lesson-label{margin:.25rem 0;color:#718074;font-size:.74rem}.gs-pa-open-lesson{margin-top:.6rem;padding:.45rem .7rem;border:1px solid #b9d4b5;border-radius:8px;background:#f3f8f0;color:#236b43;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}html.gs-dark .gs-pa-lesson-label{color:#b8c9b8}html.gs-dark .gs-pa-open-lesson{background:#263b29;border-color:#49694b;color:#bce5b8}
+    .gs-pa-lesson-label{margin:.25rem 0;color:#718074;font-size:.74rem}.gs-pa-open-lesson{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:.6rem;padding:.55rem .8rem;border:1px solid #b9d4b5;border-radius:8px;background:#f3f8f0;color:#236b43;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}html.gs-dark .gs-pa-lesson-label{color:#b8c9b8}html.gs-dark .gs-pa-open-lesson{background:#263b29;border-color:#49694b;color:#bce5b8}
     .gs-pa-focus-list{display:grid;gap:.6rem;margin-top:.8rem}
     .gs-pa-focus-item{display:flex;align-items:center;gap:.7rem;padding:.8rem;border:1px solid #e6ede3;border-radius:12px;background:#fff}
     .gs-pa-focus-rank{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:#edf5e9;color:#32633b;font-weight:800}
     .gs-pa-focus-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:.15rem}
     .gs-pa-focus-copy strong{font-size:.88rem;color:#294d36}
     .gs-pa-focus-copy span{font-size:.75rem;color:#718074;line-height:1.5}
-    .gs-pa-review{padding:.55rem .75rem;border:0;border-radius:9px;background:#236b43;color:#fff;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}
+    .gs-pa-review{min-height:44px;padding:.55rem .85rem;border:0;border-radius:9px;background:#236b43;color:#fff;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}
     .gs-pa-review:hover{background:#194e31}
     .gs-pa-no-focus,.gs-pa-empty{display:flex;align-items:center;gap:.8rem;padding:.9rem;border:1px dashed #d9e6d5;border-radius:12px;color:#68796b;line-height:1.7}
     .gs-pa-no-focus>span{font-size:1.45rem}.gs-pa-no-focus p{flex:1;margin:0}
-    .gs-pa-no-focus a{color:#236b43;font-weight:700;text-decoration:none;white-space:nowrap}
+    .gs-pa-no-focus a{display:inline-flex;align-items:center;min-height:44px;color:#236b43;font-weight:700;text-decoration:none;white-space:nowrap}
+    .gs-performance-analytics :is(button,summary,a):focus-visible{outline:3px solid #1d6fd8;outline-offset:3px;border-radius:8px}
+    html.gs-dark .gs-performance-analytics :is(button,summary,a):focus-visible{outline-color:#91c5ff}
     html.gs-dark .gs-performance-analytics{background:linear-gradient(145deg,#17251a,#1b261c);border-color:#38543a;color:#dce9dc}
     html.gs-dark .gs-pa-heading h3,html.gs-dark .gs-pa-section-head h4,html.gs-dark .gs-pa-focus-copy strong,html.gs-dark .gs-pa-quiz-name{color:#dce9dc}
     html.gs-dark .gs-pa-heading p,html.gs-dark .gs-pa-section-head p,html.gs-dark .gs-pa-metrics span,html.gs-dark .gs-pa-focus-copy span,html.gs-dark .gs-pa-no-focus,html.gs-dark .gs-pa-empty{color:#b8c9b8}
