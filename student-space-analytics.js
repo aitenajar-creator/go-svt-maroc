@@ -223,7 +223,7 @@
     const signature = JSON.stringify({
       lang: fr,
       quizMetadata: attempts.map(a => {
-        const key = String(a.quizId || '').trim().replace(/^\\/+/, '');
+        const key = String(a.quizId || '').trim().replace(/^\/+/, '');
         const meta = quizMetadata.get(key);
         return [key, meta && typeof meta.then !== 'function' ? meta.title : '', meta && typeof meta.then !== 'function' ? meta.source : ''];
       }),
