@@ -798,3 +798,17 @@ html.gs-dark #student-space-content .gs-pa-review {
     text-align: center;
     line-height: 1.6;
 }
+
+
+/* Metadata labels for national exam resources */
+.exam-metadata{display:flex;flex-wrap:wrap;gap:.4rem;margin:.55rem 0 .7rem}
+.exam-meta-badge{display:inline-flex;align-items:center;padding:.28rem .62rem;border:1px solid #dce7df;border-radius:999px;background:#f4f8f4;color:#365b43;font-size:.76rem;font-weight:700;line-height:1.45}
+.exam-meta-badge.exam-year{background:#eef3fa;border-color:#d8e2f1;color:#385879;font-variant-numeric:tabular-nums}
+.exam-meta-badge.exam-session{background:#f6f2e9;border-color:#e9dfc8;color:#765b24}
+.exam-meta-badge.exam-subject{background:#edf6ef;border-color:#d5e8d9;color:#28633c}
+.exam-meta-badge.exam-correction{background:#f1eff8;border-color:#dfd9ef;color:#5b4b86}
+html.gs-dark .exam-meta-badge{background:#26352c;border-color:#405648;color:#d9eadc}
+html.gs-dark .exam-meta-badge.exam-year{background:#263448;border-color:#3d5574;color:#d5e4f8}
+html.gs-dark .exam-meta-badge.exam-session{background:#403824;border-color:#645638;color:#f0dfb5}
+html.gs-dark .exam-meta-badge.exam-subject{background:#233b2b;border-color:#3d6548;color:#d1ecd7}
+html.gs-dark .exam-meta-badge.exam-correction{background:#332d45;border-color:#51456e;color:#e0d8f5}
