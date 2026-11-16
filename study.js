@@ -103,6 +103,7 @@
         activate: activateFavoriteAccount,
         deactivate: deactivateFavoriteAccount,
         set: paths => saveFavoriteList(paths, true),
+        get: () => getFavs().slice(),
         remove: removeFavoritePath
     };
     const getOffline = () => readList('gosvt-offline');
