@@ -238,7 +238,7 @@
     const delta = recentFive.length === 5 && previousFive.length === 5
       ? recentAverage - average(previousFive) : null;
     const best = attempts.reduce((m, a) => Math.max(m, a.percentage), 0);
-    const lastAttemptDate = new Date(attempts[attempts.length - 1].date).toLocaleDateString(fr ? 'fr-MA' : 'ar-MA');
+    const lastAttemptDate = attempts.length ? new Date(attempts[attempts.length - 1].date).toLocaleDateString(fr ? 'fr-MA' : 'ar-MA') : '';
     const trend = delta === null ? t.noTrend : delta > 0
       ? t.trendUp + ' +' + delta : delta < 0 ? t.trendDown + ' ' + delta : t.trendFlat;
     const signature = JSON.stringify({
