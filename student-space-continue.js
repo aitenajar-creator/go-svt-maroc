@@ -109,9 +109,10 @@
       const percentage = Number(item.percentage);
       const date = Number(item.date);
       const hasReviewableMistake = Array.isArray(item.mistakes) && item.mistakes.some(function (mistake) {
-        return mistake && typeof mistake.question === 'string' &&
-          typeof mistake.selected === 'string' && typeof mistake.correct === 'string' &&
-          mistake.selected !== mistake.correct;
+        return mistake && typeof mistake.question === 'string' && mistake.question.trim() &&
+          typeof mistake.selected === 'string' && mistake.selected.trim() &&
+          typeof mistake.correct === 'string' && mistake.correct.trim() &&
+          mistake.selected.trim() !== mistake.correct.trim();
       });
       return quizId.length > 0 && quizId.length <= 200 &&
         Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
