@@ -72,8 +72,8 @@
   // Legacy hash IDs remain untouched and never receive guessed lesson links.
   const quizMetadata = new Map();
   function loadQuizMetadata(id) {
-    const path = String(id || '').trim().replace(/^\\/+/, '');
-    if (!/^quiz\\/(?:arabe|francais)\\/(?:TC|1BAC|2BAC)\\/[A-Za-z0-9_\\-./\\u0600-\\u06FF ]+\\.json$/i.test(path) ||
+    const path = String(id || '').trim().replace(/^\/+/, '');
+    if (!/^quiz\/(?:arabe|francais)\/(?:TC|1BAC|2BAC)\/[A-Za-z0-9_\-./\u0600-\u06FF ]+\.json$/i.test(path) ||
         path.split('/').includes('..')) return Promise.resolve(null);
     if (quizMetadata.has(path)) return quizMetadata.get(path);
     const pending = fetch('/' + path.split('/').map(encodeURIComponent).join('/'), { credentials: 'same-origin' })
@@ -81,8 +81,8 @@
       .then(data => {
         if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
         const title = typeof data.titre === 'string' ? data.titre.trim().slice(0, 180) : '';
-        const source = typeof data.source === 'string' ? data.source.trim().replace(/^\\/+/, '') : '';
-        const safeSource = /^cours\\/(?:arabe|francais)\\/(?:TC|1BAC|2BAC)\\/[A-Za-z0-9_\\-./\\u0600-\\u06FF ()]+\\.pdf$/i.test(source) &&
+        const source = typeof data.source === 'string' ? data.source.trim().replace(/^\/+/, '') : '';
+        const safeSource = /^cours\/(?:arabe|francais)\/(?:TC|1BAC|2BAC)\/[A-Za-z0-9_\-./\u0600-\u06FF ()]+\.pdf$/i.test(source) &&
           !source.split('/').includes('..');
         return { title, source: safeSource ? '/' + source.split('/').map(encodeURIComponent).join('/') : '' };
       })
@@ -262,7 +262,7 @@
     card.querySelectorAll('[data-open-lesson]').forEach(button => {
       button.addEventListener('click', function () {
         const source = this.getAttribute('data-open-lesson') || '';
-        if (!/^\\/cours\\//.test(source) || source.split('/').includes('..')) return;
+        if (!/^\/cours\//.test(source) || source.split('/').includes('..')) return;
         if (typeof window.openPreview === 'function') window.openPreview(source);
         else if (typeof window.openFile === 'function') window.openFile(source);
       });
