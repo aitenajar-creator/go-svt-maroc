@@ -165,10 +165,10 @@ function describePath(path) {
 
 // Exam metadata is inferred only from explicit filename markers.
 function getExamFileMetadata(path) {
-    const normalizedPath = String(path).replace(/^\\/+/, '');
+    const normalizedPath = String(path).replace(/^\/+/, '');
     if (!normalizedPath.startsWith('examens/')) return null;
-    const filename = normalizedPath.split('/').pop().replace(/\\.[^.]+$/, '').toLowerCase();
-    const yearMatch = filename.match(/(?:^|[-_ ])((?:19|20)\\d{2})(?=$|[-_ ])/);
+    const filename = normalizedPath.split('/').pop().replace(/\.[^.]+$/, '').toLowerCase();
+    const yearMatch = filename.match(/(?:^|[-_ ])((?:19|20)\d{2})(?=$|[-_ ])/);
     const sessionMatch = filename.match(/(?:^|[-_ ])(normale|rattrapage)(?=$|[-_ ])/);
     const kindMatch = filename.match(/(?:^|[-_ ])(corrige|sujet)(?=$|[-_ ])/);
     if (!yearMatch && !sessionMatch && !kindMatch) return null;
@@ -178,6 +178,7 @@ function getExamFileMetadata(path) {
     if (kindMatch) labels.push({ ar: kindMatch[1] === 'sujet' ? 'موضوع الامتحان' : 'التصحيح', fr: kindMatch[1] === 'sujet' ? 'Sujet' : 'Corrigé', className: kindMatch[1] === 'sujet' ? 'exam-subject' : 'exam-correction' });
     return labels;
 }
+
 function renderCard(path, badgeText) {
     const fileName = path.split('/').pop();
     const ext = getExt(fileName);
