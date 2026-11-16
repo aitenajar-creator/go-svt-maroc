@@ -193,6 +193,46 @@
         };
     }
 
+    function mergeCloudLearningState(profileId, cloudState) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId] ||
+            !cloudState || typeof cloudState !== 'object' || Array.isArray(cloudState)) return;
+        const prefix = profileId + '_';
+        const local = getProfileData(profileId);
+        const remoteGoals = Array.isArray(cloudState.goals) ? cloudState.goals : [];
+        const goals = local.goals.slice();
+        const goalKey = function (goal) {
+            if (!goal || typeof goal !== 'object' || Array.isArray(goal)) return null;
+            if (goal.id != null && String(goal.id).trim()) return 'id:' + String(goal.id).trim();
+            const title = String(goal.title || goal.name || '').trim().toLocaleLowerCase();
+            const created = Number(goal.createdAt || goal.created_at) || 0;
+            return title ? 'legacy:' + title + ':' + created : null;
+        };
+        const known = new Set(goals.map(goalKey).filter(Boolean));
+        remoteGoals.forEach(function (goal) {
+            const key = goalKey(goal);
+            if (!key || known.has(key)) return;
+            known.add(key);
+            goals.push(goal);
+        });
+        const localStreak = local.streak && typeof local.streak === 'object' ? local.streak : {};
+        const remoteStreak = cloudState.streak && typeof cloudState.streak === 'object' && !Array.isArray(cloudState.streak) ? cloudState.streak : {};
+        const localVisit = Number(localStreak.lastVisit) || 0;
+        const remoteVisit = Number(remoteStreak.lastVisit) || 0;
+        const localCurrent = Number.isInteger(Number(localStreak.current)) && Number(localStreak.current) >= 0 ? Number(localStreak.current) : 0;
+        const remoteCurrent = Number.isInteger(Number(remoteStreak.current)) && Number(remoteStreak.current) >= 0 ? Number(remoteStreak.current) : 0;
+        const best = Math.max(
+            Number.isInteger(Number(localStreak.best)) && Number(localStreak.best) >= 0 ? Number(localStreak.best) : 0,
+            Number.isInteger(Number(remoteStreak.best)) && Number(remoteStreak.best) >= 0 ? Number(remoteStreak.best) : 0,
+            localCurrent, remoteCurrent
+        );
+        let current = localCurrent, lastVisit = localVisit || null;
+        if (remoteVisit > localVisit) { current = remoteCurrent; lastVisit = remoteVisit; }
+        else if (remoteVisit && remoteVisit === localVisit) current = Math.max(localCurrent, remoteCurrent);
+        const streak = { current, best, lastVisit };
+        if (JSON.stringify(goals) !== JSON.stringify(local.goals)) storage.set(prefix + STORAGE_KEYS.GOALS, goals);
+        if (JSON.stringify(streak) !== JSON.stringify(local.streak)) storage.set(prefix + STORAGE_KEYS.STREAK, streak);
+    }
+
     function mergeCloudProgress(profileId, cloudProgress) {
         if (!cloudProgress || typeof cloudProgress !== 'object' || Array.isArray(cloudProgress) ||
             typeof profileId !== 'string' || !getProfiles()[profileId]) return;
@@ -504,7 +544,8 @@
                 ['progress', 'syncProgress', data.progress],
                 ['notes', 'syncNotes', data.notes],
                 ['study plan', 'syncStudyPlan', data.studyPlan],
-                ['quiz attempts', 'syncQuizAttempts', data.quizResults]
+                ['quiz attempts', 'syncQuizAttempts', data.quizResults],
+                ['learning state', 'syncLearningState', { goals: data.goals, streak: data.streak }]
             ];
             jobs.forEach(function (job) {
                 if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
@@ -3343,6 +3384,7 @@ function openScientificPhotoPreview(card){
         getProfiles,
         getProfileData,
         mergeCloudProgress,
+        mergeCloudLearningState,
         mergeCloudCollections,
         filterPendingCloudDeletions,
         retryPendingCloudDeletions,
