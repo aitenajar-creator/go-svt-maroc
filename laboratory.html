@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-13">
+<link rel="stylesheet" href="laboratory.css?v=20261117-14">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -284,6 +284,25 @@
     <button type="button" data-foodweb="hawks"><span>🦅</span><strong data-ar="جوارح" data-fr="Rapaces">جوارح</strong></button>
    </div>
    <div class="gs-foodweb-detail" id="foodweb-detail" aria-live="polite" data-ar="اختر كائناً لعرض ما يتغذى عليه والكائنات التي قد تتغذى عليه." data-fr="Choisissez un organisme pour voir ce qu’il mange et quels organismes peuvent le consommer.">اختر كائناً لعرض ما يتغذى عليه والكائنات التي قد تتغذى عليه.</div>
+
+   <div class="gs-food-chain-builder" id="food-chain-builder">
+    <div class="gs-food-chain-heading"><span aria-hidden="true">🧩</span><div><h3 data-ar="ابنِ سلسلة غذائية" data-fr="Construisez une chaîne alimentaire">ابنِ سلسلة غذائية</h3><p data-ar="ابدأ بالمنتِج، ثم اختر الكائن الذي يتغذى عليه في كل مرحلة." data-fr="Commencez par le producteur, puis choisissez à chaque étape l’organisme qui s’en nourrit.">ابدأ بالمنتِج، ثم اختر الكائن الذي يتغذى عليه في كل مرحلة.</p></div></div>
+    <div class="gs-food-chain-path" aria-live="polite"><span data-ar="السلسلة التي بنيتها" data-fr="Votre chaîne">السلسلة التي بنيتها</span><strong id="food-chain-path" data-ar="🌿 نباتات" data-fr="🌿 Plantes">🌿 نباتات</strong></div>
+    <div class="gs-food-chain-progress"><span id="food-chain-progress" data-ar="المرحلة 1 من 4" data-fr="Étape 1 sur 4">المرحلة 1 من 4</span><div><i id="food-chain-progress-bar"></i></div></div>
+    <p class="gs-food-chain-prompt" id="food-chain-prompt" aria-live="polite" data-ar="ما الكائن الذي يمكن أن يتغذى على النباتات؟" data-fr="Quel organisme peut se nourrir des plantes ?">ما الكائن الذي يمكن أن يتغذى على النباتات؟</p>
+    <div class="gs-food-chain-choices" role="group" aria-label="اختيار الحلقة الغذائية">
+     <button type="button" data-chain-choice="seeds">🌾 <span data-ar="بذور" data-fr="Graines">بذور</span></button>
+     <button type="button" data-chain-choice="insects">🦗 <span data-ar="حشرات" data-fr="Insectes">حشرات</span></button>
+     <button type="button" data-chain-choice="rabbits">🐇 <span data-ar="أرانب" data-fr="Lapins">أرانب</span></button>
+     <button type="button" data-chain-choice="birds">🐦 <span data-ar="طيور" data-fr="Oiseaux">طيور</span></button>
+     <button type="button" data-chain-choice="frogs">🐸 <span data-ar="ضفادع" data-fr="Grenouilles">ضفادع</span></button>
+     <button type="button" data-chain-choice="snakes">🐍 <span data-ar="أفاعٍ" data-fr="Serpents">أفاعٍ</span></button>
+     <button type="button" data-chain-choice="hawks">🦅 <span data-ar="جوارح" data-fr="Rapaces">جوارح</span></button>
+    </div>
+    <p class="gs-food-chain-feedback" id="food-chain-feedback" aria-live="polite" data-ar="اختر الحلقة التالية لإكمال السلسلة." data-fr="Choisissez le maillon suivant pour continuer.">اختر الحلقة التالية لإكمال السلسلة.</p>
+    <button type="button" class="gs-food-chain-reset" id="food-chain-reset" data-ar="إعادة بناء السلسلة" data-fr="Recommencer la chaîne">إعادة بناء السلسلة</button>
+    <small data-ar="السلسلة المختارة مثال مبسط للتعلم. في الطبيعة قد يتغذى النوع الواحد على عدة أنواع، لذلك تتداخل سلاسل متعددة لتشكّل شبكة غذائية." data-fr="Cette chaîne est un exemple simplifié. Dans la nature, une espèce peut consommer plusieurs espèces ; plusieurs chaînes s’entrecroisent donc en un réseau alimentaire.">السلسلة المختارة مثال مبسط للتعلم. في الطبيعة قد يتغذى النوع الواحد على عدة أنواع، لذلك تتداخل سلاسل متعددة لتشكّل شبكة غذائية.</small>
+   </div>
    <p class="gs-photo-note" data-ar="تُقرأ الأسهم الغذائية من الكائن المأكول نحو الكائن المستهلك، أي في اتجاه انتقال المادة والطاقة. هذه شبكة نموذجية مبسطة وليست وصفاً لكل نظام بيئي." data-fr="Les flèches alimentaires vont de l’organisme consommé vers le consommateur, dans le sens du transfert de matière et d’énergie. Ce réseau est un modèle simplifié, pas la description de tous les écosystèmes.">تُقرأ الأسهم الغذائية من الكائن المأكول نحو الكائن المستهلك، أي في اتجاه انتقال المادة والطاقة. هذه شبكة نموذجية مبسطة وليست وصفاً لكل نظام بيئي.</p>
   </div>
  </section>
