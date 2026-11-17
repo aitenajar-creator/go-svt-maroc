@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-8">
+<link rel="stylesheet" href="laboratory.css?v=20261117-9">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -68,7 +68,7 @@
   </div>
  </section>
  <section class="gs-lab-section" id="photosynthesis-lab">
-  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 03" data-fr="EXPÉRIENCE 03">التجربة 03</span><h2 data-ar="محاكاة التركيب الضوئي" data-fr="Simulation de la photosynthèse">محاكاة التركيب الضوئي</h2><p data-ar="غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط." data-fr="Modifiez l’intensité lumineuse et la concentration en dioxyde de carbone pour observer leur effet, de façon simplifiée.">غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط.</p></div><span class="gs-lab-number">03</span></div>
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 03" data-fr="EXPÉRIENCE 03">التجربة 03</span><h2 data-ar="محاكاة التركيب الضوئي" data-fr="Simulation de la photosynthèse">محاكاة التركيب الضوئي</h2><p data-ar="غيّر شدة الإضاءة وتوفر CO₂ والماء ودرجة الحرارة، ولاحظ أثر العامل المحدِّد في النشاط التمثيلي." data-fr="Modifiez la lumière, le CO₂, l’eau et la température pour observer l’effet du facteur limitant sur la photosynthèse.">غيّر شدة الإضاءة وتركيز ثاني أكسيد الكربون ولاحظ أثرهما في النشاط التمثيلي بشكل مبسط.</p></div><span class="gs-lab-number">03</span></div>
   <div class="gs-photo-card">
    <div class="gs-photo-visual">
     <a class="lab-real-photo lab-plant-photo" data-commons-query="green plant leaf sunlight macro photography" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=green%20plant%20leaf%20sunlight%20macro%20photography" target="_blank" rel="noopener noreferrer"><span class="lab-photo-frame"><span>🍃</span><small data-ar="صورة حقيقية لنبات أخضر" data-fr="Photographie réelle d’une plante verte">صورة حقيقية لنبات أخضر</small></span><small class="lab-photo-credit">ويكيميديا كومنز · <span data-ar="المصدر والترخيص قيد التحميل" data-fr="Source et licence en cours de chargement">المصدر والترخيص قيد التحميل</span></small></a>
@@ -78,9 +78,10 @@
     <div class="gs-photo-control"><label for="lab-light"><span data-ar="شدة الإضاءة" data-fr="Intensité lumineuse">شدة الإضاءة</span><strong id="lab-light-value">60%</strong></label><input id="lab-light" type="range" min="0" max="100" value="60"><div class="gs-photo-scale"><span data-ar="ضعيفة" data-fr="Faible">ضعيفة</span><span data-ar="قوية" data-fr="Forte">قوية</span></div></div>
     <div class="gs-photo-control"><label for="lab-co2"><span data-ar="توفر CO₂" data-fr="Disponibilité du CO₂">توفر CO₂</span><strong id="lab-co2-value">60%</strong></label><input id="lab-co2" type="range" min="0" max="100" value="60"><div class="gs-photo-scale"><span data-ar="منخفض" data-fr="Faible">منخفض</span><span data-ar="مرتفع" data-fr="Élevé">مرتفع</span></div></div>
     <div class="gs-photo-control"><label for="lab-water"><span data-ar="توفر الماء" data-fr="Disponibilité de l’eau">توفر الماء</span><strong id="lab-water-value">60%</strong></label><input id="lab-water" type="range" min="0" max="100" value="60"><div class="gs-photo-scale"><span data-ar="منخفض" data-fr="Faible">منخفض</span><span data-ar="مرتفع" data-fr="Élevé">مرتفع</span></div></div>
+    <div class="gs-photo-control"><label for="lab-temperature"><span data-ar="درجة الحرارة" data-fr="Température">درجة الحرارة</span><strong id="lab-temperature-value">25°C</strong></label><input id="lab-temperature" type="range" min="0" max="50" step="1" value="25"><div class="gs-photo-scale"><span>0°C</span><span data-ar="القيمة المثلى في هذا النموذج: 25°C" data-fr="Optimum du modèle : 25°C">القيمة المثلى في هذا النموذج: 25°C</span><span>50°C</span></div></div>
     <div class="gs-photo-result"><div class="gs-photo-result-head"><span data-ar="مؤشر النشاط التمثيلي التقريبي" data-fr="Indice approximatif d’activité photosynthétique">مؤشر النشاط التمثيلي التقريبي</span><strong id="lab-photo-rate">60%</strong></div><div class="gs-photo-meter"><span id="lab-photo-meter-fill" style="width:60%"></span></div><p id="lab-photo-explanation" aria-live="polite">في هذا النموذج المبسط، يتحدد النشاط بالعامل الأقل توفراً بين الضوء وCO₂.</p></div>
     <div class="gs-photo-products" aria-live="polite"><div><span>🍬</span><strong data-ar="إنتاج المادة العضوية" data-fr="Production de matière organique">إنتاج المادة العضوية</strong><b id="lab-photo-glucose">متوسط</b></div><div><span>🫧</span><strong data-ar="تحرير الأكسجين" data-fr="Libération d’oxygène">تحرير الأكسجين</strong><b id="lab-photo-oxygen">متوسط</b></div></div>
-    <p class="gs-photo-note" data-ar="نموذج تعليمي نوعي مبسط، وليس قياساً تجريبياً أو معادلة كمية دقيقة. عوامل أخرى مثل درجة الحرارة تؤثر أيضاً في التركيب الضوئي." data-fr="Modèle pédagogique qualitatif simplifié, et non une mesure expérimentale quantitative. D’autres facteurs, comme la température, influencent aussi la photosynthèse.">نموذج تعليمي نوعي مبسط، وليس قياساً تجريبياً أو معادلة كمية دقيقة. عوامل أخرى مثل درجة الحرارة والماء تؤثر أيضاً في التركيب الضوئي.</p>
+    <p class="gs-photo-note" data-ar="نموذج تعليمي نوعي مبسط، وليس قياساً تجريبياً أو معادلة كمية دقيقة. درجة الحرارة تؤثر أيضاً؛ ويستعمل هذا النموذج قيمة مثلى افتراضية لتوضيح أثر الابتعاد عنها." data-fr="Modèle pédagogique qualitatif simplifié, et non une mesure expérimentale quantitative. La température influence aussi la photosynthèse ; ce modèle utilise une valeur optimale fictive pour illustrer l’effet d’un écart.">نموذج تعليمي نوعي مبسط، وليس قياساً تجريبياً أو معادلة كمية دقيقة. عوامل أخرى مثل درجة الحرارة والماء تؤثر أيضاً في التركيب الضوئي.</p>
    </div>
   </div>
  </section>
@@ -444,5 +445,5 @@
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261117-8" defer></script>
+<script src="laboratory.js?v=20261117-9" defer></script>
 </body></html>
