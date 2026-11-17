@@ -3134,26 +3134,57 @@ function openScientificPhotoPreview(card){
         }
         .space-nav {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.65rem;
             margin-bottom: 2rem;
             flex-wrap: wrap;
+            align-items: stretch;
         }
         .space-tab {
-            padding: 0.75rem 1.5rem;
-            background: #f5f5f5;
-            border: none;
-            border-radius: 8px;
+            min-height: 48px;
+            padding: 0.72rem 1.25rem;
+            background: linear-gradient(120deg, #f2f7f3, #e4eee8);
+            color: #244b40;
+            border: 1px solid rgba(45, 90, 71, 0.18);
+            border-radius: 15px;
             cursor: pointer;
             font-family: 'Cairo', sans-serif;
-            font-weight: 600;
-            transition: all 0.3s;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(20, 55, 43, 0.08);
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
         }
         .space-tab:hover {
-            background: #e0e0e0;
+            background: linear-gradient(120deg, #e5f0e8, #d6e6dc);
+            transform: translateY(-1px);
+            box-shadow: 0 7px 16px rgba(20, 55, 43, 0.12);
         }
         .space-tab.active {
-            background: #2d5a27;
+            background: linear-gradient(115deg, #173f35, #477a66);
             color: white;
+            border-color: rgba(255, 255, 255, 0.28);
+            box-shadow: 0 7px 18px rgba(20, 55, 43, 0.2);
+        }
+        .space-tab:focus-visible {
+            outline: 3px solid #b4d6bd;
+            outline-offset: 3px;
+        }
+        html.gs-dark .space-tab {
+            background: linear-gradient(120deg, #263b30, #314b3d);
+            color: #e5f1e8;
+            border-color: rgba(190, 220, 198, 0.2);
+        }
+        html.gs-dark .space-tab:hover {
+            background: linear-gradient(120deg, #304b3b, #3b5c49);
+        }
+        html.gs-dark .space-tab.active {
+            background: linear-gradient(115deg, #315f4c, #527f68);
+            color: #fff;
+        }
+        html.gs-dark .space-tab:focus-visible {
+            outline-color: #a7d4b4;
+        }
+        @media (max-width: 560px) {
+            .space-nav { gap: 0.5rem; margin-bottom: 1.35rem; }
+            .space-tab { flex: 1 1 calc(50% - 0.5rem); padding: 0.7rem 0.75rem; }
         }
         .space-panel {
             display: none;
