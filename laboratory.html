@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-18">
+<link rel="stylesheet" href="laboratory.css?v=20261117-19">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -108,6 +108,20 @@
    <div class="gs-dna-actions"><button type="button" id="dna-check" data-ar="تحقق من السلسلة" data-fr="Vérifier le brin">تحقق من السلسلة</button><button type="button" id="dna-reset" data-ar="إعادة المحاولة" data-fr="Réinitialiser">إعادة المحاولة</button></div>
    <p class="gs-dna-feedback" id="dna-feedback" aria-live="polite" data-ar="أكمل القواعد الأربع ثم اضغط على زر التحقق." data-fr="Complétez les quatre bases puis cliquez sur Vérifier.">أكمل القواعد الأربع ثم اضغط على زر التحقق.</p>
    <small data-ar="نشاط تعليمي مبسط حول قواعد التكامل في الـADN. في الجزيء الحقيقي، ترتبط القواعد بين سلسلتين متعاكستي الاتجاه." data-fr="Activité pédagogique simplifiée sur la complémentarité de l’ADN. Dans la molécule réelle, les deux brins sont antiparallèles.">نشاط تعليمي مبسط حول قواعد التكامل في الـADN. في الجزيء الحقيقي، ترتبط القواعد بين سلسلتين متعاكستي الاتجاه.</small>
+  </div>
+ </section>
+ <section class="gs-lab-section" id="transcription-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 04" data-fr="EXPÉRIENCE 04">التجربة 04</span><h2 data-ar="من الـADN إلى البروتين: محاكاة الاستنساخ" data-fr="De l’ADN à la protéine : simulation de la transcription">من الـADN إلى البروتين: محاكاة الاستنساخ</h2><p data-ar="حوّل سلسلة الـADN المعطاة إلى ARNm، ثم اكتشف كيف تُقرأ الرامزات خلال الترجمة." data-fr="Transformez le brin d’ADN proposé en ARNm, puis découvrez comment les codons sont lus lors de la traduction.">حوّل سلسلة الـADN المعطاة إلى ARNm، ثم اكتشف كيف تُقرأ الرامزات خلال الترجمة.</p></div><span class="gs-lab-number">04</span></div>
+  <div class="gs-transcription-card" id="transcription-activity">
+   <div class="gs-transcription-intro"><strong data-ar="السلسلة المشفِّرة للـADN (5′ → 3′)" data-fr="Brin codant de l’ADN (5′ → 3′)">السلسلة المشفِّرة للـADN (5′ → 3′)</strong><div class="gs-transcription-dna" dir="ltr"><b>ATG</b><b>GCT</b><b>TTT</b><b>TGA</b></div><p data-ar="في هذا النشاط نمثل ARNm مثل السلسلة المشفِّرة مع استبدال T بـ U." data-fr="Dans cette activité, l’ARNm correspond au brin codant avec U à la place de T.">في هذا النشاط نمثل ARNm مثل السلسلة المشفِّرة مع استبدال T بـ U.</p></div>
+   <div class="gs-transcription-codons"><h3 data-ar="1. أكمل رامزات ARNm" data-fr="1. Complétez les codons de l’ARNm">1. أكمل رامزات ARNm</h3><div class="gs-transcription-grid">
+    <label><span>1</span><select data-rna-codon="0" aria-label="Codon 1"><option value="">—</option><option>AUG</option><option>UAC</option><option>ACG</option><option>UAA</option></select></label>
+    <label><span>2</span><select data-rna-codon="1" aria-label="Codon 2"><option value="">—</option><option>GCU</option><option>CGA</option><option>GUA</option><option>UGA</option></select></label>
+    <label><span>3</span><select data-rna-codon="2" aria-label="Codon 3"><option value="">—</option><option>UUU</option><option>AAA</option><option>UUC</option><option>UAG</option></select></label>
+    <label><span>4</span><select data-rna-codon="3" aria-label="Codon 4"><option value="">—</option><option>UGA</option><option>ACU</option><option>UGG</option><option>AUG</option></select></label>
+   </div><div class="gs-transcription-actions"><button type="button" id="rna-check" data-ar="تحقق من الرامزات" data-fr="Vérifier les codons">تحقق من الرامزات</button><button type="button" id="rna-reset" data-ar="إعادة النشاط" data-fr="Recommencer">إعادة النشاط</button></div><p id="rna-feedback" aria-live="polite" data-ar="اختر رامزة لكل مجموعة من القواعد، ثم تحقق من إجابتك." data-fr="Choisissez un codon pour chaque groupe de bases, puis vérifiez vos réponses.">اختر رامزة لكل مجموعة من القواعد، ثم تحقق من إجابتك.</p></div>
+   <div class="gs-transcription-translation"><h3 data-ar="2. اكتشف تسلسل الأحماض الأمينية" data-fr="2. Découvrez la séquence d’acides aminés">2. اكتشف تسلسل الأحماض الأمينية</h3><div class="gs-protein-chain" id="protein-chain" aria-live="polite"><span>؟</span><span>؟</span><span>؟</span><span>؟</span></div><p id="protein-feedback" data-ar="بعد التحقق، ستظهر الأحماض الأمينية الموافقة للرامزات." data-fr="Après vérification, les acides aminés correspondant aux codons apparaîtront.">بعد التحقق، ستظهر الأحماض الأمينية الموافقة للرامزات.</p></div>
+   <small data-ar="نموذج مبسط: السلسلة المعطاة هي السلسلة المشفِّرة، ولذلك يطابقها ARNm مع استبدال T بـ U. الرامزة UGA إشارة توقف ولا ترمز إلى حمض أميني." data-fr="Modèle simplifié : le brin fourni est le brin codant ; l’ARNm lui correspond avec U à la place de T. UGA est un codon stop et ne code pas un acide aminé.">نموذج مبسط: السلسلة المعطاة هي السلسلة المشفِّرة، ولذلك يطابقها ARNm مع استبدال T بـ U. الرامزة UGA إشارة توقف ولا ترمز إلى حمض أميني.</small>
   </div>
  </section>
  <section class="gs-lab-section" id="photosynthesis-lab">
