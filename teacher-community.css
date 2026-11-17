@@ -15,3 +15,9 @@
 .tc-my-search-clear:hover{background:#edf6f1}
 .tc-my-search-clear:focus-visible{outline:3px solid var(--tc-gold);outline-offset:2px}
 @media(max-width:560px){.tc-my-search-clear{width:100%}}
+
+/* One-step reset for active resource filters */
+.tc-filter-reset{border:1px solid #cfe3d8;border-radius:10px;padding:9px 13px;background:#edf7f1;color:#17634f;font:700 11px Cairo,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.tc-filter-reset:hover{background:#dcefe4}
+.tc-filter-reset:focus-visible{outline:3px solid var(--tc-gold);outline-offset:2px}
+@media(max-width:560px){.tc-filter-reset{width:100%}}
