@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -386,6 +386,44 @@ document.querySelectorAll('[data-watercycle]').forEach(btn=>btn.addEventListener
  document.querySelectorAll('[data-watercycle]').forEach(b=>b.classList.toggle('is-active',b===btn));
  showWaterCycle(selectedWaterCycle);
 }));
+
+
+const waterCycleAnswers=new Map();
+const waterCycleExplanations=[
+ {ar:'صحيح! تسخّن الشمس المياه وتوفر الطاقة اللازمة للتبخر.',fr:'Exact ! Le Soleil chauffe l’eau et fournit l’énergie nécessaire à l’évaporation.'},
+ {ar:'صحيح! يؤدي التبريد إلى تكاثف بخار الماء وتكوّن قطرات أو بلورات.',fr:'Exact ! Le refroidissement provoque la condensation de la vapeur en gouttelettes ou cristaux.'},
+ {ar:'صحيح! يسمح التسرب بانتقال جزء من مياه السطح إلى داخل التربة.',fr:'Exact ! L’infiltration permet à une partie de l’eau de surface de pénétrer dans le sol.'}
+];
+function updateWaterCycleScore(){
+ const score=[...waterCycleAnswers.values()].filter(Boolean).length;
+ $('watercycle-score').textContent=lang==='ar'?'النتيجة: '+score+' / 3':'Score : '+score+' / 3';
+}
+document.querySelectorAll('[data-water-answer]').forEach(btn=>btn.addEventListener('click',()=>{
+ const index=Number(btn.dataset.waterAnswer),question=btn.closest('[data-water-question]');
+ if(!question||waterCycleAnswers.has(index))return;
+ const correct=btn.dataset.correct==='true';
+ waterCycleAnswers.set(index,correct);
+ question.querySelectorAll('[data-water-answer]').forEach(option=>{
+  option.disabled=true;
+  if(option===btn)option.classList.add(correct?'is-correct':'is-incorrect');
+  if(option.dataset.correct==='true')option.classList.add('is-answer');
+ });
+ const feedback=question.querySelector('.gs-watercycle-answer');
+ feedback.textContent=correct
+  ? waterCycleExplanations[index][lang]
+  : (lang==='ar'?'ليست هذه الإجابة الصحيحة. راجع الخيار المميز ثم اقرأ التفسير.':'Ce n’est pas la bonne réponse. Consultez l’option indiquée et l’explication.');
+ updateWaterCycleScore();
+}));
+$('watercycle-retry')?.addEventListener('click',()=>{
+ waterCycleAnswers.clear();
+ document.querySelectorAll('[data-water-question]').forEach(question=>{
+  question.querySelectorAll('[data-water-answer]').forEach(option=>{
+   option.disabled=false;option.classList.remove('is-correct','is-incorrect','is-answer');
+  });
+  question.querySelector('.gs-watercycle-answer').textContent='';
+ });
+ updateWaterCycleScore();
+});
 
 
 const waterMeasureExplanations={
