@@ -142,3 +142,7 @@ button:disabled {
 .tc-admin-activity-filters input,.tc-admin-activity-filters select{height:41px;min-width:190px;max-width:100%;padding:0 12px;border:1px solid var(--tc-line);border-radius:10px;background:#fff;color:var(--tc-ink);font:12px Cairo,Arial,sans-serif}
 .tc-admin-activity-filters input{flex:1}
 @media(max-width:560px){.tc-admin-activity-filters{display:grid;grid-template-columns:1fr}.tc-admin-activity-filters input,.tc-admin-activity-filters select{width:100%;min-width:0}}
+
+.tc-admin-activity-actions{display:flex;gap:8px;flex-wrap:wrap}
+.tc-admin-activity-export-status{min-height:18px;margin:4px 0;color:var(--tc-muted);font-size:11px;line-height:1.7}
+#tc-admin-activity-export:disabled{opacity:.6;cursor:wait}
