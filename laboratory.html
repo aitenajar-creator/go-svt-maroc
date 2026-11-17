@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-7">
+<link rel="stylesheet" href="laboratory.css?v=20261117-8">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -207,6 +207,24 @@
     </div>
     <p class="gs-photo-note" data-ar="قاعدة 10% تقريب تعليمي وليست قانوناً ثابتاً؛ تختلف كفاءة انتقال الطاقة باختلاف النظام البيئي والكائنات والظروف." data-fr="La règle des 10 % est une approximation pédagogique, pas une loi fixe ; l’efficacité du transfert varie selon l’écosystème, les organismes et les conditions.">قاعدة 10% تقريب تعليمي وليست قانوناً ثابتاً؛ تختلف كفاءة انتقال الطاقة باختلاف النظام البيئي والكائنات والظروف.</p>
    </div>
+  </div>
+  <div class="gs-energy-transfer" id="energy-transfer-lab">
+   <div class="gs-energy-transfer-heading"><span aria-hidden="true">⚡</span><div><h3 data-ar="مختبر حساب انتقال الطاقة" data-fr="Laboratoire de calcul du transfert d’énergie">مختبر حساب انتقال الطاقة</h3><p data-ar="غيّر الطاقة المتاحة لدى المنتجين ونسبة الانتقال المفترضة، ثم لاحظ كيف تتغير الطاقة عبر المستويات الغذائية." data-fr="Modifiez l’énergie disponible chez les producteurs et le taux de transfert supposé, puis observez l’évolution de l’énergie entre les niveaux trophiques.">غيّر الطاقة المتاحة لدى المنتجين ونسبة الانتقال المفترضة، ثم لاحظ كيف تتغير الطاقة عبر les niveaux trophiques.</p></div></div>
+   <div class="gs-energy-transfer-controls">
+    <label for="energy-input"><span data-ar="الطاقة لدى المنتجين (وحدة افتراضية)" data-fr="Énergie des producteurs (unités fictives)">الطاقة لدى المنتجين (وحدة افتراضية)</span><output id="energy-input-value" for="energy-input">10 000</output></label>
+    <input id="energy-input" type="range" min="1000" max="50000" step="1000" value="10000">
+    <label for="energy-efficiency"><span data-ar="نسبة الانتقال بين المستويات" data-fr="Taux de transfert entre niveaux">نسبة الانتقال بين المستويات</span><output id="energy-efficiency-value" for="energy-efficiency">10%</output></label>
+    <input id="energy-efficiency" type="range" min="5" max="30" step="1" value="10">
+   </div>
+   <div class="gs-energy-transfer-results" aria-live="polite">
+    <div><span data-ar="المنتِجات" data-fr="Producteurs">المنتِجات</span><strong id="energy-producers">10 000</strong><i><b id="energy-producers-bar"></b></i></div>
+    <div><span data-ar="المستهلكات الأولية" data-fr="Consommateurs primaires">المستهلكات الأولية</span><strong id="energy-primary">1 000</strong><i><b id="energy-primary-bar"></b></i></div>
+    <div><span data-ar="المستهلكات الثانوية" data-fr="Consommateurs secondaires">المستهلكات الثانوية</span><strong id="energy-secondary">100</strong><i><b id="energy-secondary-bar"></b></i></div>
+    <div><span data-ar="المستهلكات العليا" data-fr="Consommateurs supérieurs">المستهلكات العليا</span><strong id="energy-tertiary">10</strong><i><b id="energy-tertiary-bar"></b></i></div>
+   </div>
+   <p class="gs-energy-transfer-feedback" id="energy-transfer-feedback" aria-live="polite">عند انتقال 10% من الطاقة في كل مستوى، تتناقص الطاقة المتاحة تدريجياً.</p>
+   <button type="button" id="energy-transfer-reset" data-ar="استعادة القيم الأصلية" data-fr="Rétablir les valeurs initiales">استعادة القيم الأصلية</button>
+   <small data-ar="نموذج حسابي مبسط للتعلم؛ نسبة الانتقال ليست ثابتة في الطبيعة، والطاقة تُستعمل أيضاً في النشاط الحيوي وتفقد على شكل حرارة." data-fr="Modèle de calcul simplifié : le taux de transfert n’est pas constant dans la nature. Une partie de l’énergie est utilisée pour l’activité biologique et dissipée sous forme de chaleur.">نموذج حسابي مبسط للتعلم؛ نسبة الانتقال ليست ثابتة في الطبيعة، والطاقة تُستعمل أيضاً في النشاط الحيوي وتفقد على شكل حرارة.</small>
   </div>
   <div class="gs-eco-quiz" id="eco-quiz">
    <div class="gs-eco-quiz-head"><div><span class="gs-lab-kicker" data-ar="تحقق من فهمك" data-fr="VÉRIFIEZ VOTRE COMPRÉHENSION">تحقق من فهمك</span><h3 data-ar="تحدي السلسلة الغذائية" data-fr="Défi de la chaîne alimentaire">تحدي السلسلة الغذائية</h3><p data-ar="اختر الإجابة الصحيحة في كل سؤال، ثم راجع نتيجتك." data-fr="Choisissez la bonne réponse à chaque question, puis consultez votre résultat.">اختر الإجابة الصحيحة في كل سؤال، ثم راجع نتيجتك.</p></div><strong id="eco-quiz-score" aria-live="polite">0 / 3</strong></div>
@@ -426,5 +444,5 @@
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261117-7" defer></script>
+<script src="laboratory.js?v=20261117-8" defer></script>
 </body></html>
