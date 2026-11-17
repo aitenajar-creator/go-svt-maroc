@@ -621,3 +621,35 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-biodiv-abundance>small{display:block;margin-top:12px;color:#7a8c7e;line-height:1.8}
 @media(max-width:650px){.gs-abundance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-abundance-results{grid-template-columns:1fr}.gs-abundance-bars>div{grid-template-columns:75px minmax(50px,1fr) 28px;gap:7px}}
 @media(prefers-reduced-motion:reduce){.gs-abundance-bars i b{transition:none}}
+
+
+/* Interactive mitosis sequence */
+.gs-mitosis-lab{margin-top:22px;padding:clamp(16px,3vw,24px);border:1px solid #dce7f1;border-radius:18px;background:#f6f9fd}
+.gs-mitosis-heading{display:flex;align-items:flex-start;gap:12px}
+.gs-mitosis-heading>span{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#e5eefb;font-size:1.45rem}
+.gs-mitosis-heading h3{margin:0 0 6px;color:#294b72}
+.gs-mitosis-heading p,.gs-mitosis-lab small{color:#687c92;line-height:1.8}
+.gs-mitosis-interphase{display:grid;gap:5px;margin:16px 0;padding:13px 15px;border-inline-start:4px solid #6b9bc9;border-radius:10px;background:#eaf2fb;color:#365d82}
+.gs-mitosis-interphase span{font-size:.9rem}
+.gs-mitosis-progress{display:grid;gap:8px;margin:16px 0;color:#526d89;font-size:.9rem}
+.gs-mitosis-progress>div{height:10px;overflow:hidden;border-radius:99px;background:#dfe8f2}
+.gs-mitosis-progress i{display:block;width:0;height:100%;border-radius:99px;background:linear-gradient(90deg,#7ca9d7,#3976b5);transition:width .2s}
+.gs-mitosis-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.gs-mitosis-choices button{display:flex;align-items:center;gap:9px;min-width:0;padding:12px;border:1px solid #d5e1ee;border-radius:12px;background:#fff;color:#385a7c;font:inherit;font-weight:750;cursor:pointer;text-align:start}
+.gs-mitosis-choices button b{display:grid;place-items:center;flex:0 0 28px;height:28px;border-radius:8px;background:#e9f1fa}
+.gs-mitosis-choices button.is-selected{border-color:#7eb58a;background:#eaf5ec;color:#28623c}
+.gs-mitosis-choices button.is-mistake{border-color:#d99a9a;background:#fff0f0}
+.gs-mitosis-choices button:disabled{cursor:default;opacity:1}
+.gs-mitosis-sequence{display:grid;gap:8px;margin:16px 0;padding-inline-start:28px;color:#46627e;line-height:1.7}
+.gs-mitosis-feedback{padding:12px 14px;border-radius:10px;background:#e9f1fa;color:#385e84;line-height:1.7}
+.gs-mitosis-lab>button{border:0;border-radius:10px;padding:10px 16px;background:#386f9f;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.gs-mitosis-lab>small{display:block;margin-top:12px}
+.gs-dark .gs-mitosis-lab{border-color:#34485d;background:#202e3d}
+.gs-dark .gs-mitosis-heading h3,.gs-dark .gs-mitosis-choices button{color:#d5e7fa}
+.gs-dark .gs-mitosis-heading p,.gs-dark .gs-mitosis-lab small,.gs-dark .gs-mitosis-sequence{color:#aebfd1}
+.gs-dark .gs-mitosis-interphase,.gs-dark .gs-mitosis-feedback{background:#2a4057;color:#d5e7fa}
+.gs-dark .gs-mitosis-choices button{border-color:#435a70;background:#293b4e}
+.gs-dark .gs-mitosis-choices button.is-selected{background:#254735;border-color:#4f9b69}
+.gs-dark .gs-mitosis-choices button.is-mistake{background:#4a3034;border-color:#a65d66}
+@media(max-width:680px){.gs-mitosis-choices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.gs-mitosis-progress i{transition:none}}

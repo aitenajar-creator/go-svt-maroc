@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('mitosis-lab'))renderMitosis();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -873,6 +873,55 @@ $('biodiv-quiz-reset').addEventListener('click',()=>{
 });
 
 
+
+const mitosisOrder=['prophase','metaphase','anaphase','telophase'];
+const mitosisDetails={
+ prophase:{ar:'تتكثف الصبغيات وتصبح أوضح، ويتشكل مغزل الانقسام تدريجياً.',fr:'Les chromosomes se condensent et deviennent visibles ; le fuseau mitotique se met progressivement en place.'},
+ metaphase:{ar:'تصطف الصبغيات على المستوى الاستوائي للخلية.',fr:'Les chromosomes s’alignent sur le plan équatorial de la cellule.'},
+ anaphase:{ar:'تنفصل الكروماتيدات الشقيقة وتتجه نحو قطبي الخلية.',fr:'Les chromatides sœurs se séparent et migrent vers les deux pôles de la cellule.'},
+ telophase:{ar:'تتكون نواتان جديدتان وتبدأ الصبغيات في التفكك.',fr:'Deux nouveaux noyaux se reforment et les chromosomes commencent à se décondense.'}
+};
+const mitosisNames={
+ prophase:{ar:'الطور التمهيدي',fr:'Prophase'},
+ metaphase:{ar:'الطور الاستوائي',fr:'Métaphase'},
+ anaphase:{ar:'الطور الانفصالي',fr:'Anaphase'},
+ telophase:{ar:'الطور النهائي',fr:'Télophase'}
+};
+let mitosisStep=0;
+function renderMitosis(){
+ const sequence=$('mitosis-sequence'),feedback=$('mitosis-feedback');
+ if(!sequence||!feedback)return;
+ sequence.innerHTML='';
+ if(mitosisStep===0){
+  const li=document.createElement('li');li.textContent=lang==='ar'?'ابدأ باختيار الطور التمهيدي.':'Commencez par choisir la prophase.';sequence.appendChild(li);
+ }else{
+  mitosisOrder.slice(0,mitosisStep).forEach((stage,index)=>{
+   const li=document.createElement('li');
+   li.textContent=(index+1)+'. '+mitosisNames[stage][lang]+': '+mitosisDetails[stage][lang];
+   sequence.appendChild(li);
+  });
+ }
+ document.querySelectorAll('[data-mitosis-stage]').forEach(button=>{
+  const stage=button.dataset.mitosisStage,done=mitosisOrder.indexOf(stage)<mitosisStep;
+  button.disabled=done||mitosisStep===4;
+  button.classList.toggle('is-selected',done);
+ });
+ $('mitosis-progress-label').textContent=lang==='ar'?'المراحل المرتبة: '+mitosisStep+' / 4':'Étapes ordonnées : '+mitosisStep+' / 4';
+ $('mitosis-progress-bar').style.width=(mitosisStep/4*100)+'%';
+ if(mitosisStep===4)feedback.textContent=lang==='ar'?'أحسنت! رتبت مراحل الانقسام الخيطي الأربع ترتيباً صحيحاً.':'Bravo ! Vous avez ordonné correctement les quatre phases de la mitose.';
+ else if(mitosisStep===0)feedback.textContent=lang==='ar'?'اختر المرحلة التي تأتي مباشرة بعد الطور البيني.':'Choisissez la phase qui suit directement l’interphase.';
+ else feedback.textContent=lang==='ar'?'صحيح! المرحلة التالية هي '+mitosisNames[mitosisOrder[mitosisStep]][lang]+'.':'Correct ! La phase suivante est '+mitosisNames[mitosisOrder[mitosisStep]][lang]+'.';
+}
+document.querySelectorAll('[data-mitosis-stage]').forEach(button=>button.addEventListener('click',()=>{
+ const stage=button.dataset.mitosisStage;
+ if(stage!==mitosisOrder[mitosisStep]){
+  $('mitosis-feedback').textContent=lang==='ar'?'ليس هذا الترتيب الصحيح بعد. تذكّر أن الصبغيات تصطف قبل انفصال الكروماتيدات.':'Ce n’est pas encore le bon ordre. Rappelez-vous que les chromosomes s’alignent avant la séparation des chromatides.';
+  button.classList.add('is-mistake');setTimeout(()=>button.classList.remove('is-mistake'),500);return;
+ }
+ mitosisStep++;renderMitosis();
+}));
+$('mitosis-reset')?.addEventListener('click',()=>{mitosisStep=0;renderMitosis();});
+renderMitosis();
 
 function updateBiodiversityAbundance(){
  const inputs=[...document.querySelectorAll('[data-abundance]')];
