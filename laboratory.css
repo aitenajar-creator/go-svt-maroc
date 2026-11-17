@@ -498,3 +498,34 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-rock-path-options button:focus-visible{outline:3px solid #347b59;outline-offset:3px}
 .gs-rock-path-result{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:13px;background:#eaf4ec;border:1px solid #d0e4d5}.gs-rock-path-result>span{font-size:1.4rem}.gs-rock-path-result strong{display:block;color:#205d36;margin-bottom:4px}.gs-rock-path-result p{margin:0;color:#42644d;line-height:1.7}
 .gs-dark .gs-rock-path-builder{background:#1e3529;border-color:#3d5d49}.gs-dark .gs-rock-path-heading h3,.gs-dark .gs-rock-path-group>strong{color:#d9f0df}.gs-dark .gs-rock-path-heading p{color:#bdd5c4}.gs-dark .gs-rock-path-options button{background:#30483a;border-color:#4d6755;color:#e1eee4}.gs-dark .gs-rock-path-options button[aria-pressed="true"]{background:#245239;border-color:#6ca77b;color:#e4f5e8}.gs-dark .gs-rock-path-result{background:#263c30;border-color:#46614e}.gs-dark .gs-rock-path-result strong{color:#d9f0df}.gs-dark .gs-rock-path-result p{color:#bdd5c4}
+
+
+/* Interactive trophic energy transfer calculator */
+.gs-energy-transfer{display:grid;gap:14px;margin:20px 0;padding:clamp(16px,2.8vw,24px);border:1px solid #d9e8dc;border-radius:18px;background:linear-gradient(145deg,#f3faf4,#fff)}
+.gs-energy-transfer-heading{display:flex;align-items:flex-start;gap:12px}
+.gs-energy-transfer-heading>span{display:grid;place-items:center;flex:0 0 46px;height:46px;border-radius:14px;background:#e2f0e5;font-size:1.5rem}
+.gs-energy-transfer-heading h3{margin:0 0 5px;color:#28583a}
+.gs-energy-transfer-heading p{margin:0;color:#63796a;line-height:1.8}
+.gs-energy-transfer-controls{display:grid;gap:8px}
+.gs-energy-transfer-controls label{display:flex;justify-content:space-between;gap:12px;color:#315d42;font-weight:750}
+.gs-energy-transfer-controls output{color:#236b48;font-variant-numeric:tabular-nums}
+.gs-energy-transfer-controls input{width:100%;margin:0 0 10px;accent-color:#278253;cursor:pointer}
+.gs-energy-transfer-controls input:focus-visible,.gs-energy-transfer button:focus-visible{outline:3px solid #276e49;outline-offset:3px}
+.gs-energy-transfer-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.gs-energy-transfer-results>div{display:grid;gap:7px;padding:13px;border:1px solid #dce9df;border-radius:13px;background:#fff}
+.gs-energy-transfer-results span{color:#56715e;font-weight:700}
+.gs-energy-transfer-results strong{color:#285f3d;font-size:1.2rem;font-variant-numeric:tabular-nums}
+.gs-energy-transfer-results i{display:block;height:10px;overflow:hidden;border-radius:20px;background:#e5eee7}
+.gs-energy-transfer-results i b{display:block;height:100%;min-width:2px;border-radius:20px;background:linear-gradient(90deg,#398454,#83c89a);transition:width .2s ease}
+.gs-energy-transfer-feedback{margin:0;padding:12px 14px;border-inline-start:4px solid #5b966b;border-radius:10px;background:#eaf5ec;color:#365f43;line-height:1.8;font-weight:700}
+.gs-energy-transfer>button{justify-self:start;padding:10px 15px;border:0;border-radius:11px;background:#236b48;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.gs-energy-transfer>small{color:#718174;line-height:1.75}
+@media(max-width:560px){.gs-energy-transfer-results{grid-template-columns:1fr}.gs-energy-transfer-heading>span{flex-basis:40px;height:40px}.gs-energy-transfer-controls label{align-items:flex-start;flex-direction:column;gap:3px}}
+.gs-dark .gs-energy-transfer{background:#1e3529;border-color:#3d5d49}
+.gs-dark .gs-energy-transfer-heading h3,.gs-dark .gs-energy-transfer-controls label,.gs-dark .gs-energy-transfer-results strong{color:#d9f0df}
+.gs-dark .gs-energy-transfer-heading p,.gs-dark .gs-energy-transfer>small{color:#bdd5c4}
+.gs-dark .gs-energy-transfer-results>div{background:#263c30;border-color:#46614e}
+.gs-dark .gs-energy-transfer-results span{color:#c1d7c7}
+.gs-dark .gs-energy-transfer-results i{background:#3a5141}
+.gs-dark .gs-energy-transfer-feedback{background:#263c30;color:#d4e9d9}
+@media(prefers-reduced-motion:reduce){.gs-energy-transfer-results i b{transition:none}}
