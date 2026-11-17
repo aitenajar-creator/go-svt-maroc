@@ -48,14 +48,23 @@
   }
   function openAuth(view) {
     authView = view || 'login';
-    $('tc-auth-title').textContent = authView === 'register' ? 'إنشاء حساب في مجتمع الأساتذة' : 'الدخول إلى مجتمع الأساتذة';
-    $('tc-register-fields').hidden = authView !== 'register';
-    $('tc-name').required = authView === 'register';
-    $('tc-password').autocomplete = authView === 'register' ? 'new-password' : 'current-password';
-    $('tc-auth-submit').textContent = authView === 'register' ? 'إنشاء الحساب' : 'دخول';
-    document.querySelectorAll('[data-auth-view]').forEach(b => b.classList.toggle('active', b.dataset.authView === authView));
+    const dialog = $('tc-auth-dialog');
+    const registering = authView === 'register';
+    $('tc-auth-title').textContent = registering ? 'إنشاء حساب في مجتمع الأساتذة' : 'الدخول إلى مجتمع الأساتذة';
+    $('tc-register-fields').hidden = !registering;
+    $('tc-name').required = registering;
+    $('tc-password').autocomplete = registering ? 'new-password' : 'current-password';
+    $('tc-auth-submit').textContent = registering ? 'إنشاء الحساب' : 'دخول';
+    document.querySelectorAll('[data-auth-view]').forEach(b => {
+      const selected = b.dataset.authView === authView;
+      b.classList.toggle('active', selected);
+      b.setAttribute('aria-pressed', String(selected));
+    });
     message('tc-auth-message', '');
-    $('tc-auth-dialog').showModal();
+    // Tabs can switch views while the native dialog is already open.
+    // Calling showModal() again on an open dialog throws InvalidStateError.
+    if (!dialog.open) dialog.showModal();
+    (registering ? $('tc-name') : $('tc-email')).focus();
   }
   function setSignedInUI() {
     const approved = isAdmin || (member && member.status === 'approved');
