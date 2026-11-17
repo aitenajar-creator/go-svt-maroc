@@ -281,3 +281,25 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 @media(max-width:600px){.gs-tectonic-challenge-head{align-items:flex-start}.gs-tectonic-answers button{flex-basis:100%}.gs-tectonic-challenge-footer{align-items:stretch;flex-direction:column}.gs-tectonic-challenge-footer button{width:100%}}
 @media(prefers-reduced-motion:reduce){.gs-tectonic-answers button{transition:none}}
 .gs-dark .gs-tectonic-challenge{background:#1b3024;border-color:#385844}.gs-dark .gs-tectonic-challenge-head h3,.gs-dark .gs-tectonic-question h4{color:#e0f1e4}.gs-dark .gs-tectonic-challenge-head p,.gs-dark .gs-tectonic-challenge-footer p{color:#b5cbbb}.gs-dark .gs-tectonic-question{background:#22392a;border-color:#3c5a44}.gs-dark .gs-tectonic-answers button{background:#294331;border-color:#49694f;color:#e3f1e5}.gs-dark .gs-tectonic-answers button.is-correct{background:#244c31;color:#d9f4df}.gs-dark .gs-tectonic-answers button.is-wrong{background:#542f2b;color:#ffe2dc}
+
+/* Cell model knowledge check */
+.gs-cell-quiz{margin-top:22px;padding:clamp(15px,2.4vw,24px);border:1px solid #d7e8dc;border-radius:18px;background:linear-gradient(145deg,#f7fbf7,#edf6ef)}
+.gs-cell-quiz-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.gs-cell-quiz-heading h3{margin:9px 0 4px;color:#245b3b;font-size:1.15rem}.gs-cell-quiz-heading p{margin:0;color:#698071;font-size:.88rem}
+.gs-cell-quiz-heading>strong{display:grid;place-items:center;min-width:64px;min-height:48px;padding:5px 10px;border-radius:13px;background:#dcefe1;color:#245b3b;font-size:1rem;white-space:nowrap}
+.gs-cell-question{padding:14px;margin-top:11px;border:1px solid #dce9df;border-radius:14px;background:#fff}
+.gs-cell-question h4{margin:0 0 12px;color:#294b37;font-size:.94rem;line-height:1.7}
+.gs-cell-answers{display:flex;flex-wrap:wrap;gap:8px}
+.gs-cell-answers button{flex:1 1 180px;padding:10px 12px;border:1px solid #d6e4da;border-radius:10px;background:#f7faf7;color:#385743;font:inherit;font-size:.86rem;cursor:pointer}
+.gs-cell-answers button:hover:not(:disabled){border-color:#6ba77b;background:#edf7ef}
+.gs-cell-answers button:focus-visible,.gs-cell-quiz-footer button:focus-visible{outline:3px solid #286c49;outline-offset:2px}
+.gs-cell-answers button:disabled{cursor:default;opacity:1}
+.gs-cell-answers button.is-correct{background:#e1f3e5;border-color:#58a56b;color:#205c35;font-weight:800}
+.gs-cell-answers button.is-wrong{background:#fff0ed;border-color:#d88778;color:#9b392b}
+.gs-cell-question>p{min-height:1.5em;margin:8px 0 0;color:#587362;font-size:.82rem}
+.gs-cell-quiz-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.gs-cell-quiz-footer p{margin:0;color:#617969;font-size:.84rem;line-height:1.7}
+.gs-cell-quiz-footer button{flex:0 0 auto;border:0;border-radius:10px;padding:10px 15px;background:#236b47;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.gs-cell-quiz-footer button:hover{background:#174e34}
+@media(max-width:600px){.gs-cell-quiz-heading{align-items:flex-start}.gs-cell-answers button{flex-basis:100%}.gs-cell-quiz-footer{align-items:stretch;flex-direction:column}.gs-cell-quiz-footer button{width:100%}}
+.gs-dark .gs-cell-quiz{background:#1b3024;border-color:#385844}.gs-dark .gs-cell-quiz-heading h3,.gs-dark .gs-cell-question h4{color:#e0f1e4}.gs-dark .gs-cell-quiz-heading p,.gs-dark .gs-cell-quiz-footer p{color:#b5cbbb}.gs-dark .gs-cell-question{background:#22392a;border-color:#3c5a44}.gs-dark .gs-cell-answers button{background:#294331;border-color:#49694f;color:#e3f1e5}.gs-dark .gs-cell-answers button.is-correct{background:#244c31;color:#d9f4df}.gs-dark .gs-cell-answers button.is-wrong{background:#542f2b;color:#ffe2dc}
