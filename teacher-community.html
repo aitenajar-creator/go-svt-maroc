@@ -71,10 +71,16 @@
           <option value="professional">وثائق مهنية</option><option value="training">التكوين المستمر</option><option value="other">موارد أخرى</option>
         </select>
         <button id="tc-admin-resource-reset" class="tc-filter-reset" type="button">إعادة ضبط</button>
-      </div><div id="tc-admin-resources"></div><button id="tc-admin-resources-more" class="tc-ghost tc-load-more" type="button" hidden>تحميل المزيد من الموارد</button></div></div></div>
+      </div><div id="tc-admin-resources"></div><button id="tc-admin-resources-more" class="tc-ghost tc-load-more" type="button" hidden>تحميل المزيد من الموارد</button></div></div><section class="tc-admin-activity-section" aria-labelledby="tc-admin-activity-title"><div class="tc-admin-activity-heading"><div><h3 id="tc-admin-activity-title">سجل نشاط الإدارة</h3><p>تتبّع عمليات الموارد مع اسم المنفذ ووقت العملية والتغييرات المسجلة.</p></div><button id="tc-admin-activity-refresh" class="tc-filter-reset" type="button">تحديث السجل</button></div><div id="tc-admin-activity" aria-live="polite" aria-busy="false"></div><button id="tc-admin-activity-more" class="tc-ghost tc-load-more" type="button" hidden>تحميل المزيد من العمليات</button></section></div>
     </section>
   </main>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      const refresh = document.getElementById('tc-admin-activity-refresh');
+      if (refresh) refresh.addEventListener('click', function(){ document.dispatchEvent(new CustomEvent('gosvt:refresh-admin-activity')); });
+    });
+  </script>
   <footer class="tc-footer"><b>GO SVT Maroc</b><span>مجتمع مهني للتعاون وتبادل موارد علوم الحياة والأرض.</span><a href="index.html">العودة إلى الموقع الرئيسي</a></footer>
 
   <dialog id="tc-auth-dialog" class="tc-dialog" aria-labelledby="tc-auth-title" aria-describedby="tc-auth-note"><form method="dialog"><button class="tc-dialog-close" aria-label="إغلاق">×</button></form><div class="tc-dialog-inner"><span class="tc-kicker">ESPACE ENSEIGNANT</span><h2 id="tc-auth-title">الانضمام إلى مجتمع الأساتذة</h2><div class="tc-auth-tabs"><button type="button" class="active" data-auth-view="login">دخول</button><button type="button" data-auth-view="register">تسجيل جديد</button></div><form id="tc-auth-form"><div id="tc-register-fields" hidden><label>الاسم الكامل<input id="tc-name" autocomplete="name" minlength="2" maxlength="100"></label><label>الصفة المهنية<input id="tc-title" placeholder="أستاذ علوم الحياة والأرض"></label><label>المؤسسة (اختياري)<input id="tc-school"></label></div><label>البريد الإلكتروني<input id="tc-email" type="email" autocomplete="email" required autofocus></label><label>كلمة المرور<input id="tc-password" type="password" autocomplete="current-password" minlength="8" required></label><p id="tc-auth-message" class="tc-message" role="alert"></p><button id="tc-auth-submit" class="tc-primary" type="submit">دخول</button></form><p id="tc-auth-note" class="tc-dialog-note">تُراجع طلبات الانضمام قبل إتاحة مكتبة الملفات. لا تشارك كلمة مرورك مع أي شخص.</p></div></dialog>
