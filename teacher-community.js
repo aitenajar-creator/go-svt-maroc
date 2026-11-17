@@ -447,7 +447,7 @@
       if (!updated.data) throw new Error('لم تُحفظ التعديلات. تحقق من صلاحية إدارة الوثيقة ثم أعد المحاولة.');
       $('tc-edit-dialog').close();
       editingResourceId = null;
-      await Promise.all([loadLibrary(), loadMyResources(), isAdmin ? loadAdmin() : Promise.resolve()]);
+      await Promise.all([loadLibrary(), loadMyResources(), isAdmin ? loadAdmin() : Promise.resolve(), isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
     } catch (err) {
       message('tc-edit-message', err.message || 'تعذر حفظ التعديلات.');
     } finally {
@@ -783,7 +783,7 @@
         throw saved.error;
       }
       $('tc-upload-form').reset(); $('tc-upload-dialog').close();
-      await Promise.all([loadLibrary(),loadMyResources()]);
+      await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
     } catch(err) { message('tc-upload-message',err.message || 'فشل رفع الملف.'); }
     finally {
       uploadInProgress = false;
