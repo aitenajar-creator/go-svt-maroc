@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('enzyme-activity'))renderEnzymeLab();if($('transcription-activity'))renderTranscription();if($('mitosis-lab'))renderMitosis();if($('meiosis-compare-lab'))renderMeiosisCompare();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('enzyme-activity'))renderEnzymeLab();if($('enzyme-factors-activity'))updateEnzymeFactors();if($('transcription-activity'))renderTranscription();if($('mitosis-lab'))renderMitosis();if($('meiosis-compare-lab'))renderMeiosisCompare();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -970,6 +970,39 @@ $('meiosis-reset')?.addEventListener('click',()=>{meiosisStep=0;renderMeiosisCom
 renderMeiosisCompare();
 
 
+
+
+function updateEnzymeFactors(){
+ const temp=$('enzyme-temperature'),ph=$('enzyme-ph');if(!temp||!ph)return;
+ const t=Number(temp.value),p=Number(ph.value);
+ $('enzyme-temperature-value').textContent=String(t);
+ $('enzyme-ph-value').textContent=p.toFixed(1);
+ const tempFactor=Math.max(0,1-Math.pow(Math.abs(t-37)/43,1.45));
+ const phFactor=Math.max(0,1-Math.pow(Math.abs(p-7)/7,1.35));
+ const activity=Math.round(100*tempFactor*phFactor);
+ $('enzyme-activity-value').textContent=activity+'%';
+ $('enzyme-activity-fill').style.width=activity+'%';
+ $('enzyme-activity-meter').setAttribute('aria-valuenow',String(activity));
+ let message;
+ if(lang==='ar'){
+  if(t>55)message='الحرارة المرتفعة قد تغير بنية الإنزيم (التمسخ)، فتقل فعاليته.';
+  else if(Math.abs(p-7)>=3)message='الابتعاد عن pH الملائم قد يغير شحنات الموقع الفعال ويقلل نشاط الإنزيم.';
+  else if(t<15)message='الحرارة المنخفضة تبطئ حركة الجزيئات والتفاعلات، فتقل سرعة النشاط.';
+  else if(activity>=90)message='الإنزيم قريب من شروطه المثلى في هذا النموذج.';
+  else message='الفعالية أقل من القيمة القصوى لأن أحد العاملين أو كليهما ابتعد عن المجال الأمثل.';
+ }else{
+  if(t>55)message='Une température élevée peut modifier la structure de l’enzyme (dénaturation) et réduire son activité.';
+  else if(Math.abs(p-7)>=3)message='Un pH éloigné de la valeur favorable peut modifier les charges du site actif et réduire l’activité.';
+  else if(t<15)message='Une basse température ralentit les mouvements moléculaires et la vitesse des réactions.';
+  else if(activity>=90)message='Dans ce modèle, l’enzyme est proche de ses conditions optimales.';
+  else message='L’activité est inférieure au maximum car un ou les deux facteurs s’éloignent de leur plage optimale.';
+ }
+ $('enzyme-factor-explanation').textContent=message;
+}
+$('enzyme-temperature')?.addEventListener('input',updateEnzymeFactors);
+$('enzyme-ph')?.addEventListener('input',updateEnzymeFactors);
+$('enzyme-factors-reset')?.addEventListener('click',()=>{$('enzyme-temperature').value='37';$('enzyme-ph').value='7';updateEnzymeFactors();});
+updateEnzymeFactors();
 
 const enzymePairs=[
  {enzyme:'Amylase',ar:'الأميلاز (Amylase)',fr:'Amylase',substrate:'starch',subAr:'النشا',subFr:'Amidon',whyAr:'يحفّز الأميلاز تفكيك النشا إلى سكريات أصغر، مثل المالتوز.',whyFr:'L’amylase catalyse la dégradation de l’amidon en sucres plus simples, notamment le maltose.'},
