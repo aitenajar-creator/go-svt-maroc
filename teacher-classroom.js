@@ -128,6 +128,24 @@
         box-shadow:0 7px 16px rgba(22,72,51,.18);
         filter:brightness(1.04);
       }
+      /* Make selected teacher inbox filters and toggles unmistakable. */
+      #gs-classroom.gs-cl-teacher-view button[aria-pressed="true"]{
+        background:linear-gradient(115deg,#1b5946,#4c876c);
+        color:#fff;
+        border:1px solid rgba(27,89,70,.3);
+        box-shadow:0 4px 12px rgba(22,72,51,.16);
+      }
+      #gs-classroom.gs-cl-teacher-view button[aria-pressed="false"]{
+        opacity:.88;
+      }
+      #gs-classroom.gs-cl-teacher-view button[aria-pressed="true"]:hover:not(:disabled){
+        filter:brightness(1.08);
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view button[aria-pressed="true"]{
+        background:linear-gradient(115deg,#2c654d,#4b8060);
+        color:#fff;
+        border-color:#5c8d6b;
+      }
       #gs-classroom.gs-cl-teacher-view button.gs-cl-secondary{
         background:linear-gradient(120deg,#edf6ef,#dcece1);
         color:#205b43;
