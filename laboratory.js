@@ -492,17 +492,18 @@ updatePollutionSimulator();
 
 
 function updateWaterQualityQuiz(){
- const result=$('water-quality-quiz-result');
- if(result&&!result.dataset.graded)result.textContent=lang==='ar'?'أجب عن الأسئلة الثلاثة ثم اضغط على التصحيح.':'Répondez aux trois questions puis lancez la correction.';
+ const result=$('water-quality-quiz-result');if(!result)return;
+ if(result.dataset.score!==undefined){const score=Number(result.dataset.score);result.textContent=lang==='ar'?'نتيجتك: '+score+'/3. '+(score===3?'ممتاز! فهمت المؤشرات الأساسية.':'راجع تفسيرات المؤشرات وحاول مرة أخرى.'):'Votre score : '+score+'/3. '+(score===3?'Excellent ! Les indicateurs essentiels sont compris.':'Relisez les explications et réessayez.');}
+ else result.textContent=lang==='ar'?'أجب عن الأسئلة الثلاثة ثم اضغط على التصحيح.':'Répondez aux trois questions puis lancez la correction.';
 }
 $('water-quality-quiz-check')?.addEventListener('click',()=>{
  const answers=['a','b','a'];let score=0,answered=0;
  answers.forEach((answer,index)=>{const choice=document.querySelector('input[name="wq-q'+(index+1)+'"]:checked');if(choice){answered++;if(choice.value===answer)score++;}});
  const result=$('water-quality-quiz-result');if(!result)return;
  if(answered<3){result.dataset.graded='';result.textContent=lang==='ar'?'أجب عن الأسئلة الثلاثة أولاً لإظهار النتيجة.':'Répondez d’abord aux trois questions pour afficher le résultat.';return;}
- result.dataset.graded='true';result.textContent=lang==='ar'?'نتيجتك: '+score+'/3. '+(score===3?'ممتاز! فهمت المؤشرات الأساسية.':'راجع تفسيرات المؤشرات وحاول مرة أخرى.'):'Votre score : '+score+'/3. '+(score===3?'Excellent ! Les indicateurs essentiels sont compris.':'Relisez les explications et réessayez.');
+ result.dataset.graded='true';result.dataset.score=String(score);result.textContent=lang==='ar'?'نتيجتك: '+score+'/3. '+(score===3?'ممتاز! فهمت المؤشرات الأساسية.':'راجع تفسيرات المؤشرات وحاول مرة أخرى.'):'Votre score : '+score+'/3. '+(score===3?'Excellent ! Les indicateurs essentiels sont compris.':'Relisez les explications et réessayez.');
 });
-['wq-q1','wq-q2','wq-q3'].forEach(name=>document.querySelectorAll('input[name="'+name+'"]').forEach(input=>input.addEventListener('change',()=>{const result=$('water-quality-quiz-result');if(result)delete result.dataset.graded;})));
+['wq-q1','wq-q2','wq-q3'].forEach(name=>document.querySelectorAll('input[name="'+name+'"]').forEach(input=>input.addEventListener('change',()=>{const result=$('water-quality-quiz-result');if(result){delete result.dataset.graded;delete result.dataset.score;}})));
 
 function updateWaterQualityLab(){
  const ph=$('water-quality-ph'),turbidity=$('water-quality-turbidity'),oxygen=$('water-quality-oxygen');
