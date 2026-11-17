@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -873,6 +873,36 @@ $('biodiv-quiz-reset').addEventListener('click',()=>{
 });
 
 
+
+function updateBiodiversityAbundance(){
+ const inputs=[...document.querySelectorAll('[data-abundance]')];
+ const counts=inputs.map(input=>{
+  const value=Math.max(0,Math.min(100,Math.floor(Number(input.value)||0)));
+  input.value=String(value);return value;
+ });
+ const total=counts.reduce((sum,value)=>sum+value,0);
+ const present=counts.filter(value=>value>0).length;
+ const index=total?1-counts.reduce((sum,value)=>sum+(value/total)**2,0):0;
+ $('biodiv-abundance-total').textContent=new Intl.NumberFormat(lang==='ar'?'ar-MA':'fr-FR').format(total);
+ $('biodiv-abundance-richness').textContent=present+' / '+counts.length;
+ $('biodiv-simpson-index').textContent=index.toFixed(3);
+ const names=lang==='ar'?['نباتات','حشرات','طيور','فطريات']:['Plantes','Insectes','Oiseaux','Champignons'];
+ document.querySelectorAll('#biodiv-abundance-bars>div').forEach((row,i)=>{
+  row.querySelector('span').textContent=names[i];
+  row.querySelector('b').style.width=(total?counts[i]/total*100:0)+'%';
+  row.querySelector('strong').textContent=String(counts[i]);
+ });
+ $('biodiv-abundance-feedback').textContent=lang==='ar'
+  ?total===0?'أدخل عدداً موجباً لنوع واحد على الأقل لحساب المؤشر.':present===1?'توجد فئة واحدة فقط في العينة؛ لذلك يساوي مؤشر التنوع صفراً.':index>=0.7?'توزيع الأفراد متوازن نسبياً بين الأنواع الموجودة في هذه العينة.':'توجد فروق في أعداد الأفراد بين الأنواع؛ لاحظ كيف يتغير المؤشر عند تعديل القيم.'
+  :total===0?'Saisissez un effectif positif pour au moins une espèce afin de calculer l’indice.':present===1?'Une seule catégorie est présente ; l’indice de diversité est donc nul.':index>=0.7?'Les effectifs sont relativement équilibrés entre les espèces présentes dans cet échantillon.':'Les effectifs diffèrent entre les espèces ; observez comment l’indice évolue lorsque vous modifiez les valeurs.';
+}
+document.querySelectorAll('[data-abundance]').forEach(input=>input.addEventListener('input',updateBiodiversityAbundance));
+$('biodiv-abundance-reset')?.addEventListener('click',()=>{
+ const defaults=[8,4,2,2];
+ document.querySelectorAll('[data-abundance]').forEach((input,index)=>input.value=String(defaults[index]));
+ updateBiodiversityAbundance();
+});
+updateBiodiversityAbundance();
 
 function updateBiodiversitySampling(){
  const boxes=[...document.querySelectorAll('[data-sample-species]')];
