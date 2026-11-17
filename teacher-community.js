@@ -753,7 +753,7 @@
     try {
       const actionFilter = $('tc-admin-activity-action').value;
       const rawSearch = $('tc-admin-activity-search').value.trim();
-      const search = rawSearch.replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      const search = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       const rows = [];
       const pageSize = 500;
       for (let offset = 0; offset < 10000; offset += pageSize) {
@@ -785,7 +785,7 @@
         row.owner_id === user.id ? 'إدارة المنصة' : (people[row.owner_id] || row.owner_id || ''),
         row.resource_id || '', row.details ? JSON.stringify(row.details) : ''
       ])];
-      const csv = '\\uFEFF' + lines.map(line => line.map(csvCell).join(',')).join('\\r\\n');
+      const csv = '\uFEFF' + lines.map(line => line.map(csvCell).join(',')).join('\r\n');
       const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -953,6 +953,7 @@
     $('tc-my-reset').addEventListener('click',()=>{clearTimeout(mySearchTimer);$('tc-my-search').value='';$('tc-my-search-clear').hidden=true;$('tc-my-filter').value='all';$('tc-my-sort').value='newest';updateMyResetVisibility();loadMyResources(true);});
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
+    $('tc-admin-activity-export').addEventListener('click',exportAdminActivity);
     $('tc-admin-activity-refresh').addEventListener('click',()=>loadAdminActivity(true));
     $('tc-admin-activity-action').addEventListener('change',()=>loadAdminActivity(true));
     $('tc-admin-activity-search').addEventListener('input',()=>{
