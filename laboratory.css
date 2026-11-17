@@ -389,3 +389,31 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-dark .gs-pollution-sim-results>div{background:#22392a;border-color:#3c5a44}
 .gs-dark .gs-pollution-sim-feedback{background:#203d2c;color:#d5ebd9}
 @media(prefers-reduced-motion:reduce){.gs-pollution-simulator *{scroll-behavior:auto}}
+
+
+/* Water cycle knowledge check */
+.gs-watercycle-quiz{margin:22px 0 8px;padding:clamp(16px,2.8vw,24px);border:1px solid #d7e6ec;border-radius:19px;background:linear-gradient(145deg,#f1f8fb,#fff)}
+.gs-watercycle-quiz-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
+.gs-watercycle-quiz-head>span{display:grid;place-items:center;flex:0 0 46px;height:46px;border-radius:14px;background:#e1eff5;font-size:1.5rem}
+.gs-watercycle-quiz-head h3{margin:0 0 5px;color:#28586a}
+.gs-watercycle-quiz-head p{margin:0;color:#647985;line-height:1.8}
+.gs-watercycle-question{margin:13px 0;padding:15px;border:1px solid #dce8ed;border-radius:14px;background:#fff}
+.gs-watercycle-question h4{margin:0 0 12px;color:#315b69;line-height:1.7}
+.gs-watercycle-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.gs-watercycle-options button{min-height:46px;padding:9px 12px;border:1px solid #d5e4e9;border-radius:11px;background:#f7fbfc;color:#315b69;font:inherit;cursor:pointer}
+.gs-watercycle-options button:disabled{cursor:default;opacity:.82}
+.gs-watercycle-options button.is-correct,.gs-watercycle-options button.is-answer{border-color:#38845a;background:#e6f4e9;color:#245c39;font-weight:800}
+.gs-watercycle-options button.is-incorrect{border-color:#c47a65;background:#fbefeb;color:#854633}
+.gs-watercycle-options button:focus-visible,.gs-watercycle-quiz-footer button:focus-visible{outline:3px solid #36758c;outline-offset:3px}
+.gs-watercycle-answer{min-height:1.6em;margin:10px 0 0;color:#496b78;line-height:1.75}
+.gs-watercycle-quiz-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:15px}
+.gs-watercycle-quiz-footer strong{color:#28586a;font-size:1.05rem}
+.gs-watercycle-quiz-footer button{padding:10px 15px;border:0;border-radius:11px;background:#28677d;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+@media(max-width:650px){.gs-watercycle-options{grid-template-columns:1fr}.gs-watercycle-quiz-footer{align-items:stretch;flex-direction:column}}
+.gs-dark .gs-watercycle-quiz{background:#1b2d35;border-color:#38515c}
+.gs-dark .gs-watercycle-quiz-head h3,.gs-dark .gs-watercycle-question h4,.gs-dark .gs-watercycle-quiz-footer strong{color:#d7edf5}
+.gs-dark .gs-watercycle-quiz-head p,.gs-dark .gs-watercycle-answer{color:#b5cbd4}
+.gs-dark .gs-watercycle-question{background:#223943;border-color:#3a5661}
+.gs-dark .gs-watercycle-options button{background:#29434d;border-color:#49636d;color:#e0edf1}
+.gs-dark .gs-watercycle-options button.is-correct,.gs-dark .gs-watercycle-options button.is-answer{background:#244b35;border-color:#5b9b70;color:#e1f4e5}
+.gs-dark .gs-watercycle-options button.is-incorrect{background:#51352f;border-color:#a86c5a;color:#f8e1d9}

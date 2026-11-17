@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-2">
+<link rel="stylesheet" href="laboratory.css?v=20261117-3">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -322,6 +322,13 @@
     <button type="button" data-watercycle="infiltration"><span>🪨</span><strong data-ar="التسرب والجريان" data-fr="Infiltration et ruissellement">التسرب والجريان</strong></button>
    </div>
    <div id="watercycle-detail" class="gs-watercycle-detail" aria-live="polite" data-ar="اختر مرحلة من دورة الماء لعرض شرحها." data-fr="Choisissez une étape du cycle de l’eau pour afficher son explication.">اختر مرحلة من دورة الماء لعرض شرحها.</div>
+   <div class="gs-watercycle-quiz" id="watercycle-quiz">
+    <div class="gs-watercycle-quiz-head"><span aria-hidden="true">🧠</span><div><h3 data-ar="اختبر فهمك لدورة الماء" data-fr="Vérifiez votre compréhension du cycle de l’eau">اختبر فهمك لدورة الماء</h3><p data-ar="أجب عن الأسئلة الثلاثة واحصل على نتيجتك مباشرة." data-fr="Répondez aux trois questions et obtenez votre résultat immédiatement.">أجب عن الأسئلة الثلاثة واحصل على نتيجتك مباشرة.</p></div></div>
+    <div class="gs-watercycle-question" data-water-question="0"><h4 data-ar="1. ما مصدر الطاقة الأساسي الذي يحرك دورة الماء؟" data-fr="1. Quelle est la principale source d’énergie du cycle de l’eau ?">1. ما مصدر الطاقة الأساسي الذي يحرك دورة الماء؟</h4><div class="gs-watercycle-options"><button type="button" data-water-answer="0" data-correct="true" data-ar="الشمس" data-fr="Le Soleil">الشمس</button><button type="button" data-water-answer="0" data-ar="القمر" data-fr="La Lune">القمر</button><button type="button" data-water-answer="0" data-ar="الرياح وحدها" data-fr="Le vent seul">الرياح وحدها</button></div><p class="gs-watercycle-answer" aria-live="polite"></p></div>
+    <div class="gs-watercycle-question" data-water-question="1"><h4 data-ar="2. ماذا يحدث لبخار الماء عندما يبرد؟" data-fr="2. Que devient la vapeur d’eau lorsqu’elle se refroidit ?">2. ماذا يحدث لبخار الماء عندما يبرد؟</h4><div class="gs-watercycle-options"><button type="button" data-water-answer="1" data-ar="يتكاثف مكوناً قطرات أو بلورات" data-fr="Elle se condense en gouttelettes ou cristaux">يتكاثف مكوناً قطرات أو بلورات</button><button type="button" data-water-answer="1" data-ar="يتحول مباشرة إلى تربة" data-fr="Elle se transforme directement en sol">يتحول مباشرة إلى تربة</button><button type="button" data-water-answer="1" data-ar="يختفي نهائياً" data-fr="Elle disparaît définitivement">يختفي نهائياً</button></div><p class="gs-watercycle-answer" aria-live="polite"></p></div>
+    <div class="gs-watercycle-question" data-water-question="2"><h4 data-ar="3. ما العملية التي تسمح للماء بدخول التربة؟" data-fr="3. Quel processus permet à l’eau de pénétrer dans le sol ?">3. ما العملية التي تسمح للماء بدخول التربة؟</h4><div class="gs-watercycle-options"><button type="button" data-water-answer="2" data-ar="التسرب" data-fr="L’infiltration">التسرب</button><button type="button" data-water-answer="2" data-ar="التكاثف" data-fr="La condensation">التكاثف</button><button type="button" data-water-answer="2" data-ar="النتح" data-fr="La transpiration">النتح</button></div><p class="gs-watercycle-answer" aria-live="polite"></p></div>
+    <div class="gs-watercycle-quiz-footer"><strong id="watercycle-score" aria-live="polite" data-ar="النتيجة: 0 / 3" data-fr="Score : 0 / 3">النتيجة: 0 / 3</strong><button type="button" id="watercycle-retry" data-ar="إعادة المحاولة" data-fr="Recommencer">إعادة المحاولة</button></div>
+   </div>
    <p class="gs-photo-note" data-ar="دورة الماء عملية مستمرة تحركها الطاقة الشمسية والجاذبية. قد تختلف المسارات الفعلية للماء حسب المناخ والتضاريس والغطاء النباتي." data-fr="Le cycle de l’eau est un processus continu alimenté par l’énergie solaire et la gravité. Les parcours réels de l’eau varient selon le climat, le relief et la couverture végétale.">دورة الماء عملية مستمرة تحركها الطاقة الشمسية والجاذبية. قد تختلف المسارات الفعلية للماء حسب المناخ والتضاريس والغطاء النباتي.</p>
   </div>
  </section>
@@ -389,5 +396,5 @@
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261117-2" defer></script>
+<script src="laboratory.js?v=20261117-3" defer></script>
 </body></html>
