@@ -14,7 +14,7 @@
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, adminLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -258,11 +258,13 @@
     await Promise.all([loadLibrary(),loadMyResources()]);
   }
   async function loadAdmin(reset = true, only = 'both') {
-    if (!isAdmin || adminLoading) return;
-    adminLoading = true;
+    const loadMembers = only !== 'resources', loadResources = only !== 'members';
+    if (!isAdmin || (loadMembers && adminMembersLoading) || (loadResources && adminResourcesLoading)) return;
+    if (loadMembers) adminMembersLoading = true;
+    if (loadResources) adminResourcesLoading = true;
     const memberMoreButton = $('tc-admin-members-more'), resourceMoreButton = $('tc-admin-resources-more');
-    if (memberMoreButton) memberMoreButton.disabled = true;
-    if (resourceMoreButton) resourceMoreButton.disabled = true;
+    if (loadMembers && memberMoreButton) memberMoreButton.disabled = true;
+    if (loadResources && resourceMoreButton) resourceMoreButton.disabled = true;
     try {
     if (reset) {
       adminMembersOffset = 0; adminResourcesOffset = 0;
@@ -293,9 +295,10 @@
     $('tc-admin-members-more').hidden = !adminMembersMore;
     $('tc-admin-resources-more').hidden = !adminResourcesMore;
     } finally {
-      adminLoading = false;
-      if (memberMoreButton) memberMoreButton.disabled = false;
-      if (resourceMoreButton) resourceMoreButton.disabled = false;
+      if (loadMembers) adminMembersLoading = false;
+      if (loadResources) adminResourcesLoading = false;
+      if (loadMembers && memberMoreButton) memberMoreButton.disabled = false;
+      if (loadResources && resourceMoreButton) resourceMoreButton.disabled = false;
     }
   }
   async function handleAuth(e) {
