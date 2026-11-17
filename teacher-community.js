@@ -15,7 +15,7 @@
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   let uploadInProgress = false;
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false; let adminResourceSearchTimer = null;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -536,10 +536,23 @@
         $('tc-admin-resources').replaceChildren();
       }
     }
+    let adminResourceQuery = client.from('teacher_community_resources').select('*');
+    const adminSearch = ($('tc-admin-resource-search')?.value || '').trim()
+      .replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+    const adminStatus = $('tc-admin-resource-status')?.value || 'all';
+    const adminCategory = $('tc-admin-resource-category')?.value || '';
+    if (adminSearch) {
+      const pattern = '%' + adminSearch + '%';
+      adminResourceQuery = adminResourceQuery.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
+    }
+    if (adminCategory) adminResourceQuery = adminResourceQuery.eq('category', adminCategory);
+    if (adminStatus === 'hidden') adminResourceQuery = adminResourceQuery.eq('status', 'hidden');
+    if (adminStatus === 'shared') adminResourceQuery = adminResourceQuery.eq('status', 'published').eq('is_shared', true);
+    if (adminStatus === 'private') adminResourceQuery = adminResourceQuery.eq('status', 'published').eq('is_shared', false);
     const [members, docs] = await Promise.all([
       only === 'resources' ? Promise.resolve({data:[],error:null}) : client.from('teacher_community_members').select('*').order('created_at',{ascending:false}).order('user_id',{ascending:false})
         .range(adminMembersOffset, adminMembersOffset + PAGE_SIZE - 1),
-      only === 'members' ? Promise.resolve({data:[],error:null}) : client.from('teacher_community_resources').select('*').order('created_at',{ascending:false}).order('id',{ascending:false})
+      only === 'members' ? Promise.resolve({data:[],error:null}) : adminResourceQuery.order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(adminResourcesOffset, adminResourcesOffset + PAGE_SIZE - 1)
     ]);
     const memberPage = members.error ? [] : (members.data || []);
@@ -572,7 +585,7 @@
         $('tc-admin-resources').insertAdjacentHTML('beforeend', resourcePage.map(r =>
           '<div class="tc-admin-row"><span><b>' + escapeHtml(r.title) + '</b><br>' + escapeHtml(r.file_name) + '</span><span>' + escapeHtml(r.status) + '</span><span><button data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'نشر' : 'إخفاء') + '</button><button class="danger" data-admin-delete="' + escapeHtml(r.id) + '">حذف نهائياً</button></span></div>'
         ).join(''));
-        if (reset && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد.</div>';
+        if (reset && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد تطابق معايير البحث والتصفية الحالية.</div>';
       }
       $('tc-admin-resources-more').hidden = !adminResourcesMore;
     }
@@ -713,6 +726,19 @@
     });
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
+    $('tc-admin-resource-search').addEventListener('input',()=>{
+      clearTimeout(adminResourceSearchTimer);
+      adminResourceSearchTimer=setTimeout(()=>loadAdmin(true,'resources'),300);
+    });
+    $('tc-admin-resource-status').addEventListener('change',()=>loadAdmin(true,'resources'));
+    $('tc-admin-resource-category').addEventListener('change',()=>loadAdmin(true,'resources'));
+    $('tc-admin-resource-reset').addEventListener('click',()=>{
+      clearTimeout(adminResourceSearchTimer);
+      $('tc-admin-resource-search').value='';
+      $('tc-admin-resource-status').value='all';
+      $('tc-admin-resource-category').value='';
+      loadAdmin(true,'resources');
+    });
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
     document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>{const selected=x===b;x.classList.toggle('active',selected);x.setAttribute('aria-pressed',String(selected));});['mine','pending','admin'].forEach(p=>$( 'tc-'+p+'-panel').hidden=p!==b.dataset.panel);}));
     $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin)loadAdmin();});
