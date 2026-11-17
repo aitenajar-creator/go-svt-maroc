@@ -240,6 +240,16 @@
       }
     }
   }
+  function updateLibraryResetVisibility() {
+    const active = Boolean(($('tc-search').value || '').trim() || $('tc-category').value ||
+      $('tc-file-type').value || $('tc-library-sort').value !== 'newest');
+    $('tc-library-reset').hidden = !active;
+  }
+  function updateMyResetVisibility() {
+    const active = Boolean(($('tc-my-search').value || '').trim() ||
+      $('tc-my-filter').value !== 'all' || $('tc-my-sort').value !== 'newest');
+    $('tc-my-reset').hidden = !active;
+  }
   function renderLibrary() {
     $('tc-library-state').hidden = resources.length > 0;
     $('tc-library-state').textContent = resources.length ? '' : 'لا توجد موارد مطابقة. جرّب تغيير كلمات البحث أو التصنيف.';
@@ -546,7 +556,15 @@
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
     $('tc-file').addEventListener('change',updateSelectedFileHint);
-    $('tc-search').addEventListener('input',()=>{clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);}); $('tc-category').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);}); $('tc-file-type').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);}); $('tc-library-sort').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);});
+    $('tc-search').addEventListener('input',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);});
+    $('tc-category').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
+    $('tc-file-type').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
+    $('tc-library-sort').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
+    $('tc-library-reset').addEventListener('click',()=>{
+      clearTimeout(librarySearchTimer);
+      $('tc-search').value=''; $('tc-category').value=''; $('tc-file-type').value=''; $('tc-library-sort').value='newest';
+      updateLibraryResetVisibility(); loadLibrary(true);
+    });
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
@@ -554,10 +572,11 @@
     $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin)loadAdmin();});
     $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
-    $('tc-my-filter').addEventListener('change',()=>loadMyResources(true));
-    $('tc-my-sort').addEventListener('change',()=>loadMyResources(true));
-    $('tc-my-search').addEventListener('input',()=>{ $('tc-my-search-clear').hidden = !$('tc-my-search').value; clearTimeout(mySearchTimer);mySearchTimer=setTimeout(()=>loadMyResources(true),300);});
-    $('tc-my-search-clear').addEventListener('click',()=>{ clearTimeout(mySearchTimer); $('tc-my-search').value=''; $('tc-my-search-clear').hidden=true; loadMyResources(true); $('tc-my-search').focus(); });
+    $('tc-my-filter').addEventListener('change',()=>{updateMyResetVisibility();loadMyResources(true);});
+    $('tc-my-sort').addEventListener('change',()=>{updateMyResetVisibility();loadMyResources(true);});
+    $('tc-my-search').addEventListener('input',()=>{ $('tc-my-search-clear').hidden = !$('tc-my-search').value; updateMyResetVisibility(); clearTimeout(mySearchTimer);mySearchTimer=setTimeout(()=>loadMyResources(true),300);});
+    $('tc-my-search-clear').addEventListener('click',()=>{ clearTimeout(mySearchTimer); $('tc-my-search').value=''; $('tc-my-search-clear').hidden=true; updateMyResetVisibility(); loadMyResources(true); $('tc-my-search').focus(); });
+    $('tc-my-reset').addEventListener('click',()=>{clearTimeout(mySearchTimer);$('tc-my-search').value='';$('tc-my-search-clear').hidden=true;$('tc-my-filter').value='all';$('tc-my-sort').value='newest';updateMyResetVisibility();loadMyResources(true);});
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
   }
