@@ -28,3 +28,21 @@
 
 /* Visible count for the currently loaded shared-library results */
 .tc-library-results-summary{margin:0 0 12px;color:var(--tc-muted);font-size:12px;font-weight:700}
+
+
+/* Keep long teacher-resource metadata and actions inside their cards. */
+.tc-resource-card{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.tc-resource-card h3,.tc-resource-card p{overflow-wrap:anywhere;word-break:normal}
+.tc-resource-card p{margin:5px 0 12px}
+.tc-resource-meta{min-width:0;align-items:flex-start}
+.tc-resource-meta>span{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+.tc-resource-meta .tc-resource-status{flex:0 0 auto;white-space:normal}
+.tc-resource-actions{flex-wrap:wrap}
+.tc-resource-actions button{min-width:0;overflow-wrap:anywhere}
+@media(max-width:560px){
+  .tc-resource-card{padding:16px;border-radius:15px}
+  .tc-resource-meta{gap:6px 10px;line-height:1.7}
+  .tc-resource-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px}
+  .tc-resource-actions button{width:100%;min-height:40px;padding:9px 7px}
+}
+.tc-resource-actions button:focus-visible{outline:3px solid var(--tc-gold);outline-offset:2px}
