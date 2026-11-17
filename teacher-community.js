@@ -788,7 +788,9 @@
       moreButton.hidden = !adminActivityMore;
     } catch (error) {
       console.error('[Teacher community activity]',error);
-      panel.innerHTML = '<div class="tc-state" role="alert">تعذر تحميل سجل النشاط. تأكد من تطبيق ترحيل سجل التدقيق في قاعدة البيانات ثم أعد المحاولة.</div>';
+      const dateError = error && typeof error.message === 'string' && error.message.startsWith('تاريخ');
+      const feedback = dateError ? error.message : 'تعذر تحميل سجل النشاط. تأكد من تطبيق ترحيل سجل التدقيق في قاعدة البيانات ثم أعد المحاولة.';
+      panel.innerHTML = '<div class="tc-state" role="alert">' + escapeHtml(feedback) + '</div>';
       moreButton.hidden = true;
     } finally {
       adminActivityLoading = false;
@@ -932,7 +934,8 @@
       if (status) status.textContent = 'تم تجهيز ملف CSV ويحتوي على ' + rows.length + ' عملية مطابقة.';
     } catch (error) {
       console.error('[Teacher community activity export]', error);
-      if (status) status.textContent = error.message || 'تعذر تصدير سجل النشاط.';
+      const dateError = error && typeof error.message === 'string' && error.message.startsWith('تاريخ');
+      if (status) status.textContent = dateError ? error.message : 'تعذر تصدير سجل النشاط.';
     } finally {
       button.disabled = false;
       button.textContent = '⬇ تصدير CSV';
