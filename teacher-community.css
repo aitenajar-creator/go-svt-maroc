@@ -160,6 +160,76 @@ button:disabled {
 #tc-my-export:disabled{opacity:.6;cursor:wait}
 
 
+
+/* Teacher community task navigation — visual cards matching the student space. */
+.tc-dashboard-tabs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  border:0;
+  margin-top:25px;
+}
+.tc-dashboard-tabs button{
+  flex:1 1 190px;
+  min-height:86px;
+  padding:16px 20px;
+  border:1px solid rgba(255,255,255,.42);
+  border-radius:19px;
+  background:linear-gradient(115deg,rgba(19,67,54,.96),rgba(105,145,128,.88));
+  color:#fff;
+  font:800 14px Cairo,Arial,sans-serif;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:0 9px 22px rgba(20,55,43,.13);
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
+}
+.tc-dashboard-tabs button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 13px 26px rgba(20,55,43,.18);
+}
+.tc-dashboard-tabs button.active{
+  background:linear-gradient(115deg,#103d32,#2d7259);
+  color:#fff;
+  border-color:rgba(255,255,255,.62);
+  box-shadow:0 10px 25px rgba(17,74,57,.24);
+}
+.tc-dashboard-tabs button:focus-visible,
+.tc-primary:focus-visible,
+.tc-secondary:focus-visible,
+.tc-account:focus-visible,
+.tc-ghost:focus-visible{
+  outline:3px solid #a9d8b7;
+  outline-offset:3px;
+}
+.tc-hero-actions .tc-primary,
+.tc-hero-actions .tc-secondary,
+.tc-dashboard-head .tc-primary{
+  min-height:48px;
+  border-radius:15px;
+  padding:12px 22px;
+  font-weight:800;
+  box-shadow:0 7px 18px rgba(20,55,43,.13);
+}
+.tc-hero-actions .tc-primary,
+.tc-dashboard-head .tc-primary{
+  background:linear-gradient(115deg,#174a3c,#43836a);
+}
+.tc-hero-actions .tc-primary:hover,
+.tc-dashboard-head .tc-primary:hover{
+  background:linear-gradient(115deg,#103c31,#2f7058);
+  transform:translateY(-1px);
+}
+.tc-hero-actions .tc-secondary{
+  background:linear-gradient(120deg,#f4faf6,#e5f0e9);
+  color:#1e5d49;
+  border:1px solid rgba(45,90,71,.18);
+}
+@media(max-width:560px){
+  .tc-dashboard-tabs{gap:9px}
+  .tc-dashboard-tabs button{flex:1 1 calc(50% - 9px);min-height:72px;padding:12px 10px;font-size:12px}
+  .tc-hero-actions .tc-primary,.tc-hero-actions .tc-secondary{flex:1 1 100%;justify-content:center}
+}
+
 /* Keep the additional audit actor filter aligned and responsive. */
 .tc-admin-activity-filters input{flex:1 1 220px;min-width:190px}
 @media(max-width:560px){.tc-admin-activity-filters input{min-width:0}}
