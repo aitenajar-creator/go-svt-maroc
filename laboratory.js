@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -405,6 +405,63 @@ const foodWebTexts={
  snakes:{ar:'قد تتغذى الأفاعي على الأرانب والضفادع، ويمكن أن تفترسها بعض الجوارح.',fr:'Les serpents peuvent manger des lapins et des grenouilles ; certains rapaces peuvent les capturer.'},
  hawks:{ar:'تُعد الجوارح مستهلكات عليا في هذا النموذج، وتتغذى على كائنات مثل الطيور والأفاعي والأرانب.',fr:'Les rapaces sont des consommateurs supérieurs dans ce modèle. Ils peuvent se nourrir d’oiseaux, de serpents et de lapins.'}
 };
+
+let foodChainStep=0;
+const foodChainOrder=['insects','frogs','snakes','hawks'];
+const foodChainNames={
+ plants:{ar:'🌿 نباتات',fr:'🌿 Plantes'},
+ insects:{ar:'🦗 حشرات',fr:'🦗 Insectes'},
+ frogs:{ar:'🐸 ضفادع',fr:'🐸 Grenouilles'},
+ snakes:{ar:'🐍 أفاعٍ',fr:'🐍 Serpents'},
+ hawks:{ar:'🦅 جوارح',fr:'🦅 Rapaces'}
+};
+const foodChainPrompts=[
+ {ar:'ما الكائن الذي يمكن أن يتغذى على النباتات؟',fr:'Quel organisme peut se nourrir des plantes ?'},
+ {ar:'ما الكائن الذي يمكن أن يتغذى على الحشرات؟',fr:'Quel organisme peut manger les insectes ?',},
+ {ar:'ما الكائن الذي يمكن أن يتغذى على الضفادع؟',fr:'Quel organisme peut manger les grenouilles ?'},
+ {ar:'ما الكائن الذي يمكن أن يتغذى على الأفاعي؟',fr:'Quel organisme peut manger les serpents ?'}
+];
+function renderFoodChain(){
+ const path=['plants',...foodChainOrder.slice(0,foodChainStep)].map(key=>foodChainNames[key][lang]).join('  →  ');
+ $('food-chain-path').textContent=path;
+ $('food-chain-progress').textContent=lang==='ar'?'المرحلة '+Math.min(foodChainStep+1,4)+' من 4':'Étape '+Math.min(foodChainStep+1,4)+' sur 4';
+ $('food-chain-progress-bar').style.width=(foodChainStep/4*100)+'%';
+ const prompt=$('food-chain-prompt'),feedback=$('food-chain-feedback');
+ if(foodChainStep<4){
+  prompt.textContent=foodChainPrompts[foodChainStep][lang];
+  if(foodChainStep===0||foodChainStep===1||foodChainStep===2||foodChainStep===3){
+   // The prompt and answer choices are refreshed together when the language changes.
+  }
+ }else{
+  prompt.textContent=lang==='ar'?'أحسنت! اكتملت السلسلة الغذائية.':'Bravo ! La chaîne alimentaire est complète.';
+ }
+ document.querySelectorAll('[data-chain-choice]').forEach(button=>{
+  const chosen=foodChainOrder.slice(0,foodChainStep).includes(button.dataset.chainChoice);
+  button.disabled=chosen;
+  button.classList.toggle('is-selected',chosen);
+ });
+ if(foodChainStep===4){
+  feedback.textContent=lang==='ar'?'انتقلت المادة والطاقة من المنتج إلى المستهلكات عبر أربعة مستويات متتالية.':'La matière et l’énergie sont passées du producteur aux consommateurs à travers quatre maillons successifs.';
+ }
+}
+document.querySelectorAll('[data-chain-choice]').forEach(button=>button.addEventListener('click',()=>{
+ if(foodChainStep>=4)return;
+ const choice=button.dataset.chainChoice;
+ if(choice===foodChainOrder[foodChainStep]){
+  foodChainStep++;
+  $('food-chain-feedback').textContent=lang==='ar'?'إجابة صحيحة! أحسنت، تابع إلى الحلقة التالية.':'Bonne réponse ! Continuez avec le maillon suivant.';
+  renderFoodChain();
+ }else{
+  $('food-chain-feedback').textContent=lang==='ar'?'ليس هذا الاختيار المناسب في هذا المثال. تذكّر أن السهم ينتقل من الغذاء إلى الكائن الذي يستهلكه.':'Ce n’est pas le bon choix dans cet exemple. Rappelez-vous que la flèche va de l’aliment vers l’organisme qui le consomme.';
+ }
+}));
+$('food-chain-reset').addEventListener('click',()=>{
+ foodChainStep=0;
+ $('food-chain-feedback').textContent=lang==='ar'?'اختر الحلقة التالية لإكمال السلسلة.':'Choisissez le maillon suivant pour continuer.';
+ renderFoodChain();
+});
+renderFoodChain();
+
 function showFoodWeb(key){
  const t=foodWebTexts[key];if(t)$('foodweb-detail').textContent=t[lang];
 }
