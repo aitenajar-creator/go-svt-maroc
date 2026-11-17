@@ -175,7 +175,9 @@
       '<h3>' + escapeHtml(r.title) + '</h3><p>' + escapeHtml(r.description || 'لا يوجد وصف إضافي لهذه الوثيقة.') + '</p>' +
       '<div class="tc-resource-meta"><span>' + escapeHtml(adminOwn) + '</span><span>· ' + escapeHtml(dateLabel(r.created_at)) + '</span><span>· ' + (r.size_bytes/1048576).toFixed(1) + ' MB</span></div>' +
       '<div class="tc-resource-meta"><span>' + escapeHtml(r.file_name) + '</span><span class="tc-resource-status ' + statusClass + '" role="status">' + statusLabel + '</span></div>' +
-      '<div class="tc-resource-actions"><button type="button" data-download="' + escapeHtml(r.id) + '">⬇ تحميل</button>' +
+      '<div class="tc-resource-actions">' +
+      (['application/pdf','image/jpeg','image/png','image/webp'].includes(r.mime_type) ? '<button type="button" data-preview="' + escapeHtml(r.id) + '">👁 معاينة</button>' : '') +
+      '<button type="button" data-download="' + escapeHtml(r.id) + '">⬇ تحميل</button>' +
       ((own || isAdmin) ? '<button type="button" class="danger" data-delete="' + escapeHtml(r.id) + '">حذف</button>' : '') +
       ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
       '</div></article>';
@@ -368,6 +370,40 @@
       downloadTab.location.replace(data.signedUrl);
     } catch (err) {
       if (downloadTab && !downloadTab.closed) downloadTab.close();
+      throw err;
+    }
+  }
+  async function previewResource(id) {
+    // Open synchronously from the user's click so popup blockers do not reject the preview.
+    const previewTab = window.open('about:blank', '_blank');
+    if (previewTab) {
+      try { previewTab.opener = null; } catch (_) {}
+      try { previewTab.document.title = 'جارٍ تجهيز المعاينة…'; } catch (_) {}
+    }
+    try {
+      const r = resources.find(x => x.id === id) || await findResource(id);
+      if (!r) throw new Error('لم يتم العثور على الملف.');
+      const previewableTypes = ['application/pdf','image/jpeg','image/png','image/webp'];
+      if (!previewableTypes.includes(r.mime_type)) {
+        throw new Error('المعاينة متاحة حالياً لملفات PDF والصور فقط.');
+      }
+      const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90);
+      if (error) throw error;
+      let signedUrl;
+      try {
+        signedUrl = new URL(data && data.signedUrl);
+      } catch (_) {
+        throw new Error('تعذر تجهيز رابط معاينة صالح. أعد المحاولة.');
+      }
+      if (signedUrl.protocol !== 'https:' || signedUrl.origin !== new URL(config.url).origin) {
+        throw new Error('رابط المعاينة غير موثوق. أعد المحاولة أو أبلغ إدارة المنصة.');
+      }
+      if (!previewTab || previewTab.closed) {
+        throw new Error('منع المتصفح فتح نافذة المعاينة. اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة.');
+      }
+      previewTab.location.replace(data.signedUrl);
+    } catch (err) {
+      if (previewTab && !previewTab.closed) previewTab.close();
       throw err;
     }
   }
@@ -641,10 +677,11 @@
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b || b.disabled)return;
-    if (!b.dataset.download && !b.dataset.delete && !b.dataset.toggleShare && !b.dataset.retryMyResources) return;
+    if (!b.dataset.preview && !b.dataset.download && !b.dataset.delete && !b.dataset.toggleShare && !b.dataset.retryMyResources) return;
     b.disabled = true;
     try {
       if(b.dataset.retryMyResources) await loadMyResources(true);
+      if(b.dataset.preview) await previewResource(b.dataset.preview);
       if(b.dataset.download) await downloadResource(b.dataset.download);
       if(b.dataset.delete) await deleteResource(b.dataset.delete);
       if(b.dataset.toggleShare) await toggleShare(b.dataset.toggleShare);
