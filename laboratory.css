@@ -417,3 +417,26 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-dark .gs-watercycle-options button{background:#29434d;border-color:#49636d;color:#e0edf1}
 .gs-dark .gs-watercycle-options button.is-correct,.gs-dark .gs-watercycle-options button.is-answer{background:#244b35;border-color:#5b9b70;color:#e1f4e5}
 .gs-dark .gs-watercycle-options button.is-incorrect{background:#51352f;border-color:#a86c5a;color:#f8e1d9}
+
+
+/* Three-question water resource management quiz */
+.gs-water-management-quiz{display:grid;gap:14px}
+.gs-wm-question{padding:15px;border:1px solid #dce8ed;border-radius:14px;background:#fff}
+.gs-wm-question h3{margin:0 0 12px;color:#315b69;line-height:1.75}
+.gs-wm-question .gs-quiz-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.gs-wm-question .gs-quiz-options button{min-height:46px;padding:9px 12px;border:1px solid #d5e4e9;border-radius:11px;background:#f7fbfc;color:#315b69;font:inherit;cursor:pointer}
+.gs-wm-question .gs-quiz-options button:disabled{cursor:default;opacity:.85}
+.gs-wm-question .gs-quiz-options button.is-correct{border-color:#38845a;background:#e6f4e9;color:#245c39;font-weight:800}
+.gs-wm-question .gs-quiz-options button.is-wrong{border-color:#c47a65;background:#fbefeb;color:#854633}
+.gs-wm-question .gs-quiz-options button:focus-visible,.gs-wm-quiz-footer button:focus-visible{outline:3px solid #36758c;outline-offset:3px}
+.gs-wm-feedback{min-height:1.5em;margin:10px 0 0;color:#496b78;line-height:1.75}
+.gs-wm-quiz-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:8px}
+.gs-wm-quiz-footer strong{color:#28586a;font-size:1.05rem}
+.gs-wm-quiz-footer button{padding:10px 15px;border:0;border-radius:11px;background:#28677d;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+@media(max-width:650px){.gs-wm-question .gs-quiz-options{grid-template-columns:1fr}.gs-wm-quiz-footer{align-items:stretch;flex-direction:column}}
+.gs-dark .gs-wm-question{background:#223943;border-color:#3a5661}
+.gs-dark .gs-wm-question h3,.gs-dark .gs-wm-quiz-footer strong{color:#d7edf5}
+.gs-dark .gs-wm-feedback{color:#b5cbd4}
+.gs-dark .gs-wm-question .gs-quiz-options button{background:#29434d;border-color:#49636d;color:#e0edf1}
+.gs-dark .gs-wm-question .gs-quiz-options button.is-correct{background:#244b35;border-color:#5b9b70;color:#e1f4e5}
+.gs-dark .gs-wm-question .gs-quiz-options button.is-wrong{background:#51352f;border-color:#a86c5a;color:#f8e1d9}
