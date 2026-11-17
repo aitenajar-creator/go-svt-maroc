@@ -199,14 +199,15 @@
       let query = client.from('teacher_community_resources')
         .select('*').eq('status','published').eq('is_shared',true);
       if (category) query = query.eq('category', category);
-      const fileExtensions = {
-        pdf: ['pdf'], word: ['doc','docx','odt'], presentation: ['ppt','pptx','odp'],
-        spreadsheet: ['xls','xlsx'], image: ['jpg','jpeg','png','webp'], other: ['txt','zip']
+      const fileMimeTypes = {
+        pdf: ['application/pdf'],
+        word: ['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.oasis.opendocument.text'],
+        presentation: ['application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/vnd.oasis.opendocument.presentation'],
+        spreadsheet: ['application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        image: ['image/jpeg','image/png','image/webp'],
+        other: ['text/plain','application/zip']
       };
-      if (fileType && fileExtensions[fileType]) {
-        const extensionFilters = fileExtensions[fileType].map(ext => 'file_name.ilike.%.' + ext).join(',');
-        query = query.or(extensionFilters);
-      }
+      if (fileType && fileMimeTypes[fileType]) query = query.in('mime_type', fileMimeTypes[fileType]);
       if (q) {
         const pattern = '%' + q + '%';
         query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
