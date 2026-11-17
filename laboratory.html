@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-11">
+<link rel="stylesheet" href="laboratory.css?v=20261117-12">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -372,6 +372,23 @@
     <p class="gs-water-quality-feedback" id="water-quality-feedback" aria-live="polite">غيّر القيم لاستكشاف أثر كل مؤشر.</p>
     <button type="button" id="water-quality-reset" data-ar="إعادة القيم الأولية" data-fr="Réinitialiser les valeurs">إعادة القيم الأولية</button>
     <small data-ar="نشاط تعليمي مبسط فقط: لا تمثل الحدود هنا معياراً قانونياً أو حكماً على صلاحية الماء للشرب. يتطلب التقييم الحقيقي قياسات ميدانية ومعايير مناسبة لنوع الوسط." data-fr="Activité pédagogique simplifiée : ces seuils ne constituent ni une norme réglementaire ni un avis sur la potabilité. Une évaluation réelle exige des mesures de terrain et des critères adaptés au milieu.">نشاط تعليمي مبسط فقط: لا تمثل الحدود هنا معياراً قانونياً أو حكماً على صلاحية الماء للشرب. يتطلب التقييم الحقيقي قياسات ميدانية ومعايير مناسبة لنوع الوسط.</small>
+   </div>
+
+   <div class="gs-water-treatment" id="water-treatment-lab">
+    <div class="gs-water-treatment-heading"><span aria-hidden="true">🚰</span><div><h3 data-ar="رتّب مراحل معالجة المياه" data-fr="Remettez en ordre les étapes du traitement de l’eau">رتّب مراحل معالجة المياه</h3><p data-ar="اختر المراحل بالترتيب المناسب لبناء مسار مبسط لمعالجة المياه قبل توزيعها." data-fr="Sélectionnez les étapes dans le bon ordre pour construire un parcours simplifié de traitement avant la distribution.">اختر المراحل بالترتيب المناسب لبناء مسار مبسط لمعالجة المياه قبل توزيعها.</p></div></div>
+    <div class="gs-water-treatment-sequence" id="water-treatment-sequence" aria-live="polite">
+     <span data-ar="1. الترسيب" data-fr="1. Décantation">1. الترسيب</span><span data-ar="2. الترشيح" data-fr="2. Filtration">2. الترشيح</span><span data-ar="3. التطهير" data-fr="3. Désinfection">3. التطهير</span><span data-ar="4. التخزين والتوزيع" data-fr="4. Stockage et distribution">4. التخزين والتوزيع</span>
+    </div>
+    <div class="gs-water-treatment-choices" role="group" aria-label="مراحل معالجة المياه">
+     <button type="button" data-treatment-step="filtration"><span>🧺</span><strong data-ar="الترشيح" data-fr="Filtration">الترشيح</strong></button>
+     <button type="button" data-treatment-step="storage"><span>🏘️</span><strong data-ar="التخزين والتوزيع" data-fr="Stockage et distribution">التخزين والتوزيع</strong></button>
+     <button type="button" data-treatment-step="disinfection"><span>🧼</span><strong data-ar="التطهير" data-fr="Désinfection">التطهير</strong></button>
+     <button type="button" data-treatment-step="settling"><span>🫧</span><strong data-ar="الترسيب" data-fr="Décantation">الترسيب</strong></button>
+    </div>
+    <p id="water-treatment-feedback" aria-live="polite" data-ar="ابدأ باختيار المرحلة الأولى." data-fr="Commencez par choisir la première étape.">ابدأ باختيار المرحلة الأولى.</p>
+    <div class="gs-water-treatment-progress"><span data-ar="تقدمك" data-fr="Votre progression">تقدمك</span><strong id="water-treatment-progress">0 / 4</strong></div>
+    <button type="button" id="water-treatment-reset" data-ar="إعادة المحاولة" data-fr="Recommencer">إعادة المحاولة</button>
+    <small data-ar="هذا ترتيب تعليمي مبسط؛ قد تختلف مراحل المعالجة الفعلية حسب مصدر الماء وجودته والتقنيات والمعايير المعتمدة." data-fr="Cet ordre est pédagogique et simplifié ; les étapes réelles varient selon la source, la qualité de l’eau, les technologies et les normes applicables.">هذا ترتيب تعليمي مبسط؛ قد تختلف مراحل المعالجة الفعلية حسب مصدر الماء وجودته والتقنيات والمعايير المعتمدة.</small>
    </div>
   </div>
  </section>
