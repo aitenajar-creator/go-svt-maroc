@@ -370,8 +370,19 @@ $('eco-population-reset').addEventListener('click',()=>{
  $('eco-predators-range').value=ecoPopulationDefaults.predators;
  updateEcoPopulation();
 });
+const cascadeTexts={
+ plants:{ar:['تراجع المنتجين: يقل مصدر المادة العضوية والطاقة.','انخفاض محتمل في العواشب: تتراجع الموارد النباتية المتاحة.','تأثر المستهلكات العليا: يقل الغذاء المتاح لبعض المفترسات.'],fr:['Recul des producteurs : la source de matière organique et d’énergie diminue.','Baisse possible des herbivores : les ressources végétales deviennent moins disponibles.','Effet sur les consommateurs supérieurs : certaines proies deviennent moins abondantes.']},
+ insects:{ar:['تراجع بعض المستهلكات الأولية: يقل استهلاك النباتات.','تغير الغطاء النباتي: قد تزداد النباتات التي كانت الحشرات تستهلكها.','تأثر آكلات الحشرات: يقل مورد غذائي للضفادع وبعض الطيور.'],fr:['Recul de certains consommateurs primaires : la consommation des plantes diminue.','Évolution de la végétation : les plantes consommées peuvent devenir plus abondantes.','Effet sur les insectivores : les grenouilles et certains oiseaux perdent une ressource.']},
+ frogs:{ar:['تراجع مستهلك ثانوي: تختفي حلقة من افتراس الحشرات.','زيادة محتملة لبعض الحشرات: ينخفض ضغط افتراسها.','تأثر المفترسات: يقل مورد غذائي للأفاعي وبعض الطيور.'],fr:['Recul d’un consommateur secondaire : un lien de prédation sur les insectes disparaît.','Hausse possible de certains insectes : la pression de prédation diminue.','Effet sur les prédateurs : les serpents et certains oiseaux perdent une ressource.']},
+ birds:{ar:['تغير جماعات الطيور: تختفي علاقات افتراس واستهلاك متعددة.','تغير الفرائس: قد تتبدل أعداد الحشرات والكائنات التي كانت الطيور تستهلكها.','تأثر الجوارح: قد يقل مورد غذائي لبعض المفترسات.'],fr:['Changement des populations d’oiseaux : plusieurs relations alimentaires disparaissent.','Évolution des proies : les populations d’insectes et d’autres organismes consommés peuvent changer.','Effet sur les rapaces : certaines ressources alimentaires peuvent diminuer.']},
+ snakes:{ar:['تراجع مستهلك أعلى: تختفي علاقة افتراس لبعض الفرائس.','زيادة محتملة لبعض الفرائس: ينخفض ضغط الافتراس عليها.','تغير المنافسة: قد تتغير الموارد المتاحة لمفترسات أخرى.'],fr:['Recul d’un consommateur supérieur : une relation de prédation disparaît.','Hausse possible de certaines proies : la pression de prédation diminue.','Évolution de la compétition : les ressources disponibles pour d’autres prédateurs peuvent changer.']}
+};
 function showBalanceResult(key){
  const t=balanceTexts[key];if(t)$('balance-result').textContent=t[lang];
+ const steps=$('balance-cascade-steps');
+ steps.replaceChildren();
+ const sequence=cascadeTexts[key];
+ if(sequence)sequence[lang].forEach((label,index)=>{const item=document.createElement('li');item.textContent=label;item.value=index+1;steps.appendChild(item);});
  document.querySelectorAll('[data-balance-species]').forEach(b=>{b.classList.toggle('is-removed',b.dataset.balanceSpecies===key);b.setAttribute('aria-pressed',b.dataset.balanceSpecies===key?'true':'false');});
 }
 document.querySelectorAll('[data-balance-species]').forEach(btn=>btn.addEventListener('click',()=>{
