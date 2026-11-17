@@ -684,7 +684,7 @@
         .select('id,resource_id,resource_title,owner_id,actor_id,action,details,created_at');
       const actionFilter = $('tc-admin-activity-action') ? $('tc-admin-activity-action').value : '';
       const rawActivitySearch = $('tc-admin-activity-search') ? $('tc-admin-activity-search').value.trim() : '';
-      const activitySearch = rawActivitySearch.replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      const activitySearch = rawActivitySearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       if (actionFilter) activityQuery = activityQuery.eq('action', actionFilter);
       if (activitySearch) activityQuery = activityQuery.ilike('resource_title', '%' + activitySearch + '%');
       const {data,error} = await activityQuery
