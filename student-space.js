@@ -2611,6 +2611,11 @@ function openScientificPhotoPreview(card){
 
         syncCurrentProfile();
 
+        const panelTask = (icon, titleAr, titleFr, content) => {
+            const title = lang() === 'fr' ? titleFr : titleAr;
+            return `<details class="gs-student-task gs-student-panel-task"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
+        };
+
         let html = `
             <div class="student-space">
                 <div class="space-nav">
@@ -2628,25 +2633,25 @@ function openScientificPhotoPreview(card){
                         ${renderDashboard()}
                     </div>
                     <div class="space-panel" id="panel-progress">
-                        ${renderProgress()}
+                         ${panelTask('📈','تقدمي الدراسي','Ma progression',renderProgress())} 
                     </div>
                     <div class="space-panel" id="panel-history">
-                        ${renderHistory()}
+                        ${panelTask('🕘','سجل الاختبارات','Historique des quiz',renderHistory())}
                     </div>
                     <div class="space-panel" id="panel-mistakes">
-                        ${renderMistakes()}
+                        ${panelTask('🧩','مراجعة أخطائي','Révision de mes erreurs',renderMistakes())}
                     </div>
                     <div class="space-panel" id="panel-favorites">
-                        ${renderFavorites()}
+                        ${panelTask('⭐','مواردي المفضلة','Mes favoris',renderFavorites())}
                     </div>
                     <div class="space-panel" id="panel-motivation">
-                        ${renderMotivation()}
+                        ${panelTask('🏅','التحفيز والأهداف','Motivation et objectifs',renderMotivation())}
                     </div>
                     <div class="space-panel" id="panel-planner">
-                        ${renderPlanner()}
+                        ${panelTask('🗓','خطة المراجعة','Mon planning de révision',renderPlanner())}
                     </div>
                     <div class="space-panel" id="panel-notes">
-                        ${renderNotes()}
+                        ${panelTask('🗒','ملاحظاتي','Mes notes',renderNotes())}
                     </div>
                 </div>
             </div>
