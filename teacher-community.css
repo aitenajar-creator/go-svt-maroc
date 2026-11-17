@@ -137,3 +137,8 @@ button:disabled {
 .tc-activity-row time{white-space:nowrap;text-align:left}
 .tc-activity-details{padding-top:2px}
 @media(max-width:560px){.tc-admin-activity-heading{align-items:flex-start;flex-direction:column}.tc-activity-row{grid-template-columns:32px minmax(0,1fr)}.tc-activity-row time{grid-column:2;text-align:right}.tc-activity-icon{width:32px;height:32px}}
+
+.tc-admin-activity-filters{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 16px}
+.tc-admin-activity-filters input,.tc-admin-activity-filters select{height:41px;min-width:190px;max-width:100%;padding:0 12px;border:1px solid var(--tc-line);border-radius:10px;background:#fff;color:var(--tc-ink);font:12px Cairo,Arial,sans-serif}
+.tc-admin-activity-filters input{flex:1}
+@media(max-width:560px){.tc-admin-activity-filters{display:grid;grid-template-columns:1fr}.tc-admin-activity-filters input,.tc-admin-activity-filters select{width:100%;min-width:0}}

@@ -15,6 +15,7 @@
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   let uploadInProgress = false;
   const PAGE_SIZE = 50;
+  let adminActivitySearchTimer = null;
   let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false, adminResourcesRefreshPending = false, adminResourceSearchTimer = null, adminActivityOffset = 0, adminActivityMore = false, adminActivityLoading = false, adminActivityRefreshPending = false;
 
   function message(id, value, good) {
@@ -679,8 +680,14 @@
     }
     try {
       const start = reset ? 0 : adminActivityOffset;
-      const {data,error} = await client.from('teacher_community_resource_activity')
-        .select('id,resource_id,resource_title,owner_id,actor_id,action,details,created_at')
+      let activityQuery = client.from('teacher_community_resource_activity')
+        .select('id,resource_id,resource_title,owner_id,actor_id,action,details,created_at');
+      const actionFilter = $('tc-admin-activity-action') ? $('tc-admin-activity-action').value : '';
+      const rawActivitySearch = $('tc-admin-activity-search') ? $('tc-admin-activity-search').value.trim() : '';
+      const activitySearch = rawActivitySearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (actionFilter) activityQuery = activityQuery.eq('action', actionFilter);
+      if (activitySearch) activityQuery = activityQuery.ilike('resource_title', '%' + activitySearch + '%');
+      const {data,error} = await activityQuery
         .order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(start,start + PAGE_SIZE - 1);
       if (error) throw error;
@@ -881,6 +888,17 @@
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
     $('tc-admin-activity-refresh').addEventListener('click',()=>loadAdminActivity(true));
+    $('tc-admin-activity-action').addEventListener('change',()=>loadAdminActivity(true));
+    $('tc-admin-activity-search').addEventListener('input',()=>{
+      clearTimeout(adminActivitySearchTimer);
+      adminActivitySearchTimer=setTimeout(()=>loadAdminActivity(true),300);
+    });
+    $('tc-admin-activity-reset').addEventListener('click',()=>{
+      clearTimeout(adminActivitySearchTimer);
+      $('tc-admin-activity-search').value='';
+      $('tc-admin-activity-action').value='';
+      loadAdminActivity(true);
+    });
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b || b.disabled)return;
