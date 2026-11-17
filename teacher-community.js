@@ -21,6 +21,31 @@
     const el = $(id); if (!el) return;
     el.textContent = value || ''; el.classList.toggle('success', !!good);
   }
+  function updateSelectedFileHint() {
+    const input = $('tc-file');
+    const hint = $('tc-file-hint');
+    if (!input || !hint) return;
+    const file = input.files && input.files[0];
+    hint.classList.remove('tc-file-hint-error', 'tc-file-hint-valid');
+    if (!file) {
+      hint.textContent = 'PDF وWord وPowerPoint وExcel وغيرها · الحد الأقصى 50 MB';
+      return;
+    }
+    const ext = fileExt(file.name);
+    const size = (file.size / 1048576).toFixed(1);
+    if (!allowed.has(ext)) {
+      hint.textContent = 'صيغة غير مدعومة: .' + (ext || 'غير معروفة') + ' · اختر PDF أو Office أو صورة أو TXT أو ZIP.';
+      hint.classList.add('tc-file-hint-error');
+      return;
+    }
+    if (file.size <= 0 || file.size > MAX_FILE) {
+      hint.textContent = file.name + ' · ' + size + ' MB — الحجم غير مقبول؛ الحد الأقصى 50 MB.';
+      hint.classList.add('tc-file-hint-error');
+      return;
+    }
+    hint.textContent = '✓ ' + file.name + ' · ' + size + ' MB · جاهز للرفع';
+    hint.classList.add('tc-file-hint-valid');
+  }
   function openAuth(view) {
     authView = view || 'login';
     $('tc-auth-title').textContent = authView === 'register' ? 'إنشاء حساب في مجتمع الأساتذة' : 'الدخول إلى مجتمع الأساتذة';
@@ -443,7 +468,7 @@
     document.querySelectorAll('[data-auth-view]').forEach(b=>b.addEventListener('click',()=>{authView=b.dataset.authView;openAuth(authView);}));
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
-    $('tc-file').addEventListener('change',()=>{const f=$('tc-file').files[0];$('tc-file-hint').textContent=f?f.name+' · '+(f.size/1048576).toFixed(1)+' MB':'PDF وWord وPowerPoint وExcel وغيرها · الحد الأقصى 50 MB';});
+    $('tc-file').addEventListener('change',updateSelectedFileHint);
     $('tc-search').addEventListener('input',()=>{clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);}); $('tc-category').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
