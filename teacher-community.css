@@ -146,3 +146,10 @@ button:disabled {
 .tc-admin-activity-actions{display:flex;gap:8px;flex-wrap:wrap}
 .tc-admin-activity-export-status{min-height:18px;margin:4px 0;color:var(--tc-muted);font-size:11px;line-height:1.7}
 #tc-admin-activity-export:disabled{opacity:.6;cursor:wait}
+
+/* Teacher personal resource overview */
+.tc-my-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.tc-my-stats article{display:grid;gap:5px;min-width:0;padding:14px 16px;border:1px solid var(--tc-line);border-radius:13px;background:linear-gradient(145deg,#fff,#f5faf7)}
+.tc-my-stats article span{font-size:11px;color:var(--tc-muted);line-height:1.7}
+.tc-my-stats article strong{font-size:24px;line-height:1.3;color:var(--tc-green);font-weight:800;font-variant-numeric:tabular-nums}
+@media(max-width:760px){.tc-my-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.tc-my-stats article{padding:11px 13px}.tc-my-stats article strong{font-size:21px}}
