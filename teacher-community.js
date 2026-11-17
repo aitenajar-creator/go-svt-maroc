@@ -178,6 +178,7 @@
       '<div class="tc-resource-actions">' +
       (['application/pdf','image/jpeg','image/png','image/webp'].includes(r.mime_type) ? '<button type="button" data-preview="' + escapeHtml(r.id) + '">👁 معاينة</button>' : '') +
       '<button type="button" data-download="' + escapeHtml(r.id) + '">⬇ تحميل</button>' +
+      ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-edit-resource="' + escapeHtml(r.id) + '">تعديل البيانات</button>' : '') +
       ((own || isAdmin) ? '<button type="button" class="danger" data-delete="' + escapeHtml(r.id) + '">حذف</button>' : '') +
       ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
       '</div></article>';
@@ -405,6 +406,54 @@
     } catch (err) {
       if (previewTab && !previewTab.closed) previewTab.close();
       throw err;
+    }
+  }
+  let editingResourceId = null, editInProgress = false;
+  async function openEditResource(id) {
+    if (!user) throw new Error('سجّل الدخول أولاً.');
+    const r = resources.find(x => x.id === id) || await findResource(id);
+    if (!r) throw new Error('لم يتم العثور على الوثيقة.');
+    const canEdit = isAdmin || (r.owner_id === user.id && member && member.status === 'approved');
+    if (!canEdit) throw new Error('لا تملك صلاحية تعديل بيانات هذه الوثيقة.');
+    editingResourceId = r.id;
+    $('tc-edit-title').value = r.title || '';
+    $('tc-edit-description').value = r.description || '';
+    $('tc-edit-category').value = r.category || 'other';
+    $('tc-edit-share').checked = r.is_shared === true;
+    message('tc-edit-message','');
+    $('tc-edit-dialog').showModal();
+    $('tc-edit-title').focus();
+  }
+  async function handleEditResource(e) {
+    e.preventDefault();
+    if (editInProgress || !editingResourceId) return;
+    const title = $('tc-edit-title').value.trim();
+    const description = $('tc-edit-description').value.trim();
+    if (title.length < 2 || title.length > 180) return message('tc-edit-message','يجب أن يتراوح العنوان بين حرفين و180 حرفاً.');
+    if (description.length > 3000) return message('tc-edit-message','الوصف أطول من الحد المسموح.');
+    const category = $('tc-edit-category').value;
+    if (!Object.prototype.hasOwnProperty.call(categories, category)) return message('tc-edit-message','اختر تصنيفاً صالحاً.');
+    editInProgress = true;
+    const submit = $('tc-edit-submit');
+    const closeButton = $('tc-edit-dialog').querySelector('.tc-dialog-close');
+    submit.disabled = true; submit.textContent = 'جارٍ حفظ التعديلات...';
+    if (closeButton) closeButton.disabled = true;
+    try {
+      const updated = await client.from('teacher_community_resources').update({
+        title, description, category, is_shared: $('tc-edit-share').checked,
+        updated_at: new Date().toISOString()
+      }).eq('id', editingResourceId).select('id').maybeSingle();
+      if (updated.error) throw updated.error;
+      if (!updated.data) throw new Error('لم تُحفظ التعديلات. تحقق من صلاحية إدارة الوثيقة ثم أعد المحاولة.');
+      $('tc-edit-dialog').close();
+      editingResourceId = null;
+      await Promise.all([loadLibrary(), loadMyResources(), isAdmin ? loadAdmin() : Promise.resolve()]);
+    } catch (err) {
+      message('tc-edit-message', err.message || 'تعذر حفظ التعديلات.');
+    } finally {
+      editInProgress = false;
+      submit.disabled = false; submit.textContent = 'حفظ التعديلات';
+      if (closeButton) closeButton.disabled = false;
     }
   }
   async function findResource(id) {
@@ -648,6 +697,8 @@
     document.querySelectorAll('[data-auth-view]').forEach(b=>b.addEventListener('click',()=>{authView=b.dataset.authView;openAuth(authView);}));
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
+    $('tc-edit-form').addEventListener('submit',handleEditResource);
+    $('tc-edit-dialog').addEventListener('cancel',e=>{if(editInProgress)e.preventDefault();});
     $('tc-upload-dialog').addEventListener('cancel',e=>{if(uploadInProgress)e.preventDefault();});
     $('tc-file').addEventListener('change',updateSelectedFileHint);
     $('tc-search').addEventListener('input',()=>{$('tc-search-clear').hidden = !$('tc-search').value;updateLibraryResetVisibility();clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);});
@@ -677,11 +728,12 @@
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b || b.disabled)return;
-    if (!b.dataset.preview && !b.dataset.download && !b.dataset.delete && !b.dataset.toggleShare && !b.dataset.retryMyResources) return;
+    if (!b.dataset.preview && !b.dataset.download && !b.dataset.editResource && !b.dataset.delete && !b.dataset.toggleShare && !b.dataset.retryMyResources) return;
     b.disabled = true;
     try {
       if(b.dataset.retryMyResources) await loadMyResources(true);
       if(b.dataset.preview) await previewResource(b.dataset.preview);
+      if(b.dataset.editResource) await openEditResource(b.dataset.editResource);
       if(b.dataset.download) await downloadResource(b.dataset.download);
       if(b.dataset.delete) await deleteResource(b.dataset.delete);
       if(b.dataset.toggleShare) await toggleShare(b.dataset.toggleShare);
