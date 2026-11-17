@@ -333,6 +333,17 @@
       if (!r) throw new Error('لم يتم العثور على الملف.');
       const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90, { download: r.file_name });
       if (error) throw error;
+      // Accept only a signed URL served by this community's configured Supabase project.
+      // A malformed or unexpected redirect must never be opened as a download target.
+      let signedUrl;
+      try {
+        signedUrl = new URL(data && data.signedUrl);
+      } catch (_) {
+        throw new Error('تعذر تجهيز رابط تنزيل صالح. أعد المحاولة.');
+      }
+      if (signedUrl.protocol !== 'https:' || signedUrl.origin !== new URL(config.url).origin) {
+        throw new Error('رابط التنزيل غير موثوق. أعد المحاولة أو أبلغ إدارة المنصة.');
+      }
       if (!downloadTab || downloadTab.closed) {
         throw new Error('منع المتصفح فتح نافذة التنزيل. اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة.');
       }
