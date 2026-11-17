@@ -39,8 +39,13 @@
       hint.classList.add('tc-file-hint-error');
       return;
     }
-    if (file.size <= 0 || file.size > MAX_FILE) {
-      hint.textContent = file.name + ' · ' + size + ' MB — الحجم غير مقبول؛ الحد الأقصى 50 MB.';
+    if (file.size <= 0) {
+      hint.textContent = 'الملف فارغ ولا يحتوي على بيانات. اختر ملفاً آخر.';
+      hint.classList.add('tc-file-hint-error');
+      return;
+    }
+    if (file.size > MAX_FILE) {
+      hint.textContent = file.name + ' · ' + size + ' MB — تجاوز الحد الأقصى المسموح به (50 MB).';
       hint.classList.add('tc-file-hint-error');
       return;
     }
