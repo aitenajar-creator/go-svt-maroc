@@ -319,7 +319,7 @@
       }
     } catch (err) {
       $('tc-my-resources-status').textContent = 'تعذر الاتصال بملفاتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
-      $('tc-my-resources').innerHTML = '<div class="tc-state" role="alert">تعذر الاتصال بملفاتك. حاول إعادة التحميل بعد التحقق من الاتصال.<br><button type="button" class="tc-filter-reset" data-retry-my-resources>إعادة تحميل ملفاتي</button></div>';
+      $('tc-my-resources').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بملفاتك. حاول إعادة التحميل بعد التحقق من الاتصال.<br><button type="button" class="tc-filter-reset" data-retry-my-resources>إعادة تحميل ملفاتي</button></div>');
       if (reset) $('tc-my-resources-more').hidden = true;
     } finally {
       myLoading = false;
