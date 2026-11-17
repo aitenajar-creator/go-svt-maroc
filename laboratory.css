@@ -348,3 +348,17 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-eco-quiz-footer button{border:0;border-radius:11px;padding:11px 16px;background:#236b48;color:#fff;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}
 @media(max-width:650px){.gs-eco-answers{grid-template-columns:1fr}.gs-eco-quiz-footer{align-items:stretch;flex-direction:column}.gs-eco-quiz-footer button{width:100%}}
 @media(prefers-reduced-motion:reduce){.gs-eco-quiz *{scroll-behavior:auto}}
+
+/* Accessible ecosystem population scenario controls */
+.gs-population-simulator{margin:18px 0;padding:18px;border:1px solid #dceade;border-radius:18px;background:linear-gradient(145deg,#f5fbf5,#fff)}
+.gs-population-heading h3{margin:0 0 6px;color:#28573b}
+.gs-population-heading p{margin:0 0 16px;color:#65796b;line-height:1.8}
+.gs-population-controls{display:grid;gap:8px}
+.gs-population-controls label{display:flex;justify-content:space-between;gap:12px;color:#315d42;font-weight:750}
+.gs-population-controls output{font-variant-numeric:tabular-nums;color:#236b48}
+.gs-population-controls input{width:100%;accent-color:#278253;margin:0 0 10px;cursor:pointer}
+.gs-population-controls input:focus-visible,.gs-population-simulator button:focus-visible{outline:3px solid #276e49;outline-offset:3px}
+.gs-population-feedback{margin:8px 0 14px;padding:13px;border-radius:12px;background:#e7f3e9;color:#28573b;line-height:1.8;font-weight:700}
+.gs-population-simulator>button{border:0;border-radius:11px;padding:10px 15px;background:#236b48;color:#fff;font:inherit;font-weight:750;cursor:pointer}
+@media(prefers-reduced-motion:reduce){.gs-population-simulator *{scroll-behavior:auto}}
+@media(prefers-color-scheme:dark){.gs-population-simulator{background:#17271e;border-color:#345641}.gs-population-heading h3,.gs-population-controls label,.gs-population-feedback{color:#d5ebd9}.gs-population-heading p{color:#b2c9b8}.gs-population-feedback{background:#203d2c}}
