@@ -272,7 +272,7 @@
       const filter = $('tc-my-filter') ? $('tc-my-filter').value : 'all';
       const sort = $('tc-my-sort') ? $('tc-my-sort').value : 'newest';
       const rawSearch = $('tc-my-search') ? $('tc-my-search').value : '';
-      const q = rawSearch.trim().replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      const q = rawSearch.trim().replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       let query = client.from('teacher_community_resources').select('*').eq('owner_id',user.id);
       if (q) { const pattern = '%' + q + '%'; query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern); }
       if (filter === 'shared') query = query.eq('status','published').eq('is_shared',true);
