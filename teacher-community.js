@@ -15,7 +15,7 @@
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   let uploadInProgress = false;
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -173,7 +173,15 @@
   }
   async function loadLibrary(reset = true) {
     if (!user || !(isAdmin || (member && member.status === 'approved'))) return;
-    const requestId = ++libraryRequest;
+    if (libraryLoading) {
+      // Queue a fresh query when search/category changes during an active request.
+      // Ignore duplicate pagination clicks so the same range is never appended twice.
+      if (reset) libraryRefreshPending = true;
+      return;
+    }
+    libraryLoading = true;
+    const moreButton = $('tc-library-more');
+    if (moreButton) moreButton.disabled = true;
     if (reset) {
       resources = []; libraryOffset = 0; libraryHasMore = false;
       $('tc-resource-grid').replaceChildren();
@@ -181,32 +189,43 @@
       $('tc-library-state').textContent = 'جارٍ البحث في جميع الموارد المشتركة...';
       $('tc-library-more').hidden = true;
     }
-    const rawSearch = ($('tc-search').value || '').trim();
-    // Restrict PostgREST filter syntax characters so user input remains plain search text.
-    const q = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
-    const category = $('tc-category').value;
-    let query = client.from('teacher_community_resources')
-      .select('*').eq('status','published').eq('is_shared',true);
-    if (category) query = query.eq('category', category);
-    if (q) {
-      const pattern = '%' + q + '%';
-      query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
+    const requestId = ++libraryRequest;
+    try {
+      const rawSearch = ($('tc-search').value || '').trim();
+      // Restrict PostgREST filter syntax characters so user input remains plain search text.
+      const q = rawSearch.replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      const category = $('tc-category').value;
+      let query = client.from('teacher_community_resources')
+        .select('*').eq('status','published').eq('is_shared',true);
+      if (category) query = query.eq('category', category);
+      if (q) {
+        const pattern = '%' + q + '%';
+        query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
+      }
+      const start = reset ? 0 : libraryOffset;
+      const { data, error } = await query
+        .order('created_at',{ascending:false}).order('id',{ascending:false})
+        .range(start, start + PAGE_SIZE - 1);
+      if (requestId !== libraryRequest) return;
+      if (error) {
+        $('tc-library-state').hidden = false;
+        $('tc-library-state').textContent = 'تعذر تحميل المكتبة: ' + error.message;
+        return;
+      }
+      const page = data || [];
+      resources = reset ? page : resources.concat(page);
+      libraryOffset = start + page.length;
+      libraryHasMore = page.length === PAGE_SIZE;
+      $('tc-library-more').hidden = !libraryHasMore;
+      renderLibrary();
+    } finally {
+      libraryLoading = false;
+      if (moreButton) moreButton.disabled = false;
+      if (libraryRefreshPending && user) {
+        libraryRefreshPending = false;
+        void loadLibrary(true);
+      }
     }
-    const { data, error } = await query
-      .order('created_at',{ascending:false}).order('id',{ascending:false})
-      .range(reset ? 0 : libraryOffset, (reset ? 0 : libraryOffset) + PAGE_SIZE - 1);
-    if (requestId !== libraryRequest) return;
-    if (error) {
-      $('tc-library-state').hidden = false;
-      $('tc-library-state').textContent = 'تعذر تحميل المكتبة: ' + error.message;
-      return;
-    }
-    const page = data || [];
-    resources = reset ? page : resources.concat(page);
-    libraryOffset = (reset ? 0 : libraryOffset) + page.length;
-    libraryHasMore = page.length === PAGE_SIZE;
-    $('tc-library-more').hidden = !libraryHasMore;
-    renderLibrary();
   }
   function renderLibrary() {
     $('tc-library-state').hidden = resources.length > 0;
