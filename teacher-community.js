@@ -240,6 +240,7 @@
         return;
       }
       const page = data || [];
+      if (reset) void updateMyStats();
       resources = reset ? page : resources.concat(page);
       libraryOffset = start + page.length;
       libraryHasMore = page.length === PAGE_SIZE;
@@ -279,6 +280,31 @@
       summary.textContent = resources.length ? 'الموارد المعروضة: ' + resources.length : '';
     }
     $('tc-resource-grid').innerHTML = resources.map(r => resourceCard(r, r.owner_id === user.id)).join('');
+  }
+  async function updateMyStats() {
+    if (!user) return;
+    const ids = ['total','shared','private','hidden'];
+    ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '…'; });
+    try {
+      const base = () => client.from('teacher_community_resources').select('id', { count: 'exact', head: true }).eq('owner_id', user.id);
+      const results = await Promise.all([
+        base(),
+        base().eq('status','published').eq('is_shared',true),
+        base().eq('status','published').eq('is_shared',false),
+        base().eq('status','hidden')
+      ]);
+      const failed = results.find(result => result.error);
+      if (failed) throw failed.error;
+      results.forEach((result,index) => {
+        const node = $('tc-my-stat-' + ids[index]);
+        if (node) node.textContent = Number(result.count || 0).toLocaleString('ar-MA');
+      });
+      $('tc-my-stats-status').textContent = 'تم تحديث ملخص ملفاتك.';
+    } catch (error) {
+      ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '—'; });
+      $('tc-my-stats-status').textContent = 'تعذر تحديث ملخص ملفاتك. يمكنك إعادة تحميل الصفحة.';
+      console.warn('[Teacher community stats]', error);
+    }
   }
   async function loadMyResources(reset = true) {
     if (!user) return;
