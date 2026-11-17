@@ -1788,7 +1788,8 @@ function openScientificPhotoPreview(card){
         const stats = getDashboardStats();
         const taskGroup = (icon, titleAr, titleFr, content) => {
             const title = lang() === 'fr' ? titleFr : titleAr;
-            return `<details class="gs-student-task"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
+            const openHint = lang() === 'fr' ? 'Cliquer pour afficher' : 'اضغط لعرض المحتوى';
+            return `<details class="gs-student-task"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-hint">${openHint}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
         };
         const profiles = getProfiles();
         const currentProfile = getCurrentProfile();
@@ -2628,7 +2629,8 @@ function openScientificPhotoPreview(card){
 
         const panelTask = (icon, titleAr, titleFr, content) => {
             const title = lang() === 'fr' ? titleFr : titleAr;
-            return `<details class="gs-student-task gs-student-panel-task"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
+            const openHint = lang() === 'fr' ? 'Cliquer pour afficher' : 'اضغط لعرض المحتوى';
+            return `<details class="gs-student-task gs-student-panel-task"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-hint">${openHint}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
         };
 
         let html = `
@@ -3165,6 +3167,8 @@ function openScientificPhotoPreview(card){
         .gs-student-task>summary:focus-visible{outline:3px solid #79a96a;outline-offset:-3px}
         .gs-student-task-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:11px;background:#edf5e9;font-size:1.25rem}
         .gs-student-task-title{flex:1;min-width:0}
+        .gs-student-task-hint{flex:0 0 auto;padding:.28rem .58rem;border-radius:999px;background:#edf5e9;color:#52734c;font-size:.72rem;font-weight:700;white-space:nowrap}
+        .gs-student-task[open] .gs-student-task-hint{display:none}
         .gs-student-task-chevron{font-size:1.3rem;transition:transform .2s ease}
         .gs-student-task[open]>summary{background:#f5f9f2;border-bottom:1px solid #e5eee0}
         .gs-student-task[open] .gs-student-task-chevron{transform:rotate(180deg)}
