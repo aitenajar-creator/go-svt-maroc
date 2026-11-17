@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-14">
+<link rel="stylesheet" href="laboratory.css?v=20261117-15">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -349,6 +349,29 @@
     <small data-ar="غنى الأنواع هو عدد الأنواع المختلفة المرصودة، ولا يعبّر وحده عن كل جوانب التنوع البيولوجي أو وفرة الأفراد. للمقارنة العلمية، يجب توحيد مساحة العينة وجهد الرصد وظروفه." data-fr="La richesse spécifique correspond au nombre d’espèces différentes observées. Elle ne décrit pas à elle seule toute la biodiversité ni l’abondance des individus. Pour comparer des relevés, il faut standardiser la surface, l’effort et les conditions d’observation.">غنى الأنواع هو عدد الأنواع المختلفة المرصودة، ولا يعبّر وحده عن كل جوانب التنوع البيولوجي أو وفرة الأفراد. للمقارنة العلمية، يجب توحيد مساحة العينة وجهد الرصد وظروفه.</small>
    </div>
 
+   <div class="gs-biodiv-abundance" id="biodiv-abundance">
+    <div class="gs-biodiv-sampling-heading"><span aria-hidden="true">📊</span><div><h3 data-ar="مختبر وفرة الأنواع وتوازنها" data-fr="Laboratoire d’abondance et d’équitabilité">مختبر وفرة الأنواع وتوازنها</h3><p data-ar="أدخل عدد الأفراد المرصودين من كل نوع في عينة افتراضية، ثم لاحظ كيف يؤثر توزيع الأفراد في مؤشر التنوع." data-fr="Saisissez le nombre d’individus observés pour chaque espèce dans un échantillon fictif, puis observez l’effet de leur répartition sur l’indice de diversité.">أدخل عدد الأفراد المرصودين من كل نوع في عينة افتراضية، ثم لاحظ كيف يؤثر توزيع الأفراد في مؤشر التنوع.</p></div></div>
+    <div class="gs-abundance-grid">
+     <label><span>🌱 <b data-ar="نباتات" data-fr="Plantes">نباتات</b></span><input type="number" min="0" max="100" step="1" value="8" data-abundance="plants" inputmode="numeric"></label>
+     <label><span>🦋 <b data-ar="حشرات" data-fr="Insectes">حشرات</b></span><input type="number" min="0" max="100" step="1" value="4" data-abundance="insects" inputmode="numeric"></label>
+     <label><span>🐦 <b data-ar="طيور" data-fr="Oiseaux">طيور</b></span><input type="number" min="0" max="100" step="1" value="2" data-abundance="birds" inputmode="numeric"></label>
+     <label><span>🍄 <b data-ar="فطريات" data-fr="Champignons">فطريات</b></span><input type="number" min="0" max="100" step="1" value="2" data-abundance="fungi" inputmode="numeric"></label>
+    </div>
+    <div class="gs-abundance-results" aria-live="polite">
+     <div><span data-ar="مجموع الأفراد" data-fr="Nombre total d’individus">مجموع الأفراد</span><strong id="biodiv-abundance-total">16</strong></div>
+     <div><span data-ar="الأنواع الموجودة" data-fr="Espèces présentes">الأنواع الموجودة</span><strong id="biodiv-abundance-richness">4 / 4</strong></div>
+     <div><span data-ar="مؤشر سيمبسون (1 − D)" data-fr="Indice de Simpson (1 − D)">مؤشر سيمبسون (1 − D)</span><strong id="biodiv-simpson-index">0.625</strong></div>
+    </div>
+    <div class="gs-abundance-bars" id="biodiv-abundance-bars" aria-label="توزيع الأفراد بين الأنواع">
+     <div><span data-ar="نباتات" data-fr="Plantes">نباتات</span><i><b style="width:50%"></b></i><strong>8</strong></div>
+     <div><span data-ar="حشرات" data-fr="Insectes">حشرات</span><i><b style="width:25%"></b></i><strong>4</strong></div>
+     <div><span data-ar="طيور" data-fr="Oiseaux">طيور</span><i><b style="width:12.5%"></b></i><strong>2</strong></div>
+     <div><span data-ar="فطريات" data-fr="Champignons">فطريات</span><i><b style="width:12.5%"></b></i><strong>2</strong></div>
+    </div>
+    <p id="biodiv-abundance-feedback" aria-live="polite" data-ar="يوضح المؤشر مدى تنوع العينة مع مراعاة عدد الأنواع وتوزيع الأفراد بينها." data-fr="L’indice décrit la diversité de l’échantillon en tenant compte du nombre d’espèces et de la répartition des individus.">يوضح المؤشر مدى تنوع العينة مع مراعاة عدد الأنواع وتوزيع الأفراد بينها.</p>
+    <button type="button" id="biodiv-abundance-reset" data-ar="استعادة المثال" data-fr="Rétablir l’exemple">استعادة المثال</button>
+    <small data-ar="يُحسب المؤشر هنا بصيغة 1 − D حيث D = مجموع مربعات النسب الفردية. تقترب قيمته من 0 عندما تهيمن فئة واحدة، وتزداد مع تنوع الأنواع وتوازن توزيع الأفراد. هذا مؤشر تعليمي مبسط؛ ينبغي توحيد جهد أخذ العينات قبل المقارنة، ولا تكفي قيمة واحدة لوصف النظام البيئي كاملاً." data-fr="L’indice est calculé ici sous la forme 1 − D, où D est la somme des carrés des proportions. Il tend vers 0 lorsqu’une catégorie domine et augmente avec la diversité et l’équilibre des effectifs. Cet indicateur est pédagogique ; l’effort d’échantillonnage doit être standardisé et une seule valeur ne décrit pas tout l’écosystème.">يُحسب المؤشر هنا بصيغة 1 − D حيث D = مجموع مربعات النسب الفردية. تقترب قيمته من 0 عندما تهيمن فئة واحدة، وتزداد مع تنوع الأنواع وتوازن توزيع الأفراد. هذا مؤشر تعليمي مبسط؛ ينبغي توحيد جهد أخذ العينات قبل المقارنة، ولا تكفي قيمة واحدة لوصف النظام البيئي كاملاً.</small>
+   </div>
 
   </div>
  </section>
