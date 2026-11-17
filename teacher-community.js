@@ -249,7 +249,12 @@
       const { data, error } = await client.from('teacher_community_resources').select('*')
         .eq('owner_id',user.id).order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(start, start + PAGE_SIZE - 1);
-      if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state">تعذر تحميل ملفاتك.</div>'; return; }
+      if (error) {
+        const retry = '<div class="tc-state" role="alert">تعذر تحميل ملفاتك. <button type="button" data-retry-my-resources>إعادة المحاولة</button></div>';
+        if (reset) $('tc-my-resources').innerHTML = retry;
+        else $('tc-my-resources').insertAdjacentHTML('beforeend', retry);
+        return;
+      }
       const page = data || [];
       myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
       $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
@@ -529,9 +534,10 @@
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b || b.disabled)return;
-    if (!b.dataset.download && !b.dataset.delete && !b.dataset.toggleShare) return;
+    if (!b.dataset.download && !b.dataset.delete && !b.dataset.toggleShare && !b.dataset.retryMyResources) return;
     b.disabled = true;
     try {
+      if (b.dataset.retryMyResources) await loadMyResources(true);
       if(b.dataset.download) await downloadResource(b.dataset.download);
       if(b.dataset.delete) await deleteResource(b.dataset.delete);
       if(b.dataset.toggleShare) await toggleShare(b.dataset.toggleShare);
