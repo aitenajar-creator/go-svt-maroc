@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -238,6 +238,30 @@ const balanceTexts={
  birds:{ar:'قد تتغير أعداد الحشرات والفرائس التي كانت الطيور تتغذى عليها، كما قد تتأثر المفترسات التي تعتمد على بعض الطيور غذاءً لها.',fr:'Les populations d’insectes et de proies consommés par les oiseaux peuvent changer ; les prédateurs qui mangent certains oiseaux peuvent également être affectés.'},
  snakes:{ar:'قد تزداد بعض الفرائس التي كانت الأفاعي تتغذى عليها، وقد تتغير المنافسة على الموارد بين المفترسات الأخرى.',fr:'Certaines proies consommées par les serpents peuvent augmenter et la compétition pour les ressources entre autres prédateurs peut changer.'}
 };
+const ecoPopulationDefaults={plants:70,herbivores:50,predators:35};
+function updateEcoPopulation(){
+ const plants=Number($('eco-plants-range').value);
+ const herbivores=Number($('eco-herbivores-range').value);
+ const predators=Number($('eco-predators-range').value);
+ $('eco-plants-value').textContent=plants+'%';
+ $('eco-herbivores-value').textContent=herbivores+'%';
+ $('eco-predators-value').textContent=predators+'%';
+ let ar='توازن تمثيلي: تتوفر الموارد للكائنات في هذا السيناريو.';
+ let fr='Équilibre illustratif : les ressources sont disponibles pour les organismes dans ce scénario.';
+ if(plants<25){ar='انخفاض الغطاء النباتي: قد يقل الغذاء المتاح للعواشب، ثم تتأثر المفترسات بصورة غير مباشرة.';fr='Faible couverture végétale : la nourriture des herbivores peut diminuer, puis affecter indirectement les prédateurs.';}
+ else if(herbivores>plants+15){ar='ضغط كبير على النباتات: قد يتجاوز استهلاك العواشب قدرة الموارد النباتية على التجدد.';fr='Forte pression sur les plantes : la consommation des herbivores peut dépasser le renouvellement des ressources végétales.';}
+ else if(predators>herbivores+15){ar='ارتفاع ضغط الافتراس: قد تتعرض جماعات العواشب لضغط أكبر في هذا السيناريو.';fr='Pression de prédation élevée : les populations d’herbivores peuvent subir une pression plus forte dans ce scénario.';}
+ else if(herbivores<20){ar='قلة العواشب: قد تقل الموارد الغذائية المتاحة لبعض المفترسات.';fr='Peu d’herbivores : les ressources alimentaires de certains prédateurs peuvent diminuer.';}
+ else if(plants>75&&herbivores<35){ar='موارد نباتية وفيرة مقارنة بالعواشب: قد تتراكم الكتلة النباتية إذا استمرت الظروف.';fr='Ressources végétales abondantes par rapport aux herbivores : la biomasse végétale peut s’accumuler si ces conditions persistent.';}
+ $('eco-population-feedback').textContent=lang==='ar'?ar:fr;
+}
+['eco-plants-range','eco-herbivores-range','eco-predators-range'].forEach(id=>$(id).addEventListener('input',updateEcoPopulation));
+$('eco-population-reset').addEventListener('click',()=>{
+ $('eco-plants-range').value=ecoPopulationDefaults.plants;
+ $('eco-herbivores-range').value=ecoPopulationDefaults.herbivores;
+ $('eco-predators-range').value=ecoPopulationDefaults.predators;
+ updateEcoPopulation();
+});
 function showBalanceResult(key){
  const t=balanceTexts[key];if(t)$('balance-result').textContent=t[lang];
  document.querySelectorAll('[data-balance-species]').forEach(b=>{b.classList.toggle('is-removed',b.dataset.balanceSpecies===key);b.setAttribute('aria-pressed',b.dataset.balanceSpecies===key?'true':'false');});

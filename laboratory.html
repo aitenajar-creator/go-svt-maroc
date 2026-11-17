@@ -211,6 +211,19 @@
     <button type="button" data-balance-species="snakes"><span>🐍</span><strong data-ar="الأفاعي" data-fr="Serpents">الأفاعي</strong><small data-ar="مستهلكات عليا" data-fr="Consommateurs supérieurs">مستهلكات عليا</small></button>
    </div>
    <div class="gs-balance-controls"><p data-ar="اختر كائناً لمحاكاة اختفائه من هذا النظام البيئي المبسط." data-fr="Choisissez une espèce pour simuler sa disparition de cet écosystème simplifié.">اختر كائناً لمحاكاة اختفائه من هذا النظام البيئي المبسط.</p><button type="button" id="balance-reset" data-ar="إعادة التوازن" data-fr="Réinitialiser">إعادة التوازن</button></div>
+   <div class="gs-population-simulator" id="population-simulator">
+    <div class="gs-population-heading"><h3 data-ar="محاكاة أعداد الكائنات" data-fr="Simulation des populations">محاكاة أعداد الكائنات</h3><p data-ar="غيّر المؤشرات لملاحظة سيناريوهات محتملة. القيم تمثيلية وليست قياسات ميدانية." data-fr="Modifiez les curseurs pour observer des scénarios possibles. Les valeurs sont illustratives et ne sont pas des mesures de terrain.">غيّر المؤشرات لملاحظة سيناريوهات محتملة. القيم تمثيلية وليست قياسات ميدانية.</p></div>
+    <div class="gs-population-controls">
+     <label for="eco-plants-range"><span data-ar="توفر النباتات" data-fr="Disponibilité des plantes">توفر النباتات</span><output id="eco-plants-value" for="eco-plants-range">70%</output></label>
+     <input id="eco-plants-range" type="range" min="0" max="100" step="5" value="70">
+     <label for="eco-herbivores-range"><span data-ar="العواشب" data-fr="Herbivores">العواشب</span><output id="eco-herbivores-value" for="eco-herbivores-range">50%</output></label>
+     <input id="eco-herbivores-range" type="range" min="0" max="100" step="5" value="50">
+     <label for="eco-predators-range"><span data-ar="المفترسات" data-fr="Prédateurs">المفترسات</span><output id="eco-predators-value" for="eco-predators-range">35%</output></label>
+     <input id="eco-predators-range" type="range" min="0" max="100" step="5" value="35">
+    </div>
+    <div class="gs-population-feedback" id="eco-population-feedback" aria-live="polite">توازن تمثيلي: تتوفر الموارد للكائنات في هذا السيناريو.</div>
+    <button type="button" id="eco-population-reset" data-ar="إعادة القيم الافتراضية" data-fr="Réinitialiser les valeurs">إعادة القيم الافتراضية</button>
+   </div>
    <div class="gs-balance-result" id="balance-result" aria-live="polite" data-ar="ستظهر هنا الآثار المحتملة بعد اختيار كائن." data-fr="Les effets possibles apparaîtront ici après votre choix.">ستظهر هنا الآثار المحتملة بعد اختيار كائن.</div>
    <p class="gs-photo-note" data-ar="هذه محاكاة تعليمية مبسطة وليست تنبؤاً دقيقاً؛ فالنتائج الحقيقية تعتمد على عدد الأنواع والعلاقات والظروف البيئية وقد تتأثر بوجود بدائل غذائية." data-fr="Cette simulation est pédagogique et simplifiée, pas une prédiction exacte ; les effets réels dépendent du nombre d’espèces, des relations et des conditions écologiques, ainsi que des ressources alimentaires alternatives.">هذه محاكاة تعليمية مبسطة وليست تنبؤاً دقيقاً؛ فالنتائج الحقيقية تعتمد على عدد الأنواع والعلاقات والظروف البيئية وقد تتأثر بوجود بدائل غذائية.</p>
   </div>
