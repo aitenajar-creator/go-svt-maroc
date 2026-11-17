@@ -195,9 +195,19 @@
       // Restrict PostgREST filter syntax characters so user input remains plain search text.
       const q = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       const category = $('tc-category').value;
+      const fileType = $('tc-file-type') ? $('tc-file-type').value : '';
       let query = client.from('teacher_community_resources')
         .select('*').eq('status','published').eq('is_shared',true);
       if (category) query = query.eq('category', category);
+      const fileMimeTypes = {
+        pdf: ['application/pdf'],
+        word: ['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.oasis.opendocument.text'],
+        presentation: ['application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/vnd.oasis.opendocument.presentation'],
+        spreadsheet: ['application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        image: ['image/jpeg','image/png','image/webp'],
+        other: ['text/plain','application/zip']
+      };
+      if (fileType && fileMimeTypes[fileType]) query = query.in('mime_type', fileMimeTypes[fileType]);
       if (q) {
         const pattern = '%' + q + '%';
         query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
@@ -527,7 +537,7 @@
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
     $('tc-file').addEventListener('change',updateSelectedFileHint);
-    $('tc-search').addEventListener('input',()=>{clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);}); $('tc-category').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);});
+    $('tc-search').addEventListener('input',()=>{clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);}); $('tc-category').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);}); $('tc-file-type').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
