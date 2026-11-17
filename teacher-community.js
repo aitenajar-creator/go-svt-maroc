@@ -77,7 +77,18 @@
       school_name: String(meta.school_name || '').slice(0,160), status: 'pending'
     };
     const inserted = await client.from('teacher_community_members').insert(row).select().single();
-    if (inserted.error) throw inserted.error;
+    if (inserted.error) {
+      // SIGNED_IN and the form handler can refresh the session almost simultaneously.
+      // If both try to create the first membership row, reuse the row created by the other request.
+      if (inserted.error.code === '23505') {
+        const existing = await client.from('teacher_community_members')
+          .select('user_id,display_name,professional_title,school_name,status,created_at')
+          .eq('user_id', user.id).maybeSingle();
+        if (existing.error) throw existing.error;
+        if (existing.data) return existing.data;
+      }
+      throw inserted.error;
+    }
     return inserted.data;
   }
   async function refreshSession() {
@@ -97,6 +108,22 @@
     setSignedInUI();
   }
   function fileExt(name) { return (String(name).split('.').pop() || '').toLowerCase(); }
+  function fileMime(file) {
+    if (file.type) return file.type;
+    const byExtension = {
+      pdf:'application/pdf', doc:'application/msword',
+      docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ppt:'application/vnd.ms-powerpoint',
+      pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      xls:'application/vnd.ms-excel',
+      xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      odt:'application/vnd.oasis.opendocument.text',
+      odp:'application/vnd.oasis.opendocument.presentation',
+      jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp',
+      txt:'text/plain', zip:'application/zip'
+    };
+    return byExtension[fileExt(file.name)] || '';
+  }
   function fileIcon(name) { return icons[fileExt(name)] || '📄'; }
   function dateLabel(value) {
     try { return new Intl.DateTimeFormat('ar-MA',{year:'numeric',month:'short',day:'numeric'}).format(new Date(value)); }
@@ -346,14 +373,17 @@
     const ext = fileExt(file.name);
     if (!allowed.has(ext)) return message('tc-upload-message','صيغة الملف غير مسموح بها.');
     if (file.size <= 0 || file.size > MAX_FILE) return message('tc-upload-message','حجم الملف يجب ألا يتجاوز 50 MB.');
+    if (file.name.length > 255) return message('tc-upload-message','اسم الملف طويل جداً. أعد تسميته إلى أقل من 256 حرفاً.');
     if (title.length < 2) return message('tc-upload-message','أدخل عنواناً واضحاً للوثيقة.');
+    const mimeType = fileMime(file);
+    if (!mimeType) return message('tc-upload-message','تعذر تحديد نوع الملف. أعد حفظه بصيغة مدعومة ثم حاول مجدداً.');
     const submit = $('tc-upload-submit'); submit.disabled = true; submit.textContent = 'جارٍ رفع الملف...';
     const path = user.id + '/' + crypto.randomUUID() + '.' + ext;
     try {
-      const upload = await client.storage.from('teacher-community').upload(path,file,{contentType:file.type || 'application/octet-stream',upsert:false});
+      const upload = await client.storage.from('teacher-community').upload(path,file,{contentType:mimeType,upsert:false});
       if (upload.error) throw upload.error;
       const row = {owner_id:user.id,title,description:$('tc-file-description').value.trim(),category:$('tc-file-category').value,
-        file_name:file.name,mime_type:file.type || 'application/octet-stream',size_bytes:file.size,storage_path:path,
+        file_name:file.name,mime_type:mimeType,size_bytes:file.size,storage_path:path,
         is_shared:$('tc-file-share').checked,status:'published'};
       const saved = await client.from('teacher_community_resources').insert(row);
       if (saved.error) {
@@ -370,7 +400,8 @@
     finally { submit.disabled=false; submit.textContent='رفع وحفظ الوثيقة'; }
   }
   async function handleAdminAction(e) {
-    const b=e.target.closest('button'); if(!b || !isAdmin) return;
+    const b=e.target.closest('button'); if(!b || !isAdmin || b.disabled) return;
+    b.disabled = true;
     try {
       if (b.dataset.approveMember || b.dataset.suspendMember) {
         const id=b.dataset.approveMember || b.dataset.suspendMember, status=b.dataset.approveMember?'approved':'suspended';
@@ -395,6 +426,7 @@
         await Promise.all([loadAdmin(),loadLibrary(),loadMyResources()]);
       }
     } catch(err) { alert(err.message || 'تعذر تنفيذ العملية.'); }
+    finally { if (b.isConnected) b.disabled = false; }
   }
   function wire() {
     $('tc-account').addEventListener('click',()=>user?$('tc-dashboard').scrollIntoView({behavior:'smooth'}):openAuth('login'));
@@ -416,12 +448,15 @@
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
   }
   async function resourceAction(e) {
-    const b=e.target.closest('button'); if(!b)return;
+    const b=e.target.closest('button'); if(!b || b.disabled)return;
+    if (!b.dataset.download && !b.dataset.delete && !b.dataset.toggleShare) return;
+    b.disabled = true;
     try {
       if(b.dataset.download) await downloadResource(b.dataset.download);
       if(b.dataset.delete) await deleteResource(b.dataset.delete);
       if(b.dataset.toggleShare) await toggleShare(b.dataset.toggleShare);
     } catch(err) { alert(err.message || 'تعذر تنفيذ العملية.'); }
+    finally { if (b.isConnected) b.disabled = false; }
   }
   async function init() {
     wire();
