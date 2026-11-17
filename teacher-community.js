@@ -904,7 +904,41 @@
     } catch(err) { alert(err.message || 'تعذر تنفيذ العملية.'); }
     finally { if (b.isConnected) b.disabled = false; }
   }
+  async function inviteFriends() {
+    const url = location.origin + location.pathname;
+    const shareData = {
+      title: 'مجتمع الأساتذة | GO SVT Maroc',
+      text: 'انضم إلى مجتمع أساتذة علوم الحياة والأرض لتبادل الدروس والجذاذات والعروض والموارد المهنية.',
+      url
+    };
+    try {
+      if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+        await navigator.share(shareData);
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const field = document.createElement('textarea');
+        field.value = url;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.appendChild(field);
+        field.select();
+        const copied = document.execCommand('copy');
+        field.remove();
+        if (!copied) throw new Error('تعذر نسخ الرابط تلقائياً.');
+      }
+      alert('تم نسخ رابط مجتمع الأساتذة. يمكنك إرساله إلى زملائك.');
+    } catch (error) {
+      if (error && error.name === 'AbortError') return;
+      console.warn('[Teacher community invite]', error);
+      alert('تعذر فتح المشاركة أو نسخ الرابط. يمكنك نسخ رابط الصفحة من شريط العنوان.');
+    }
+  }
   function wire() {
+    $('tc-invite-friends').addEventListener('click', inviteFriends);
     $('tc-account').addEventListener('click',()=>user?$('tc-dashboard').scrollIntoView({behavior:'smooth'}):openAuth('login'));
     $('tc-hero-join').addEventListener('click',()=>user?$('tc-dashboard').scrollIntoView({behavior:'smooth'}):openAuth('register'));
     $('tc-auth-form').addEventListener('submit',handleAuth);
