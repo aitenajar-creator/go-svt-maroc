@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();renderWaterManagementQuiz();renderBiodiversityQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -200,6 +200,46 @@ relativeButtons.forEach(btn=>btn.addEventListener('click',()=>{
   :(correct?'Bonne réponse ! L’intrusion est plus récente que les couches puisqu’elle les recoupe.':'Ce n’est pas la bonne réponse. Une structure qui recoupe des couches déjà présentes est plus récente qu’elles.');
 }));
 
+
+const relativeQuizState=new Map();
+const relativeQuizFeedback=[
+ {ar:'صحيح! وفق مبدأ التراكب، تكون الطبقات السفلى أقدم من الطبقات العليا في سلسلة غير مشوهة.',fr:'Exact ! Selon le principe de superposition, les couches inférieures sont plus anciennes dans une série non déformée.'},
+ {ar:'صحيح! البنية التي تقطع طبقات موجودة تكون أحدث منها وفق مبدأ التقاطع.',fr:'Exact ! Une structure qui recoupe des couches préexistantes est plus récente selon le principe de recoupement.'},
+ {ar:'صحيح! العناصر المحتواة، مثل الحصى، أقدم من الصخرة التي تضمها.',fr:'Exact ! Les éléments inclus, comme les galets, sont plus anciens que la roche qui les contient.'}
+];
+function renderRelativeDatingQuiz(){
+ const score=[...relativeQuizState.values()].filter(Boolean).length;
+ const scoreNode=$('relative-quiz-score');
+ if(scoreNode)scoreNode.textContent=lang==='ar'?'النتيجة: '+score+' / 3':'Score : '+score+' / 3';
+ document.querySelectorAll('.gs-relative-question').forEach((card,index)=>{
+  const result=relativeQuizState.get(index),feedback=card.querySelector('p');
+  if(result===undefined){feedback.textContent='';return;}
+  feedback.textContent=result?relativeQuizFeedback[index][lang]:(lang==='ar'?'ليست هذه الإجابة الصحيحة. راجع الخيار المميز بالأخضر واقرأ التفسير.':'Ce n’est pas la bonne réponse. Consultez l’option en vert et lisez l’explication.');
+ });
+}
+document.querySelectorAll('[data-relative-q-answer]').forEach(button=>button.addEventListener('click',()=>{
+ const index=Number(button.dataset.relativeQAnswer),card=button.closest('.gs-relative-question');
+ if(relativeQuizState.has(index))return;
+ relativeQuizState.set(index,button.dataset.correct==='true');
+ card.querySelectorAll('[data-relative-q-answer]').forEach(option=>{
+  option.disabled=true;
+  if(option.dataset.correct==='true')option.classList.add('is-correct');
+  else if(option===button)option.classList.add('is-wrong');
+ });
+ renderRelativeDatingQuiz();
+ if(relativeQuizState.size===3){
+  const score=[...relativeQuizState.values()].filter(Boolean).length;
+  $('relative-quiz-result').textContent=lang==='ar'?'نتيجتك: '+score+' من 3. '+(score===3?'ممتاز!':'راجع المبادئ ثم حاول مرة أخرى.'):'Votre résultat : '+score+' sur 3. '+(score===3?'Excellent !':'Revoyez les principes puis réessayez.');
+ }
+}));
+$('relative-quiz-reset')?.addEventListener('click',()=>{
+ relativeQuizState.clear();
+ document.querySelectorAll('.gs-relative-question [data-relative-q-answer]').forEach(option=>{
+  option.disabled=false;option.classList.remove('is-correct','is-wrong');
+ });
+ $('relative-quiz-result').textContent=lang==='ar'?'أجب عن الأسئلة الثلاثة لعرض نتيجتك.':'Répondez aux trois questions pour afficher votre résultat.';
+ renderRelativeDatingQuiz();
+});
 
 const rockDescriptions={
  cooling:{ar:'عندما تبرد الصهارة أو الحمم وتتبلور، تتشكل الصخور النارية. يختلف نسيجها حسب سرعة التبريد ومكانه.',fr:'Lorsque le magma ou la lave refroidit et cristallise, des roches magmatiques se forment. Leur texture dépend notamment de la vitesse et du lieu du refroidissement.'},
