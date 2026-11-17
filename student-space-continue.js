@@ -138,6 +138,7 @@
     card.innerHTML =
       '<div class="gs-continue-heading"><div><span class="gs-continue-eyebrow">' + t.eyebrow + '</span><h3>' + t.title + '</h3></div><span class="gs-continue-mark">🧭</span></div>' +
       recentBlock + nextBlock +
+      '<a class="gs-continue-model-link" href="/laboratory.html#tectonic-model"><span>🌍</span><span><strong>' + (isFrench ? 'Modèles interactifs de SVT' : 'النماذج التفاعلية لعلوم الحياة والأرض') + '</strong><small>' + (isFrench ? 'Explorez les plaques tectoniques et les expériences virtuelles' : 'استكشف الصفائح التكتونية والتجارب الافتراضية') + '</small></span><b>←</b></a>' +
       '<div class="gs-continue-stats"><div><strong>' + lessons.length + '</strong><span>' + t.viewed + '</span></div><div><strong>' + completed + '</strong><span>' + t.completed + '</span></div><div><strong>' + exercises.length + '</strong><span>' + t.exercises + '</span></div><div class="gs-continue-progress"><div><span>' + (isFrench ? 'Progression des cours terminés' : 'نسبة إتمام الدروس') + '</span><strong>' + percent + '%</strong></div><i><b style="width:' + percent + '%"></b></i></div></div>';
 
     const existing = document.getElementById(ROOT_ID);
