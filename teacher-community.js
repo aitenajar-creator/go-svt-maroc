@@ -15,7 +15,7 @@
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   let uploadInProgress = false;
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -261,7 +261,10 @@
       const start = reset ? 0 : myOffset;
       const filter = $('tc-my-filter') ? $('tc-my-filter').value : 'all';
       const sort = $('tc-my-sort') ? $('tc-my-sort').value : 'newest';
+      const rawSearch = $('tc-my-search') ? $('tc-my-search').value : '';
+      const q = rawSearch.trim().replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
       let query = client.from('teacher_community_resources').select('*').eq('owner_id',user.id);
+      if (q) { const pattern = '%' + q + '%'; query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern); }
       if (filter === 'shared') query = query.eq('status','published').eq('is_shared',true);
       if (filter === 'private') query = query.eq('status','published').eq('is_shared',false);
       if (filter === 'hidden') query = query.eq('status','hidden');
@@ -269,13 +272,13 @@
       const ascending = sort === 'oldest' || sort === 'title';
       const { data, error } = await query.order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
-      if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state">تعذر تحميل ملفاتك.</div>'; return; }
+      if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state" role="alert">تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.</div>'; $('tc-my-resources-more').hidden = true; return; }
       const page = data || [];
       myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
       $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
       $('tc-my-resources-more').hidden = !myHasMore;
       if (reset && !page.length) {
-        const emptyText = filter === 'all'
+        const emptyText = q ? 'لا توجد ملفات تطابق عبارة البحث. جرّب كلمات أخرى.' : filter === 'all'
           ? 'لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.'
           : filter === 'shared' ? 'لا توجد موارد مشتركة ضمن ملفاتك حالياً.'
           : filter === 'private' ? 'لا توجد ملفات خاصة ضمن مواردك المنشورة.'
@@ -553,6 +556,7 @@
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
     $('tc-my-filter').addEventListener('change',()=>loadMyResources(true));
     $('tc-my-sort').addEventListener('change',()=>loadMyResources(true));
+    $('tc-my-search').addEventListener('input',()=>{clearTimeout(mySearchTimer);mySearchTimer=setTimeout(()=>loadMyResources(true),300);});
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
   }
