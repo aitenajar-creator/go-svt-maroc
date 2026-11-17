@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -342,6 +342,34 @@ document.querySelectorAll('[data-pollution-action]').forEach(btn=>btn.addEventLi
  document.querySelectorAll('[data-pollution-action]').forEach(b=>b.classList.toggle('is-active',b===btn));
  showPollutionAction(selectedPollutionAction);
 }));
+
+
+function updatePollutionSimulator(){
+ const load=$('pollution-load'),response=$('pollution-response');
+ if(!load||!response)return;
+ const pressure=Number(load.value),effort=Number(response.value);
+ const residual=Math.round(pressure*(1-effort/100));
+ $('pollution-load-value').textContent=pressure+'%';
+ $('pollution-response-value').textContent=effort+'%';
+ $('pollution-residual').textContent=residual+'%';
+ $('pollution-improvement').textContent=(100-residual)+'%';
+ const feedback=$('pollution-sim-feedback');
+ if(feedback){
+  const messages= residual>=70
+   ? {ar:'الضغط المتبقي مرتفع في هذا السيناريو. يمكن أن تساعد الوقاية من المصدر وتقوية المعالجة والمراقبة على تقليله.',fr:'La pression résiduelle est élevée dans ce scénario. La prévention à la source, le renforcement du traitement et le suivi peuvent contribuer à la réduire.'}
+   : residual>=35
+    ? {ar:'الضغط المتبقي متوسط في هذا السيناريو. الجمع بين تقليل الملوثات ومعالجتها يساعد على تحسين الوضع البيئي.',fr:'La pression résiduelle est modérée dans ce scénario. Réduire les polluants et les traiter ensemble contribue à améliorer la situation environnementale.'}
+    : {ar:'الضغط المتبقي منخفض في هذا السيناريو التوضيحي. تظل الوقاية المستمرة والمراقبة ضرورية للحفاظ على البيئة.',fr:'La pression résiduelle est faible dans ce scénario illustratif. La prévention continue et le suivi restent nécessaires pour protéger l’environnement.'};
+  feedback.textContent=messages[lang];
+ }
+}
+['pollution-load','pollution-response'].forEach(id=>$(id)?.addEventListener('input',updatePollutionSimulator));
+$('pollution-sim-reset')?.addEventListener('click',()=>{
+ $('pollution-load').value=60;
+ $('pollution-response').value=30;
+ updatePollutionSimulator();
+});
+updatePollutionSimulator();
 
 
 const waterCycleTexts={
