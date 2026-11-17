@@ -15,7 +15,7 @@
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   let uploadInProgress = false;
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false; let adminResourceSearchTimer = null;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false, adminResourcesRefreshPending = false, adminResourceSearchTimer = null;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -519,7 +519,11 @@
   }
   async function loadAdmin(reset = true, only = 'both') {
     const loadMembers = only !== 'resources', loadResources = only !== 'members';
-    if (!isAdmin || (loadMembers && adminMembersLoading) || (loadResources && adminResourcesLoading)) return;
+    if (!isAdmin) return;
+    if ((loadMembers && adminMembersLoading) || (loadResources && adminResourcesLoading)) {
+      if (reset && loadResources) adminResourcesRefreshPending = true;
+      return;
+    }
     if (loadMembers) adminMembersLoading = true;
     if (loadResources) adminResourcesLoading = true;
     const memberMoreButton = $('tc-admin-members-more'), resourceMoreButton = $('tc-admin-resources-more');
@@ -601,6 +605,10 @@
       if (loadResources) adminResourcesLoading = false;
       if (loadMembers && memberMoreButton) memberMoreButton.disabled = false;
       if (loadResources && resourceMoreButton) resourceMoreButton.disabled = false;
+      if (loadResources && adminResourcesRefreshPending) {
+        adminResourcesRefreshPending = false;
+        void loadAdmin(true, 'resources');
+      }
     }
   }
   async function handleAuth(e) {
