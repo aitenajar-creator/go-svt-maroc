@@ -111,16 +111,19 @@ function updateGenetics(){
 }
 
 function updatePhotosynthesis(){
- const light=Number($('lab-light').value),co2=Number($('lab-co2').value);
- const rate=Math.min(light,co2);
- $('lab-light-value').textContent=light+'%';$('lab-co2-value').textContent=co2+'%';
+ const light=Number($('lab-light').value),co2=Number($('lab-co2').value),water=Number($('lab-water').value);
+ const rate=Math.min(light,co2,water);
+ $('lab-light-value').textContent=light+'%';$('lab-co2-value').textContent=co2+'%';$('lab-water-value').textContent=water+'%';
+ const level=rate>=70?(lang==='ar'?'مرتفع':'Élevé'):rate>=35?(lang==='ar'?'متوسط':'Moyen'):(lang==='ar'?'منخفض':'Faible');
+ $('lab-photo-glucose').textContent=level;$('lab-photo-oxygen').textContent=level;
  $('lab-photo-rate').textContent=rate+'%';$('lab-photo-meter-fill').style.width=rate+'%';
  $('lab-photo-explanation').textContent=lang==='ar'
-  ?(rate===0?'أحد العاملين غير متوفر تقريباً؛ يكون النشاط التمثيلي ضعيفاً جداً في هذا النموذج.':light<co2?'الإضاءة هي العامل الأقل توفراً هنا؛ زيادتها قد ترفع النشاط ما دامت العوامل الأخرى ملائمة.':co2<light?'توفر CO₂ هو العامل الأقل هنا؛ زيادته قد ترفع النشاط ما دامت العوامل الأخرى ملائمة.':'الضوء وCO₂ متساويان في هذا النموذج؛ قد تصبح عوامل أخرى محدِّدة للنشاط.')
-  :(rate===0?'L’un des facteurs est presque absent : l’activité est très faible dans ce modèle.':light<co2?'La lumière est le facteur le moins disponible ; l’augmenter peut accroître l’activité si les autres conditions sont favorables.':co2<light?'Le CO₂ est le facteur le moins disponible ; l’augmenter peut accroître l’activité si les autres conditions sont favorables.':'La lumière et le CO₂ sont équivalents dans ce modèle ; d’autres facteurs peuvent devenir limitants.');
+  ?(rate===0?'أحد العاملين غير متوفر تقريباً؛ يكون النشاط التمثيلي ضعيفاً جداً في هذا النموذج.':light<=co2&&light<=water?'الإضاءة هي العامل الأقل توفراً؛ زيادتها قد ترفع النشاط ما دامت العوامل الأخرى ملائمة.':co2<=light&&co2<=water?'توفر CO₂ هو العامل الأقل؛ زيادته قد ترفع النشاط ما دامت العوامل الأخرى ملائمة.':water<=light&&water<=co2?'توفر الماء هو العامل الأقل؛ تحسنه قد يرفع النشاط ما دامت العوامل الأخرى ملائمة.':'العوامل الثلاثة متقاربة في هذا النموذج؛ قد تصبح عوامل أخرى محدِّدة للنشاط.')
+  :(rate===0?'L’un des facteurs est presque absent : l’activité est très faible dans ce modèle.':light<=co2&&light<=water?'La lumière est le facteur le moins disponible ; l’augmenter peut accroître l’activité si les autres conditions sont favorables.':co2<=light&&co2<=water?'Le CO₂ est le facteur le moins disponible ; l’augmenter peut accroître l’activité si les autres conditions sont favorables.':water<=light&&water<=co2?'L’eau est le facteur le moins disponible ; améliorer sa disponibilité peut accroître l’activité si les autres conditions sont favorables.':'Les trois facteurs sont proches dans ce modèle ; d’autres facteurs peuvent devenir limitants.');
 }
 $('lab-light').addEventListener('input',updatePhotosynthesis);
 $('lab-co2').addEventListener('input',updatePhotosynthesis);
+$('lab-water').addEventListener('input',updatePhotosynthesis);
 
 $('lab-language').addEventListener('click',()=>setLang(lang==='ar'?'fr':'ar'));
 $('lab-menu').addEventListener('click',()=>{const nav=document.querySelector('.gs-lab-page .main-nav');nav.classList.toggle('active');});
