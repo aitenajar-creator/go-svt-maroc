@@ -879,7 +879,7 @@ const mitosisDetails={
  prophase:{ar:'تتكثف الصبغيات وتصبح أوضح، ويتشكل مغزل الانقسام تدريجياً.',fr:'Les chromosomes se condensent et deviennent visibles ; le fuseau mitotique se met progressivement en place.'},
  metaphase:{ar:'تصطف الصبغيات على المستوى الاستوائي للخلية.',fr:'Les chromosomes s’alignent sur le plan équatorial de la cellule.'},
  anaphase:{ar:'تنفصل الكروماتيدات الشقيقة وتتجه نحو قطبي الخلية.',fr:'Les chromatides sœurs se séparent et migrent vers les deux pôles de la cellule.'},
- telophase:{ar:'تتكون نواتان جديدتان وتبدأ الصبغيات في التفكك.',fr:'Deux nouveaux noyaux se reforment et les chromosomes commencent à se décondense.'}
+ telophase:{ar:'تتكون نواتان جديدتان وتبدأ الصبغيات في التفكك.',fr:'Deux nouveaux noyaux se reforment et les chromosomes commencent à se décondenser.'}
 };
 const mitosisNames={
  prophase:{ar:'الطور التمهيدي',fr:'Prophase'},
