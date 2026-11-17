@@ -260,11 +260,14 @@
     try {
       const start = reset ? 0 : myOffset;
       const filter = $('tc-my-filter') ? $('tc-my-filter').value : 'all';
+      const sort = $('tc-my-sort') ? $('tc-my-sort').value : 'newest';
       let query = client.from('teacher_community_resources').select('*').eq('owner_id',user.id);
       if (filter === 'shared') query = query.eq('status','published').eq('is_shared',true);
       if (filter === 'private') query = query.eq('status','published').eq('is_shared',false);
       if (filter === 'hidden') query = query.eq('status','hidden');
-      const { data, error } = await query.order('created_at',{ascending:false}).order('id',{ascending:false})
+      const primaryOrder = sort === 'title' ? 'title' : 'created_at';
+      const ascending = sort === 'oldest' || sort === 'title';
+      const { data, error } = await query.order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
       if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state">تعذر تحميل ملفاتك.</div>'; return; }
       const page = data || [];
@@ -549,6 +552,7 @@
     $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
     $('tc-my-filter').addEventListener('change',()=>loadMyResources(true));
+    $('tc-my-sort').addEventListener('change',()=>loadMyResources(true));
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
   }
