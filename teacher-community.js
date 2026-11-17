@@ -303,7 +303,7 @@
       const ascending = sort === 'oldest' || sort === 'title';
       const { data, error } = await query.order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
-      if (error) { $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.'; $('tc-my-resources').innerHTML = '<div class="tc-state" role="alert">تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.</div>'; $('tc-my-resources-more').hidden = true; return; }
+      if (error) { const retry = '<div class="tc-state" role="alert">تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.<br><button type="button" class="tc-filter-reset" data-retry-my-resources>إعادة تحميل ملفاتي</button></div>'; $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.'; $('tc-my-resources').innerHTML = retry; $('tc-my-resources-more').hidden = true; return; }
       const page = data || [];
       myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
       $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
@@ -319,7 +319,7 @@
       }
     } catch (err) {
       $('tc-my-resources-status').textContent = 'تعذر الاتصال بملفاتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
-      $('tc-my-resources').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بملفاتك. حاول إعادة التحميل بعد التحقق من الاتصال.</div>');
+      $('tc-my-resources').innerHTML = '<div class="tc-state" role="alert">تعذر الاتصال بملفاتك. حاول إعادة التحميل بعد التحقق من الاتصال.<br><button type="button" class="tc-filter-reset" data-retry-my-resources>إعادة تحميل ملفاتي</button></div>';
       if (reset) $('tc-my-resources-more').hidden = true;
     } finally {
       myLoading = false;
@@ -633,9 +633,10 @@
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b || b.disabled)return;
-    if (!b.dataset.download && !b.dataset.delete && !b.dataset.toggleShare) return;
+    if (!b.dataset.download && !b.dataset.delete && !b.dataset.toggleShare && !b.dataset.retryMyResources) return;
     b.disabled = true;
     try {
+      if(b.dataset.retryMyResources) await loadMyResources(true);
       if(b.dataset.download) await downloadResource(b.dataset.download);
       if(b.dataset.delete) await deleteResource(b.dataset.delete);
       if(b.dataset.toggleShare) await toggleShare(b.dataset.toggleShare);
