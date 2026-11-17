@@ -712,7 +712,7 @@
       const rawActivitySearch = $('tc-admin-activity-search') ? $('tc-admin-activity-search').value.trim() : '';
       const activitySearch = rawActivitySearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       const rawActorSearch = $('tc-admin-activity-actor') ? $('tc-admin-activity-actor').value.trim() : '';
-      const actorSearch = rawActorSearch.replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      const actorSearch = rawActorSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       if (actionFilter) activityQuery = activityQuery.eq('action', actionFilter);
       if (activitySearch) activityQuery = activityQuery.ilike('resource_title', '%' + activitySearch + '%');
       if (actorSearch) {
