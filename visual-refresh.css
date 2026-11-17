@@ -1486,3 +1486,16 @@ body{background:#f4f8f5}
 #student-space .gs-microscope-lab[data-active-slide="stomata"] [data-micro-source="stomata"],
 #student-space .gs-microscope-lab[data-active-slide="blood"] [data-micro-source="blood"],
 #student-space .gs-microscope-lab[data-active-slide="leaf"] [data-micro-source="leaf"]{display:flex}
+
+/* Student dashboard entry to the interactive SVT models */
+#student-space .gs-continue-model-link{display:flex;align-items:center;gap:13px;margin:14px 0;padding:15px 18px;border:1px solid #cfe4d4;border-radius:17px;background:linear-gradient(110deg,#edf8ef,#e0f0e4);color:#245b3b;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease}
+#student-space .gs-continue-model-link>span:first-child{display:grid;place-items:center;width:46px;height:46px;flex:0 0 46px;border-radius:13px;background:#ffffffb8;font-size:1.5rem}
+#student-space .gs-continue-model-link>span:nth-child(2){display:grid;gap:2px;min-width:0}
+#student-space .gs-continue-model-link strong{font-size:.98rem}
+#student-space .gs-continue-model-link small{color:#5e7967;line-height:1.6}
+#student-space .gs-continue-model-link>b{margin-inline-start:auto;font-size:1.2rem}
+#student-space .gs-continue-model-link:hover{transform:translateY(-2px);box-shadow:0 8px 20px #245b3b18}
+#student-space .gs-continue-model-link:focus-visible{outline:3px solid #28734a;outline-offset:3px}
+.gs-dark #student-space .gs-continue-model-link{background:linear-gradient(110deg,#1e3d2b,#254b34);border-color:#426d50;color:#e5f4e8}
+.gs-dark #student-space .gs-continue-model-link small{color:#c1d9c7}
+@media(prefers-reduced-motion:reduce){#student-space .gs-continue-model-link{transition:none}#student-space .gs-continue-model-link:hover{transform:none}}
