@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();renderWaterManagementQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -151,7 +151,46 @@ document.querySelectorAll('.gs-geology-choice').forEach(btn=>btn.addEventListene
 setGeology('horizontal');
 ['gen-parent-one','gen-parent-two'].forEach(id=>$(id).addEventListener('change',updateGenetics));
 updateGenetics();
-document.querySelectorAll('.gs-quiz-options button').forEach(btn=>btn.addEventListener('click',()=>{const ok=btn.dataset.answer==='correct';document.querySelectorAll('.gs-quiz-options button').forEach(b=>{b.disabled=true;if(b.dataset.answer==='correct')b.classList.add('is-correct');else if(b===btn)b.classList.add('is-wrong');});$('lab-quiz-feedback').textContent=ok?(lang==='ar'?'إجابة صحيحة! أحسنت. النواة تحتوي على المادة الوراثية.':'Bonne réponse ! Le noyau contient le matériel génétique.'):(lang==='ar'?'ليست الإجابة الصحيحة. راجع الاختيار المميز بالأخضر.':'Ce n’est pas la bonne réponse. Consultez la réponse en vert.');}));
+
+const waterManagementQuizState=new Map();
+const waterManagementFeedback=[
+ {ar:'صحيح! إصلاح التسربات يقلل فقد الماء أثناء التوزيع.',fr:'Exact ! La réparation des fuites réduit les pertes pendant la distribution.'},
+ {ar:'صحيح! يجب التأكد من جودة المياه المعالجة واحترام المعايير قبل إعادة استعمالها.',fr:'Exact ! La qualité des eaux traitées et le respect des normes doivent être vérifiés avant leur réutilisation.'},
+ {ar:'صحيح! ترشيد الضخ والوقاية من التلوث يساعدان على حماية المياه الجوفية.',fr:'Exact ! La régulation des prélèvements et la prévention de la pollution contribuent à protéger les eaux souterraines.'}
+];
+function renderWaterManagementQuiz(){
+ const score=[...waterManagementQuizState.values()].filter(Boolean).length;
+ const scoreEl=$('wm-quiz-score');
+ if(scoreEl)scoreEl.textContent=lang==='ar'?'النتيجة: '+score+' / 3':'Score : '+score+' / 3';
+ document.querySelectorAll('.gs-wm-question').forEach((card,index)=>{
+  const result=waterManagementQuizState.get(index);
+  const feedback=card.querySelector('.gs-wm-feedback');
+  if(result===undefined){feedback.textContent='';return;}
+  feedback.textContent=result
+   ?waterManagementFeedback[index][lang]
+   :(lang==='ar'?'ليست هذه الإجابة الصحيحة. راجع الخيار المميز بالأخضر واقرأ التفسير.':'Ce n’est pas la bonne réponse. Consultez l’option en vert et lisez l’explication.');
+ });
+}
+document.querySelectorAll('[data-wm-answer]').forEach(button=>button.addEventListener('click',()=>{
+ const index=Number(button.dataset.wmAnswer),card=button.closest('.gs-wm-question');
+ if(waterManagementQuizState.has(index))return;
+ const correct=button.dataset.correct==='true';
+ waterManagementQuizState.set(index,correct);
+ card.querySelectorAll('[data-wm-answer]').forEach(option=>{
+  option.disabled=true;
+  if(option.dataset.correct==='true')option.classList.add('is-correct');
+  else if(option===button)option.classList.add('is-wrong');
+ });
+ renderWaterManagementQuiz();
+}));
+$('wm-quiz-reset')?.addEventListener('click',()=>{
+ waterManagementQuizState.clear();
+ document.querySelectorAll('.gs-wm-question [data-wm-answer]').forEach(option=>{
+  option.disabled=false;option.classList.remove('is-correct','is-wrong');
+ });
+ renderWaterManagementQuiz();
+});
+
 const relativeButtons=document.querySelectorAll('[data-relative-answer]');
 relativeButtons.forEach(btn=>btn.addEventListener('click',()=>{
  relativeButtons.forEach(b=>{b.disabled=true;b.classList.toggle('is-correct',b.dataset.relativeAnswer==='intrusion');b.classList.toggle('is-wrong',b===btn&&b.dataset.relativeAnswer!=='intrusion');});
