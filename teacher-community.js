@@ -563,13 +563,14 @@
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
     $('tc-file').addEventListener('change',updateSelectedFileHint);
-    $('tc-search').addEventListener('input',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);});
+    $('tc-search').addEventListener('input',()=>{$('tc-search-clear').hidden = !$('tc-search').value;updateLibraryResetVisibility();clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);});
+    $('tc-search-clear').addEventListener('click',()=>{clearTimeout(librarySearchTimer);$('tc-search').value='';$('tc-search-clear').hidden=true;updateLibraryResetVisibility();loadLibrary(true);$('tc-search').focus();});
     $('tc-category').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-file-type').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-library-sort').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-library-reset').addEventListener('click',()=>{
       clearTimeout(librarySearchTimer);
-      $('tc-search').value=''; $('tc-category').value=''; $('tc-file-type').value=''; $('tc-library-sort').value='newest';
+      $('tc-search').value=''; $('tc-search-clear').hidden=true; $('tc-category').value=''; $('tc-file-type').value=''; $('tc-library-sort').value='newest';
       updateLibraryResetVisibility(); loadLibrary(true);
     });
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
