@@ -366,5 +366,40 @@ $('tectonic-reset').addEventListener('click',()=>{
 
 document.querySelectorAll('.gs-tectonic-toggle').forEach(function(button){button.addEventListener('click',function(){const key=button.dataset.layer,active=button.getAttribute('aria-pressed')!=='true';button.setAttribute('aria-pressed',String(active));button.classList.toggle('is-on',active);const layer=document.querySelector('[data-map-layer="'+key+'"]');if(layer)layer.classList.toggle('is-hidden',!active);const copy=tectonicDescriptions[lang==='fr'?'fr':'ar'][key],box=$('tectonic-info');box.innerHTML='<strong></strong><p></p>';box.querySelector('strong').textContent=copy[0];box.querySelector('p').textContent=copy[1];});});
 
+
+let cellQuizScore=0,cellQuizAnswered=0;
+function resetCellQuiz(){
+ cellQuizScore=0;cellQuizAnswered=0;
+ document.querySelectorAll('.gs-cell-question').forEach(card=>{
+  delete card.dataset.answered;
+  card.querySelectorAll('button').forEach(button=>{button.disabled=false;button.classList.remove('is-correct','is-wrong');});
+  card.querySelector('p').textContent='';
+ });
+ $('cell-quiz-score').textContent='0 / 3';
+ $('cell-quiz-result').textContent=lang==='ar'?'اختر إجابة واحدة لكل سؤال لعرض نتيجتك.':'Choisissez une réponse par question pour obtenir votre résultat.';
+}
+document.querySelectorAll('.gs-cell-question .gs-cell-answers button').forEach(button=>{
+ button.addEventListener('click',()=>{
+  const card=button.closest('.gs-cell-question');
+  if(card.dataset.answered==='true')return;
+  card.dataset.answered='true';cellQuizAnswered++;
+  const correct=button.dataset.correct==='true';
+  if(correct)cellQuizScore++;
+  card.querySelectorAll('button').forEach(option=>{
+   option.disabled=true;
+   if(option.dataset.correct==='true')option.classList.add('is-correct');
+   else if(option===button)option.classList.add('is-wrong');
+  });
+  card.querySelector('p').textContent=correct
+   ?(lang==='ar'?'إجابة صحيحة، أحسنت!':'Bonne réponse, bravo !')
+   :(lang==='ar'?'ليست الإجابة الصحيحة. راجع الإجابة المميزة بالأخضر.':'Ce n’est pas la bonne réponse. Consultez la réponse en vert.');
+  $('cell-quiz-score').textContent=cellQuizScore+' / 3';
+  if(cellQuizAnswered===3)$('cell-quiz-result').textContent=lang==='ar'
+   ?'نتيجتك: '+cellQuizScore+' من 3. '+(cellQuizScore===3?'ممتاز!':'يمكنك مراجعة مكوّنات الخلية ثم إعادة المحاولة.')
+   :'Votre résultat : '+cellQuizScore+' sur 3. '+(cellQuizScore===3?'Excellent !':'Revoyez les constituants de la cellule puis réessayez.');
+ });
+});
+$('cell-quiz-reset').addEventListener('click',resetCellQuiz);
+
 loadCommonsPhotos();
 })();
