@@ -508,8 +508,10 @@
     const submit = $('tc-upload-submit'); submit.disabled = true; submit.textContent = 'جارٍ رفع الملف...';
     const closeButton = $('tc-upload-dialog').querySelector('.tc-dialog-close');
     if (closeButton) closeButton.disabled = true;
-    const path = user.id + '/' + crypto.randomUUID() + '.' + ext;
     try {
+      // Keep path generation inside the guarded upload flow so any runtime error
+      // still reaches finally and releases the dialog and submit-button locks.
+      const path = user.id + '/' + crypto.randomUUID() + '.' + ext;
       const upload = await client.storage.from('teacher-community').upload(path,file,{contentType:mimeType,upsert:false});
       if (upload.error) throw upload.error;
       const row = {owner_id:user.id,title,description:$('tc-file-description').value.trim(),category:$('tc-file-category').value,
