@@ -561,6 +561,15 @@
     ]);
     const memberPage = members.error ? [] : (members.data || []);
     const resourcePage = docs.error ? [] : (docs.data || []);
+    let resourceOwners = {};
+    if (loadResources && resourcePage.length) {
+      const ownerIds = [...new Set(resourcePage.map(r => r.owner_id).filter(Boolean))];
+      const ownerResult = ownerIds.length
+        ? await client.from('teacher_community_members').select('user_id,display_name,professional_title,school_name').in('user_id', ownerIds)
+        : {data:[],error:null};
+      if (ownerResult.error) console.warn('[Teacher community admin resource owners]', ownerResult.error);
+      else resourceOwners = Object.fromEntries((ownerResult.data || []).map(m => [m.user_id, m]));
+    }
     if (loadMembers) {
       if (members.error) {
         console.error('[Teacher community admin members]', members.error);
@@ -586,9 +595,20 @@
       } else {
         adminResourcesOffset += resourcePage.length;
         adminResourcesMore = resourcePage.length === PAGE_SIZE;
-        $('tc-admin-resources').insertAdjacentHTML('beforeend', resourcePage.map(r =>
-          '<div class="tc-admin-row"><span><b>' + escapeHtml(r.title) + '</b><br>' + escapeHtml(r.file_name) + '</span><span>' + escapeHtml(r.status) + '</span><span><button data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'نشر' : 'إخفاء') + '</button><button class="danger" data-admin-delete="' + escapeHtml(r.id) + '">حذف نهائياً</button></span></div>'
-        ).join(''));
+        $('tc-admin-resources').insertAdjacentHTML('beforeend', resourcePage.map(r => {
+          const owner = resourceOwners[r.owner_id];
+          const ownerLabel = owner ? owner.display_name : 'عضو غير متاح';
+          const ownerDetail = owner && (owner.professional_title || owner.school_name);
+          const statusLabel = r.status === 'hidden' ? 'مخفي' : (r.is_shared ? 'مشترك' : 'خاص');
+          return '<article class="tc-admin-resource-row">' +
+            '<div class="tc-admin-resource-main"><b>' + escapeHtml(r.title) + '</b><span>' + escapeHtml(r.file_name) + '</span>' +
+            '<small>صاحب المورد: ' + escapeHtml(ownerLabel) + (ownerDetail ? ' · ' + escapeHtml(ownerDetail) : '') + '</small></div>' +
+            '<div class="tc-admin-resource-meta"><span class="tc-admin-resource-status ' + (r.status === 'hidden' ? 'is-hidden' : (r.is_shared ? 'is-shared' : 'is-private')) + '">' + statusLabel + '</span>' +
+            '<span>' + escapeHtml(categories[r.category] || categories.other) + '</span><span>' + escapeHtml(dateLabel(r.created_at)) + '</span>' +
+            '<span>' + (Number(r.size_bytes) / 1048576).toFixed(1) + ' MB</span></div>' +
+            '<div class="tc-admin-resource-actions"><button type="button" data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'إعادة النشر' : 'إخفاء') + '</button>' +
+            '<button type="button" class="danger" data-admin-delete="' + escapeHtml(r.id) + '">حذف نهائياً</button></div></article>';
+        }).join(''));
         if (reset && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد تطابق معايير البحث والتصفية الحالية.</div>';
       }
       $('tc-admin-resources-more').hidden = !adminResourcesMore;
