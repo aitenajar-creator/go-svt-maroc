@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('mitosis-lab'))renderMitosis();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('mitosis-lab'))renderMitosis();if($('meiosis-compare-lab'))renderMeiosisCompare();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -923,6 +923,51 @@ document.querySelectorAll('[data-mitosis-stage]').forEach(button=>button.addEven
 $('mitosis-reset')?.addEventListener('click',()=>{mitosisStep=0;renderMitosis();});
 renderMitosis();
 
+
+
+const meiosisItems=[
+ {type:'mitosis',ar:'ينتج غالباً خليتين بنتين لهما العدد نفسه من الصبغيات كالخلية الأم.',fr:'Produit généralement deux cellules filles ayant le même nombre de chromosomes que la cellule mère.',whyAr:'هذا من نتائج الانقسام الخيطي الذي يحافظ على عدد الصبغيات.',whyFr:'C’est un résultat de la mitose, qui conserve le nombre de chromosomes.'},
+ {type:'meiosis',ar:'يتضمن انقسامين متتاليين بعد تضاعف المادة الوراثية مرة واحدة.',fr:'Comporte deux divisions successives après une seule réplication de l’ADN.',whyAr:'يمر الانقسام المنصف الأول ثم الثاني دون تضاعف جديد للـADN بينهما.',whyFr:'La méiose comprend une première puis une deuxième division, sans nouvelle réplication de l’ADN entre les deux.'},
+ {type:'mitosis',ar:'يساهم في نمو الكائن الحي وتجديد بعض خلاياه.',fr:'Contribue à la croissance de l’organisme et au renouvellement de certaines cellules.',whyAr:'تسمح الانقسامات الخيطية بزيادة عدد الخلايا وتجديدها.',whyFr:'Les mitoses permettent d’augmenter le nombre de cellules et d’en renouveler certaines.'},
+ {type:'meiosis',ar:'يخفض عدد الصبغيات إلى النصف، وينتج خلايا أحادية الصيغة الصبغية.',fr:'Réduit de moitié le nombre de chromosomes et produit des cellules haploïdes.',whyAr:'يساهم ذلك في الحفاظ على عدد الصبغيات بعد الإخصاب في دورات التكاثر الجنسي.',whyFr:'Cela contribue au maintien du nombre de chromosomes après la fécondation dans les cycles sexués.'},
+ {type:'meiosis',ar:'يحدث اقتران الصبغيات المتماثلة والعبور خلال الطور التمهيدي الأول.',fr:'L’appariement des chromosomes homologues et le crossing-over ont lieu en prophase I.',whyAr:'هذه أحداث مميزة للانقسام المنصف الأول وتساهم في التنوع الوراثي.',whyFr:'Ces événements caractéristiques de la méiose I contribuent à la diversité génétique.'},
+ {type:'mitosis',ar:'تنفصل الكروماتيدات الشقيقة خلال مرحلة واحدة من الانقسام.',fr:'Les chromatides sœurs se séparent au cours d’une seule division.',whyAr:'في الانقسام الخيطي تنفصل الكروماتيدات الشقيقة خلال الانقسام نفسه.',whyFr:'En mitose, les chromatides sœurs se séparent au cours de cette division unique.'}
+];
+let meiosisStep=0;
+function renderMeiosisCompare(){
+ const list=$('meiosis-question-list'),feedback=$('meiosis-feedback'),progress=$('meiosis-progress'),bar=$('meiosis-progress-bar');
+ if(!list||!feedback||!progress||!bar)return;
+ list.innerHTML='';
+ meiosisItems.forEach((item,index)=>{
+  const card=document.createElement('article');card.className='gs-meiosis-question';
+  const prompt=document.createElement('p');prompt.textContent=(index+1)+'. '+item[lang];card.appendChild(prompt);
+  const actions=document.createElement('div');actions.className='gs-meiosis-options';
+  [['mitosis',lang==='ar'?'الانقسام الخيطي':'Mitose'],['meiosis',lang==='ar'?'الانقسام المنصف':'Méiose']].forEach(([value,label])=>{
+   const button=document.createElement('button');button.type='button';button.textContent=label;button.dataset.meiosisIndex=String(index);button.dataset.meiosisType=value;
+   button.disabled=index<meiosisStep; if(index<meiosisStep&&value===item.type)button.classList.add('is-correct');
+   actions.appendChild(button);
+  });
+  card.appendChild(actions);
+  if(index<meiosisStep){const explanation=document.createElement('small');explanation.textContent=item[lang==='ar'?'whyAr':'whyFr'];card.appendChild(explanation);}
+  list.appendChild(card);
+ });
+ progress.textContent=lang==='ar'?'الخصائص الصحيحة: '+meiosisStep+' / '+meiosisItems.length:'Caractéristiques correctes : '+meiosisStep+' / '+meiosisItems.length;
+ bar.style.width=(meiosisStep/meiosisItems.length*100)+'%';
+ if(meiosisStep===meiosisItems.length)feedback.textContent=lang==='ar'?'أحسنت! أكملت المقارنة بنجاح. تذكّر الفرق بين انقسام واحد وانقسامين متتاليين.':'Bravo ! Vous avez terminé la comparaison. Retenez la différence entre une division et deux divisions successives.';
+ else feedback.textContent=lang==='ar'?'صنّف الخاصية رقم '+(meiosisStep+1)+' من أصل '+meiosisItems.length+'.':'Classez la caractéristique '+(meiosisStep+1)+' sur '+meiosisItems.length+'.';
+}
+$('meiosis-question-list')?.addEventListener('click',event=>{
+ const button=event.target.closest('[data-meiosis-index]');if(!button)return;
+ const index=Number(button.dataset.meiosisIndex);if(index!==meiosisStep)return;
+ const item=meiosisItems[index];
+ if(button.dataset.meiosisType!==item.type){
+  $('meiosis-feedback').textContent=lang==='ar'?'حاول مجدداً. فكّر في عدد الانقسامات والنتيجة على عدد الصبغيات.':'Réessayez. Pensez au nombre de divisions et à leur effet sur le nombre de chromosomes.';
+  button.classList.add('is-wrong');return;
+ }
+ meiosisStep++;renderMeiosisCompare();
+});
+$('meiosis-reset')?.addEventListener('click',()=>{meiosisStep=0;renderMeiosisCompare();});
+renderMeiosisCompare();
 
 const dnaComplement={A:'T',T:'A',C:'G',G:'C'};
 let dnaChecked=false,dnaScore=null;
