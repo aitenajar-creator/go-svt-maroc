@@ -327,6 +327,43 @@ $('water-management-reset').addEventListener('click',()=>{
 
 
 const tectonicDescriptions={ar:{plates:['الصفائح التكتونية','الغلاف الصخري مقسم إلى صفائح تتحرك ببطء فوق نطاق أكثر ليونة في الوشاح العلوي.'],volcanoes:['البراكين','يرتبط عدد كبير من البراكين بمناطق تقارب الصفائح أو تباعدها، مع وجود براكين داخل الصفائح أيضاً.'],quakes:['الزلازل','تتركز زلازل كثيرة على حدود الصفائح حيث تتراكم الإجهادات وتتحرر على شكل اهتزازات.'],relief:['التضاريس','قد يؤدي تقارب الصفائح إلى تشكل سلاسل جبلية وخنادق محيطية، بينما يرتبط التباعد بتشكل الظهور المحيطية.'],gps:['اتجاه الحركة','تساعد قياسات GPS على تتبع الإزاحة النسبية للصفائح، ويختلف اتجاه الحركة وسرعتها من منطقة إلى أخرى.']},fr:{plates:['Plaques tectoniques','La lithosphère est divisée en plaques qui se déplacent lentement sur une zone plus ductile du manteau supérieur.'],volcanoes:['Volcans','De nombreux volcans sont associés aux zones de convergence ou de divergence, même s’il existe aussi des volcans intraplaques.'],quakes:['Séismes','Beaucoup de séismes se concentrent aux limites des plaques, où les contraintes s’accumulent puis se libèrent.'],relief:['Relief','La convergence peut former des chaînes de montagnes et des fosses océaniques ; la divergence est associée aux dorsales.'],gps:['Sens du mouvement','Les mesures GPS permettent de suivre les déplacements relatifs des plaques. Leur direction et leur vitesse varient selon les régions.']}};
+
+let tectonicScore=0,tectonicAnswered=0;
+function resetTectonicChallenge(){
+ tectonicScore=0;tectonicAnswered=0;
+ document.querySelectorAll('.gs-tectonic-question').forEach(card=>{
+  card.querySelectorAll('button').forEach(button=>{button.disabled=false;button.classList.remove('is-correct','is-wrong');});
+  card.querySelector('.gs-tectonic-feedback').textContent='';
+ });
+ $('tectonic-score').textContent='0 / 3';
+ $('tectonic-result').textContent=lang==='ar'?'اختر إجابة واحدة في كل سؤال لعرض نتيجتك.':'Choisissez une réponse par question pour obtenir votre résultat.';
+}
+document.querySelectorAll('.gs-tectonic-question .gs-tectonic-answers button').forEach(button=>{
+ button.addEventListener('click',()=>{
+  const card=button.closest('.gs-tectonic-question');
+  if(card.dataset.answered==='true')return;
+  card.dataset.answered='true';tectonicAnswered++;
+  const correct=button.dataset.answer==='correct';
+  if(correct)tectonicScore++;
+  card.querySelectorAll('button').forEach(option=>{
+   option.disabled=true;
+   if(option.dataset.answer==='correct')option.classList.add('is-correct');
+   else if(option===button)option.classList.add('is-wrong');
+  });
+  card.querySelector('.gs-tectonic-feedback').textContent=correct
+   ?(lang==='ar'?'إجابة صحيحة، أحسنت!':'Bonne réponse, bravo !')
+   :(lang==='ar'?'ليست الإجابة الصحيحة. راجع الاختيار المميز بالأخضر.':'Ce n’est pas la bonne réponse. Consultez la réponse en vert.');
+  $('tectonic-score').textContent=tectonicScore+' / 3';
+  if(tectonicAnswered===3)$('tectonic-result').textContent=lang==='ar'
+   ?'نتيجتك: '+tectonicScore+' من 3. '+(tectonicScore===3?'ممتاز!':'راجع الشروحات ثم حاول مرة أخرى.')
+   :'Votre résultat : '+tectonicScore+' sur 3. '+(tectonicScore===3?'Excellent !':'Relisez les explications puis réessayez.');
+ });
+});
+$('tectonic-reset').addEventListener('click',()=>{
+ document.querySelectorAll('.gs-tectonic-question').forEach(card=>delete card.dataset.answered);
+ resetTectonicChallenge();
+});
+
 document.querySelectorAll('.gs-tectonic-toggle').forEach(function(button){button.addEventListener('click',function(){const key=button.dataset.layer,active=button.getAttribute('aria-pressed')!=='true';button.setAttribute('aria-pressed',String(active));button.classList.toggle('is-on',active);const layer=document.querySelector('[data-map-layer="'+key+'"]');if(layer)layer.classList.toggle('is-hidden',!active);const copy=tectonicDescriptions[lang==='fr'?'fr':'ar'][key],box=$('tectonic-info');box.innerHTML='<strong></strong><p></p>';box.querySelector('strong').textContent=copy[0];box.querySelector('p').textContent=copy[1];});});
 
 loadCommonsPhotos();
