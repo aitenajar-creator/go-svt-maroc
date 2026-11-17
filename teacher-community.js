@@ -288,6 +288,7 @@
     const moreButton = $('tc-my-resources-more');
     if (moreButton) moreButton.disabled = true;
     if (reset) { myOffset = 0; myHasMore = false; $('tc-my-resources').replaceChildren(); $('tc-my-resources-status').textContent = 'جارٍ تحميل ملفاتك...'; }
+    const retry = '<div class="tc-state" role="alert">تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.<br><button type="button" class="tc-filter-reset" data-retry-my-resources>إعادة تحميل ملفاتي</button></div>';
     try {
       const start = reset ? 0 : myOffset;
       const filter = $('tc-my-filter') ? $('tc-my-filter').value : 'all';
@@ -303,7 +304,13 @@
       const ascending = sort === 'oldest' || sort === 'title';
       const { data, error } = await query.order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
-      if (error) { $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.'; $('tc-my-resources').innerHTML = retry; $('tc-my-resources-more').hidden = true; return; }
+      if (error) {
+        $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.';
+        if (reset) $('tc-my-resources').innerHTML = retry;
+        else $('tc-my-resources').insertAdjacentHTML('beforeend', retry);
+        if (reset) $('tc-my-resources-more').hidden = true;
+        return;
+      }
       const page = data || [];
       myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
       $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
@@ -319,7 +326,8 @@
       }
     } catch (err) {
       $('tc-my-resources-status').textContent = 'تعذر الاتصال بملفاتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
-      $('tc-my-resources').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بملفاتك. حاول إعادة التحميل بعد التحقق من الاتصال.<br><button type="button" class="tc-filter-reset" data-retry-my-resources>إعادة تحميل ملفاتي</button></div>');
+      if (reset) $('tc-my-resources').innerHTML = retry;
+      else $('tc-my-resources').insertAdjacentHTML('beforeend', retry);
       if (reset) $('tc-my-resources-more').hidden = true;
     } finally {
       myLoading = false;
