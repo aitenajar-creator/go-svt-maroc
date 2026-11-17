@@ -196,6 +196,40 @@ document.querySelectorAll('[data-eco-level]').forEach(btn=>btn.addEventListener(
  showEcoLevel(selectedEcoLevel);
 }));
 
+let ecoQuizScore=0,ecoQuizAnswered=0;
+function resetEcoQuiz(){
+ ecoQuizScore=0;ecoQuizAnswered=0;
+ document.querySelectorAll('.gs-eco-question').forEach(card=>{
+  delete card.dataset.answered;
+  card.querySelectorAll('button').forEach(button=>{button.disabled=false;button.classList.remove('is-correct','is-wrong');});
+  card.querySelector('p').textContent='';
+ });
+ $('eco-quiz-score').textContent='0 / 3';
+ $('eco-quiz-result').textContent=lang==='ar'?'أجب عن الأسئلة الثلاثة لعرض نتيجتك.':'Répondez aux trois questions pour afficher votre résultat.';
+}
+document.querySelectorAll('.gs-eco-question .gs-eco-answers button').forEach(button=>{
+ button.addEventListener('click',()=>{
+  const card=button.closest('.gs-eco-question');
+  if(card.dataset.answered==='true')return;
+  card.dataset.answered='true';ecoQuizAnswered++;
+  const correct=button.dataset.correct==='true';
+  if(correct)ecoQuizScore++;
+  card.querySelectorAll('button').forEach(option=>{
+   option.disabled=true;
+   if(option.dataset.correct==='true')option.classList.add('is-correct');
+   else if(option===button)option.classList.add('is-wrong');
+  });
+  card.querySelector('p').textContent=correct
+   ?(lang==='ar'?'إجابة صحيحة، أحسنت!':'Bonne réponse, bravo !')
+   :(lang==='ar'?'ليست الإجابة الصحيحة. راجع الإجابة المميزة بالأخضر.':'Ce n’est pas la bonne réponse. Consultez la réponse en vert.');
+  $('eco-quiz-score').textContent=ecoQuizScore+' / 3';
+  if(ecoQuizAnswered===3)$('eco-quiz-result').textContent=lang==='ar'
+   ?'نتيجتك: '+ecoQuizScore+' من 3. '+(ecoQuizScore===3?'ممتاز!':'راجع السلسلة الغذائية ثم أعد المحاولة.')
+   :'Votre résultat : '+ecoQuizScore+' sur 3. '+(ecoQuizScore===3?'Excellent !':'Revoyez la chaîne alimentaire puis réessayez.');
+ });
+});
+$('eco-quiz-reset').addEventListener('click',resetEcoQuiz);
+
 
 const balanceTexts={
  plants:{ar:'اختفاء النباتات يقلل مصدر الغذاء والطاقة للكائنات العاشبة، وقد يؤدي إلى تراجع الحشرات والعواشب ثم يؤثر في المفترسات التي تعتمد عليها. كما تتأثر حماية التربة.',fr:'La disparition des plantes réduit la source de nourriture et d’énergie des herbivores. Les insectes et autres herbivores peuvent diminuer, puis les prédateurs qui en dépendent ; la protection des sols est aussi affectée.'},
