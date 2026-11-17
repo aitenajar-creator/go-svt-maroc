@@ -357,9 +357,14 @@
     if (loadResources && resourceMoreButton) resourceMoreButton.disabled = true;
     try {
     if (reset) {
-      adminMembersOffset = 0; adminResourcesOffset = 0;
-      adminMembersMore = false; adminResourcesMore = false;
-      $('tc-admin-members').replaceChildren(); $('tc-admin-resources').replaceChildren();
+      if (loadMembers) {
+        adminMembersOffset = 0; adminMembersMore = false;
+        $('tc-admin-members').replaceChildren();
+      }
+      if (loadResources) {
+        adminResourcesOffset = 0; adminResourcesMore = false;
+        $('tc-admin-resources').replaceChildren();
+      }
     }
     const [members, docs] = await Promise.all([
       only === 'resources' ? Promise.resolve({data:[],error:null}) : client.from('teacher_community_members').select('*').order('created_at',{ascending:false}).order('user_id',{ascending:false})
@@ -367,23 +372,40 @@
       only === 'members' ? Promise.resolve({data:[],error:null}) : client.from('teacher_community_resources').select('*').order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(adminResourcesOffset, adminResourcesOffset + PAGE_SIZE - 1)
     ]);
-    if (members.error || docs.error) { console.error('[Teacher community admin]',members.error || docs.error); return; }
-    const memberPage = members.data || [], resourcePage = docs.data || [];
-    adminMembersOffset += memberPage.length; adminResourcesOffset += resourcePage.length;
-    if (only !== 'resources') adminMembersMore = memberPage.length === PAGE_SIZE;
-    if (only !== 'members') adminResourcesMore = resourcePage.length === PAGE_SIZE;
-    $('tc-admin-members').insertAdjacentHTML('beforeend', memberPage.map(m =>
-      '<div class="tc-admin-row"><span><b>' + escapeHtml(m.display_name) + '</b><br>' + escapeHtml(m.professional_title || m.school_name || m.status) + '</span><span>' + escapeHtml(m.status) + '</span><span>' +
-      (m.status !== 'approved' ? '<button data-approve-member="' + escapeHtml(m.user_id) + '">موافقة</button>' : '') +
-      (m.status !== 'suspended' ? '<button class="reject" data-suspend-member="' + escapeHtml(m.user_id) + '">تعليق</button>' : '') + '</span></div>'
-    ).join(''));
-    $('tc-admin-resources').insertAdjacentHTML('beforeend', resourcePage.map(r =>
-      '<div class="tc-admin-row"><span><b>' + escapeHtml(r.title) + '</b><br>' + escapeHtml(r.file_name) + '</span><span>' + escapeHtml(r.status) + '</span><span><button data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'نشر' : 'إخفاء') + '</button><button class="danger" data-admin-delete="' + escapeHtml(r.id) + '">حذف نهائياً</button></span></div>'
-    ).join(''));
-    if (reset && only !== 'resources' && !memberPage.length) $('tc-admin-members').innerHTML = '<div class="tc-state">لا توجد طلبات.</div>';
-    if (reset && only !== 'members' && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد.</div>';
-    $('tc-admin-members-more').hidden = !adminMembersMore;
-    $('tc-admin-resources-more').hidden = !adminResourcesMore;
+    const memberPage = members.error ? [] : (members.data || []);
+    const resourcePage = docs.error ? [] : (docs.data || []);
+    if (loadMembers) {
+      if (members.error) {
+        console.error('[Teacher community admin members]', members.error);
+        $('tc-admin-members').insertAdjacentHTML('beforeend',
+          '<div class="tc-state" role="alert">تعذر تحميل طلبات العضوية. <button type="button" data-retry-admin-members>إعادة المحاولة</button></div>');
+      } else {
+        adminMembersOffset += memberPage.length;
+        adminMembersMore = memberPage.length === PAGE_SIZE;
+        $('tc-admin-members').insertAdjacentHTML('beforeend', memberPage.map(m =>
+          '<div class="tc-admin-row"><span><b>' + escapeHtml(m.display_name) + '</b><br>' + escapeHtml(m.professional_title || m.school_name || m.status) + '</span><span>' + escapeHtml(m.status) + '</span><span>' +
+          (m.status !== 'approved' ? '<button data-approve-member="' + escapeHtml(m.user_id) + '">موافقة</button>' : '') +
+          (m.status !== 'suspended' ? '<button class="reject" data-suspend-member="' + escapeHtml(m.user_id) + '">تعليق</button>' : '') + '</span></div>'
+        ).join(''));
+        if (reset && !memberPage.length) $('tc-admin-members').innerHTML = '<div class="tc-state">لا توجد طلبات.</div>';
+      }
+      $('tc-admin-members-more').hidden = !adminMembersMore;
+    }
+    if (loadResources) {
+      if (docs.error) {
+        console.error('[Teacher community admin resources]', docs.error);
+        $('tc-admin-resources').insertAdjacentHTML('beforeend',
+          '<div class="tc-state" role="alert">تعذر تحميل الموارد. <button type="button" data-retry-admin-resources>إعادة المحاولة</button></div>');
+      } else {
+        adminResourcesOffset += resourcePage.length;
+        adminResourcesMore = resourcePage.length === PAGE_SIZE;
+        $('tc-admin-resources').insertAdjacentHTML('beforeend', resourcePage.map(r =>
+          '<div class="tc-admin-row"><span><b>' + escapeHtml(r.title) + '</b><br>' + escapeHtml(r.file_name) + '</span><span>' + escapeHtml(r.status) + '</span><span><button data-hide-resource="' + escapeHtml(r.id) + '">' + (r.status === 'hidden' ? 'نشر' : 'إخفاء') + '</button><button class="danger" data-admin-delete="' + escapeHtml(r.id) + '">حذف نهائياً</button></span></div>'
+        ).join(''));
+        if (reset && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد.</div>';
+      }
+      $('tc-admin-resources-more').hidden = !adminResourcesMore;
+    }
     } finally {
       if (loadMembers) adminMembersLoading = false;
       if (loadResources) adminResourcesLoading = false;
@@ -457,7 +479,11 @@
     const b=e.target.closest('button'); if(!b || !isAdmin || b.disabled) return;
     b.disabled = true;
     try {
-      if (b.dataset.approveMember || b.dataset.suspendMember) {
+      if (b.dataset.retryAdminMembers) {
+        await loadAdmin(true,'members');
+      } else if (b.dataset.retryAdminResources) {
+        await loadAdmin(true,'resources');
+      } else if (b.dataset.approveMember || b.dataset.suspendMember) {
         const id=b.dataset.approveMember || b.dataset.suspendMember, status=b.dataset.approveMember?'approved':'suspended';
         const updated=await client.from('teacher_community_members').update({status,updated_at:new Date().toISOString()})
           .eq('user_id',id).select('user_id').maybeSingle();
