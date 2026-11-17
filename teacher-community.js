@@ -266,7 +266,7 @@
     myLoading = true;
     const moreButton = $('tc-my-resources-more');
     if (moreButton) moreButton.disabled = true;
-    if (reset) { myOffset = 0; myHasMore = false; $('tc-my-resources').replaceChildren(); }
+    if (reset) { myOffset = 0; myHasMore = false; $('tc-my-resources').replaceChildren(); $('tc-my-resources-status').textContent = 'جارٍ تحميل ملفاتك...'; }
     try {
       const start = reset ? 0 : myOffset;
       const filter = $('tc-my-filter') ? $('tc-my-filter').value : 'all';
@@ -282,18 +282,19 @@
       const ascending = sort === 'oldest' || sort === 'title';
       const { data, error } = await query.order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
-      if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state" role="alert">تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.</div>'; $('tc-my-resources-more').hidden = true; return; }
+      if (error) { $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.'; $('tc-my-resources').innerHTML = '<div class="tc-state" role="alert">تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.</div>'; $('tc-my-resources-more').hidden = true; return; }
       const page = data || [];
       myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
       $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
       $('tc-my-resources-more').hidden = !myHasMore;
+      if (page.length) $('tc-my-resources-status').textContent = `تم تحميل ${myOffset} من ملفاتك.`;
       if (reset && !page.length) {
         const emptyText = q ? 'لا توجد ملفات تطابق عبارة البحث. جرّب كلمات أخرى.' : filter === 'all'
           ? 'لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.'
           : filter === 'shared' ? 'لا توجد موارد مشتركة ضمن ملفاتك حالياً.'
           : filter === 'private' ? 'لا توجد ملفات خاصة ضمن مواردك المنشورة.'
           : 'لا توجد ملفات مخفية ضمن مواردك حالياً.';
-        $('tc-my-resources').innerHTML = '<div class="tc-state">' + emptyText + '</div>';
+        $('tc-my-resources').innerHTML = '<div class="tc-state">' + emptyText + '</div>'; $('tc-my-resources-status').textContent = emptyText;
       }
     } finally {
       myLoading = false;
