@@ -99,6 +99,23 @@
         border-color:#456b50;
         color:#e0f0e5;
       }
+      #gs-classroom.gs-cl-teacher-view .gs-cl-progress{
+        height:9px;
+        margin:.35rem 0 .65rem;
+        overflow:hidden;
+        border-radius:999px;
+        background:#dce9df;
+        box-shadow:inset 0 1px 2px rgba(24,67,48,.08);
+      }
+      #gs-classroom.gs-cl-teacher-view .gs-cl-progress span{
+        display:block;
+        height:100%;
+        border-radius:inherit;
+        background:linear-gradient(90deg,#78b88a,#27804b);
+        transition:width .25s ease;
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view .gs-cl-progress{background:#3a5141}
+      html.gs-dark #gs-classroom.gs-cl-teacher-view .gs-cl-progress span{background:linear-gradient(90deg,#78b88a,#48a86a)}
       #gs-classroom.gs-cl-teacher-view .gs-cl-row{
         padding:.9rem 1rem;
         border:1px solid rgba(55,112,83,.14);
@@ -691,7 +708,7 @@
               return '<article class="gs-cl-row" data-student-card="true" data-follow-up="'+(needsFollowUp?'true':'false')+'" data-student-name="'+esc(s.display_name||'')+'" data-student-score="'+(s.average_assignment_percentage==null?'':Number(s.average_assignment_percentage))+'"><strong>'+esc(s.display_name)+'</strong>'+(needsFollowUp?'<p class="gs-cl-muted">'+tr('متابعة تربوية مقترحة','Suivi pédagogique suggéré')+'</p><ul>'+reasons.map(reason=>'<li>'+esc(reason)+'</li>').join('')+'</ul>':'')+
                 '<p class="gs-cl-muted">'+esc(s.study_level||'')+' · '+esc(s.study_track||'')+' · '+tr('تاريخ الانضمام','Inscrit le')+' '+(s.joined_at?esc(new Date(s.joined_at).toLocaleDateString(ar()?'ar-MA':'fr-FR')):'—')+'</p>'+
                 '<p>'+tr('واجبات هذا القسم المصححة','Devoirs corrigés dans cette classe')+': <strong>'+(Number(s.graded_submissions)||0)+'</strong> · '+tr('متوسط النقط المسجلة','Moyenne des notes enregistrées')+': <strong>'+(s.average_assignment_percentage==null?'—':esc(s.average_assignment_percentage)+'%')+'</strong></p>'+
-                '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+
+                '<p class="gs-cl-muted">'+tr('الواجبات المسلمة','Devoirs remis')+': '+submitted+'/'+assignmentIds.length+(assignmentProgress===null?'':' · '+assignmentProgress+'%')+'</p>'+(assignmentProgress===null?'':'<div class="gs-cl-progress" role="progressbar" aria-label="'+tr('نسبة تسليم واجبات التلميذ','Progression des remises de devoirs de l’élève')+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+assignmentProgress+'"><span style="width:'+assignmentProgress+'%"></span></div>')+(overdue?'<p class="gs-cl-muted">'+tr('واجبات متأخرة غير مسلمة','Devoirs en retard non remis')+': '+overdue+'</p>':'')+
                 (assignmentIds.length?'<details class="gs-cl-row" style="margin:.5rem 0"><summary>'+tr('تفاصيل تسليم الواجبات','Détail des remises de devoirs')+'</summary><ul class="gs-cl-list">'+assignmentDetails+'</ul></details>':'')+
                 '<div class="gs-cl-head"><button type="button" class="gs-cl-secondary" data-action="student-notes" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('ملاحظات الأستاذ الخاصة','Notes pédagogiques privées')+'</button><button type="button" class="gs-cl-secondary" data-action="open-support-plan" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('خطة الدعم الفردية','Plan de soutien individuel')+'</button><button type="button" class="gs-cl-secondary" data-action="student-report" data-id="'+esc(s.student_id)+'" data-class-id="'+esc(id)+'" data-name="'+esc(s.display_name)+'">'+tr('التقرير التربوي','Rapport pédagogique')+'</button></div><div id="gs-cl-notes-'+esc(s.student_id)+'"></div><div id="gs-cl-support-'+esc(s.student_id)+'"></div><div id="gs-cl-report-'+esc(s.student_id)+'"></div></article>';
             }).join('')
