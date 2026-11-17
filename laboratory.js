@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();renderWaterManagementQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();renderWaterManagementQuiz();renderBiodiversityQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -572,6 +572,45 @@ document.querySelectorAll('.gs-cell-question .gs-cell-answers button').forEach(b
  });
 });
 $('cell-quiz-reset').addEventListener('click',resetCellQuiz);
+
+
+const biodiversityQuizState=new Map();
+const biodiversityQuizFeedback=[
+ {ar:'صحيح! يشمل التنوع البيولوجي تنوع الأنواع والتنوع الوراثي والأنظمة البيئية.',fr:'Exact ! La biodiversité comprend la diversité des espèces, la diversité génétique et celle des écosystèmes.'},
+ {ar:'صحيح! توفر المناطق الرطبة موائل مهمة وتؤدي وظائف بيئية متعددة.',fr:'Exact ! Les zones humides offrent des habitats importants et assurent plusieurs fonctions écologiques.'},
+ {ar:'صحيح! حماية المواطن الطبيعية والحد من التلوث يدعمان بقاء الأنواع.',fr:'Exact ! La protection des habitats et la réduction de la pollution favorisent la conservation des espèces.'}
+];
+function renderBiodiversityQuiz(){
+ const score=[...biodiversityQuizState.values()].filter(Boolean).length;
+ const scoreNode=$('biodiv-quiz-score');
+ if(scoreNode)scoreNode.textContent=lang==='ar'?'النتيجة: '+score+' / 3':'Score : '+score+' / 3';
+ document.querySelectorAll('.gs-biodiv-question').forEach((card,index)=>{
+  const result=biodiversityQuizState.get(index);
+  const feedback=card.querySelector('.gs-biodiv-answer-feedback');
+  if(result===undefined){feedback.textContent='';return;}
+  feedback.textContent=result
+   ?biodiversityQuizFeedback[index][lang]
+   :(lang==='ar'?'ليست هذه الإجابة الصحيحة. راجع الخيار المميز بالأخضر.':'Ce n’est pas la bonne réponse. Consultez l’option en vert.');
+ });
+}
+document.querySelectorAll('[data-biodiv-answer]').forEach(button=>button.addEventListener('click',()=>{
+ const index=Number(button.dataset.biodivAnswer),card=button.closest('.gs-biodiv-question');
+ if(biodiversityQuizState.has(index))return;
+ biodiversityQuizState.set(index,button.dataset.correct==='true');
+ card.querySelectorAll('[data-biodiv-answer]').forEach(option=>{
+  option.disabled=true;
+  if(option.dataset.correct==='true')option.classList.add('is-correct');
+  else if(option===button)option.classList.add('is-wrong');
+ });
+ renderBiodiversityQuiz();
+}));
+$('biodiv-quiz-reset').addEventListener('click',()=>{
+ biodiversityQuizState.clear();
+ document.querySelectorAll('.gs-biodiv-question [data-biodiv-answer]').forEach(option=>{
+  option.disabled=false;option.classList.remove('is-correct','is-wrong');
+ });
+ renderBiodiversityQuiz();
+});
 
 loadCommonsPhotos();
 })();
