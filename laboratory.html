@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-4">
+<link rel="stylesheet" href="laboratory.css?v=20261117-5">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -265,6 +265,14 @@
    </div>
    <div id="pressure-description" class="gs-biodiv-detail" aria-live="polite" data-ar="اختر ضغطاً بيئياً لاكتشاف آثاره المحتملة." data-fr="Choisissez une pression environnementale pour découvrir ses effets possibles.">اختر ضغطاً بيئياً لاكتشاف آثاره المحتملة.</div>
    <p class="gs-photo-note" data-ar="يعتمد التنوع البيولوجي على تفاعل الكائنات الحية مع وسطها. هذه أمثلة تعليمية عامة؛ تختلف الاستجابات الفعلية حسب النوع والمكان وشدة الضغط." data-fr="La biodiversité dépend des interactions entre les organismes et leur milieu. Ces exemples sont pédagogiques ; les réponses réelles varient selon les espèces, le lieu et l’intensité de la pression.">يعتمد التنوع البيولوجي على تفاعل الكائنات الحية مع وسطها. هذه أمثلة تعليمية عامة؛ تختلف الاستجابات الفعلية حسب النوع والمكان وشدة الضغط.</p>
+   <div class="gs-biodiv-quiz" id="biodiv-quiz">
+    <div class="gs-biodiv-quiz-heading"><span aria-hidden="true">🧠</span><div><h3 data-ar="تحدي التنوع البيولوجي" data-fr="Défi biodiversité">تحدي التنوع البيولوجي</h3><p data-ar="أجب عن ثلاثة أسئلة حول الأوساط الطبيعية وحماية الكائنات الحية." data-fr="Répondez à trois questions sur les milieux naturels et la protection des organismes.">أجب عن ثلاثة أسئلة حول الأوساط الطبيعية وحماية الكائنات الحية.</p></div></div>
+    <div class="gs-biodiv-question" data-biodiv-question="0"><h4 data-ar="1. ما المقصود بالتنوع البيولوجي؟" data-fr="1. Que signifie la biodiversité ?">1. ما المقصود بالتنوع البيولوجي؟</h4><div class="gs-biodiv-answers"><button type="button" data-biodiv-answer="0" data-correct="true" data-ar="تنوع الكائنات الحية والأنظمة البيئية" data-fr="La diversité des organismes et des écosystèmes">تنوع الكائنات الحية والأنظمة البيئية</button><button type="button" data-biodiv-answer="0" data-ar="عدد الصخور في الوسط" data-fr="Le nombre de roches dans un milieu">عدد الصخور في الوسط</button><button type="button" data-biodiv-answer="0" data-ar="نوع واحد من النباتات فقط" data-fr="Une seule espèce végétale">نوع واحد من النباتات فقط</button></div><p class="gs-biodiv-answer-feedback" aria-live="polite"></p></div>
+    <div class="gs-biodiv-question" data-biodiv-question="1"><h4 data-ar="2. لماذا تعد المناطق الرطبة مهمة؟" data-fr="2. Pourquoi les zones humides sont-elles importantes ?">2. لماذا تعد المناطق الرطبة مهمة؟</h4><div class="gs-biodiv-answers"><button type="button" data-biodiv-answer="1" data-ar="لأنها توفر موائل لكائنات عديدة وتدعم وظائف بيئية" data-fr="Elles offrent des habitats et soutiennent des fonctions écologiques">لأنها توفر موائل لكائنات عديدة وتدعم وظائف بيئية</button><button type="button" data-biodiv-answer="1" data-ar="لأنها تخلو دائماً من الكائنات الحية" data-fr="Elles sont toujours dépourvues d’organismes">لأنها تخلو دائماً من الكائنات الحية</button><button type="button" data-biodiv-answer="1" data-ar="لأنها تمنع كل أشكال التبخر" data-fr="Elles empêchent toute évaporation">لأنها تمنع كل أشكال التبخر</button></div><p class="gs-biodiv-answer-feedback" aria-live="polite"></p></div>
+    <div class="gs-biodiv-question" data-biodiv-question="2"><h4 data-ar="3. أي إجراء يساعد على حماية التنوع البيولوجي؟" data-fr="3. Quelle action contribue à protéger la biodiversité ?">3. أي إجراء يساعد على حماية التنوع البيولوجي؟</h4><div class="gs-biodiv-answers"><button type="button" data-biodiv-answer="2" data-ar="حماية المواطن الطبيعية والحد من التلوث" data-fr="Protéger les habitats et réduire la pollution">حماية المواطن الطبيعية والحد من التلوث</button><button type="button" data-biodiv-answer="2" data-ar="تدمير الغطاء النباتي" data-fr="Détruire la couverture végétale">تدمير الغطاء النباتي</button><button type="button" data-biodiv-answer="2" data-ar="إدخال أنواع دخيلة دون تقييم" data-fr="Introduire des espèces exotiques sans évaluation">إدخال أنواع دخيلة دون تقييم</button></div><p class="gs-biodiv-answer-feedback" aria-live="polite"></p></div>
+    <div class="gs-biodiv-quiz-footer"><strong id="biodiv-quiz-score" aria-live="polite" data-ar="النتيجة: 0 / 3" data-fr="Score : 0 / 3">النتيجة: 0 / 3</strong><button type="button" id="biodiv-quiz-reset" data-ar="إعادة المحاولة" data-fr="Recommencer">إعادة المحاولة</button></div>
+   </div>
+
   </div>
  </section>
 
@@ -401,5 +409,5 @@
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261117-4" defer></script>
+<script src="laboratory.js?v=20261117-5" defer></script>
 </body></html>

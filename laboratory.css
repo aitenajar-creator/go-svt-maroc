@@ -440,3 +440,32 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-dark .gs-wm-question .gs-quiz-options button{background:#29434d;border-color:#49636d;color:#e0edf1}
 .gs-dark .gs-wm-question .gs-quiz-options button.is-correct{background:#244b35;border-color:#5b9b70;color:#e1f4e5}
 .gs-dark .gs-wm-question .gs-quiz-options button.is-wrong{background:#51352f;border-color:#a86c5a;color:#f8e1d9}
+
+
+/* Biodiversity knowledge-check */
+.gs-biodiv-quiz{display:grid;gap:14px;margin-top:20px;padding:18px;border:1px solid #d9e8dc;border-radius:16px;background:#f4faf5}
+.gs-biodiv-quiz-heading{display:flex;align-items:center;gap:12px}
+.gs-biodiv-quiz-heading>span{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border-radius:13px;background:#e2f0e5;font-size:1.4rem}
+.gs-biodiv-quiz-heading h3{margin:0 0 4px;color:#245a3c}
+.gs-biodiv-quiz-heading p{margin:0;color:#587465;line-height:1.6}
+.gs-biodiv-question{padding:14px;border:1px solid #dce8df;border-radius:13px;background:#fff}
+.gs-biodiv-question h4{margin:0 0 11px;color:#315b45;line-height:1.7}
+.gs-biodiv-answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gs-biodiv-answers button{min-height:46px;padding:9px 11px;border:1px solid #d8e5dc;border-radius:10px;background:#f8fbf8;color:#345d46;font:inherit;line-height:1.5;cursor:pointer}
+.gs-biodiv-answers button:disabled{cursor:default;opacity:.9}
+.gs-biodiv-answers button.is-correct{border-color:#3b8a59;background:#e3f3e7;color:#205d36;font-weight:800}
+.gs-biodiv-answers button.is-wrong{border-color:#c77d68;background:#fbefeb;color:#854936}
+.gs-biodiv-answers button:focus-visible,.gs-biodiv-quiz-footer button:focus-visible{outline:3px solid #347b59;outline-offset:3px}
+.gs-biodiv-answer-feedback{min-height:1.5em;margin:9px 0 0;color:#4c6b58;line-height:1.65}
+.gs-biodiv-quiz-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gs-biodiv-quiz-footer strong{color:#245a3c}
+.gs-biodiv-quiz-footer button{padding:10px 15px;border:0;border-radius:10px;background:#287348;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+@media(max-width:700px){.gs-biodiv-answers{grid-template-columns:1fr}.gs-biodiv-quiz-footer{align-items:stretch;flex-direction:column}}
+.gs-dark .gs-biodiv-quiz{background:#1e3529;border-color:#3d5d49}
+.gs-dark .gs-biodiv-quiz-heading h3,.gs-dark .gs-biodiv-quiz-footer strong{color:#d9f0df}
+.gs-dark .gs-biodiv-quiz-heading p,.gs-dark .gs-biodiv-answer-feedback{color:#bdd5c4}
+.gs-dark .gs-biodiv-question{background:#263c30;border-color:#46614e}
+.gs-dark .gs-biodiv-question h4{color:#d8eadc}
+.gs-dark .gs-biodiv-answers button{background:#30483a;border-color:#4d6755;color:#e1eee4}
+.gs-dark .gs-biodiv-answers button.is-correct{background:#245239;border-color:#5c9d70;color:#e4f5e8}
+.gs-dark .gs-biodiv-answers button.is-wrong{background:#533a32;border-color:#a86e5a;color:#f8e3dc}
