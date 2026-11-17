@@ -153,3 +153,8 @@ button:disabled {
 .tc-my-stats article span{font-size:11px;color:var(--tc-muted);line-height:1.7}
 .tc-my-stats article strong{font-size:24px;line-height:1.3;color:var(--tc-green);font-weight:800;font-variant-numeric:tabular-nums}
 @media(max-width:760px){.tc-my-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.tc-my-stats article{padding:11px 13px}.tc-my-stats article strong{font-size:21px}}
+
+
+/* Personal resource CSV export feedback */
+.tc-my-export-status{min-height:18px;margin:5px 0 10px;color:var(--tc-muted);font-size:11px;line-height:1.7}
+#tc-my-export:disabled{opacity:.6;cursor:wait}
