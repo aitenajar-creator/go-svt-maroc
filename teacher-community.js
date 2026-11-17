@@ -223,9 +223,12 @@
       throw new Error('أُخفيت الوثيقة لحمايتها، لكن تعذر حذف الملف من التخزين. أعد المحاولة لاحقاً. ' + removed.error.message);
     }
 
-    const deleted = await client.from('teacher_community_resources').delete().eq('id',r.id);
+    const deleted = await client.from('teacher_community_resources').delete().eq('id',r.id).select('id').maybeSingle();
     if (deleted.error) {
       throw new Error('حُذف الملف من التخزين، لكن تعذر حذف بياناته. بقي السجل مخفياً ويمكن إعادة محاولة الحذف. ' + deleted.error.message);
+    }
+    if (!deleted.data) {
+      throw new Error('حُذف الملف من التخزين، لكن لم يُحذف سجل الوثيقة. بقي السجل مخفياً؛ أعد المحاولة أو أبلغ الإدارة.');
     }
   }
   async function deleteResource(id) {
@@ -253,8 +256,10 @@
   async function toggleShare(id) {
     const r = await findResource(id); if (!r) return;
     if (r.owner_id !== user.id && !isAdmin) throw new Error('لا يمكنك تعديل ملف أستاذ آخر.');
-    const { error } = await client.from('teacher_community_resources').update({is_shared:!r.is_shared,updated_at:new Date().toISOString()}).eq('id',id);
-    if (error) throw error;
+    const updated = await client.from('teacher_community_resources').update({is_shared:!r.is_shared,updated_at:new Date().toISOString()})
+      .eq('id',id).select('id').maybeSingle();
+    if (updated.error) throw updated.error;
+    if (!updated.data) throw new Error('لم يتم تغيير حالة المشاركة؛ قد تكون العضوية معلقة أو لم تعد تملك صلاحية تعديل هذه الوثيقة.');
     await Promise.all([loadLibrary(),loadMyResources()]);
   }
   async function loadAdmin(reset = true, only = 'both') {
@@ -359,12 +364,19 @@
     try {
       if (b.dataset.approveMember || b.dataset.suspendMember) {
         const id=b.dataset.approveMember || b.dataset.suspendMember, status=b.dataset.approveMember?'approved':'suspended';
-        const {error}=await client.from('teacher_community_members').update({status,updated_at:new Date().toISOString()}).eq('user_id',id);
-        if(error) throw error; await loadAdmin();
+        const updated=await client.from('teacher_community_members').update({status,updated_at:new Date().toISOString()})
+          .eq('user_id',id).select('user_id').maybeSingle();
+        if(updated.error) throw updated.error;
+        if(!updated.data) throw new Error('لم يتغير وضع العضوية؛ لم يتم العثور على السجل أو لا تملك صلاحية تعديله.');
+        await loadAdmin();
       } else if (b.dataset.hideResource) {
         const id=b.dataset.hideResource, r=await findResource(id);
-        const {error}=await client.from('teacher_community_resources').update({status:r.status==='hidden'?'published':'hidden',updated_at:new Date().toISOString()}).eq('id',id);
-        if(error) throw error; await Promise.all([loadAdmin(),loadLibrary()]);
+        if(!r) throw new Error('لم تعد الوثيقة موجودة. حدّث القائمة.');
+        const updated=await client.from('teacher_community_resources').update({status:r.status==='hidden'?'published':'hidden',updated_at:new Date().toISOString()})
+          .eq('id',id).select('id').maybeSingle();
+        if(updated.error) throw updated.error;
+        if(!updated.data) throw new Error('لم تتغير حالة الوثيقة؛ تحقق من صلاحيات الإدارة ثم أعد تحميل القائمة.');
+        await Promise.all([loadAdmin(),loadLibrary()]);
       } else if (b.dataset.adminDelete) {
         const id=b.dataset.adminDelete, r=await findResource(id);
         if (!r) return;
