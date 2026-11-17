@@ -15,7 +15,7 @@
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   let uploadInProgress = false;
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false, adminResourcesRefreshPending = false, adminResourceSearchTimer = null;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false, adminResourcesRefreshPending = false, adminResourceSearchTimer = null, adminActivityOffset = 0, adminActivityMore = false, adminActivityLoading = false, adminActivityRefreshPending = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -95,7 +95,7 @@
       $('tc-resource-grid').innerHTML = '';
     }
     loadMyResources();
-    if (isAdmin) loadAdmin();
+    if (isAdmin) { loadAdmin(); loadAdminActivity(true); }
   }
   async function ensureMember() {
     if (!user) return null;
@@ -447,7 +447,7 @@
       if (!updated.data) throw new Error('لم تُحفظ التعديلات. تحقق من صلاحية إدارة الوثيقة ثم أعد المحاولة.');
       $('tc-edit-dialog').close();
       editingResourceId = null;
-      await Promise.all([loadLibrary(), loadMyResources(), isAdmin ? loadAdmin() : Promise.resolve()]);
+      await Promise.all([loadLibrary(), loadMyResources(), isAdmin ? loadAdmin() : Promise.resolve(), isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
     } catch (err) {
       message('tc-edit-message', err.message || 'تعذر حفظ التعديلات.');
     } finally {
@@ -631,6 +631,100 @@
       }
     }
   }
+  const activityActions = {
+    uploaded: 'رفع مورد جديد', updated: 'تعديل بيانات مورد',
+    hidden: 'إخفاء مورد', restored: 'إعادة نشر مورد',
+    shared: 'مشاركة مورد', unshared: 'إلغاء مشاركة مورد',
+    deleted: 'حذف مورد نهائياً'
+  };
+  const activityFields = {title:'العنوان',description:'الوصف',category:'التصنيف',status:'حالة النشر',is_shared:'المشاركة'};
+  function activityDate(value) {
+    try { return new Intl.DateTimeFormat('ar-MA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(value)); }
+    catch (_) { return ''; }
+  }
+  function activityDetails(details) {
+    if (!details || typeof details !== 'object') return '';
+    return Object.entries(details).map(([key,value]) => {
+      const label = activityFields[key] || key;
+      if (value && typeof value === 'object' && ('before' in value || 'after' in value)) {
+        const before = value.before === null || value.before === undefined ? '—' : String(value.before);
+        const after = value.after === null || value.after === undefined ? '—' : String(value.after);
+        return label + ': ' + before + ' ← ' + after;
+      }
+      if (key === 'is_shared' || key === 'status') return label + ': ' + String(value);
+      return label + ': ' + String(value);
+    }).join(' · ');
+  }
+  async function loadAdminActivity(reset = true) {
+    if (!isAdmin) return;
+    if (adminActivityLoading) {
+      if (reset) adminActivityRefreshPending = true;
+      return;
+    }
+    adminActivityLoading = true;
+    const moreButton = $('tc-admin-activity-more');
+    if (moreButton) moreButton.disabled = true;
+    const panel = $('tc-admin-activity');
+    if (reset) {
+      adminActivityOffset = 0; adminActivityMore = false;
+      panel.replaceChildren();
+      panel.textContent = 'جارٍ تحميل سجل النشاط...';
+      moreButton.hidden = true;
+    }
+    try {
+      const start = reset ? 0 : adminActivityOffset;
+      const {data,error} = await client.from('teacher_community_resource_activity')
+        .select('id,resource_id,resource_title,owner_id,actor_id,action,details,created_at')
+        .order('created_at',{ascending:false}).order('id',{ascending:false})
+        .range(start,start + PAGE_SIZE - 1);
+      if (error) throw error;
+      const page = data || [];
+      const personIds = [...new Set(page.flatMap(row => [row.actor_id,row.owner_id]).filter(Boolean))];
+      let people = {};
+      if (personIds.length) {
+        const peopleResult = await client.from('teacher_community_members')
+          .select('user_id,display_name,professional_title,school_name').in('user_id',personIds);
+        if (peopleResult.error) console.warn('[Teacher community activity people]',peopleResult.error);
+        else people = Object.fromEntries((peopleResult.data || []).map(person => [person.user_id,person]));
+      }
+      adminActivityOffset = start + page.length;
+      adminActivityMore = page.length === PAGE_SIZE;
+      if (reset) panel.replaceChildren();
+      if (!page.length && reset) {
+        panel.innerHTML = '<div class="tc-state">لا توجد عمليات مسجلة بعد. ستظهر هنا عمليات رفع الموارد وتعديلها وإخفائها وإعادة نشرها وحذفها.</div>';
+      } else {
+        panel.insertAdjacentHTML('beforeend',page.map(row => {
+          const actor = people[row.actor_id];
+          const owner = people[row.owner_id];
+          const actorName = row.actor_id === user.id ? 'إدارة المنصة' : (actor ? actor.display_name : 'حساب غير متاح');
+          const actorRole = actor && (actor.professional_title || actor.school_name);
+          const ownerName = owner ? owner.display_name : (row.owner_id === user.id ? 'إدارة المنصة' : 'عضو غير متاح');
+          const action = activityActions[row.action] || 'عملية على مورد';
+          const detail = activityDetails(row.details);
+          return '<article class="tc-activity-row">' +
+            '<div class="tc-activity-icon" aria-hidden="true">◷</div>' +
+            '<div class="tc-activity-main"><b>' + escapeHtml(action) + '</b>' +
+            '<span>' + escapeHtml(row.resource_title || 'مورد محذوف') + '</span>' +
+            '<small>المنفذ: ' + escapeHtml(actorName) + (actorRole ? ' · ' + escapeHtml(actorRole) : '') +
+            ' | صاحب المورد: ' + escapeHtml(ownerName) + '</small>' +
+            (detail ? '<small class="tc-activity-details">' + escapeHtml(detail) + '</small>' : '') +
+            '</div><time datetime="' + escapeHtml(row.created_at) + '">' + escapeHtml(activityDate(row.created_at)) + '</time></article>';
+        }).join(''));
+      }
+      moreButton.hidden = !adminActivityMore;
+    } catch (error) {
+      console.error('[Teacher community activity]',error);
+      panel.innerHTML = '<div class="tc-state" role="alert">تعذر تحميل سجل النشاط. تأكد من تطبيق ترحيل سجل التدقيق في قاعدة البيانات ثم أعد المحاولة.</div>';
+      moreButton.hidden = true;
+    } finally {
+      adminActivityLoading = false;
+      if (moreButton) moreButton.disabled = false;
+      if (adminActivityRefreshPending) {
+        adminActivityRefreshPending = false;
+        void loadAdminActivity(true);
+      }
+    }
+  }
   async function handleAuth(e) {
     e.preventDefault(); message('tc-auth-message','');
     const email = $('tc-email').value.trim().toLowerCase(), password = $('tc-password').value;
@@ -689,7 +783,7 @@
         throw saved.error;
       }
       $('tc-upload-form').reset(); $('tc-upload-dialog').close();
-      await Promise.all([loadLibrary(),loadMyResources()]);
+      await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
     } catch(err) { message('tc-upload-message',err.message || 'فشل رفع الملف.'); }
     finally {
       uploadInProgress = false;
@@ -720,13 +814,13 @@
           .eq('id',id).select('id').maybeSingle();
         if(updated.error) throw updated.error;
         if(!updated.data) throw new Error('لم تتغير حالة الوثيقة؛ تحقق من صلاحيات الإدارة ثم أعد تحميل القائمة.');
-        await Promise.all([loadAdmin(),loadLibrary()]);
+        await Promise.all([loadAdmin(),loadLibrary(),loadAdminActivity(true)]);
       } else if (b.dataset.adminDelete) {
         const id=b.dataset.adminDelete, r=await findResource(id);
         if (!r) return;
         if (!window.confirm('هل تريد حذف هذه الوثيقة من المجتمع نهائياً؟')) return;
         await safelyDeleteResource(r);
-        await Promise.all([loadAdmin(),loadLibrary(),loadMyResources()]);
+        await Promise.all([loadAdmin(),loadLibrary(),loadMyResources(),loadAdminActivity(true)]);
       }
     } catch(err) { alert(err.message || 'تعذر تنفيذ العملية.'); }
     finally { if (b.isConnected) b.disabled = false; }
@@ -769,7 +863,8 @@
     });
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
     document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>{const selected=x===b;x.classList.toggle('active',selected);x.setAttribute('aria-pressed',String(selected));});['mine','pending','admin'].forEach(p=>$( 'tc-'+p+'-panel').hidden=p!==b.dataset.panel);}));
-    $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin)loadAdmin();});
+    $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin){loadAdmin();loadAdminActivity(true);}});
+    $('tc-admin-activity-more').addEventListener('click',()=>loadAdminActivity(false));
     $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
     $('tc-my-filter').addEventListener('change',()=>{updateMyResetVisibility();loadMyResources(true);});
@@ -779,6 +874,7 @@
     $('tc-my-reset').addEventListener('click',()=>{clearTimeout(mySearchTimer);$('tc-my-search').value='';$('tc-my-search-clear').hidden=true;$('tc-my-filter').value='all';$('tc-my-sort').value='newest';updateMyResetVisibility();loadMyResources(true);});
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
+    $('tc-admin-activity-refresh').addEventListener('click',()=>loadAdminActivity(true));
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b || b.disabled)return;
@@ -791,6 +887,7 @@
       if(b.dataset.download) await downloadResource(b.dataset.download);
       if(b.dataset.delete) await deleteResource(b.dataset.delete);
       if(b.dataset.toggleShare) await toggleShare(b.dataset.toggleShare);
+      if(isAdmin && (b.dataset.editResource || b.dataset.delete || b.dataset.toggleShare)) await loadAdminActivity(true);
     } catch(err) { alert(err.message || 'تعذر تنفيذ العملية.'); }
     finally { if (b.isConnected) b.disabled = false; }
   }
