@@ -925,29 +925,30 @@ renderMitosis();
 
 
 const dnaComplement={A:'T',T:'A',C:'G',G:'C'};
-let dnaChecked=false;
+let dnaChecked=false,dnaScore=null;
 function renderDnaPairing(){
  const selects=[...document.querySelectorAll('[data-dna-position]')];
  selects.forEach(select=>{select.disabled=dnaChecked;});
  const feedback=$('dna-feedback');
  if(!feedback)return;
- if(!dnaChecked)feedback.textContent=lang==='ar'?'أكمل القواعد الأربع ثم اضغط على زر التحقق.':'Complétez les quatre bases puis cliquez sur Vérifier.';
+ if(dnaChecked&&dnaScore!==null)feedback.textContent=lang==='ar'?'نتيجتك: '+dnaScore+' / 4. '+(dnaScore===4?'ممتاز! السلسلة المكملة هي TGCA.':'راجع قاعدة A مع T وقاعدة C مع G، ثم أعد المحاولة.'):'Votre résultat : '+dnaScore+' / 4. '+(dnaScore===4?'Excellent ! Le brin complémentaire est TGCA.':'Revoyez les associations A-T et C-G, puis réessayez.');
+ else feedback.textContent=lang==='ar'?'أكمل القواعد الأربع ثم اضغط على زر التحقق.':'Complétez les quatre bases puis cliquez sur Vérifier.';
 }
-document.querySelectorAll('[data-dna-position]').forEach(select=>select.addEventListener('change',()=>{dnaChecked=false;document.querySelectorAll('[data-dna-position]').forEach(item=>item.disabled=false);renderDnaPairing();}));
+document.querySelectorAll('[data-dna-position]').forEach(select=>select.addEventListener('change',()=>{dnaChecked=false;dnaScore=null;document.querySelectorAll('[data-dna-position]').forEach(item=>item.disabled=false);renderDnaPairing();}));
 $('dna-check')?.addEventListener('click',()=>{
  const selects=[...document.querySelectorAll('[data-dna-position]')];
  if(selects.some(select=>!select.value)){
   $('dna-feedback').textContent=lang==='ar'?'أكمل الخانات الأربع قبل التحقق.':'Complétez les quatre cases avant la vérification.';return;
  }
- const answers=['T','G','C','A'];
- const score=selects.filter((select,index)=>select.value===answers[index]).length;
- dnaChecked=true;selects.forEach(select=>select.disabled=true);
+ const given=['A','C','G','T'];
+ const score=selects.filter((select,index)=>select.value===dnaComplement[given[index]]).length;
+ dnaScore=score;dnaChecked=true;selects.forEach(select=>select.disabled=true);
  $('dna-feedback').textContent=lang==='ar'
   ?'نتيجتك: '+score+' / 4. '+(score===4?'ممتاز! السلسلة المكملة هي TGCA.':'راجع قاعدة A مع T وقاعدة C مع G، ثم أعد المحاولة.')
   :'Votre résultat : '+score+' / 4. '+(score===4?'Excellent ! Le brin complémentaire est TGCA.':'Revoyez les associations A-T et C-G, puis réessayez.');
 });
 $('dna-reset')?.addEventListener('click',()=>{
- dnaChecked=false;document.querySelectorAll('[data-dna-position]').forEach(select=>{select.value='';select.disabled=false;});renderDnaPairing();
+ dnaChecked=false;dnaScore=null;document.querySelectorAll('[data-dna-position]').forEach(select=>{select.value='';select.disabled=false;});renderDnaPairing();
 });
 renderDnaPairing();
 
