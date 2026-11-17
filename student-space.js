@@ -1839,11 +1839,10 @@ function openScientificPhotoPreview(card){
                     <a href="#quiz"><span class="gs-path-icon">⚡</span><strong>${lang() === 'ar' ? 'أختبر نفسي' : 'Me tester'}</strong><small>${lang() === 'ar' ? 'اختبارات تفاعلية' : 'Quiz interactifs'}</small></a>
                     <a href="#examens"><span class="gs-path-icon">🏆</span><strong>${lang() === 'ar' ? 'أستعد للامتحان' : 'Me préparer'}</strong><small>${lang() === 'ar' ? 'فروض وامتحانات' : 'Devoirs et examens'}</small></a>
                 </div>
-            </div>
-            ${renderDailyChallenge()}`)}
+            </div>`)}
+            ${taskGroup('📅', 'تحدي اليوم', 'Défi du jour', renderDailyChallenge())}
             ${taskGroup('🎯', 'توصيات التعلم', 'Recommandations d’apprentissage', renderStudyRecommendations())}
             ${taskGroup('⚡', t('quickAccess'), 'Accès rapide', `<div class="gs-quick-links">
-            <div class="gs-quick-links">
                 <a href="#cours"><span>📚</span>${t('resources')}</a>
                 <a href="#exercices"><span>✏️</span>${t('exercises')}</a>
                 <a href="#examens"><span>📝</span>${t('exams')}</a>
