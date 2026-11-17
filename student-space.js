@@ -3161,33 +3161,39 @@ function openScientificPhotoPreview(card){
         .space-panel.active {
             display: block;
         }
-        .gs-student-task{margin:1rem 0;border:1px solid #dce8d7;border-radius:15px;background:#fff;overflow:hidden;box-shadow:0 3px 12px rgba(35,75,39,.045)}
-        .gs-student-task>summary{display:flex;align-items:center;gap:.8rem;min-height:58px;padding:.85rem 1rem;cursor:pointer;list-style:none;color:#285632;font-weight:800}
+        /* Image-inspired task cards: rich green overlays, glass icon tile and rounded edges. */
+        .gs-student-task{margin:1rem 0;border:1px solid rgba(255,255,255,.58);border-radius:23px;background:#fff;overflow:hidden;box-shadow:0 9px 24px rgba(20,55,43,.12);transition:transform .22s ease,box-shadow .22s ease}
+        .gs-student-task>summary{position:relative;isolation:isolate;display:flex;align-items:center;gap:.9rem;min-height:112px;padding:1rem 1.2rem;cursor:pointer;list-style:none;color:#fff;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.42);background-color:#244b40;background-image:radial-gradient(ellipse at 82% 18%,rgba(210,231,207,.22),transparent 34%),linear-gradient(112deg,rgba(7,43,35,.91),rgba(35,83,68,.68) 58%,rgba(172,195,183,.55))}
+        .gs-student-task>summary:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.42;background:repeating-linear-gradient(135deg,transparent 0 18px,rgba(255,255,255,.045) 19px 20px),radial-gradient(ellipse at 12% 110%,rgba(0,0,0,.42),transparent 55%);pointer-events:none}
+        .gs-student-task:nth-of-type(5n+2)>summary{background-image:radial-gradient(circle at 78% 25%,rgba(210,226,215,.28),transparent 32%),linear-gradient(115deg,rgba(27,70,59,.92),rgba(115,151,137,.76))}
+        .gs-student-task:nth-of-type(5n+3)>summary{background-image:radial-gradient(circle at 75% 15%,rgba(81,68,160,.42),transparent 36%),linear-gradient(115deg,rgba(3,35,31,.97),rgba(13,67,56,.78))}
+        .gs-student-task:nth-of-type(5n+4)>summary{background-image:radial-gradient(ellipse at 75% 20%,rgba(204,221,213,.26),transparent 38%),linear-gradient(115deg,rgba(20,54,51,.94),rgba(95,126,119,.72))}
+        .gs-student-task:nth-of-type(5n)>summary{background-image:radial-gradient(ellipse at 80% 15%,rgba(183,210,177,.32),transparent 34%),linear-gradient(115deg,rgba(22,66,48,.94),rgba(119,153,137,.76))}
         .gs-student-task>summary::-webkit-details-marker{display:none}
-        .gs-student-task>summary:focus-visible{outline:3px solid #79a96a;outline-offset:-3px}
-        .gs-student-task-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:11px;background:#edf5e9;font-size:1.25rem}
-        .gs-student-task-title{flex:1;min-width:0}
-        .gs-student-task-hint{flex:0 0 auto;padding:.28rem .58rem;border-radius:999px;background:#edf5e9;color:#52734c;font-size:.72rem;font-weight:700;white-space:nowrap}
+        .gs-student-task>summary:focus-visible{outline:3px solid #b9e4a8;outline-offset:-4px}
+        .gs-student-task-icon{position:relative;display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(255,255,255,.42);border-radius:19px;background:rgba(235,245,239,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);backdrop-filter:blur(8px);font-size:1.65rem;text-shadow:none}
+        .gs-student-task-title{flex:1;min-width:0;font-size:1.18rem;line-height:1.5}
+        .gs-student-task-hint{flex:0 0 auto;padding:.38rem .68rem;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(235,245,239,.17);color:#fff;font-size:.72rem;font-weight:700;white-space:nowrap;text-shadow:none}
         .gs-student-task[open] .gs-student-task-hint{display:none}
-        .gs-student-task-chevron{font-size:1.3rem;transition:transform .2s ease}
-        .gs-student-task[open]>summary{background:#f5f9f2;border-bottom:1px solid #e5eee0}
+        .gs-student-task-chevron{font-size:1.35rem;color:#fff;transition:transform .2s ease}
+        .gs-student-task[open]>summary{border-bottom:1px solid #e5eee0}
         .gs-student-task[open] .gs-student-task-chevron{transform:rotate(180deg)}
-        .gs-student-task-body{padding:1rem}
+        .gs-student-task-body{padding:1rem;background:#fff;text-shadow:none}
         html.gs-dark .gs-student-task{background:#1c2b20;border-color:#405a43}
-        html.gs-dark .gs-student-task>summary{color:#d2e8cf}
-        html.gs-dark .gs-student-task[open]>summary{background:#263b29;border-color:#405a43}
-        html.gs-dark .gs-student-task-hint{background:#304832;color:#d0e6c8}
-        .gs-student-task>summary:hover{background:#f7faf5}
-        html.gs-dark .gs-student-task>summary:hover{background:#263b29}
-        @media(max-width:560px){.gs-student-task>summary{min-height:54px;padding:.7rem}.gs-student-task-body{padding:.7rem}}
+        html.gs-dark .gs-student-task>summary{color:#fff}
+        html.gs-dark .gs-student-task[open]>summary{border-color:#405a43}
+        html.gs-dark .gs-student-task-body{background:#1c2b20}
+        .gs-student-task>summary:hover{filter:brightness(1.08)}
+        html.gs-dark .gs-student-task>summary:hover{filter:brightness(1.12)}
+        @media(max-width:560px){.gs-student-task>summary{min-height:94px;padding:.8rem}.gs-student-task-body{padding:.7rem}}
         @media(max-width:420px){
-            .gs-student-task>summary{gap:.45rem;padding:.65rem}
-            .gs-student-task-icon{flex-basis:34px;width:34px;height:34px;font-size:1.1rem}
-            .gs-student-task-title{font-size:.92rem;line-height:1.45}
-            .gs-student-task-hint{padding:.22rem .4rem;font-size:.62rem}
+            .gs-student-task>summary{min-height:84px;gap:.55rem;padding:.7rem}
+            .gs-student-task-icon{flex-basis:48px;width:48px;height:48px;border-radius:15px;font-size:1.35rem}
+            .gs-student-task-title{font-size:1rem;line-height:1.4}
+            .gs-student-task-hint{padding:.25rem .42rem;font-size:.62rem}
             .gs-student-task-chevron{font-size:1.1rem}
         }
-        @media(prefers-reduced-motion:reduce){.gs-student-task-chevron{transition:none}}
+        @media(prefers-reduced-motion:reduce){.gs-student-task,.gs-student-task-chevron{transition:none}}
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
