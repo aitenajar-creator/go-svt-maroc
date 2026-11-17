@@ -1771,6 +1771,10 @@ function openScientificPhotoPreview(card){
 
     function renderDashboard() {
         const stats = getDashboardStats();
+        const taskGroup = (icon, titleAr, titleFr, content) => {
+            const title = lang() === 'fr' ? titleFr : titleAr;
+            return `<details class="gs-student-task"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
+        };
         const profiles = getProfiles();
         const currentProfile = getCurrentProfile();
         
@@ -1817,17 +1821,17 @@ function openScientificPhotoPreview(card){
                 <a class="gs-primary-link" href="#cours">${lang() === 'ar' ? 'ابدأ التعلم الآن' : 'Commencer'} <span aria-hidden="true">←</span></a>
             </section>
             ${academicBanner}
-            ${renderPlantCellExplorer()}
-            ${renderPhotosynthesisLab()}
-            ${renderCellPhotosynthesisQuiz()}
-            ${renderHumanSystemsAtlas()}
-            ${renderLevelLearningPaths()}
-            ${renderMicroscopeLab()}
-            ${renderPhotosynthesisExperiment()}
-            ${renderScientificMediaLibrary()}
-            ${renderScienceMemoryCards()}
-            ${renderSvtGlossary()}
-            <div class="gs-learning-path">
+            ${taskGroup('🧫', 'استكشف الخلية', 'Explorer la cellule', renderPlantCellExplorer())}
+            ${taskGroup('🌿', 'مختبر التركيب الضوئي', 'Laboratoire de photosynthèse', renderPhotosynthesisLab())}
+            ${taskGroup('🧪', 'اختبر فهمك للخلية والتركيب الضوئي', 'Tester vos connaissances : cellule et photosynthèse', renderCellPhotosynthesisQuiz())}
+            ${taskGroup('🫀', 'أطلس أجهزة جسم الإنسان', 'Atlas des systèmes du corps humain', renderHumanSystemsAtlas())}
+            ${taskGroup('🧭', 'مسارات التعلم حسب المستوى', 'Parcours selon le niveau', renderLevelLearningPaths())}
+            ${taskGroup('🔬', 'المختبر المجهري', 'Laboratoire microscopique', renderMicroscopeLab())}
+            ${taskGroup('☀️', 'تجربة التركيب الضوئي', 'Expérience de photosynthèse', renderPhotosynthesisExperiment())}
+            ${taskGroup('🖼️', 'مكتبة الصور العلمية', 'Médiathèque scientifique', renderScientificMediaLibrary())}
+            ${taskGroup('🧠', 'بطاقات الذاكرة العلمية', 'Cartes mémoire scientifiques', renderScienceMemoryCards())}
+            ${taskGroup('📖', 'قاموس مصطلحات علوم الحياة والأرض', 'Glossaire des SVT', renderSvtGlossary())}
+            ${taskGroup('🌱', 'مساري الدراسي', 'Mon parcours d’apprentissage', `<div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
                 <div class="gs-path-steps">
                     <a href="#cours"><span class="gs-path-icon">📖</span><strong>${lang() === 'ar' ? 'أفهم الدرس' : 'Comprendre'}</strong><small>${lang() === 'ar' ? 'دروس وملخصات' : 'Cours et résumés'}</small></a>
@@ -1835,18 +1839,17 @@ function openScientificPhotoPreview(card){
                     <a href="#quiz"><span class="gs-path-icon">⚡</span><strong>${lang() === 'ar' ? 'أختبر نفسي' : 'Me tester'}</strong><small>${lang() === 'ar' ? 'اختبارات تفاعلية' : 'Quiz interactifs'}</small></a>
                     <a href="#examens"><span class="gs-path-icon">🏆</span><strong>${lang() === 'ar' ? 'أستعد للامتحان' : 'Me préparer'}</strong><small>${lang() === 'ar' ? 'فروض وامتحانات' : 'Devoirs et examens'}</small></a>
                 </div>
-            </div>
-            ${renderDailyChallenge()}
-            ${renderStudyRecommendations()}
-            <h3 class="gs-section-title">${t('quickAccess')}</h3>
-            <div class="gs-quick-links">
+            </div>`)}
+            ${taskGroup('📅', 'تحدي اليوم', 'Défi du jour', renderDailyChallenge())}
+            ${taskGroup('🎯', 'توصيات التعلم', 'Recommandations d’apprentissage', renderStudyRecommendations())}
+            ${taskGroup('⚡', t('quickAccess'), 'Accès rapide', `<div class="gs-quick-links">
                 <a href="#cours"><span>📚</span>${t('resources')}</a>
                 <a href="#exercices"><span>✏️</span>${t('exercises')}</a>
                 <a href="#examens"><span>📝</span>${t('exams')}</a>
                 <a href="#quiz"><span>❓</span>${t('interactiveQuiz')}</a>
                 <a href="#resumes"><span>📋</span>${t('summaries')}</a>
-            </div>
-            <h3 class="gs-section-title">${lang() === 'ar' ? 'ملخص نشاطك الدراسي' : 'Votre activité scolaire'}</h3>
+            </div>`)}
+            ${taskGroup('📊', 'ملخص نشاطك الدراسي', 'Résumé de votre activité', `<h3 class="gs-section-title">${lang() === 'ar' ? 'ملخص نشاطك الدراسي' : 'Votre activité scolaire'}</h3>
             <div class="dashboard-grid">
                 <div class="stat-card">
                     <div class="stat-icon">📚</div>
@@ -1879,7 +1882,7 @@ function openScientificPhotoPreview(card){
                     <div class="stat-label">${t('globalProgress')}</div>
                 </div>
             </div>
-            ${renderAchievements()}
+            ${renderAchievements()}`)}
         `;
         return html;
     }
@@ -3136,6 +3139,21 @@ function openScientificPhotoPreview(card){
         .space-panel.active {
             display: block;
         }
+        .gs-student-task{margin:1rem 0;border:1px solid #dce8d7;border-radius:15px;background:#fff;overflow:hidden;box-shadow:0 3px 12px rgba(35,75,39,.045)}
+        .gs-student-task>summary{display:flex;align-items:center;gap:.8rem;min-height:58px;padding:.85rem 1rem;cursor:pointer;list-style:none;color:#285632;font-weight:800}
+        .gs-student-task>summary::-webkit-details-marker{display:none}
+        .gs-student-task>summary:focus-visible{outline:3px solid #79a96a;outline-offset:-3px}
+        .gs-student-task-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:11px;background:#edf5e9;font-size:1.25rem}
+        .gs-student-task-title{flex:1;min-width:0}
+        .gs-student-task-chevron{font-size:1.3rem;transition:transform .2s ease}
+        .gs-student-task[open]>summary{background:#f5f9f2;border-bottom:1px solid #e5eee0}
+        .gs-student-task[open] .gs-student-task-chevron{transform:rotate(180deg)}
+        .gs-student-task-body{padding:1rem}
+        html.gs-dark .gs-student-task{background:#1c2b20;border-color:#405a43}
+        html.gs-dark .gs-student-task>summary{color:#d2e8cf}
+        html.gs-dark .gs-student-task[open]>summary{background:#263b29;border-color:#405a43}
+        @media(max-width:560px){.gs-student-task>summary{min-height:54px;padding:.7rem}.gs-student-task-body{padding:.7rem}}
+        @media(prefers-reduced-motion:reduce){.gs-student-task-chevron{transition:none}}
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
