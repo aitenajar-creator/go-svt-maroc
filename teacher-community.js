@@ -258,7 +258,14 @@
       myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
       $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
       $('tc-my-resources-more').hidden = !myHasMore;
-      if (reset && !page.length) $('tc-my-resources').innerHTML = '<div class="tc-state">لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.</div>';
+      if (reset && !page.length) {
+        const emptyText = filter === 'all'
+          ? 'لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.'
+          : filter === 'shared' ? 'لا توجد موارد مشتركة ضمن ملفاتك حالياً.'
+          : filter === 'private' ? 'لا توجد ملفات خاصة ضمن مواردك المنشورة.'
+          : 'لا توجد ملفات مخفية ضمن مواردك حالياً.';
+        $('tc-my-resources').innerHTML = '<div class="tc-state">' + emptyText + '</div>';
+      }
     } finally {
       myLoading = false;
       if (moreButton) moreButton.disabled = false;
@@ -528,6 +535,7 @@
     $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin)loadAdmin();});
     $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
+    $('tc-my-filter').addEventListener('change',()=>loadMyResources(true));
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
   }
