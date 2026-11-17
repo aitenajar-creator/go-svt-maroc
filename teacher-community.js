@@ -688,6 +688,25 @@
       return label + ': ' + displayValue(key, value);
     }).join(' · ');
   }
+  function applyAuditDateFilters(query) {
+    const fromValue = $('tc-admin-activity-from') ? $('tc-admin-activity-from').value : '';
+    const toValue = $('tc-admin-activity-to') ? $('tc-admin-activity-to').value : '';
+    if (fromValue && toValue && fromValue > toValue) {
+      throw new Error('تاريخ البداية يجب أن يسبق تاريخ النهاية أو يساويه.');
+    }
+    if (fromValue) {
+      const fromDate = new Date(fromValue + 'T00:00:00');
+      if (Number.isNaN(fromDate.getTime())) throw new Error('تاريخ البداية غير صالح.');
+      query = query.gte('created_at', fromDate.toISOString());
+    }
+    if (toValue) {
+      const toExclusive = new Date(toValue + 'T00:00:00');
+      if (Number.isNaN(toExclusive.getTime())) throw new Error('تاريخ النهاية غير صالح.');
+      toExclusive.setDate(toExclusive.getDate() + 1);
+      query = query.lt('created_at', toExclusive.toISOString());
+    }
+    return query;
+  }
   async function loadAdminActivity(reset = true) {
     if (!isAdmin) return;
     if (adminActivityLoading) {
@@ -728,6 +747,7 @@
         }
         activityQuery = activityQuery.in('actor_id', actorIds);
       }
+      activityQuery = applyAuditDateFilters(activityQuery);
       const {data,error} = await activityQuery
         .order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(start,start + PAGE_SIZE - 1);
@@ -854,6 +874,15 @@
       const actionFilter = $('tc-admin-activity-action').value;
       const rawSearch = $('tc-admin-activity-search').value.trim();
       const search = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      const rawActorSearch = $('tc-admin-activity-actor').value.trim();
+      const actorSearch = rawActorSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      let actorIds = null;
+      if (actorSearch) {
+        const actorResult = await client.from('teacher_community_members')
+          .select('user_id').ilike('display_name', '%' + actorSearch + '%').limit(100);
+        if (actorResult.error) throw actorResult.error;
+        actorIds = (actorResult.data || []).map(person => person.user_id).filter(Boolean);
+      }
       const rows = [];
       const pageSize = 500;
       for (let offset = 0; offset < 10000; offset += pageSize) {
@@ -861,6 +890,11 @@
           .select('id,resource_id,resource_title,owner_id,actor_id,action,details,created_at');
         if (actionFilter) query = query.eq('action', actionFilter);
         if (search) query = query.ilike('resource_title', '%' + search + '%');
+        if (actorIds !== null) {
+          if (!actorIds.length) break;
+          query = query.in('actor_id', actorIds);
+        }
+        query = applyAuditDateFilters(query);
         const result = await query.order('created_at', {ascending:false})
           .order('id', {ascending:false}).range(offset, offset + pageSize - 1);
         if (result.error) throw result.error;
@@ -1091,6 +1125,8 @@
     $('tc-admin-activity-export').addEventListener('click',exportAdminActivity);
     $('tc-admin-activity-refresh').addEventListener('click',()=>loadAdminActivity(true));
     $('tc-admin-activity-action').addEventListener('change',()=>loadAdminActivity(true));
+    $('tc-admin-activity-from').addEventListener('change',()=>loadAdminActivity(true));
+    $('tc-admin-activity-to').addEventListener('change',()=>loadAdminActivity(true));
     const scheduleActivitySearch = () => {
       clearTimeout(adminActivitySearchTimer);
       adminActivitySearchTimer=setTimeout(()=>loadAdminActivity(true),300);
@@ -1101,6 +1137,8 @@
       clearTimeout(adminActivitySearchTimer);
       $('tc-admin-activity-search').value='';
       $('tc-admin-activity-actor').value='';
+      $('tc-admin-activity-from').value='';
+      $('tc-admin-activity-to').value='';
       $('tc-admin-activity-action').value='';
       loadAdminActivity(true);
     });
