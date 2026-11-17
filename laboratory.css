@@ -687,3 +687,26 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 #meiosis-feedback{margin:0;padding:11px 13px;border-radius:10px;background:#e8f2eb;color:#315d40;line-height:1.7;font-weight:750}.gs-meiosis-lab>button{justify-self:start;border:0;border-radius:10px;padding:9px 15px;background:#286b48;color:#fff;font:inherit;font-weight:800;cursor:pointer}.gs-meiosis-lab>small{color:#718477;line-height:1.8}
 .gs-dark .gs-meiosis-lab{background:#172b20;border-color:#355a41}.gs-dark .gs-meiosis-heading h3,.gs-dark .gs-meiosis-key>span,.gs-dark .gs-meiosis-status,#meiosis-feedback{color:#d8eddd}.gs-dark .gs-meiosis-heading p,.gs-dark .gs-meiosis-question small,.gs-dark .gs-meiosis-lab>small{color:#b5cbbb}.gs-dark .gs-meiosis-key>span,.gs-dark #meiosis-feedback{background:#254a32}.gs-dark .gs-meiosis-key b,.gs-dark .gs-meiosis-question{background:#20392a;border-color:#45664d}.gs-dark .gs-meiosis-question p{color:#e0f1e3}.gs-dark .gs-meiosis-options button{background:#1d3526;color:#dcefe0;border-color:#45664d}.gs-dark .gs-meiosis-options button.is-correct{background:#285b3c}.gs-dark .gs-meiosis-status>div{background:#314b38}
 @media(max-width:520px){.gs-meiosis-options{display:grid;grid-template-columns:1fr 1fr}.gs-meiosis-options button{padding:8px 6px;font-size:.9rem}}
+
+/* DNA transcription and genetic-code activity */
+.gs-transcription-card{background:#fff;border:1px solid #e0ebe3;border-radius:23px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 30px #214f380d;display:grid;gap:22px}
+.gs-transcription-intro{padding:18px;border-radius:16px;background:#eff7f0;text-align:center;color:#345d43}
+.gs-transcription-intro strong,.gs-transcription-codons h3,.gs-transcription-translation h3{color:#28583b}
+.gs-transcription-dna{display:flex;justify-content:center;gap:10px;margin:14px 0}
+.gs-transcription-dna b{padding:12px 18px;border-radius:11px;background:#dceee0;color:#245d3a;font-size:1.25rem;letter-spacing:.08em}
+.gs-transcription-intro p,.gs-transcription-translation p{color:#667b6d;line-height:1.8;margin:8px 0 0}
+.gs-transcription-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.gs-transcription-grid label{display:grid;gap:8px;text-align:center;color:#55715d;font-weight:800}
+.gs-transcription-grid label span{font-size:.8rem}
+.gs-transcription-grid select{width:100%;min-width:0;padding:13px 8px;border:1px solid #d3e4d7;border-radius:12px;background:#f7fbf7;color:#28583b;font:inherit;font-weight:800;text-align:center}
+.gs-transcription-grid select:disabled{opacity:.8}
+.gs-transcription-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.gs-transcription-actions button{border:0;border-radius:12px;padding:11px 18px;background:#286b47;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.gs-transcription-actions button+button{background:#edf4ee;color:#315e40}
+#rna-feedback{min-height:28px;color:#52745e;font-weight:800;line-height:1.8}
+.gs-protein-chain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.gs-protein-chain span{padding:14px 6px;border-radius:12px;text-align:center;background:#f0f6f1;color:#56705d;font-weight:800;overflow-wrap:anywhere}
+.gs-protein-chain span.is-amino{background:#e1f2e4;color:#28623c}
+.gs-protein-chain span.is-stop{background:#fff0d9;color:#8a5a20}
+.gs-transcription-card>small{color:#77877c;line-height:1.9}
+@media(max-width:560px){.gs-transcription-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-transcription-dna{gap:6px}.gs-transcription-dna b{padding:10px 12px}.gs-protein-chain{grid-template-columns:repeat(2,minmax(0,1fr))}}
