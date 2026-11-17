@@ -556,7 +556,8 @@
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
     $('tc-my-filter').addEventListener('change',()=>loadMyResources(true));
     $('tc-my-sort').addEventListener('change',()=>loadMyResources(true));
-    $('tc-my-search').addEventListener('input',()=>{clearTimeout(mySearchTimer);mySearchTimer=setTimeout(()=>loadMyResources(true),300);});
+    $('tc-my-search').addEventListener('input',()=>{ $('tc-my-search-clear').hidden = !$('tc-my-search').value; clearTimeout(mySearchTimer);mySearchTimer=setTimeout(()=>loadMyResources(true),300);});
+    $('tc-my-search-clear').addEventListener('click',()=>{ clearTimeout(mySearchTimer); $('tc-my-search').value=''; $('tc-my-search-clear').hidden=true; loadMyResources(true); $('tc-my-search').focus(); });
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
   }

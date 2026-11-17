@@ -9,3 +9,9 @@
 
 /* Teacher-owned resource filters */
 .tc-my-tools{display:flex;align-items:center;gap:10px;margin:18px 0 8px;color:var(--tc-muted);font-size:12px;font-weight:700}.tc-my-tools select,.tc-my-tools input{min-width:190px;padding:10px 12px;border:1px solid var(--tc-line);border-radius:10px;background:#fff;color:var(--tc-ink);font:12px Cairo,Arial,sans-serif}.tc-my-tools input{min-width:240px}@media(max-width:560px){.tc-my-tools{align-items:stretch;flex-direction:column}.tc-my-tools select,.tc-my-tools input{width:100%}}
+
+/* Clear action for the teacher's personal-resource search */
+.tc-my-search-clear{border:1px solid var(--tc-line);border-radius:10px;padding:9px 12px;background:#fff;color:var(--tc-green);font:700 11px Cairo,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.tc-my-search-clear:hover{background:#edf6f1}
+.tc-my-search-clear:focus-visible{outline:3px solid var(--tc-gold);outline-offset:2px}
+@media(max-width:560px){.tc-my-search-clear{width:100%}}
