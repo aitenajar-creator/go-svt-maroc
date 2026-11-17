@@ -13,6 +13,7 @@
   const allowed = new Set(['pdf','doc','docx','ppt','pptx','xls','xlsx','odt','odp','jpg','jpeg','png','webp','txt','zip']);
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
+  let uploadInProgress = false;
   const PAGE_SIZE = 50;
   let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
@@ -109,7 +110,8 @@
   }
   function fileExt(name) { return (String(name).split('.').pop() || '').toLowerCase(); }
   function fileMime(file) {
-    if (file.type) return file.type;
+    // Prefer the allow-listed extension mapping over browser-provided MIME.
+    // Some browsers/operating systems report application/octet-stream for valid files.
     const byExtension = {
       pdf:'application/pdf', doc:'application/msword',
       docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -122,7 +124,7 @@
       jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp',
       txt:'text/plain', zip:'application/zip'
     };
-    return byExtension[fileExt(file.name)] || '';
+    return byExtension[fileExt(file.name)] || (file.type && file.type !== 'application/octet-stream' ? file.type : '');
   }
   function fileIcon(name) { return icons[fileExt(name)] || '📄'; }
   function dateLabel(value) {
@@ -367,6 +369,7 @@
   }
   async function handleUpload(e) {
     e.preventDefault(); message('tc-upload-message','');
+    if (uploadInProgress) return;
     if (!user || !(isAdmin || (member && member.status === 'approved'))) { message('tc-upload-message','يجب تفعيل عضويتك قبل رفع الملفات.'); return; }
     const file = $('tc-file').files[0], title = $('tc-file-title').value.trim();
     if (!file) return message('tc-upload-message','اختر ملفاً أولاً.');
@@ -377,6 +380,7 @@
     if (title.length < 2) return message('tc-upload-message','أدخل عنواناً واضحاً للوثيقة.');
     const mimeType = fileMime(file);
     if (!mimeType) return message('tc-upload-message','تعذر تحديد نوع الملف. أعد حفظه بصيغة مدعومة ثم حاول مجدداً.');
+    uploadInProgress = true;
     const submit = $('tc-upload-submit'); submit.disabled = true; submit.textContent = 'جارٍ رفع الملف...';
     const path = user.id + '/' + crypto.randomUUID() + '.' + ext;
     try {
@@ -397,7 +401,11 @@
       $('tc-upload-form').reset(); $('tc-upload-dialog').close();
       await Promise.all([loadLibrary(),loadMyResources()]);
     } catch(err) { message('tc-upload-message',err.message || 'فشل رفع الملف.'); }
-    finally { submit.disabled=false; submit.textContent='رفع وحفظ الوثيقة'; }
+    finally {
+      uploadInProgress = false;
+      submit.disabled=false;
+      submit.textContent='رفع وحفظ الوثيقة';
+    }
   }
   async function handleAdminAction(e) {
     const b=e.target.closest('button'); if(!b || !isAdmin || b.disabled) return;
