@@ -241,6 +241,12 @@
       libraryHasMore = page.length === PAGE_SIZE;
       $('tc-library-more').hidden = !libraryHasMore;
       renderLibrary();
+    } catch (err) {
+      if (requestId === libraryRequest) {
+        $('tc-library-state').hidden = false;
+        $('tc-library-state').textContent = 'تعذر الاتصال بالمكتبة. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
+        if (reset) $('tc-library-more').hidden = true;
+      }
     } finally {
       libraryLoading = false;
       if (moreButton) moreButton.disabled = false;
@@ -311,6 +317,10 @@
           : 'لا توجد ملفات مخفية ضمن مواردك حالياً.';
         $('tc-my-resources').innerHTML = '<div class="tc-state">' + emptyText + '</div>'; $('tc-my-resources-status').textContent = emptyText;
       }
+    } catch (err) {
+      $('tc-my-resources-status').textContent = 'تعذر الاتصال بملفاتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
+      $('tc-my-resources').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بملفاتك. حاول إعادة التحميل بعد التحقق من الاتصال.</div>');
+      if (reset) $('tc-my-resources-more').hidden = true;
     } finally {
       myLoading = false;
       if (moreButton) moreButton.disabled = false;
@@ -473,6 +483,13 @@
       }
       $('tc-admin-resources-more').hidden = !adminResourcesMore;
     }
+    } catch (err) {
+      if (loadMembers) {
+        $('tc-admin-members').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بطلبات العضوية. <button type="button" data-retry-admin-members>إعادة المحاولة</button></div>');
+      }
+      if (loadResources) {
+        $('tc-admin-resources').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بموارد المجتمع. <button type="button" data-retry-admin-resources>إعادة المحاولة</button></div>');
+      }
     } finally {
       if (loadMembers) adminMembersLoading = false;
       if (loadResources) adminResourcesLoading = false;
