@@ -99,6 +99,12 @@ function updateGenetics(){
  const dominant=(counts.AA+counts.Aa)*25,recessive=counts.aa*25;
  $('gen-dominant').textContent=dominant+'%';$('gen-recessive').textContent=recessive+'%';
  $('gen-ratio').textContent=counts.AA+' AA : '+counts.Aa+' Aa : '+counts.aa+' aa';
+ const genotypePercent={AA:counts.AA*25,Aa:counts.Aa*25,aa:counts.aa*25};
+ ['AA','Aa','aa'].forEach(g=>{
+  $('gen-bar-'+g).style.width=genotypePercent[g]+'%';
+  $('gen-percent-'+g).textContent=genotypePercent[g]+'%';
+  $('gen-bar-'+g).parentElement.setAttribute('aria-label',g+': '+genotypePercent[g]+'%');
+ });
  const fr=lang==='fr';
  const parentLabel=(g)=>g==='AA'?(fr?'homozygote dominant':'متماثل سائد'):g==='aa'?(fr?'homozygote récessif':'متماثل متنحٍ'):(fr?'hétérozygote':'متغاير الزيجوت');
  let explain;

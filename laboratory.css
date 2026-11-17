@@ -313,3 +313,17 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-dark .gs-photo-products>div{background:#20392a;border-color:#3b5c45}
 .gs-dark .gs-photo-products strong{color:#c5d9ca}.gs-dark .gs-photo-products b{color:#9cddb0}
 @media(max-width:520px){.gs-photo-products{grid-template-columns:1fr}}
+
+/* Live genotype probability distribution */
+.gs-genetics-distribution{margin:16px 0;padding:16px;border:1px solid #d8e8dc;border-radius:15px;background:#f5faf6}
+.gs-genetics-distribution h3{margin:0 0 13px;color:#28583a;font-size:1rem}
+.gs-genetics-bar-row{display:grid;grid-template-columns:34px minmax(0,1fr) 48px;align-items:center;gap:10px;margin:10px 0}
+.gs-genetics-bar-row>span{font-weight:800;color:#365b42}
+.gs-genetics-track{height:13px;overflow:hidden;border-radius:20px;background:#e2ebe4}
+.gs-genetics-track>span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#398454,#83c89a);transition:width .2s ease}
+.gs-genetics-bar-row strong{text-align:end;color:#28583a;font-variant-numeric:tabular-nums}
+.gs-genetics-distribution>p{margin:12px 0 0;color:#627969;font-size:.82rem;line-height:1.7}
+.gs-dark .gs-genetics-distribution{background:#1d3325;border-color:#3b5a43}
+.gs-dark .gs-genetics-distribution h3,.gs-dark .gs-genetics-bar-row>span,.gs-dark .gs-genetics-bar-row strong{color:#d8eddd}
+.gs-dark .gs-genetics-track{background:#354b3a}.gs-dark .gs-genetics-distribution>p{color:#b8cbbd}
+@media(prefers-reduced-motion:reduce){.gs-genetics-track>span{transition:none}}
