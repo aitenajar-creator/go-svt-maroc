@@ -3176,7 +3176,17 @@ function openScientificPhotoPreview(card){
         html.gs-dark .gs-student-task{background:#1c2b20;border-color:#405a43}
         html.gs-dark .gs-student-task>summary{color:#d2e8cf}
         html.gs-dark .gs-student-task[open]>summary{background:#263b29;border-color:#405a43}
+        html.gs-dark .gs-student-task-hint{background:#304832;color:#d0e6c8}
+        .gs-student-task>summary:hover{background:#f7faf5}
+        html.gs-dark .gs-student-task>summary:hover{background:#263b29}
         @media(max-width:560px){.gs-student-task>summary{min-height:54px;padding:.7rem}.gs-student-task-body{padding:.7rem}}
+        @media(max-width:420px){
+            .gs-student-task>summary{gap:.45rem;padding:.65rem}
+            .gs-student-task-icon{flex-basis:34px;width:34px;height:34px;font-size:1.1rem}
+            .gs-student-task-title{font-size:.92rem;line-height:1.45}
+            .gs-student-task-hint{padding:.22rem .4rem;font-size:.62rem}
+            .gs-student-task-chevron{font-size:1.1rem}
+        }
         @media(prefers-reduced-motion:reduce){.gs-student-task-chevron{transition:none}}
         .dashboard-grid {
             display: grid;
