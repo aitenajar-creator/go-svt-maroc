@@ -538,7 +538,7 @@
     }
     let adminResourceQuery = client.from('teacher_community_resources').select('*');
     const adminSearch = ($('tc-admin-resource-search')?.value || '').trim()
-      .replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      .replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
     const adminStatus = $('tc-admin-resource-status')?.value || 'all';
     const adminCategory = $('tc-admin-resource-category')?.value || '';
     if (adminSearch) {
