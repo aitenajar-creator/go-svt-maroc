@@ -68,6 +68,37 @@
         transition:box-shadow .2s ease,transform .2s ease;
       }
       /* Teacher/admin information rows and conversation items: clearer grouped surfaces. */
+      /* Compact status badges for teacher notes and submitted assignments. */
+      #gs-classroom.gs-cl-teacher-view .gs-cl-pill{
+        display:inline-flex;
+        align-items:center;
+        max-width:100%;
+        padding:.22rem .7rem;
+        border-radius:999px;
+        background:#e5f2e8;
+        border:1px solid rgba(45,112,72,.18);
+        color:#245b3b;
+        font-size:.82rem;
+        font-weight:800;
+        line-height:1.5;
+      }
+      #gs-classroom.gs-cl-teacher-view [data-submission-card]::before{
+        content:"";
+        display:block;
+        width:100%;
+        height:4px;
+        margin:-.9rem 0 .75rem;
+        border-radius:999px;
+        background:#c58a36;
+      }
+      #gs-classroom.gs-cl-teacher-view [data-submission-card][data-reviewed="true"]::before{
+        background:#3d9660;
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view .gs-cl-pill{
+        background:#294b36;
+        border-color:#456b50;
+        color:#e0f0e5;
+      }
       #gs-classroom.gs-cl-teacher-view .gs-cl-row{
         padding:.9rem 1rem;
         border:1px solid rgba(55,112,83,.14);
