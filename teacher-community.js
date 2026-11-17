@@ -14,7 +14,7 @@
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -158,7 +158,13 @@
     $('tc-resource-grid').innerHTML = resources.map(r => resourceCard(r, r.owner_id === user.id)).join('');
   }
   async function loadMyResources(reset = true) {
-    if (!user || myLoading) return;
+    if (!user) return;
+    if (myLoading) {
+      // A successful upload/delete may request a refresh while pagination is
+      // still in flight. Queue that refresh instead of silently dropping it.
+      if (reset) myRefreshPending = true;
+      return;
+    }
     myLoading = true;
     const moreButton = $('tc-my-resources-more');
     if (moreButton) moreButton.disabled = true;
@@ -177,6 +183,10 @@
     } finally {
       myLoading = false;
       if (moreButton) moreButton.disabled = false;
+      if (myRefreshPending && user) {
+        myRefreshPending = false;
+        void loadMyResources(true);
+      }
     }
   }
   async function downloadResource(id) {
