@@ -233,3 +233,39 @@ button:disabled {
 /* Keep the additional audit actor filter aligned and responsive. */
 .tc-admin-activity-filters input{flex:1 1 220px;min-width:190px}
 @media(max-width:560px){.tc-admin-activity-filters input{min-width:0}}
+
+
+/* Clear, keyboard-accessible moderation controls for the teacher-community owner. */
+.tc-admin-resource-row{
+  box-shadow:0 5px 16px rgba(24,53,46,.045);
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.tc-admin-resource-row:hover{
+  border-color:#b9d9c8;
+  box-shadow:0 9px 22px rgba(24,83,62,.09);
+  transform:translateY(-1px);
+}
+.tc-admin-resource-status{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  line-height:1.7;
+}
+.tc-admin-resource-status.is-shared{background:#e5f4e9;color:#155d43}
+.tc-admin-resource-status.is-hidden{background:#fff0e8;color:#93451f}
+.tc-admin-resource-status.is-private{background:#eff2f5;color:#4d5c6b}
+.tc-admin-resource-actions button:focus-visible,
+.tc-admin-resource-tools button:focus-visible,
+.tc-admin-resource-tools input:focus-visible,
+.tc-admin-resource-tools select:focus-visible{
+  outline:3px solid var(--tc-gold);
+  outline-offset:2px;
+}
+@media(max-width:760px){
+  .tc-admin-resource-row{padding:15px;border-radius:15px}
+  .tc-admin-resource-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr))}
+  .tc-admin-resource-actions button{min-height:40px}
+}
+@media(prefers-reduced-motion:reduce){
+  .tc-admin-resource-row{transition:none}
+}
