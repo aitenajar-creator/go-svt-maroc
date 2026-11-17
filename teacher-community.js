@@ -768,6 +768,65 @@
     const normalized = value == null ? '' : String(value);
     return '"' + normalized.replace(/"/g, '""') + '"';
   }
+  async function exportMyResources() {
+    if (!user) return;
+    const button = $('tc-my-export');
+    const status = $('tc-my-export-status');
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = 'جارٍ تجهيز الملف...';
+    if (status) status.textContent = 'جارٍ جمع ملفاتك المطابقة للفلاتر الحالية...';
+    try {
+      const filter = $('tc-my-filter').value;
+      const rawSearch = $('tc-my-search').value.trim();
+      const search = rawSearch.replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      const sort = $('tc-my-sort').value;
+      const rows = [];
+      const pageSize = 500;
+      for (let offset = 0; offset < 10000; offset += pageSize) {
+        let query = client.from('teacher_community_resources')
+          .select('id,title,description,category,file_name,mime_type,size_bytes,is_shared,status,created_at,updated_at')
+          .eq('owner_id', user.id);
+        if (search) {
+          const pattern = '%' + search + '%';
+          query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
+        }
+        if (filter === 'shared') query = query.eq('status','published').eq('is_shared',true);
+        if (filter === 'private') query = query.eq('status','published').eq('is_shared',false);
+        if (filter === 'hidden') query = query.eq('status','hidden');
+        const primaryOrder = sort === 'title' ? 'title' : 'created_at';
+        const result = await query.order(primaryOrder,{ascending:sort === 'oldest' || sort === 'title'})
+          .order('id',{ascending:sort === 'oldest' || sort === 'title'})
+          .range(offset, offset + pageSize - 1);
+        if (result.error) throw result.error;
+        const page = result.data || [];
+        rows.push(...page);
+        if (page.length < pageSize) break;
+        if (offset + pageSize >= 10000) throw new Error('تجاوزت النتائج 10000 ملف. ضيّق البحث أو اختر تصنيفاً محدداً ثم أعد التصدير.');
+      }
+      const categoryNames = {curriculum:'المناهج والتوجيهات',lesson:'الدروس والجذاذات',presentation:'العروض التقديمية',assessment:'الفروض والتقويم',exam:'الامتحانات',correction:'التصحيح',planning:'التخطيط السنوي',professional:'وثائق مهنية',training:'التكوين المستمر',other:'موارد أخرى'};
+      const lines = [['العنوان','الوصف','التصنيف','اسم الملف','نوع الملف','الحجم بالبايت','حالة النشر','المشاركة','تاريخ الإضافة','آخر تحديث','معرّف المورد'],
+        ...rows.map(row => [row.title,row.description,categoryNames[row.category] || row.category,row.file_name,row.mime_type,row.size_bytes,
+          row.status === 'hidden' ? 'مخفي' : 'منشور',row.is_shared ? 'مشترك' : 'خاص',row.created_at,row.updated_at,row.id])];
+      const csv = '\\uFEFF' + lines.map(line => line.map(csvCell).join(',')).join('\\r\\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'my-teacher-resources-' + new Date().toISOString().slice(0,10) + '.csv';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      if (status) status.textContent = 'تم تصدير ' + rows.length + ' ملفاً من ملفاتك وفق الفلاتر الحالية.';
+    } catch (error) {
+      console.error('[Teacher community personal export]', error);
+      if (status) status.textContent = error.message || 'تعذر تصدير ملفاتك.';
+    } finally {
+      button.disabled = false;
+      button.textContent = '⬇ تصدير ملفاتي CSV';
+    }
+  }
   async function exportAdminActivity() {
     if (!isAdmin || !user) return;
     const button = $('tc-admin-activity-export');
@@ -1011,6 +1070,7 @@
     $('tc-my-search').addEventListener('input',()=>{ $('tc-my-search-clear').hidden = !$('tc-my-search').value; updateMyResetVisibility(); clearTimeout(mySearchTimer);mySearchTimer=setTimeout(()=>loadMyResources(true),300);});
     $('tc-my-search-clear').addEventListener('click',()=>{ clearTimeout(mySearchTimer); $('tc-my-search').value=''; $('tc-my-search-clear').hidden=true; updateMyResetVisibility(); loadMyResources(true); $('tc-my-search').focus(); });
     $('tc-my-reset').addEventListener('click',()=>{clearTimeout(mySearchTimer);$('tc-my-search').value='';$('tc-my-search-clear').hidden=true;$('tc-my-filter').value='all';$('tc-my-sort').value='newest';updateMyResetVisibility();loadMyResources(true);});
+    $('tc-my-export').addEventListener('click',exportMyResources);
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
     $('tc-admin-activity-export').addEventListener('click',exportAdminActivity);
