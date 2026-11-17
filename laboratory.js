@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -504,6 +504,55 @@ $('water-quality-quiz-check')?.addEventListener('click',()=>{
  result.dataset.graded='true';result.dataset.score=String(score);result.textContent=lang==='ar'?'نتيجتك: '+score+'/3. '+(score===3?'ممتاز! فهمت المؤشرات الأساسية.':'راجع تفسيرات المؤشرات وحاول مرة أخرى.'):'Votre score : '+score+'/3. '+(score===3?'Excellent ! Les indicateurs essentiels sont compris.':'Relisez les explications et réessayez.');
 });
 ['wq-q1','wq-q2','wq-q3'].forEach(name=>document.querySelectorAll('input[name="'+name+'"]').forEach(input=>input.addEventListener('change',()=>{const result=$('water-quality-quiz-result');if(result){delete result.dataset.graded;delete result.dataset.score;updateWaterQualityQuiz();}})));
+
+
+const waterTreatmentOrder=['settling','filtration','disinfection','storage'];
+let waterTreatmentStep=0,waterTreatmentMessage='';
+const waterTreatmentText={
+ ar:{
+  start:'ابدأ باختيار المرحلة الأولى.',
+  wrong:'ليست هذه المرحلة التالية. فكّر في إزالة الجسيمات الكبيرة والعالقة قبل الانتقال إلى المراحل اللاحقة.',
+  done:'أحسنت! رتّبت المسار التعليمي بصورة صحيحة. تختلف المعالجة الفعلية حسب خصائص الماء والتقنيات المعتمدة.',
+  labels:{settling:'الترسيب',filtration:'الترشيح',disinfection:'التطهير',storage:'التخزين والتوزيع'}
+ },
+ fr:{
+  start:'Commencez par choisir la première étape.',
+  wrong:'Ce n’est pas l’étape suivante. Pensez à séparer les particules avant de passer aux étapes suivantes.',
+  done:'Bravo ! Vous avez correctement ordonné ce parcours pédagogique. Le traitement réel dépend des caractéristiques de l’eau et des technologies utilisées.',
+  labels:{settling:'Décantation',filtration:'Filtration',disinfection:'Désinfection',storage:'Stockage et distribution'}
+ }
+};
+function renderWaterTreatmentLab(){
+ const feedback=$('water-treatment-feedback'),progress=$('water-treatment-progress');
+ if(!feedback||!progress)return;
+ const copy=waterTreatmentText[lang];
+ feedback.textContent=waterTreatmentMessage||copy.start;
+ progress.textContent=waterTreatmentStep+' / 4';
+ document.querySelectorAll('[data-treatment-step]').forEach(button=>{
+  const index=waterTreatmentOrder.indexOf(button.dataset.treatmentStep);
+  button.disabled=waterTreatmentStep===4||index<waterTreatmentStep;
+  button.classList.toggle('is-complete',index<waterTreatmentStep);
+  button.classList.toggle('is-next',index===waterTreatmentStep&&waterTreatmentStep<4);
+  button.setAttribute('aria-pressed',String(index<waterTreatmentStep));
+ });
+ const sequence=$('water-treatment-sequence');
+ if(sequence)sequence.querySelectorAll('span').forEach((node,index)=>{
+  node.classList.toggle('is-complete',index<waterTreatmentStep);
+  node.classList.toggle('is-current',index===waterTreatmentStep&&waterTreatmentStep<4);
+ });
+}
+document.querySelectorAll('[data-treatment-step]').forEach(button=>button.addEventListener('click',()=>{
+ if(waterTreatmentStep>=4)return;
+ if(button.dataset.treatmentStep===waterTreatmentOrder[waterTreatmentStep]){
+  waterTreatmentStep++;
+  waterTreatmentMessage=waterTreatmentStep===4?waterTreatmentText[lang].done:lang==='ar'?'صحيح! انتقل إلى المرحلة التالية.':'Correct ! Passez à l’étape suivante.';
+ }else waterTreatmentMessage=waterTreatmentText[lang].wrong;
+ renderWaterTreatmentLab();
+}));
+$('water-treatment-reset')?.addEventListener('click',()=>{
+ waterTreatmentStep=0;waterTreatmentMessage='';renderWaterTreatmentLab();
+});
+renderWaterTreatmentLab();
 
 function updateWaterQualityLab(){
  const ph=$('water-quality-ph'),turbidity=$('water-quality-turbidity'),oxygen=$('water-quality-oxygen');
