@@ -362,3 +362,30 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-population-simulator>button{border:0;border-radius:11px;padding:10px 15px;background:#236b48;color:#fff;font:inherit;font-weight:750;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.gs-population-simulator *{scroll-behavior:auto}}
 @media(prefers-color-scheme:dark){.gs-population-simulator{background:#17271e;border-color:#345641}.gs-population-heading h3,.gs-population-controls label,.gs-population-feedback{color:#d5ebd9}.gs-population-heading p{color:#b2c9b8}.gs-population-feedback{background:#203d2c}}
+
+
+/* Interactive pollution pressure and remediation simulator */
+.gs-pollution-simulator{margin:22px 0;padding:clamp(16px,2.8vw,24px);border:1px solid #d5e7d9;border-radius:19px;background:linear-gradient(145deg,#f2f9f3,#fff)}
+.gs-pollution-sim-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
+.gs-pollution-sim-heading>span{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:14px;background:#e1f0e4;font-size:1.6rem}
+.gs-pollution-sim-heading h3{margin:0 0 5px;color:#28583a}
+.gs-pollution-sim-heading p{margin:0;color:#63796a;line-height:1.8}
+.gs-pollution-sim-controls{display:grid;gap:8px;margin:16px 0}
+.gs-pollution-sim-controls label{display:flex;justify-content:space-between;gap:12px;color:#315d42;font-weight:750}
+.gs-pollution-sim-controls output{color:#236b48;font-variant-numeric:tabular-nums}
+.gs-pollution-sim-controls input{width:100%;margin:0 0 12px;accent-color:#278253;cursor:pointer}
+.gs-pollution-sim-controls input:focus-visible,.gs-pollution-simulator button:focus-visible{outline:3px solid #276e49;outline-offset:3px}
+.gs-pollution-sim-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:15px 0}
+.gs-pollution-sim-results>div{display:grid;gap:6px;padding:14px;border:1px solid #d8e8dc;border-radius:13px;background:#fff}
+.gs-pollution-sim-results span{color:#62796a;font-size:.82rem;line-height:1.6}
+.gs-pollution-sim-results strong{color:#236b48;font-size:1.4rem;font-variant-numeric:tabular-nums}
+.gs-pollution-sim-feedback{min-height:65px;margin:12px 0;padding:13px 15px;border-inline-start:4px solid #67956c;border-radius:10px;background:#eaf5ec;color:#365f43;line-height:1.85;font-weight:700}
+.gs-pollution-simulator>button{border:0;border-radius:11px;padding:10px 15px;background:#236b48;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.gs-pollution-simulator>small{display:block;margin-top:12px;color:#738276;line-height:1.7}
+@media(max-width:560px){.gs-pollution-sim-results{grid-template-columns:1fr}.gs-pollution-sim-heading>span{flex-basis:40px;height:40px}}
+.gs-dark .gs-pollution-simulator{background:#1b3024;border-color:#385844}
+.gs-dark .gs-pollution-sim-heading h3,.gs-dark .gs-pollution-sim-controls label,.gs-dark .gs-pollution-sim-results strong{color:#d9eddd}
+.gs-dark .gs-pollution-sim-heading p,.gs-dark .gs-pollution-sim-results span,.gs-dark .gs-pollution-simulator>small{color:#b5cbbb}
+.gs-dark .gs-pollution-sim-results>div{background:#22392a;border-color:#3c5a44}
+.gs-dark .gs-pollution-sim-feedback{background:#203d2c;color:#d5ebd9}
+@media(prefers-reduced-motion:reduce){.gs-pollution-simulator *{scroll-behavior:auto}}
