@@ -303,7 +303,7 @@
       const ascending = sort === 'oldest' || sort === 'title';
       const { data, error } = await query.order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
-      if (error) { const retry = '<div class="tc-state" role="alert">تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.<br><button type="button" class="tc-filter-reset" data-retry-my-resources>إعادة تحميل ملفاتي</button></div>'; $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.'; $('tc-my-resources').innerHTML = retry; $('tc-my-resources-more').hidden = true; return; }
+      if (error) { $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.'; $('tc-my-resources').innerHTML = retry; $('tc-my-resources-more').hidden = true; return; }
       const page = data || [];
       myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
       $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
