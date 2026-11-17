@@ -246,8 +246,12 @@
     if (reset) { myOffset = 0; myHasMore = false; $('tc-my-resources').replaceChildren(); }
     try {
       const start = reset ? 0 : myOffset;
-      const { data, error } = await client.from('teacher_community_resources').select('*')
-        .eq('owner_id',user.id).order('created_at',{ascending:false}).order('id',{ascending:false})
+      const filter = $('tc-my-filter') ? $('tc-my-filter').value : 'all';
+      let query = client.from('teacher_community_resources').select('*').eq('owner_id',user.id);
+      if (filter === 'shared') query = query.eq('status','published').eq('is_shared',true);
+      if (filter === 'private') query = query.eq('status','published').eq('is_shared',false);
+      if (filter === 'hidden') query = query.eq('status','hidden');
+      const { data, error } = await query.order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(start, start + PAGE_SIZE - 1);
       if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state">تعذر تحميل ملفاتك.</div>'; return; }
       const page = data || [];
