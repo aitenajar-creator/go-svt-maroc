@@ -738,6 +738,72 @@
       }
     }
   }
+  function csvCell(value) {
+    const normalized = value == null ? '' : String(value);
+    return '"' + normalized.replace(/"/g, '""') + '"';
+  }
+  async function exportAdminActivity() {
+    if (!isAdmin || !user) return;
+    const button = $('tc-admin-activity-export');
+    const status = $('tc-admin-activity-export-status');
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = 'جارٍ تجهيز الملف...';
+    if (status) status.textContent = 'جارٍ جمع العمليات المطابقة للفلاتر الحالية...';
+    try {
+      const actionFilter = $('tc-admin-activity-action').value;
+      const rawSearch = $('tc-admin-activity-search').value.trim();
+      const search = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      const rows = [];
+      const pageSize = 500;
+      for (let offset = 0; offset < 10000; offset += pageSize) {
+        let query = client.from('teacher_community_resource_activity')
+          .select('id,resource_id,resource_title,owner_id,actor_id,action,details,created_at');
+        if (actionFilter) query = query.eq('action', actionFilter);
+        if (search) query = query.ilike('resource_title', '%' + search + '%');
+        const result = await query.order('created_at', {ascending:false})
+          .order('id', {ascending:false}).range(offset, offset + pageSize - 1);
+        if (result.error) throw result.error;
+        const page = result.data || [];
+        rows.push(...page);
+        if (page.length < pageSize) break;
+        if (offset + pageSize >= 10000) throw new Error('تجاوزت النتائج 10000 عملية. ضيّق البحث أو اختر نوع عملية محدداً ثم أعد التصدير.');
+      }
+      const ids = [...new Set(rows.flatMap(row => [row.actor_id, row.owner_id]).filter(Boolean))];
+      const people = {};
+      for (let i = 0; i < ids.length; i += 200) {
+        const result = await client.from('teacher_community_members')
+          .select('user_id,display_name').in('user_id', ids.slice(i, i + 200));
+        if (result.error) throw result.error;
+        (result.data || []).forEach(person => { people[person.user_id] = person.display_name; });
+      }
+      const actionNames = {uploaded:'رفع مورد',updated:'تعديل البيانات',hidden:'إخفاء مورد',restored:'إعادة نشر',shared:'مشاركة',unshared:'إلغاء المشاركة',deleted:'حذف مورد'};
+      const header = ['التاريخ والوقت','العملية','عنوان المورد','المنفذ','صاحب المورد','معرّف المورد','تفاصيل التغيير'];
+      const lines = [header, ...rows.map(row => [
+        row.created_at, actionNames[row.action] || row.action, row.resource_title || 'مورد محذوف',
+        row.actor_id === user.id ? 'إدارة المنصة' : (people[row.actor_id] || row.actor_id || ''),
+        row.owner_id === user.id ? 'إدارة المنصة' : (people[row.owner_id] || row.owner_id || ''),
+        row.resource_id || '', row.details ? JSON.stringify(row.details) : ''
+      ])];
+      const csv = '\uFEFF' + lines.map(line => line.map(csvCell).join(',')).join('\r\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'teacher-community-activity-' + new Date().toISOString().slice(0,10) + '.csv';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      if (status) status.textContent = 'تم تجهيز ملف CSV ويحتوي على ' + rows.length + ' عملية مطابقة.';
+    } catch (error) {
+      console.error('[Teacher community activity export]', error);
+      if (status) status.textContent = error.message || 'تعذر تصدير سجل النشاط.';
+    } finally {
+      button.disabled = false;
+      button.textContent = '⬇ تصدير CSV';
+    }
+  }
   async function handleAuth(e) {
     e.preventDefault(); message('tc-auth-message','');
     const email = $('tc-email').value.trim().toLowerCase(), password = $('tc-password').value;
@@ -887,6 +953,7 @@
     $('tc-my-reset').addEventListener('click',()=>{clearTimeout(mySearchTimer);$('tc-my-search').value='';$('tc-my-search-clear').hidden=true;$('tc-my-filter').value='all';$('tc-my-sort').value='newest';updateMyResetVisibility();loadMyResources(true);});
     $('tc-admin-members-more').addEventListener('click',()=>loadAdmin(false,'members'));
     $('tc-admin-resources-more').addEventListener('click',()=>loadAdmin(false,'resources'));
+    $('tc-admin-activity-export').addEventListener('click',exportAdminActivity);
     $('tc-admin-activity-refresh').addEventListener('click',()=>loadAdminActivity(true));
     $('tc-admin-activity-action').addEventListener('change',()=>loadAdminActivity(true));
     $('tc-admin-activity-search').addEventListener('input',()=>{
