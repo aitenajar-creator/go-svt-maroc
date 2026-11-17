@@ -116,6 +116,52 @@
         outline:3px solid #a9d8b7;
         outline-offset:3px;
       }
+      #gs-classroom.gs-cl-teacher-view details>summary{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:.8rem;
+        min-height:58px;
+        padding:.75rem 1rem;
+        border:1px solid rgba(55,112,83,.2);
+        border-radius:15px;
+        background:linear-gradient(115deg,#edf6ef,#dcece1);
+        color:#205b43;
+        font-weight:800;
+        line-height:1.5;
+        list-style:none;
+        transition:background .2s ease,box-shadow .2s ease;
+      }
+      #gs-classroom.gs-cl-teacher-view details>summary::-webkit-details-marker{display:none}
+      #gs-classroom.gs-cl-teacher-view details>summary::after{
+        content:"＋";
+        flex:0 0 30px;
+        width:30px;
+        height:30px;
+        display:grid;
+        place-items:center;
+        border-radius:9px;
+        background:rgba(40,104,72,.12);
+        color:inherit;
+        font-size:1.1rem;
+      }
+      #gs-classroom.gs-cl-teacher-view details[open]>summary::after{content:"−"}
+      #gs-classroom.gs-cl-teacher-view details>summary:hover{
+        background:linear-gradient(115deg,#e1f0e5,#cfe5d7);
+        box-shadow:0 5px 14px rgba(22,72,51,.1);
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view details>summary{
+        background:linear-gradient(115deg,#2b4938,#365942);
+        color:#e0f0e5;
+        border-color:#496b53;
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view details>summary:hover{
+        background:linear-gradient(115deg,#345943,#416d50);
+      }
+      #gs-classroom.gs-cl-teacher-view details>summary:focus-visible{
+        outline:3px solid #a9d8b7;
+        outline-offset:3px;
+      }
       @media(max-width:520px){
         #gs-classroom{margin:1rem 0;padding:.8rem;border-radius:14px}
         #gs-classroom .gs-cl-head{align-items:stretch;gap:.65rem}
