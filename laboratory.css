@@ -303,3 +303,13 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-cell-quiz-footer button:hover{background:#174e34}
 @media(max-width:600px){.gs-cell-quiz-heading{align-items:flex-start}.gs-cell-answers button{flex-basis:100%}.gs-cell-quiz-footer{align-items:stretch;flex-direction:column}.gs-cell-quiz-footer button{width:100%}}
 .gs-dark .gs-cell-quiz{background:#1b3024;border-color:#385844}.gs-dark .gs-cell-quiz-heading h3,.gs-dark .gs-cell-question h4{color:#e0f1e4}.gs-dark .gs-cell-quiz-heading p,.gs-dark .gs-cell-quiz-footer p{color:#b5cbbb}.gs-dark .gs-cell-question{background:#22392a;border-color:#3c5a44}.gs-dark .gs-cell-answers button{background:#294331;border-color:#49694f;color:#e3f1e5}.gs-dark .gs-cell-answers button.is-correct{background:#244c31;color:#d9f4df}.gs-dark .gs-cell-answers button.is-wrong{background:#542f2b;color:#ffe2dc}
+
+/* Three-factor photosynthesis model outputs */
+.gs-photo-products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:13px 0}
+.gs-photo-products>div{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:5px 10px;padding:12px;border:1px solid #d8e9dc;border-radius:13px;background:#f3f9f4}
+.gs-photo-products>div>span{grid-row:span 2;font-size:1.45rem}
+.gs-photo-products strong{font-size:.82rem;color:#496653}
+.gs-photo-products b{font-size:.9rem;color:#24633f}
+.gs-dark .gs-photo-products>div{background:#20392a;border-color:#3b5c45}
+.gs-dark .gs-photo-products strong{color:#c5d9ca}.gs-dark .gs-photo-products b{color:#9cddb0}
+@media(max-width:520px){.gs-photo-products{grid-template-columns:1fr}}
