@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -674,6 +674,27 @@ $('biodiv-quiz-reset').addEventListener('click',()=>{
  });
  renderBiodiversityQuiz();
 });
+
+
+function updateEnergyTransfer(){
+ const base=Number($('energy-input').value),rate=Number($('energy-efficiency').value)/100;
+ const values=[base,base*rate,base*rate*rate,base*rate*rate*rate];
+ const ids=['producers','primary','secondary','tertiary'];
+ values.forEach((value,index)=>{
+  $(`energy-${ids[index]}`).textContent=new Intl.NumberFormat(lang==='ar'?'ar-MA':'fr-FR',{maximumFractionDigits:1}).format(value);
+  $(`energy-${ids[index]}-bar`).style.width=(value/base*100)+'%';
+ });
+ $('energy-input-value').textContent=new Intl.NumberFormat(lang==='ar'?'ar-MA':'fr-FR').format(base);
+ $('energy-efficiency-value').textContent=Math.round(rate*100)+'%';
+ $('energy-transfer-feedback').textContent=lang==='ar'
+  ?'عند انتقال '+Math.round(rate*100)+'% في كل مستوى، تصل إلى المستهلكات العليا نحو '+new Intl.NumberFormat('ar-MA',{maximumFractionDigits:1}).format(values[3])+' وحدة من أصل '+new Intl.NumberFormat('ar-MA').format(base)+'؛ والباقي لا ينتقل إلى المستوى التالي.'
+  :'Avec un transfert de '+Math.round(rate*100)+' % à chaque niveau, les consommateurs supérieurs reçoivent environ '+new Intl.NumberFormat('fr-FR',{maximumFractionDigits:1}).format(values[3])+' unités sur '+new Intl.NumberFormat('fr-FR').format(base)+' ; le reste n’est pas transféré au niveau suivant.';
+}
+['energy-input','energy-efficiency'].forEach(id=>$(id).addEventListener('input',updateEnergyTransfer));
+$('energy-transfer-reset').addEventListener('click',()=>{
+ $('energy-input').value='10000';$('energy-efficiency').value='10';updateEnergyTransfer();
+});
+updateEnergyTransfer();
 
 loadCommonsPhotos();
 })();
