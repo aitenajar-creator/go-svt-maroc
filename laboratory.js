@@ -578,6 +578,31 @@ $('water-management-reset').addEventListener('click',()=>{
 });
 
 
+function updateWaterAllocation(){
+ const home=Number($('water-home-range').value),agri=Number($('water-agri-range').value),eco=Number($('water-eco-range').value);
+ $('water-home-value').textContent=home;
+ $('water-agri-value').textContent=agri;
+ $('water-eco-value').textContent=eco;
+ const total=home+agri+eco;
+ $('water-allocation-total').textContent=total+' / 100';
+ $('water-allocation-total').classList.toggle('is-over',total>100);
+ let ar,fr;
+ if(total<100){ar='لم توزّع كل الموارد المتاحة بعد. أعد ضبط المؤشرات حتى يصبح المجموع 100 وحدة.';fr='Toute la ressource disponible n’est pas encore répartie. Ajustez les curseurs pour atteindre 100 unités.';}
+ else if(total>100){ar='تجاوزت الحصة المتاحة. خفّض بعض القيم حتى لا يتجاوز المجموع 100 وحدة.';fr='La ressource disponible est dépassée. Réduisez certaines valeurs pour ne pas dépasser 100 unités.';}
+ else if(eco<10){ar='حصة الأنظمة البيئية منخفضة في هذا السيناريو؛ قد يضعف ذلك تلبية حاجات الأوساط الطبيعية.';fr='La part des écosystèmes est faible dans ce scénario ; leurs besoins risquent d’être insuffisamment couverts.';}
+ else if(home<15){ar='الحصة المنزلية محدودة؛ ينبغي مراعاة حاجات السكان الأساسية ومياه الشرب والصرف الصحي.';fr='La part domestique est limitée ; les besoins essentiels des habitants, l’eau potable et l’assainissement doivent être pris en compte.';}
+ else if(agri<25){ar='الحصة الزراعية منخفضة؛ يمكن التفكير في تحسين كفاءة الري وتقليل الضياع بدلاً من زيادة السحب فقط.';fr='La part agricole est faible ; améliorer l’efficacité de l’irrigation et réduire les pertes peut être préférable à une simple hausse des prélèvements.';}
+ else {ar='توزيع افتراضي يراعي القطاعات الثلاثة. قارن بين الحاجات المحلية وكفاءة الاستعمال وحماية الأنظمة البيئية.';fr='Cette répartition fictive prend en compte les trois secteurs. Comparez les besoins locaux, l’efficacité des usages et la protection des écosystèmes.';}
+ $('water-allocation-feedback').textContent=lang==='ar'?ar:fr;
+}
+['water-home-range','water-agri-range','water-eco-range'].forEach(id=>$(id).addEventListener('input',updateWaterAllocation));
+$('water-allocation-reset').addEventListener('click',()=>{
+ $('water-home-range').value=30;$('water-agri-range').value=50;$('water-eco-range').value=20;updateWaterAllocation();
+});
+updateWaterAllocation();
+
+
+
 const tectonicDescriptions={ar:{plates:['الصفائح التكتونية','الغلاف الصخري مقسم إلى صفائح تتحرك ببطء فوق نطاق أكثر ليونة في الوشاح العلوي.'],volcanoes:['البراكين','يرتبط عدد كبير من البراكين بمناطق تقارب الصفائح أو تباعدها، مع وجود براكين داخل الصفائح أيضاً.'],quakes:['الزلازل','تتركز زلازل كثيرة على حدود الصفائح حيث تتراكم الإجهادات وتتحرر على شكل اهتزازات.'],relief:['التضاريس','قد يؤدي تقارب الصفائح إلى تشكل سلاسل جبلية وخنادق محيطية، بينما يرتبط التباعد بتشكل الظهور المحيطية.'],gps:['اتجاه الحركة','تساعد قياسات GPS على تتبع الإزاحة النسبية للصفائح، ويختلف اتجاه الحركة وسرعتها من منطقة إلى أخرى.']},fr:{plates:['Plaques tectoniques','La lithosphère est divisée en plaques qui se déplacent lentement sur une zone plus ductile du manteau supérieur.'],volcanoes:['Volcans','De nombreux volcans sont associés aux zones de convergence ou de divergence, même s’il existe aussi des volcans intraplaques.'],quakes:['Séismes','Beaucoup de séismes se concentrent aux limites des plaques, où les contraintes s’accumulent puis se libèrent.'],relief:['Relief','La convergence peut former des chaînes de montagnes et des fosses océaniques ; la divergence est associée aux dorsales.'],gps:['Sens du mouvement','Les mesures GPS permettent de suivre les déplacements relatifs des plaques. Leur direction et leur vitesse varient selon les régions.']}};
 
 let tectonicScore=0,tectonicAnswered=0;
