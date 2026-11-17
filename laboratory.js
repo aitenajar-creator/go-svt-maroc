@@ -503,7 +503,7 @@ $('water-quality-quiz-check')?.addEventListener('click',()=>{
  if(answered<3){result.dataset.graded='';result.textContent=lang==='ar'?'أجب عن الأسئلة الثلاثة أولاً لإظهار النتيجة.':'Répondez d’abord aux trois questions pour afficher le résultat.';return;}
  result.dataset.graded='true';result.dataset.score=String(score);result.textContent=lang==='ar'?'نتيجتك: '+score+'/3. '+(score===3?'ممتاز! فهمت المؤشرات الأساسية.':'راجع تفسيرات المؤشرات وحاول مرة أخرى.'):'Votre score : '+score+'/3. '+(score===3?'Excellent ! Les indicateurs essentiels sont compris.':'Relisez les explications et réessayez.');
 });
-['wq-q1','wq-q2','wq-q3'].forEach(name=>document.querySelectorAll('input[name="'+name+'"]').forEach(input=>input.addEventListener('change',()=>{const result=$('water-quality-quiz-result');if(result){delete result.dataset.graded;delete result.dataset.score;}})));
+['wq-q1','wq-q2','wq-q3'].forEach(name=>document.querySelectorAll('input[name="'+name+'"]').forEach(input=>input.addEventListener('change',()=>{const result=$('water-quality-quiz-result');if(result){delete result.dataset.graded;delete result.dataset.score;updateWaterQualityQuiz();}})));
 
 function updateWaterQualityLab(){
  const ph=$('water-quality-ph'),turbidity=$('water-quality-turbidity'),oxygen=$('water-quality-oxygen');
