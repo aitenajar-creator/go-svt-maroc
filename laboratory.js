@@ -969,6 +969,36 @@ $('meiosis-question-list')?.addEventListener('click',event=>{
 $('meiosis-reset')?.addEventListener('click',()=>{meiosisStep=0;renderMeiosisCompare();});
 renderMeiosisCompare();
 
+
+const rnaCodonAnswers=['AUG','GCU','UUU','UGA'];
+const aminoAcids=[{ar:'ميثيونين (Met)',fr:'Méthionine (Met)'},{ar:'ألانين (Ala)',fr:'Alanine (Ala)'},{ar:'فينيل ألانين (Phe)',fr:'Phénylalanine (Phe)'},{ar:'توقف',fr:'Stop'}];
+function renderTranscription(){
+ const chain=$('protein-chain'),feedback=$('rna-feedback'),protein=$('protein-feedback');
+ if(!chain||!feedback||!protein)return;
+ const selects=[...document.querySelectorAll('[data-rna-codon]')];
+ chain.innerHTML='';
+ if(rnaChecked){
+  selects.forEach((select,index)=>{const span=document.createElement('span');span.textContent=aminoAcids[index][lang];span.className=index===3?'is-stop':'is-amino';chain.appendChild(span);});
+  feedback.textContent=lang==='ar'?'نتيجتك: '+rnaScore+' / 4. '+(rnaScore===4?'ممتاز! أكملت الاستنساخ بصورة صحيحة.':'راجع أن ARNm يطابق السلسلة المشفِّرة مع استبدال T بـ U.'):'Votre score : '+rnaScore+' / 4. '+(rnaScore===4?'Excellent ! La transcription est correcte.':'Vérifiez que l’ARNm correspond au brin codant avec U à la place de T.');
+  protein.textContent=lang==='ar'?'تسلسل مبسط: ميثيونين ← ألانين ← فينيل ألانين ← توقف.':'Séquence simplifiée : méthionine → alanine → phénylalanine → stop.';
+ }else{
+  for(let i=0;i<4;i++){const span=document.createElement('span');span.textContent='؟';chain.appendChild(span);}
+  feedback.textContent=lang==='ar'?'اختر رامزة لكل مجموعة من القواعد، ثم تحقق من إجابتك.':'Choisissez un codon pour chaque groupe de bases, puis vérifiez vos réponses.';
+  protein.textContent=lang==='ar'?'بعد التحقق، ستظهر الأحماض الأمينية الموافقة للرامزات.':'Après vérification, les acides aminés correspondant aux codons apparaîtront.';
+ }
+ selects.forEach(select=>select.disabled=rnaChecked);
+}
+let rnaChecked=false,rnaScore=0;
+document.querySelectorAll('[data-rna-codon]').forEach(select=>select.addEventListener('change',()=>{rnaChecked=false;renderTranscription();}));
+$('rna-check')?.addEventListener('click',()=>{
+ const selects=[...document.querySelectorAll('[data-rna-codon]')];
+ if(selects.some(select=>!select.value)){$('rna-feedback').textContent=lang==='ar'?'أكمل الرامزات الأربع قبل التحقق.':'Complétez les quatre codons avant la vérification.';return;}
+ rnaScore=selects.filter((select,index)=>select.value===rnaCodonAnswers[index]).length;
+ rnaChecked=true;renderTranscription();
+});
+$('rna-reset')?.addEventListener('click',()=>{rnaChecked=false;rnaScore=0;document.querySelectorAll('[data-rna-codon]').forEach(select=>{select.value='';});renderTranscription();});
+renderTranscription();
+
 const dnaComplement={A:'T',T:'A',C:'G',G:'C'};
 let dnaChecked=false,dnaScore=null;
 function renderDnaPairing(){
