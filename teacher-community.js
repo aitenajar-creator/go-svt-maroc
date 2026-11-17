@@ -196,6 +196,7 @@
       const q = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       const category = $('tc-category').value;
       const fileType = $('tc-file-type') ? $('tc-file-type').value : '';
+      const sort = $('tc-library-sort') ? $('tc-library-sort').value : 'newest';
       let query = client.from('teacher_community_resources')
         .select('*').eq('status','published').eq('is_shared',true);
       if (category) query = query.eq('category', category);
@@ -213,8 +214,10 @@
         query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
       }
       const start = reset ? 0 : libraryOffset;
+      const primaryOrder = sort === 'title' ? 'title' : 'created_at';
+      const ascending = sort === 'oldest' || sort === 'title';
       const { data, error } = await query
-        .order('created_at',{ascending:false}).order('id',{ascending:false})
+        .order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
       if (requestId !== libraryRequest) return;
       if (error) {
@@ -537,7 +540,7 @@
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
     $('tc-file').addEventListener('change',updateSelectedFileHint);
-    $('tc-search').addEventListener('input',()=>{clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);}); $('tc-category').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);}); $('tc-file-type').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);});
+    $('tc-search').addEventListener('input',()=>{clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);}); $('tc-category').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);}); $('tc-file-type').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);}); $('tc-library-sort').addEventListener('change',()=>{clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
