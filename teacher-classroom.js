@@ -58,6 +58,64 @@
       #gs-classroom .gs-cl-row, #gs-classroom .gs-cl-card{min-width:0}
       #gs-classroom details>summary{cursor:pointer;font-weight:700;padding:.45rem 0}
       #gs-classroom button{max-width:100%;white-space:normal;line-height:1.45}
+      /* Teacher/admin task cards: match the green visual-card language without changing student view. */
+      #gs-classroom.gs-cl-teacher-view .gs-cl-card{
+        border:1px solid rgba(55,112,83,.2);
+        border-radius:19px;
+        background:linear-gradient(145deg,#fff 0%,#f1f8f3 100%);
+        box-shadow:0 8px 22px rgba(24,67,48,.08);
+        padding:clamp(.9rem,2vw,1.2rem);
+        transition:box-shadow .2s ease,transform .2s ease;
+      }
+      #gs-classroom.gs-cl-teacher-view .gs-cl-card>h3{
+        display:flex;
+        align-items:center;
+        gap:.55rem;
+        padding:.75rem .9rem;
+        margin:0 0 .8rem;
+        border-radius:13px;
+        color:#fff;
+        background:linear-gradient(115deg,#173f35,#648f7c);
+        font-size:1rem;
+        line-height:1.55;
+      }
+      #gs-classroom.gs-cl-teacher-view button{
+        min-height:44px;
+        border-radius:13px;
+        padding:.68rem 1rem;
+        background:linear-gradient(115deg,#1b5946,#4c876c);
+        box-shadow:0 4px 12px rgba(22,72,51,.12);
+        transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+      }
+      #gs-classroom.gs-cl-teacher-view button:hover:not(:disabled){
+        transform:translateY(-1px);
+        box-shadow:0 7px 16px rgba(22,72,51,.18);
+        filter:brightness(1.04);
+      }
+      #gs-classroom.gs-cl-teacher-view button.gs-cl-secondary{
+        background:linear-gradient(120deg,#edf6ef,#dcece1);
+        color:#205b43;
+        border:1px solid rgba(49,111,77,.16);
+        box-shadow:none;
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view .gs-cl-card{
+        background:linear-gradient(145deg,#1d3025,#263c2e);
+        border-color:#3a5c46;
+        box-shadow:0 8px 22px rgba(0,0,0,.16);
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view .gs-cl-card>h3{
+        background:linear-gradient(115deg,#244b3b,#426d57);
+        color:#fff;
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view button.gs-cl-secondary{
+        background:linear-gradient(120deg,#2b4938,#365942);
+        color:#e0f0e5;
+        border-color:#496b53;
+      }
+      #gs-classroom.gs-cl-teacher-view button:focus-visible{
+        outline:3px solid #a9d8b7;
+        outline-offset:3px;
+      }
       @media(max-width:520px){
         #gs-classroom{margin:1rem 0;padding:.8rem;border-radius:14px}
         #gs-classroom .gs-cl-head{align-items:stretch;gap:.65rem}
@@ -73,7 +131,7 @@
   }
 
   function panelShell(role) {
-    return `<section id="gs-classroom" aria-labelledby="gs-cl-title">
+    return `<section id="gs-classroom" class="${role === 'teacher' || role === 'admin' ? 'gs-cl-teacher-view' : 'gs-cl-student-view'}" aria-labelledby="gs-cl-title">
       <div class="gs-cl-head"><div><h3 id="gs-cl-title">🎓 ${tr('فضاء الأستاذ والتواصل','Espace enseignant et échanges')}</h3><p class="gs-cl-muted">${tr('متابعة تعليمية داخل الأقسام المسندة فقط.','Suivi pédagogique limité aux classes autorisées.')}</p></div><div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><span class="gs-cl-tag">${role === 'admin' ? tr('مدير المنصة','Administrateur') : role === 'teacher' ? tr('أستاذ','Enseignant') : tr('تلميذ','Élève')}</span><button type="button" class="gs-cl-secondary" data-action="refresh-panel">${tr('تحديث البيانات','Actualiser les données')}</button></div></div>
       <div id="gs-cl-content"><p class="gs-cl-muted">${tr('جارٍ تحميل فضاء القسم...','Chargement de l’espace classe...')}</p></div>
     </section>`;
