@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -489,6 +489,41 @@ $('pollution-sim-reset')?.addEventListener('click',()=>{
  updatePollutionSimulator();
 });
 updatePollutionSimulator();
+
+
+function updateWaterQualityLab(){
+ const ph=$('water-quality-ph'),turbidity=$('water-quality-turbidity'),oxygen=$('water-quality-oxygen');
+ if(!ph||!turbidity||!oxygen)return;
+ const p=Number(ph.value),t=Number(turbidity.value),o=Number(oxygen.value);
+ $('water-quality-ph-value').textContent=p.toFixed(1);
+ $('water-quality-turbidity-value').textContent=String(t);
+ $('water-quality-oxygen-value').textContent=o.toFixed(1);
+ const concerns=[];
+ if(p<6.5||p>8.5)concerns.push(lang==='ar'?'درجة الحموضة':'pH');
+ if(t>=25)concerns.push(lang==='ar'?'العكارة':'turbidité');
+ if(o<5)concerns.push(lang==='ar'?'الأكسجين المذاب':'oxygène dissous');
+ const status=concerns.length===0
+  ? {ar:'توازن تقريبي في هذا النموذج',fr:'Équilibre indicatif dans ce modèle'}
+  : concerns.length===1
+   ? {ar:'مؤشر واحد يستحق الانتباه',fr:'Un indicateur mérite une attention'}
+   : {ar:'عدة مؤشرات تستحق الانتباه',fr:'Plusieurs indicateurs méritent une attention'};
+ $('water-quality-status').textContent=status[lang];
+ $('water-quality-focus').textContent=concerns.length?concerns.join('، '):'—';
+ const messages=[];
+ if(p<6.5)messages.push({ar:'الماء أكثر حمضية في هذا السيناريو؛ وقد يؤثر تغير pH في الكائنات المائية.',fr:'L’eau est plus acide dans ce scénario ; une variation du pH peut affecter les organismes aquatiques.'});
+ else if(p>8.5)messages.push({ar:'الماء أكثر قاعدية في هذا السيناريو؛ وقد تؤثر القيم المرتفعة أو المنخفضة كثيراً في الأنواع الحساسة.',fr:'L’eau est plus basique dans ce scénario ; des valeurs très éloignées peuvent affecter les espèces sensibles.'});
+ else messages.push({ar:'قيمة pH ضمن المجال التقريبي المعتمد في هذا النشاط، لكنها وحدها لا تكفي لتقييم جودة الماء.',fr:'Le pH se situe dans la plage indicative de cette activité, mais il ne suffit pas à évaluer la qualité de l’eau.'});
+ if(t>=25)messages.push({ar:'العكارة مرتفعة في النموذج؛ قد تقلل الجسيمات العالقة من نفاذ الضوء إلى الماء.',fr:'La turbidité est élevée dans le modèle ; les particules en suspension peuvent réduire la pénétration de la lumière.'});
+ else messages.push({ar:'العكارة ليست مرتفعة وفق عتبة هذا النشاط الافتراضي.',fr:'La turbidité n’est pas élevée selon le seuil fictif de cette activité.'});
+ if(o<5)messages.push({ar:'الأكسجين المذاب منخفض في النموذج، ما قد يصعّب التنفس على بعض الكائنات المائية.',fr:'L’oxygène dissous est faible dans le modèle, ce qui peut gêner la respiration de certains organismes aquatiques.'});
+ else messages.push({ar:'الأكسجين المذاب ليس منخفضاً وفق عتبة هذا النشاط؛ وتتغير الحاجات حسب الأنواع ودرجة الحرارة.',fr:'L’oxygène dissous n’est pas faible selon le seuil de cette activité ; les besoins varient selon les espèces et la température.'});
+ $('water-quality-feedback').textContent=messages.map(m=>m[lang]).join(' ');
+}
+['water-quality-ph','water-quality-turbidity','water-quality-oxygen'].forEach(id=>$(id)?.addEventListener('input',updateWaterQualityLab));
+$('water-quality-reset')?.addEventListener('click',()=>{
+ $('water-quality-ph').value=6.5;$('water-quality-turbidity').value=12;$('water-quality-oxygen').value=7;updateWaterQualityLab();
+});
+updateWaterQualityLab();
 
 
 const waterCycleTexts={
