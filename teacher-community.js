@@ -506,6 +506,8 @@
     if (!mimeType) return message('tc-upload-message','تعذر تحديد نوع الملف. أعد حفظه بصيغة مدعومة ثم حاول مجدداً.');
     uploadInProgress = true;
     const submit = $('tc-upload-submit'); submit.disabled = true; submit.textContent = 'جارٍ رفع الملف...';
+    const closeButton = $('tc-upload-dialog').querySelector('.tc-dialog-close');
+    if (closeButton) closeButton.disabled = true;
     const path = user.id + '/' + crypto.randomUUID() + '.' + ext;
     try {
       const upload = await client.storage.from('teacher-community').upload(path,file,{contentType:mimeType,upsert:false});
@@ -529,6 +531,7 @@
       uploadInProgress = false;
       submit.disabled=false;
       submit.textContent='رفع وحفظ الوثيقة';
+      if (closeButton) closeButton.disabled = false;
     }
   }
   async function handleAdminAction(e) {
@@ -571,6 +574,7 @@
     document.querySelectorAll('[data-auth-view]').forEach(b=>b.addEventListener('click',()=>{authView=b.dataset.authView;openAuth(authView);}));
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
+    $('tc-upload-dialog').addEventListener('cancel',e=>{if(uploadInProgress)e.preventDefault();});
     $('tc-file').addEventListener('change',updateSelectedFileHint);
     $('tc-search').addEventListener('input',()=>{$('tc-search-clear').hidden = !$('tc-search').value;updateLibraryResetVisibility();clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),300);});
     $('tc-search-clear').addEventListener('click',()=>{clearTimeout(librarySearchTimer);$('tc-search').value='';$('tc-search-clear').hidden=true;updateLibraryResetVisibility();loadLibrary(true);$('tc-search').focus();});
