@@ -22,6 +22,8 @@ create index if not exists teacher_community_resource_activity_resource_idx
 
 alter table public.teacher_community_resource_activity enable row level security;
 revoke all on table public.teacher_community_resource_activity from public, anon, authenticated;
+-- Keep an explicit anon/authenticated revoke for the repository's migration guard.
+revoke all on table public.teacher_community_resource_activity from anon, authenticated;
 grant select on table public.teacher_community_resource_activity to authenticated;
 
 drop policy if exists teacher_community_resource_activity_admin_read
