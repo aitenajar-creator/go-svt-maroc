@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-19">
+<link rel="stylesheet" href="laboratory.css?v=20261117-20">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -122,6 +122,16 @@
    </div><div class="gs-transcription-actions"><button type="button" id="rna-check" data-ar="تحقق من الرامزات" data-fr="Vérifier les codons">تحقق من الرامزات</button><button type="button" id="rna-reset" data-ar="إعادة النشاط" data-fr="Recommencer">إعادة النشاط</button></div><p id="rna-feedback" aria-live="polite" data-ar="اختر رامزة لكل مجموعة من القواعد، ثم تحقق من إجابتك." data-fr="Choisissez un codon pour chaque groupe de bases, puis vérifiez vos réponses.">اختر رامزة لكل مجموعة من القواعد، ثم تحقق من إجابتك.</p></div>
    <div class="gs-transcription-translation"><h3 data-ar="2. اكتشف تسلسل الأحماض الأمينية" data-fr="2. Découvrez la séquence d’acides aminés">2. اكتشف تسلسل الأحماض الأمينية</h3><div class="gs-protein-chain" id="protein-chain" aria-live="polite"><span>؟</span><span>؟</span><span>؟</span><span>؟</span></div><p id="protein-feedback" data-ar="بعد التحقق، ستظهر الأحماض الأمينية الموافقة للرامزات." data-fr="Après vérification, les acides aminés correspondant aux codons apparaîtront.">بعد التحقق، ستظهر الأحماض الأمينية الموافقة للرامزات.</p></div>
    <small data-ar="نموذج مبسط: السلسلة المعطاة هي السلسلة المشفِّرة، ولذلك يطابقها ARNm مع استبدال T بـ U. الرامزة UGA إشارة توقف ولا ترمز إلى حمض أميني." data-fr="Modèle simplifié : le brin fourni est le brin codant ; l’ARNm lui correspond avec U à la place de T. UGA est un codon stop et ne code pas un acide aminé.">نموذج مبسط: السلسلة المعطاة هي السلسلة المشفِّرة، ولذلك يطابقها ARNm مع استبدال T بـ U. الرامزة UGA إشارة توقف ولا ترمز إلى حمض أميني.</small>
+  </div>
+ </section>
+ <section class="gs-lab-section" id="enzyme-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 05" data-fr="EXPÉRIENCE 05">التجربة 05</span><h2 data-ar="مختبر الإنزيمات: طابق الإنزيم مع ركيزته" data-fr="Laboratoire des enzymes : associez chaque enzyme à son substrat">مختبر الإنزيمات: طابق الإنزيم مع ركيزته</h2><p data-ar="اكتشف خصوصية عمل الإنزيمات من خلال مطابقة كل إنزيم مع المادة التي يؤثر فيها." data-fr="Découvrez la spécificité enzymatique en associant chaque enzyme à la substance sur laquelle elle agit.">اكتشف خصوصية عمل الإنزيمات من خلال مطابقة كل إنزيم مع المادة التي يؤثر فيها.</p></div><span class="gs-lab-number">05</span></div>
+  <div class="gs-enzyme-card" id="enzyme-activity">
+   <div class="gs-enzyme-intro"><span aria-hidden="true">🧪</span><div><strong data-ar="مبدأ التخصص الإنزيمي" data-fr="Principe de spécificité enzymatique">مبدأ التخصص الإنزيمي</strong><p data-ar="لكل إنزيم بنية وموقع فعال يسمحان له بالتفاعل مع ركيزة أو مجموعة محددة من الركائز." data-fr="Chaque enzyme possède une structure et un site actif qui lui permettent d’agir sur un substrat ou un groupe précis de substrats.">لكل إنزيم بنية وموقع فعال يسمحان له بالتفاعل مع ركيزة أو مجموعة محددة من الركائز.</p></div></div>
+   <div class="gs-enzyme-progress"><span id="enzyme-progress-label" data-ar="التطابقات الصحيحة: 0 / 4" data-fr="Associations correctes : 0 / 4">التطابقات الصحيحة: 0 / 4</span><div><i id="enzyme-progress-bar"></i></div></div>
+   <div class="gs-enzyme-question"><span class="gs-lab-kicker" data-ar="الإنزيم الحالي" data-fr="ENZYME ACTUEL">الإنزيم الحالي</span><h3 id="enzyme-current-name">الأميلاز (Amylase)</h3><p id="enzyme-question" data-ar="على أي ركيزة يؤثر هذا الإنزيم؟" data-fr="Sur quel substrat cette enzyme agit-elle ?">على أي ركيزة يؤثر هذا الإنزيم؟</p><div id="enzyme-options" class="gs-enzyme-options"></div><p id="enzyme-feedback" aria-live="polite" data-ar="اختر الركيزة المناسبة للإنزيم." data-fr="Choisissez le substrat correspondant à l’enzyme.">اختر الركيزة المناسبة للإنزيم.</p></div>
+   <div class="gs-enzyme-footer"><span id="enzyme-step-label" data-ar="السؤال 1 من 4" data-fr="Question 1 sur 4">السؤال 1 من 4</span><button type="button" id="enzyme-reset" data-ar="إعادة النشاط" data-fr="Recommencer">إعادة النشاط</button></div>
+   <small data-ar="ملاحظة علمية: يوضح النشاط أمثلة مدرسية مبسطة. تتأثر فعالية الإنزيم بدرجة الحرارة ودرجة الحموضة، ولكل إنزيم شروط عمل ملائمة." data-fr="Note scientifique : cette activité présente des exemples scolaires simplifiés. L’activité enzymatique dépend notamment de la température et du pH, avec des conditions optimales propres à chaque enzyme.">ملاحظة علمية: يوضح النشاط أمثلة مدرسية مبسطة. تتأثر فعالية الإنزيم بدرجة الحرارة ودرجة الحموضة، ولكل إنزيم شروط عمل ملائمة.</small>
   </div>
  </section>
  <section class="gs-lab-section" id="photosynthesis-lab">

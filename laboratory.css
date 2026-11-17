@@ -710,3 +710,35 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-protein-chain span.is-stop{background:#fff0d9;color:#8a5a20}
 .gs-transcription-card>small{color:#77877c;line-height:1.9}
 @media(max-width:560px){.gs-transcription-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-transcription-dna{gap:6px}.gs-transcription-dna b{padding:10px 12px}.gs-protein-chain{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Enzyme-substrate matching activity */
+.gs-enzyme-card{display:grid;gap:18px;padding:clamp(16px,3vw,28px);border:1px solid #deeadf;border-radius:23px;background:#fff;box-shadow:0 12px 30px #214f380d}
+.gs-enzyme-intro{display:flex;align-items:center;gap:14px;padding:17px;border-radius:16px;background:#eff7f0;color:#315d40}
+.gs-enzyme-intro>span{display:grid;place-items:center;width:48px;height:48px;flex:none;border-radius:14px;background:#dceee0;font-size:1.6rem}
+.gs-enzyme-intro strong{font-size:1.05rem}
+.gs-enzyme-intro p{margin:6px 0 0;line-height:1.8;color:#607969}
+.gs-enzyme-progress>span{display:block;margin-bottom:9px;color:#456b50;font-weight:800}
+.gs-enzyme-progress>div{height:9px;border-radius:20px;background:#e8efe9;overflow:hidden}
+.gs-enzyme-progress i{display:block;width:0;height:100%;border-radius:20px;background:linear-gradient(90deg,#2b7048,#7cbd75);transition:width .25s}
+.gs-enzyme-question{padding:20px;border:1px solid #e5eee6;border-radius:17px;background:#fbfdfb}
+.gs-enzyme-question h3{margin:9px 0;color:#28583b;font-size:1.35rem}
+.gs-enzyme-question>p{color:#61766a;line-height:1.8}
+.gs-enzyme-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.gs-enzyme-options button{padding:14px;border:1px solid #d5e4d8;border-radius:12px;background:#f3f8f3;color:#315d40;font:inherit;font-weight:800;cursor:pointer;transition:background .2s,border-color .2s}
+.gs-enzyme-options button:hover{border-color:#78aa82;background:#eaf5eb}
+.gs-enzyme-options button.is-wrong{border-color:#d99a8e;background:#fff0ed;color:#9a4033}
+.gs-enzyme-options button.is-correct{border-color:#70aa7c;background:#e1f3e4;color:#245b35}
+#enzyme-feedback{min-height:48px;margin:12px 0 0;padding:12px;border-radius:11px;background:#eef6ef;color:#3c6748;font-weight:700;line-height:1.8}
+.gs-enzyme-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#67806d;font-weight:700}
+.gs-enzyme-footer button{border:0;border-radius:11px;padding:10px 16px;background:#286b47;color:white;font:inherit;font-weight:800;cursor:pointer}
+.gs-enzyme-card>small{color:#78877c;line-height:1.9}
+.gs-dark .gs-enzyme-card{background:#17291d;border-color:#3b5942}
+.gs-dark .gs-enzyme-intro,.gs-dark .gs-enzyme-question,#enzyme-feedback{background:#203a29;color:#d9ecdd}
+.gs-dark .gs-enzyme-intro p,.gs-dark .gs-enzyme-question>p,.gs-dark .gs-enzyme-footer,.gs-dark .gs-enzyme-card>small{color:#b7cbbb}
+.gs-dark .gs-enzyme-question{border-color:#405d47}
+.gs-dark .gs-enzyme-question h3{color:#d9ecdd}
+.gs-dark .gs-enzyme-options button{background:#1d3526;color:#dcefe0;border-color:#45664d}
+.gs-dark .gs-enzyme-options button.is-wrong{background:#512d2b;color:#ffe0d9}
+.gs-dark .gs-enzyme-options button.is-correct{background:#285b3c;color:#e1f3e4}
+.gs-dark .gs-enzyme-progress>div{background:#314b38}
+@media(max-width:540px){.gs-enzyme-options{grid-template-columns:1fr}.gs-enzyme-footer{align-items:flex-start;flex-direction:column}}

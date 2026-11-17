@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('mitosis-lab'))renderMitosis();if($('meiosis-compare-lab'))renderMeiosisCompare();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('enzyme-activity'))renderEnzymeLab();if($('transcription-activity'))renderTranscription();if($('mitosis-lab'))renderMitosis();if($('meiosis-compare-lab'))renderMeiosisCompare();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -969,6 +969,58 @@ $('meiosis-question-list')?.addEventListener('click',event=>{
 $('meiosis-reset')?.addEventListener('click',()=>{meiosisStep=0;renderMeiosisCompare();});
 renderMeiosisCompare();
 
+
+
+const enzymePairs=[
+ {enzyme:'Amylase',ar:'الأميلاز (Amylase)',fr:'Amylase',substrate:'starch',subAr:'النشا',subFr:'Amidon',whyAr:'يحفّز الأميلاز تفكيك النشا إلى سكريات أصغر، مثل المالتوز.',whyFr:'L’amylase catalyse la dégradation de l’amidon en sucres plus simples, notamment le maltose.'},
+ {enzyme:'Protease',ar:'البروتياز (Protéase)',fr:'Protéase',substrate:'proteins',subAr:'البروتينات',subFr:'Protéines',whyAr:'تساهم إنزيمات البروتياز في تفكيك البروتينات إلى ببتيدات وأحماض أمينية.',whyFr:'Les protéases contribuent à dégrader les protéines en peptides et en acides aminés.'},
+ {enzyme:'Lipase',ar:'الليباز (Lipase)',fr:'Lipase',substrate:'lipids',subAr:'الدهون (الليبيدات)',subFr:'Lipides',whyAr:'تحفّز الليباز تفكيك الدهون إلى أحماض دهنية وغليسرول.',whyFr:'La lipase catalyse la dégradation des lipides en acides gras et glycérol.'},
+ {enzyme:'Lactase',ar:'اللاكتيز (Lactase)',fr:'Lactase',substrate:'lactose',subAr:'اللاكتوز',subFr:'Lactose',whyAr:'يفكك اللاكتيز سكر اللاكتوز إلى الغلوكوز والغالاكتوز.',whyFr:'La lactase décompose le lactose en glucose et galactose.'}
+];
+const enzymeOptions=[
+ {id:'starch',ar:'النشا',fr:'Amidon'},
+ {id:'proteins',ar:'البروتينات',fr:'Protéines'},
+ {id:'lipids',ar:'الدهون (الليبيدات)',fr:'Lipides'},
+ {id:'lactose',ar:'اللاكتوز',fr:'Lactose'}
+];
+let enzymeStep=0,enzymeCorrect=0,enzymeLocked=false;
+function renderEnzymeLab(){
+ const activity=$('enzyme-activity');if(!activity)return;
+ const item=enzymePairs[enzymeStep],options=$('enzyme-options');
+ $('enzyme-progress-label').textContent=lang==='ar'?'التطابقات الصحيحة: '+enzymeCorrect+' / 4':'Associations correctes : '+enzymeCorrect+' / 4';
+ $('enzyme-progress-bar').style.width=(enzymeCorrect/4*100)+'%';
+ $('enzyme-step-label').textContent=lang==='ar'?'السؤال '+(Math.min(enzymeStep+1,4))+' من 4':'Question '+Math.min(enzymeStep+1,4)+' sur 4';
+ if(enzymeStep>=enzymePairs.length){
+  $('enzyme-current-name').textContent=lang==='ar'?'اكتمل المختبر!':'Laboratoire terminé !';
+  $('enzyme-question').textContent=lang==='ar'?'أكملت مطابقة الإنزيمات الأربع.':'Vous avez associé les quatre enzymes.';
+  options.replaceChildren();
+  $('enzyme-feedback').textContent=lang==='ar'?'نتيجتك النهائية: '+enzymeCorrect+' / 4. أحسنت!':'Résultat final : '+enzymeCorrect+' / 4. Bravo !';
+  return;
+ }
+ $('enzyme-current-name').textContent=item[lang];
+ $('enzyme-question').textContent=lang==='ar'?'على أي ركيزة يؤثر هذا الإنزيم؟':'Sur quel substrat cette enzyme agit-elle ?';
+ $('enzyme-feedback').textContent=lang==='ar'?'اختر الركيزة المناسبة للإنزيم.':'Choisissez le substrat correspondant à l’enzyme.';
+ enzymeLocked=false;options.replaceChildren();
+ enzymeOptions.forEach(option=>{
+  const button=document.createElement('button');button.type='button';button.dataset.enzymeOption=option.id;
+  button.textContent=option[lang];options.appendChild(button);
+ });
+}
+$('enzyme-options')?.addEventListener('click',event=>{
+ const button=event.target.closest('[data-enzyme-option]');if(!button||enzymeLocked||enzymeStep>=enzymePairs.length)return;
+ const item=enzymePairs[enzymeStep];
+ if(button.dataset.enzymeOption!==item.substrate){
+  button.classList.add('is-wrong');$('enzyme-feedback').textContent=lang==='ar'?'ليس هذا هو التطابق الصحيح. حاول مرة أخرى.':'Ce n’est pas la bonne association. Réessayez.';
+  return;
+ }
+ enzymeLocked=true;enzymeCorrect++;button.classList.add('is-correct');
+ $('enzyme-feedback').textContent=item[lang==='ar'?'whyAr':'whyFr'];
+ $('enzyme-progress-label').textContent=lang==='ar'?'التطابقات الصحيحة: '+enzymeCorrect+' / 4':'Associations correctes : '+enzymeCorrect+' / 4';
+ $('enzyme-progress-bar').style.width=(enzymeCorrect/4*100)+'%';
+ window.setTimeout(()=>{enzymeStep++;renderEnzymeLab();},900);
+});
+$('enzyme-reset')?.addEventListener('click',()=>{enzymeStep=0;enzymeCorrect=0;enzymeLocked=false;renderEnzymeLab();});
+renderEnzymeLab();
 
 const rnaCodonAnswers=['AUG','GCU','UUU','UGA'];
 const aminoAcids=[{ar:'ميثيونين (Met)',fr:'Méthionine (Met)'},{ar:'ألانين (Ala)',fr:'Alanine (Ala)'},{ar:'فينيل ألانين (Phe)',fr:'Phénylalanine (Phe)'},{ar:'توقف',fr:'Stop'}];
