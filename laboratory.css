@@ -742,3 +742,29 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-dark .gs-enzyme-options button.is-correct{background:#285b3c;color:#e1f3e4}
 .gs-dark .gs-enzyme-progress>div{background:#314b38}
 @media(max-width:540px){.gs-enzyme-options{grid-template-columns:1fr}.gs-enzyme-footer{align-items:flex-start;flex-direction:column}}
+
+/* Enzyme environmental-factor simulator */
+.gs-enzyme-factors-card{display:grid;gap:20px;padding:clamp(16px,3vw,28px);border:1px solid #deeadf;border-radius:23px;background:#fff;box-shadow:0 12px 30px #214f380d}
+.gs-enzyme-factors-note{padding:17px;border-radius:15px;background:#eff7f0;color:#315d40}
+.gs-enzyme-factors-note p{margin:7px 0 0;color:#627969;line-height:1.85}
+.gs-enzyme-factor-controls{display:grid;gap:9px}
+.gs-enzyme-factor-controls label{display:flex;justify-content:space-between;gap:12px;color:#315d40;font-weight:800}
+.gs-enzyme-factor-controls label strong{color:#267047;font-variant-numeric:tabular-nums}
+.gs-enzyme-factor-controls input[type=range]{width:100%;accent-color:#31804e;cursor:pointer}
+.gs-enzyme-range-labels{display:flex;justify-content:space-between;color:#829187;font-size:.82rem}
+.gs-enzyme-factor-result{padding:18px;border:1px solid #e2ece3;border-radius:16px;background:#fbfdfb}
+.gs-enzyme-factor-result>div:first-child{display:flex;justify-content:space-between;gap:12px;align-items:center;color:#486a51;font-weight:800}
+.gs-enzyme-factor-result>div:first-child strong{font-size:1.5rem;color:#267047;font-variant-numeric:tabular-nums}
+.gs-enzyme-factor-meter{height:15px;margin:14px 0;border-radius:20px;background:#e7eee8;overflow:hidden}
+.gs-enzyme-factor-meter i{display:block;width:100%;height:100%;border-radius:20px;background:linear-gradient(90deg,#d9ad55,#73b87b);transition:width .2s}
+#enzyme-factor-explanation{margin:0;color:#56725d;line-height:1.85}
+#enzyme-factors-reset{justify-self:start;border:0;border-radius:12px;padding:11px 18px;background:#286b47;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.gs-enzyme-factors-card>small{color:#78877c;line-height:1.9}
+.gs-dark .gs-enzyme-factors-card{background:#17291d;border-color:#3b5942}
+.gs-dark .gs-enzyme-factors-note,.gs-dark .gs-enzyme-factor-result{background:#203a29;border-color:#405d47;color:#d9ecdd}
+.gs-dark .gs-enzyme-factors-note p,.gs-dark #enzyme-factor-explanation,.gs-dark .gs-enzyme-factors-card>small{color:#b7cbbb}
+.gs-dark .gs-enzyme-factor-controls label{color:#d9ecdd}
+.gs-dark .gs-enzyme-factor-controls label strong,.gs-dark .gs-enzyme-factor-result>div:first-child strong{color:#9bd3a4}
+.gs-dark .gs-enzyme-factor-result>div:first-child{color:#d9ecdd}
+.gs-dark .gs-enzyme-factor-meter{background:#314b38}
+@media(max-width:540px){.gs-enzyme-factor-result>div:first-child{align-items:flex-start;flex-direction:column}}
