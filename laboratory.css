@@ -258,3 +258,26 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-tectonic-legend{display:flex;flex-wrap:wrap;gap:12px 22px;padding:14px 2px;color:#5b7061;font-size:.85rem}.gs-tectonic-legend>span{display:inline-flex;align-items:center;gap:7px}.gs-tectonic-legend i{display:inline-block;width:11px;height:11px;border-radius:50%}.gs-tectonic-legend .volcano-dot{background:#e53935}.gs-tectonic-legend .quake-dot{background:#2454df}.gs-tectonic-legend .boundary-line{width:20px;height:3px;border-radius:0;background:#e64d43}
 .gs-tectonic-info{padding:15px 18px;border-radius:14px;background:#eef6ef;border-inline-start:4px solid #5b9a6d;color:#486451;line-height:1.8}.gs-tectonic-info strong{display:block;color:#245b3b;margin-bottom:4px}.gs-tectonic-info p{margin:0}.gs-tectonic-note{margin:12px 2px 0;color:#718276;font-size:.78rem;line-height:1.8}.tectonic-layer.is-hidden{display:none!important}
 @media(max-width:600px){.gs-tectonic-toggle{flex:1 1 calc(50% - 8px);justify-content:center;padding:8px 9px;font-size:.8rem}.gs-tectonic-map{min-height:190px}.plate-labels{font-size:12px}}
+
+/* Guided tectonic learning challenge */
+.gs-tectonic-challenge{margin-top:22px;padding:clamp(15px,2.4vw,24px);border:1px solid #d7e8dc;border-radius:18px;background:linear-gradient(145deg,#f7fbf7,#edf6ef)}
+.gs-tectonic-challenge-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.gs-tectonic-challenge-head h3{margin:9px 0 4px;color:#245b3b;font-size:1.15rem}.gs-tectonic-challenge-head p{margin:0;color:#698071;font-size:.88rem}
+.gs-tectonic-score{display:grid;place-items:center;min-width:64px;min-height:48px;padding:5px 10px;border-radius:13px;background:#dcefe1;color:#245b3b;font-size:1rem;white-space:nowrap}
+.gs-tectonic-question{padding:14px;margin-top:11px;border:1px solid #dce9df;border-radius:14px;background:#fff}
+.gs-tectonic-question h4{margin:0 0 12px;color:#294b37;font-size:.94rem;line-height:1.7}
+.gs-tectonic-answers{display:flex;flex-wrap:wrap;gap:8px}
+.gs-tectonic-answers button{flex:1 1 180px;padding:10px 12px;border:1px solid #d6e4da;border-radius:10px;background:#f7faf7;color:#385743;font:inherit;font-size:.86rem;cursor:pointer}
+.gs-tectonic-answers button:hover:not(:disabled){border-color:#6ba77b;background:#edf7ef}
+.gs-tectonic-answers button:focus-visible,.gs-tectonic-challenge-footer button:focus-visible{outline:3px solid #286c49;outline-offset:2px}
+.gs-tectonic-answers button:disabled{cursor:default;opacity:1}
+.gs-tectonic-answers button.is-correct{background:#e1f3e5;border-color:#58a56b;color:#205c35;font-weight:800}
+.gs-tectonic-answers button.is-wrong{background:#fff0ed;border-color:#d88778;color:#9b392b}
+.gs-tectonic-feedback{min-height:1.5em;margin:8px 0 0;color:#587362;font-size:.82rem}
+.gs-tectonic-challenge-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.gs-tectonic-challenge-footer p{margin:0;color:#617969;font-size:.84rem;line-height:1.7}
+.gs-tectonic-challenge-footer button{flex:0 0 auto;border:0;border-radius:10px;padding:10px 15px;background:#236b47;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.gs-tectonic-challenge-footer button:hover{background:#174e34}
+@media(max-width:600px){.gs-tectonic-challenge-head{align-items:flex-start}.gs-tectonic-answers button{flex-basis:100%}.gs-tectonic-challenge-footer{align-items:stretch;flex-direction:column}.gs-tectonic-challenge-footer button{width:100%}}
+@media(prefers-reduced-motion:reduce){.gs-tectonic-answers button{transition:none}}
+.gs-dark .gs-tectonic-challenge{background:#1b3024;border-color:#385844}.gs-dark .gs-tectonic-challenge-head h3,.gs-dark .gs-tectonic-question h4{color:#e0f1e4}.gs-dark .gs-tectonic-challenge-head p,.gs-dark .gs-tectonic-challenge-footer p{color:#b5cbbb}.gs-dark .gs-tectonic-question{background:#22392a;border-color:#3c5a44}.gs-dark .gs-tectonic-answers button{background:#294331;border-color:#49694f;color:#e3f1e5}.gs-dark .gs-tectonic-answers button.is-correct{background:#244c31;color:#d9f4df}.gs-dark .gs-tectonic-answers button.is-wrong{background:#542f2b;color:#ffe2dc}
