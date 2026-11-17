@@ -810,7 +810,12 @@
     }
   }
   function csvCell(value) {
-    const normalized = value == null ? '' : String(value);
+    let normalized = value == null ? '' : String(value);
+    // Prevent spreadsheet formula execution when exported text starts with
+    // a formula marker, including after leading spaces or control characters.
+    if (typeof value !== 'number' && /^[\u0000-\u0020\uFEFF]*[=+@-]/u.test(normalized)) {
+      normalized = "'" + normalized;
+    }
     return '"' + normalized.replace(/"/g, '""') + '"';
   }
   async function exportMyResources() {
