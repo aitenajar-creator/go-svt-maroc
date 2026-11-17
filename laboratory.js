@@ -117,15 +117,21 @@ function updateGenetics(){
 }
 
 function updatePhotosynthesis(){
- const light=Number($('lab-light').value),co2=Number($('lab-co2').value),water=Number($('lab-water').value);
- const rate=Math.min(light,co2,water);
+ const light=Number($('lab-light').value),co2=Number($('lab-co2').value),water=Number($('lab-water').value),temperature=Number($('lab-temperature').value);
+ const temperatureScore=Math.max(0,100-Math.abs(temperature-25)*4);
+ const factors=[{key:'light',value:light},{key:'co2',value:co2},{key:'water',value:water},{key:'temperature',value:temperatureScore}];
+ const rate=Math.min(...factors.map(f=>f.value));
+ const limiting=factors.filter(f=>f.value===rate).map(f=>f.key);
  $('lab-light-value').textContent=light+'%';$('lab-co2-value').textContent=co2+'%';$('lab-water-value').textContent=water+'%';
+ $('lab-temperature-value').textContent=temperature+'°C';
  const level=rate>=70?(lang==='ar'?'مرتفع':'Élevé'):rate>=35?(lang==='ar'?'متوسط':'Moyen'):(lang==='ar'?'منخفض':'Faible');
  $('lab-photo-glucose').textContent=level;$('lab-photo-oxygen').textContent=level;
  $('lab-photo-rate').textContent=rate+'%';$('lab-photo-meter-fill').style.width=rate+'%';
+ const factorNames=lang==='ar'?{light:'الإضاءة',co2:'توفر CO₂',water:'توفر الماء',temperature:'درجة الحرارة'}:{light:'la lumière',co2:'la disponibilité du CO₂',water:'la disponibilité de l’eau',temperature:'la température'};
+ const limitingText=limiting.map(key=>factorNames[key]).join(lang==='ar'?' و':' et ');
  $('lab-photo-explanation').textContent=lang==='ar'
-  ?(rate===0?'أحد العاملين غير متوفر تقريباً؛ يكون النشاط التمثيلي ضعيفاً جداً في هذا النموذج.':light<=co2&&light<=water?'الإضاءة هي العامل الأقل توفراً؛ زيادتها قد ترفع النشاط ما دامت العوامل الأخرى ملائمة.':co2<=light&&co2<=water?'توفر CO₂ هو العامل الأقل؛ زيادته قد ترفع النشاط ما دامت العوامل الأخرى ملائمة.':water<=light&&water<=co2?'توفر الماء هو العامل الأقل؛ تحسنه قد يرفع النشاط ما دامت العوامل الأخرى ملائمة.':'العوامل الثلاثة متقاربة في هذا النموذج؛ قد تصبح عوامل أخرى محدِّدة للنشاط.')
-  :(rate===0?'L’un des facteurs est presque absent : l’activité est très faible dans ce modèle.':light<=co2&&light<=water?'La lumière est le facteur le moins disponible ; l’augmenter peut accroître l’activité si les autres conditions sont favorables.':co2<=light&&co2<=water?'Le CO₂ est le facteur le moins disponible ; l’augmenter peut accroître l’activité si les autres conditions sont favorables.':water<=light&&water<=co2?'L’eau est le facteur le moins disponible ; améliorer sa disponibilité peut accroître l’activité si les autres conditions sont favorables.':'Les trois facteurs sont proches dans ce modèle ; d’autres facteurs peuvent devenir limitants.');
+  ?(rate===0?'أحد العوامل غير ملائم تقريباً؛ لذلك يكون النشاط التمثيلي ضعيفاً جداً في هذا النموذج.':'العامل المحدِّد حالياً هو '+limitingText+'؛ تحسينه قد يرفع النشاط ما دامت العوامل الأخرى ملائمة.')
+  :(rate===0?'L’un des facteurs est presque défavorable : l’activité est très faible dans ce modèle.':'Le facteur limitant actuel est '+limitingText+' ; l’améliorer peut augmenter l’activité si les autres conditions sont favorables.');
 }
 $('lab-light').addEventListener('input',updatePhotosynthesis);
 $('lab-co2').addEventListener('input',updatePhotosynthesis);
