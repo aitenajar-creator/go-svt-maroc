@@ -711,8 +711,23 @@
       const actionFilter = $('tc-admin-activity-action') ? $('tc-admin-activity-action').value : '';
       const rawActivitySearch = $('tc-admin-activity-search') ? $('tc-admin-activity-search').value.trim() : '';
       const activitySearch = rawActivitySearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      const rawActorSearch = $('tc-admin-activity-actor') ? $('tc-admin-activity-actor').value.trim() : '';
+      const actorSearch = rawActorSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       if (actionFilter) activityQuery = activityQuery.eq('action', actionFilter);
       if (activitySearch) activityQuery = activityQuery.ilike('resource_title', '%' + activitySearch + '%');
+      if (actorSearch) {
+        const actorResult = await client.from('teacher_community_members')
+          .select('user_id').ilike('display_name', '%' + actorSearch + '%').limit(100);
+        if (actorResult.error) throw actorResult.error;
+        const actorIds = (actorResult.data || []).map(person => person.user_id).filter(Boolean);
+        if (!actorIds.length) {
+          adminActivityOffset = 0; adminActivityMore = false;
+          panel.innerHTML = '<div class="tc-state">لا توجد عمليات باسم أستاذ يطابق البحث.</div>';
+          moreButton.hidden = true;
+          return;
+        }
+        activityQuery = activityQuery.in('actor_id', actorIds);
+      }
       const {data,error} = await activityQuery
         .order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(start,start + PAGE_SIZE - 1);
@@ -1076,13 +1091,16 @@
     $('tc-admin-activity-export').addEventListener('click',exportAdminActivity);
     $('tc-admin-activity-refresh').addEventListener('click',()=>loadAdminActivity(true));
     $('tc-admin-activity-action').addEventListener('change',()=>loadAdminActivity(true));
-    $('tc-admin-activity-search').addEventListener('input',()=>{
+    const scheduleActivitySearch = () => {
       clearTimeout(adminActivitySearchTimer);
       adminActivitySearchTimer=setTimeout(()=>loadAdminActivity(true),300);
-    });
+    };
+    $('tc-admin-activity-search').addEventListener('input',scheduleActivitySearch);
+    $('tc-admin-activity-actor').addEventListener('input',scheduleActivitySearch);
     $('tc-admin-activity-reset').addEventListener('click',()=>{
       clearTimeout(adminActivitySearchTimer);
       $('tc-admin-activity-search').value='';
+      $('tc-admin-activity-actor').value='';
       $('tc-admin-activity-action').value='';
       loadAdminActivity(true);
     });

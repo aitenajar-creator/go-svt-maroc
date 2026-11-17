@@ -158,3 +158,8 @@ button:disabled {
 /* Personal resource CSV export feedback */
 .tc-my-export-status{min-height:18px;margin:5px 0 10px;color:var(--tc-muted);font-size:11px;line-height:1.7}
 #tc-my-export:disabled{opacity:.6;cursor:wait}
+
+
+/* Keep the additional audit actor filter aligned and responsive. */
+.tc-admin-activity-filters input{flex:1 1 220px;min-width:190px}
+@media(max-width:560px){.tc-admin-activity-filters input{min-width:0}}
