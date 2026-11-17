@@ -1796,6 +1796,16 @@ function openScientificPhotoPreview(card){
             ? (lang() === 'ar' ? academicNames[academic.study_track][0] : academicNames[academic.study_track][1]) : '';
         const academicBanner = academicName
             ? `<div class="gs-student-level">🎓 <span>${lang() === 'ar' ? 'مستواك الدراسي:' : 'Votre niveau :'}</span> <strong>${escapeHtml(academicName)}</strong></div>` : '';
+        const taskPanel = (id, icon, title, description, content) => `
+            <section class="gs-dashboard-task">
+                <button type="button" class="gs-dashboard-task-toggle" data-student-task-toggle="${id}"
+                    aria-expanded="false" aria-controls="gs-dashboard-task-${id}">
+                    <span class="gs-dashboard-task-icon" aria-hidden="true">${icon}</span>
+                    <span class="gs-dashboard-task-copy"><strong>${title}</strong><small>${description}</small></span>
+                    <span class="gs-dashboard-task-chevron" aria-hidden="true">⌄</span>
+                </button>
+                <div class="gs-dashboard-task-content" id="gs-dashboard-task-${id}" hidden>${content}</div>
+            </section>`;
         const html = `
             <div class="dashboard-header">
                 ${accountBar || `<div class="profile-selector">
@@ -1817,17 +1827,21 @@ function openScientificPhotoPreview(card){
                 <a class="gs-primary-link" href="#cours">${lang() === 'ar' ? 'ابدأ التعلم الآن' : 'Commencer'} <span aria-hidden="true">←</span></a>
             </section>
             ${academicBanner}
-            ${renderPlantCellExplorer()}
-            ${renderPhotosynthesisLab()}
-            ${renderCellPhotosynthesisQuiz()}
-            ${renderHumanSystemsAtlas()}
-            ${renderLevelLearningPaths()}
-            ${renderMicroscopeLab()}
-            ${renderPhotosynthesisExperiment()}
-            ${renderScientificMediaLibrary()}
-            ${renderScienceMemoryCards()}
-            ${renderSvtGlossary()}
-            <div class="gs-learning-path">
+            <div class="gs-dashboard-task-list">
+                ${taskPanel('discover','🔬',lang() === 'ar' ? 'استكشف علوم الحياة والأرض' : 'Explorer les SVT',lang() === 'ar' ? 'مختبرات وتجارب وأنشطة علمية تفاعلية' : 'Laboratoires, expériences et activités scientifiques',`
+                    ${renderPlantCellExplorer()}
+                    ${renderPhotosynthesisLab()}
+                    ${renderCellPhotosynthesisQuiz()}
+                    ${renderHumanSystemsAtlas()}
+                    ${renderMicroscopeLab()}
+                    ${renderPhotosynthesisExperiment()}
+                    ${renderScientificMediaLibrary()}
+                `)}
+                ${taskPanel('learn','📚',lang() === 'ar' ? 'مساري للتعلم والمراجعة' : 'Mon parcours d’apprentissage',lang() === 'ar' ? 'المسارات حسب المستوى، بطاقات الذاكرة ومعجم المصطلحات' : 'Parcours par niveau, cartes mémoire et glossaire',`
+                    ${renderLevelLearningPaths()}
+                    ${renderScienceMemoryCards()}
+                    ${renderSvtGlossary()}
+                    <div class="gs-learning-path">
                 <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
                 <div class="gs-path-steps">
                     <a href="#cours"><span class="gs-path-icon">📖</span><strong>${lang() === 'ar' ? 'أفهم الدرس' : 'Comprendre'}</strong><small>${lang() === 'ar' ? 'دروس وملخصات' : 'Cours et résumés'}</small></a>
@@ -1836,18 +1850,23 @@ function openScientificPhotoPreview(card){
                     <a href="#examens"><span class="gs-path-icon">🏆</span><strong>${lang() === 'ar' ? 'أستعد للامتحان' : 'Me préparer'}</strong><small>${lang() === 'ar' ? 'فروض وامتحانات' : 'Devoirs et examens'}</small></a>
                 </div>
             </div>
-            ${renderDailyChallenge()}
-            ${renderStudyRecommendations()}
-            <h3 class="gs-section-title">${t('quickAccess')}</h3>
-            <div class="gs-quick-links">
-                <a href="#cours"><span>📚</span>${t('resources')}</a>
-                <a href="#exercices"><span>✏️</span>${t('exercises')}</a>
-                <a href="#examens"><span>📝</span>${t('exams')}</a>
-                <a href="#quiz"><span>❓</span>${t('interactiveQuiz')}</a>
-                <a href="#resumes"><span>📋</span>${t('summaries')}</a>
-            </div>
-            <h3 class="gs-section-title">${lang() === 'ar' ? 'ملخص نشاطك الدراسي' : 'Votre activité scolaire'}</h3>
-            <div class="dashboard-grid">
+                    </div>
+                `)}
+                ${taskPanel('practice','⚡',lang() === 'ar' ? 'تحديات وأنشطة التعلم' : 'Défis et activités',lang() === 'ar' ? 'تحدي اليوم والتوصيات والموارد السريعة' : 'Défi du jour, recommandations et accès rapide',`
+                    ${renderDailyChallenge()}
+                    ${renderStudyRecommendations()}
+                    <h3 class="gs-section-title">${t('quickAccess')}</h3>
+                    <div class="gs-quick-links">
+                        <a href="#cours"><span>📚</span>${t('resources')}</a>
+                        <a href="#exercices"><span>✏️</span>${t('exercises')}</a>
+                        <a href="#examens"><span>📝</span>${t('exams')}</a>
+                        <a href="#quiz"><span>❓</span>${t('interactiveQuiz')}</a>
+                        <a href="#resumes"><span>📋</span>${t('summaries')}</a>
+                    </div>
+                `)}
+                ${taskPanel('activity','📊',lang() === 'ar' ? 'إحصائياتي وإنجازاتي' : 'Mes statistiques et réussites',lang() === 'ar' ? 'تابع تقدمك الدراسي والإنجازات التي حققتها' : 'Suivez votre progression et vos réussites',`
+                    <h3 class="gs-section-title">${lang() === 'ar' ? 'ملخص نشاطك الدراسي' : 'Votre activité scolaire'}</h3>
+                    <div class="dashboard-grid">
                 <div class="stat-card">
                     <div class="stat-icon">📚</div>
                     <div class="stat-value">${stats.lessonsViewed}</div>
@@ -1879,7 +1898,9 @@ function openScientificPhotoPreview(card){
                     <div class="stat-label">${t('globalProgress')}</div>
                 </div>
             </div>
-            ${renderAchievements()}
+                    ${renderAchievements()}
+                `)}
+            </div>
         `;
         return html;
     }
@@ -2651,6 +2672,19 @@ function openScientificPhotoPreview(card){
 
         container.innerHTML = html;
         loadScientificMediaImages(container);
+        if (container.dataset.gsDashboardTasksBound !== 'true') {
+            container.dataset.gsDashboardTasksBound = 'true';
+            container.addEventListener('click', function(event) {
+                const toggle = event.target.closest('[data-student-task-toggle]');
+                if (!toggle || !container.contains(toggle)) return;
+                const panel = container.querySelector('#gs-dashboard-task-' + toggle.dataset.studentTaskToggle);
+                if (!panel) return;
+                const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+                panel.hidden = expanded;
+                toggle.classList.toggle('is-open', !expanded);
+            });
+        }
         if (container.dataset.gsStudyJumpsBound !== 'true') {
             container.dataset.gsStudyJumpsBound = 'true';
             container.addEventListener('click', function(event) {
@@ -3106,6 +3140,70 @@ function openScientificPhotoPreview(card){
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+        }
+        .gs-dashboard-task-list {
+            display: grid;
+            gap: 0.85rem;
+            margin: 1.25rem 0 1.75rem;
+        }
+        .gs-dashboard-task {
+            overflow: hidden;
+            border: 1px solid #dbe8df;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 5px 18px rgba(30, 75, 49, 0.055);
+        }
+        .gs-dashboard-task-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.15rem;
+            border: 0;
+            background: #fff;
+            color: #20352c;
+            text-align: start;
+            cursor: pointer;
+            font: inherit;
+        }
+        .gs-dashboard-task-toggle:hover,
+        .gs-dashboard-task-toggle:focus-visible {
+            background: #f3f8f4;
+        }
+        .gs-dashboard-task-toggle:focus-visible {
+            outline: 3px solid #78a98b;
+            outline-offset: -3px;
+        }
+        .gs-dashboard-task-icon {
+            width: 46px;
+            height: 46px;
+            flex: 0 0 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            background: #eaf4ed;
+            font-size: 1.45rem;
+        }
+        .gs-dashboard-task-copy {
+            display: grid;
+            gap: 0.2rem;
+            flex: 1;
+        }
+        .gs-dashboard-task-copy strong { font-size: 1rem; }
+        .gs-dashboard-task-copy small { color: #64776b; font-size: 0.82rem; }
+        .gs-dashboard-task-chevron {
+            color: #34734d;
+            font-size: 1.6rem;
+            transition: transform 0.2s ease;
+        }
+        .gs-dashboard-task-toggle.is-open .gs-dashboard-task-chevron { transform: rotate(180deg); }
+        .gs-dashboard-task-content { padding: 0 1rem 1.1rem; }
+        .gs-dashboard-task-content[hidden] { display: none !important; }
+        @media (max-width: 600px) {
+            .gs-dashboard-task-toggle { gap: 0.7rem; padding: 0.85rem; }
+            .gs-dashboard-task-icon { width: 40px; height: 40px; flex-basis: 40px; }
+            .gs-dashboard-task-copy small { font-size: 0.75rem; }
+            .gs-dashboard-task-content { padding: 0 0.75rem 0.85rem; }
         }
         .space-nav {
             display: flex;
