@@ -193,7 +193,7 @@
     try {
       const rawSearch = ($('tc-search').value || '').trim();
       // Restrict PostgREST filter syntax characters so user input remains plain search text.
-      const q = rawSearch.replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      const q = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       const category = $('tc-category').value;
       let query = client.from('teacher_community_resources')
         .select('*').eq('status','published').eq('is_shared',true);
