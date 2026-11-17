@@ -619,7 +619,7 @@
     $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
-    document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('active',x===b));['mine','pending','admin'].forEach(p=>$( 'tc-'+p+'-panel').hidden=p!==b.dataset.panel);}));
+    document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>{const selected=x===b;x.classList.toggle('active',selected);x.setAttribute('aria-pressed',String(selected));});['mine','pending','admin'].forEach(p=>$( 'tc-'+p+'-panel').hidden=p!==b.dataset.panel);}));
     $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin)loadAdmin();});
     $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
