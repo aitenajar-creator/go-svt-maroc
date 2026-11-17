@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-15">
+<link rel="stylesheet" href="laboratory.css?v=20261117-16">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -65,6 +65,22 @@
    <div class="gs-cell-question" data-cell-question="1"><h4 data-ar="2. ما دور البلاستيدات الخضراء؟" data-fr="2. Quel est le rôle des chloroplastes ?">2. ما دور البلاستيدات الخضراء؟</h4><div class="gs-cell-answers"><button type="button" data-correct="false" data-ar="تخزين المادة الوراثية" data-fr="Stocker le matériel génétique">تخزين المادة الوراثية</button><button type="button" data-correct="true" data-ar="مقر التركيب الضوئي" data-fr="Siège de la photosynthèse">مقر التركيب الضوئي</button><button type="button" data-correct="false" data-ar="إنتاج الأمشاج" data-fr="Produire les gamètes">إنتاج الأمشاج</button></div><p aria-live="polite"></p></div>
    <div class="gs-cell-question" data-cell-question="2"><h4 data-ar="3. ما البنية التي تساهم في إنتاج الطاقة عبر التنفس الخلوي؟" data-fr="3. Quelle structure participe à la production d’énergie par respiration cellulaire ?">3. ما البنية التي تساهم في إنتاج الطاقة عبر التنفس الخلوي؟</h4><div class="gs-cell-answers"><button type="button" data-correct="true" data-ar="الميتوكندريا" data-fr="Mitochondrie">الميتوكندريا</button><button type="button" data-correct="false" data-ar="البلاستيدة الخضراء" data-fr="Chloroplaste">البلاستيدة الخضراء</button><button type="button" data-correct="false" data-ar="الجدار الخلوي" data-fr="Paroi cellulaire">الجدار الخلوي</button></div><p aria-live="polite"></p></div>
    <div class="gs-cell-quiz-footer"><p id="cell-quiz-result" aria-live="polite" data-ar="اختر إجابة واحدة لكل سؤال لعرض نتيجتك." data-fr="Choisissez une réponse par question pour obtenir votre résultat.">اختر إجابة واحدة لكل سؤال لعرض نتيجتك.</p><button type="button" id="cell-quiz-reset" data-ar="إعادة المحاولة" data-fr="Recommencer">إعادة المحاولة</button></div>
+
+   <div class="gs-mitosis-lab" id="mitosis-lab">
+    <div class="gs-mitosis-heading"><span aria-hidden="true">🧬</span><div><h3 data-ar="رتّب مراحل الانقسام الخيطي المتساوي" data-fr="Ordonnez les étapes de la mitose">رتّب مراحل الانقسام الخيطي المتساوي</h3><p data-ar="رتّب المراحل الأربع بعد الطور البيني، ثم اكتشف ما يحدث للصبغيات في كل مرحلة." data-fr="Ordonnez les quatre phases après l’interphase, puis découvrez ce qui arrive aux chromosomes à chaque étape.">رتّب المراحل الأربع بعد الطور البيني، ثم اكتشف ما يحدث للصبغيات في كل مرحلة.</p></div></div>
+    <div class="gs-mitosis-interphase"><strong data-ar="قبل الانقسام — الطور البيني" data-fr="Avant la mitose — interphase">قبل الانقسام — الطور البيني</strong><span data-ar="تتضاعف المادة الوراثية استعداداً للانقسام." data-fr="Le matériel génétique est répliqué avant la division.">تتضاعف المادة الوراثية استعداداً للانقسام.</span></div>
+    <div class="gs-mitosis-progress"><span id="mitosis-progress-label" data-ar="المراحل المرتبة: 0 / 4" data-fr="Étapes ordonnées : 0 / 4">المراحل المرتبة: 0 / 4</span><div><i id="mitosis-progress-bar"></i></div></div>
+    <div class="gs-mitosis-choices" role="group" aria-label="اختيار مرحلة الانقسام">
+     <button type="button" data-mitosis-stage="metaphase"><b>2</b><span data-ar="الطور الاستوائي" data-fr="Métaphase">الطور الاستوائي</span></button>
+     <button type="button" data-mitosis-stage="telophase"><b>4</b><span data-ar="الطور النهائي" data-fr="Télophase">الطور النهائي</span></button>
+     <button type="button" data-mitosis-stage="prophase"><b>1</b><span data-ar="الطور التمهيدي" data-fr="Prophase">الطور التمهيدي</span></button>
+     <button type="button" data-mitosis-stage="anaphase"><b>3</b><span data-ar="الطور الانفصالي" data-fr="Anaphase">الطور الانفصالي</span></button>
+    </div>
+    <ol class="gs-mitosis-sequence" id="mitosis-sequence" aria-live="polite"><li data-ar="ابدأ باختيار الطور التمهيدي." data-fr="Commencez par choisir la prophase.">ابدأ باختيار الطور التمهيدي.</li></ol>
+    <p class="gs-mitosis-feedback" id="mitosis-feedback" aria-live="polite" data-ar="اختر المرحلة التي تأتي مباشرة بعد الطور البيني." data-fr="Choisissez la phase qui suit directement l’interphase.">اختر المرحلة التي تأتي مباشرة بعد الطور البيني.</p>
+    <button type="button" id="mitosis-reset" data-ar="إعادة ترتيب المراحل" data-fr="Recommencer l’ordre">إعادة ترتيب المراحل</button>
+    <small data-ar="هذا نموذج تعليمي مبسط للانقسام الخيطي في خلية حقيقية النواة؛ قد تختلف التفاصيل الشكلية بين الخلايا، ويُختتم الانقسام الخلوي عادةً بالانقسام السيتوبلازمي." data-fr="Modèle pédagogique simplifié de la mitose d’une cellule eucaryote ; certains détails varient selon les cellules. La division cellulaire s’achève généralement par la cytocinèse.">هذا نموذج تعليمي مبسط للانقسام الخيطي في خلية حقيقية النواة؛ قد تختلف التفاصيل الشكلية بين الخلايا، ويُختتم الانقسام الخلوي عادةً بالانقسام السيتوبلازمي.</small>
+   </div>
   </div>
  </section>
  <section class="gs-lab-section" id="photosynthesis-lab">
