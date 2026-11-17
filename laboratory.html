@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-5">
+<link rel="stylesheet" href="laboratory.css?v=20261117-6">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -137,6 +137,13 @@
     <p class="gs-relative-feedback" id="relative-feedback" aria-live="polite" data-ar="اختر إجابتك لعرض التصحيح والتفسير." data-fr="Choisissez une réponse pour afficher la correction et l’explication.">اختر إجابتك لعرض التصحيح والتفسير.</p>
     <p class="gs-photo-note" data-ar="قاعدة علمية: البنية التي تقطع بنية أخرى تكون أحدث منها، إذا لم توجد أدلة على إعادة تنشيط أو تعقيد لاحق." data-fr="Règle : une structure qui en recoupe une autre est plus récente, sauf indices de réactivation ou de complexité ultérieure.">قاعدة علمية: البنية التي تقطع بنية أخرى تكون أحدث منها، إذا لم توجد أدلة على إعادة تنشيط أو تعقيد لاحق.</p>
    </div>
+  </div>
+  <div class="gs-relative-quiz" id="relative-quiz">
+   <div class="gs-relative-quiz-head"><div><span class="gs-lab-kicker" data-ar="تحقق من فهمك" data-fr="VÉRIFIEZ VOTRE COMPRÉHENSION">تحقق من فهمك</span><h3 data-ar="اختبار التأريخ النسبي" data-fr="Quiz de datation relative">اختبار التأريخ النسبي</h3><p data-ar="طبّق مبادئ التراكب والتقاطع والعناصر المحتواة." data-fr="Appliquez les principes de superposition, de recoupement et des inclusions.">طبّق مبادئ التراكب والتقاطع والعناصر المحتواة.</p></div><strong id="relative-quiz-score" aria-live="polite">0 / 3</strong></div>
+   <div class="gs-relative-question" data-relative-question="0"><h4 data-ar="1. في سلسلة رسوبية أفقية غير مشوهة، أي الطبقات أقدم؟" data-fr="1. Dans une série sédimentaire horizontale non déformée, quelle couche est la plus ancienne ?">1. في سلسلة رسوبية أفقية غير مشوهة، أي الطبقات أقدم؟</h4><div class="gs-relative-answers"><button type="button" data-relative-q-answer="0" data-correct="false" data-ar="الطبقة العليا" data-fr="La couche supérieure">الطبقة العليا</button><button type="button" data-relative-q-answer="0" data-correct="true" data-ar="الطبقة السفلى" data-fr="La couche inférieure">الطبقة السفلى</button><button type="button" data-relative-q-answer="0" data-correct="false" data-ar="كل الطبقات لها العمر نفسه" data-fr="Toutes les couches ont le même âge">كل الطبقات لها العمر نفسه</button></div><p aria-live="polite"></p></div>
+   <div class="gs-relative-question" data-relative-question="1"><h4 data-ar="2. يخترق فالق طبقات رسوبية موجودة. ماذا نستنتج؟" data-fr="2. Une faille recoupe des couches sédimentaires déjà en place. Que peut-on conclure ?">2. يخترق فالق طبقات رسوبية موجودة. ماذا نستنتج؟</h4><div class="gs-relative-answers"><button type="button" data-relative-q-answer="1" data-correct="true" data-ar="الفالق أحدث من الطبقات التي يقطعها" data-fr="La faille est plus récente que les couches recoupées">الفالق أحدث من الطبقات التي يقطعها</button><button type="button" data-relative-q-answer="1" data-correct="false" data-ar="الفالق أقدم من جميع الطبقات" data-fr="La faille est plus ancienne que toutes les couches">الفالق أقدم من جميع الطبقات</button><button type="button" data-relative-q-answer="1" data-correct="false" data-ar="لا يمكن ترتيب الأحداث" data-fr="Il est impossible d’ordonner les événements">لا يمكن ترتيب الأحداث</button></div><p aria-live="polite"></p></div>
+   <div class="gs-relative-question" data-relative-question="2"><h4 data-ar="3. تحتوي صخرة رسوبية على حصى أقدم منها. ما مبدأ التأريخ المناسب؟" data-fr="3. Une roche sédimentaire contient des galets plus anciens qu’elle. Quel principe s’applique ?">3. تحتوي صخرة رسوبية على حصى أقدم منها. ما مبدأ التأريخ المناسب؟</h4><div class="gs-relative-answers"><button type="button" data-relative-q-answer="2" data-correct="false" data-ar="مبدأ التراكب" data-fr="Principe de superposition">مبدأ التراكب</button><button type="button" data-relative-q-answer="2" data-correct="true" data-ar="مبدأ العناصر المحتواة" data-fr="Principe d’inclusion">مبدأ العناصر المحتواة</button><button type="button" data-relative-q-answer="2" data-correct="false" data-ar="مبدأ التماثل المناخي" data-fr="Principe de similitude climatique">مبدأ التماثل المناخي</button></div><p aria-live="polite"></p></div>
+   <div class="gs-relative-quiz-footer"><p id="relative-quiz-result" aria-live="polite" data-ar="أجب عن الأسئلة الثلاثة لعرض نتيجتك." data-fr="Répondez aux trois questions pour afficher votre résultat.">أجب عن الأسئلة الثلاثة لعرض نتيجتك.</p><button type="button" id="relative-quiz-reset" data-ar="إعادة المحاولة" data-fr="Recommencer">إعادة المحاولة</button></div>
   </div>
  </section>
 
@@ -409,5 +416,5 @@
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261117-5" defer></script>
+<script src="laboratory.js?v=20261117-6" defer></script>
 </body></html>
