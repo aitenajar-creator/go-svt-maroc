@@ -159,11 +159,13 @@
   function resourceCard(r, own) {
     const owner = r.owner_id === (user && user.id) ? 'ملفي' : 'مساهمة من المجتمع';
     const adminOwn = isAdmin && r.owner_id === user.id ? 'إدارة المنصة' : owner;
+    const statusLabel = r.status === 'hidden' ? 'مخفي عن المكتبة' : (r.is_shared ? 'منشور ومشترك' : 'منشور — خاص');
+    const statusClass = r.status === 'hidden' ? 'tc-resource-status-hidden' : (r.is_shared ? 'tc-resource-status-shared' : 'tc-resource-status-private');
     return '<article class="tc-resource-card" data-resource-id="' + escapeHtml(r.id) + '">' +
       '<div class="tc-resource-top"><span class="tc-file-icon">' + fileIcon(r.file_name) + '</span><span class="tc-pill">' + escapeHtml(categories[r.category] || categories.other) + '</span></div>' +
       '<h3>' + escapeHtml(r.title) + '</h3><p>' + escapeHtml(r.description || 'لا يوجد وصف إضافي لهذه الوثيقة.') + '</p>' +
       '<div class="tc-resource-meta"><span>' + escapeHtml(adminOwn) + '</span><span>· ' + escapeHtml(dateLabel(r.created_at)) + '</span><span>· ' + (r.size_bytes/1048576).toFixed(1) + ' MB</span></div>' +
-      '<div class="tc-resource-meta"><span>' + escapeHtml(r.file_name) + '</span>' + (r.status === 'hidden' ? '<span class="tc-pill">مخفي</span>' : (r.is_shared ? '<span class="tc-pill">مشترك</span>' : '<span class="tc-pill">خاص</span>')) + '</div>' +
+      '<div class="tc-resource-meta"><span>' + escapeHtml(r.file_name) + '</span><span class="tc-resource-status ' + statusClass + '" role="status">' + statusLabel + '</span></div>' +
       '<div class="tc-resource-actions"><button type="button" data-download="' + escapeHtml(r.id) + '">⬇ تحميل</button>' +
       ((own || isAdmin) ? '<button type="button" class="danger" data-delete="' + escapeHtml(r.id) + '">حذف</button>' : '') +
       ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
