@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-16">
+<link rel="stylesheet" href="laboratory.css?v=20261117-17">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -81,6 +81,24 @@
     <button type="button" id="mitosis-reset" data-ar="إعادة ترتيب المراحل" data-fr="Recommencer l’ordre">إعادة ترتيب المراحل</button>
     <small data-ar="هذا نموذج تعليمي مبسط للانقسام الخيطي في خلية حقيقية النواة؛ قد تختلف التفاصيل الشكلية بين الخلايا، ويُختتم الانقسام الخلوي عادةً بالانقسام السيتوبلازمي." data-fr="Modèle pédagogique simplifié de la mitose d’une cellule eucaryote ; certains détails varient selon les cellules. La division cellulaire s’achève généralement par la cytocinèse.">هذا نموذج تعليمي مبسط للانقسام الخيطي في خلية حقيقية النواة؛ قد تختلف التفاصيل الشكلية بين الخلايا، ويُختتم الانقسام الخلوي عادةً بالانقسام السيتوبلازمي.</small>
    </div>
+  </div>
+ </section>
+ <section class="gs-lab-section" id="dna-pairing-lab">
+  <div class="gs-lab-section-heading"><div><span class="gs-lab-kicker" data-ar="التجربة 03" data-fr="EXPÉRIENCE 03">التجربة 03</span><h2 data-ar="بناء السلسلة المكملة للـADN" data-fr="Construire le brin complémentaire de l’ADN">بناء السلسلة المكملة للـADN</h2><p data-ar="اختر القاعدة الآزوتية المكملة لكل قاعدة في السلسلة المعطاة، ثم تحقق من إجابتك." data-fr="Choisissez la base azotée complémentaire de chaque base du brin proposé, puis vérifiez vos réponses.">اختر القاعدة الآزوتية المكملة لكل قاعدة في السلسلة المعطاة، ثم تحقق من إجابتك.</p></div><span class="gs-lab-number">03</span></div>
+  <div class="gs-dna-lab" id="dna-pairing">
+   <div class="gs-dna-intro"><strong data-ar="قاعدة التزاوج التكميلي" data-fr="Règle de complémentarité">قاعدة التزاوج التكميلي</strong><p data-ar="يرتبط الأدينين (A) بالثايمين (T)، ويرتبط السيتوزين (C) بالغوانين (G)." data-fr="L’adénine (A) s’associe à la thymine (T), et la cytosine (C) à la guanine (G).">يرتبط الأدينين (A) بالثايمين (T)، ويرتبط السيتوزين (C) بالغوانين (G).</p></div>
+   <div class="gs-dna-strands">
+    <div class="gs-dna-strand"><span data-ar="السلسلة المعطاة" data-fr="Brin donné">السلسلة المعطاة</span><div class="gs-dna-bases" aria-label="السلسلة المعطاة"><b>A</b><b>C</b><b>G</b><b>T</b></div></div>
+    <div class="gs-dna-strand"><span data-ar="السلسلة المكملة — أكمل الخانات" data-fr="Brin complémentaire — complétez les cases">السلسلة المكملة — أكمل الخانات</span><div class="gs-dna-selects">
+     <label><span class="gs-sr-only">Position 1</span><select data-dna-position="0" aria-label="Position 1"><option value="" data-ar="؟" data-fr="?">؟</option><option value="A">A</option><option value="T">T</option><option value="C">C</option><option value="G">G</option></select></label>
+     <label><span class="gs-sr-only">Position 2</span><select data-dna-position="1" aria-label="Position 2"><option value="" data-ar="؟" data-fr="?">؟</option><option value="A">A</option><option value="T">T</option><option value="C">C</option><option value="G">G</option></select></label>
+     <label><span class="gs-sr-only">Position 3</span><select data-dna-position="2" aria-label="Position 3"><option value="" data-ar="؟" data-fr="?">؟</option><option value="A">A</option><option value="T">T</option><option value="C">C</option><option value="G">G</option></select></label>
+     <label><span class="gs-sr-only">Position 4</span><select data-dna-position="3" aria-label="Position 4"><option value="" data-ar="؟" data-fr="?">؟</option><option value="A">A</option><option value="T">T</option><option value="C">C</option><option value="G">G</option></select></label>
+    </div></div>
+   </div>
+   <div class="gs-dna-actions"><button type="button" id="dna-check" data-ar="تحقق من السلسلة" data-fr="Vérifier le brin">تحقق من السلسلة</button><button type="button" id="dna-reset" data-ar="إعادة المحاولة" data-fr="Réinitialiser">إعادة المحاولة</button></div>
+   <p class="gs-dna-feedback" id="dna-feedback" aria-live="polite" data-ar="أكمل القواعد الأربع ثم اضغط على زر التحقق." data-fr="Complétez les quatre bases puis cliquez sur Vérifier.">أكمل القواعد الأربع ثم اضغط على زر التحقق.</p>
+   <small data-ar="نشاط تعليمي مبسط حول قواعد التكامل في الـADN. في الجزيء الحقيقي، ترتبط القواعد بين سلسلتين متعاكستي الاتجاه." data-fr="Activité pédagogique simplifiée sur la complémentarité de l’ADN. Dans la molécule réelle, les deux brins sont antiparallèles.">نشاط تعليمي مبسط حول قواعد التكامل في الـADN. في الجزيء الحقيقي، ترتبط القواعد بين سلسلتين متعاكستي الاتجاه.</small>
   </div>
  </section>
  <section class="gs-lab-section" id="photosynthesis-lab">
@@ -580,5 +598,5 @@
  <section class="gs-lab-next"><div><h2 data-ar="التعلم مستمر" data-fr="Continuez à apprendre">التعلم مستمر</h2><p data-ar="عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب." data-fr="Retournez à la bibliothèque pour approfondir les notions liées à ces expériences.">عد إلى مكتبة الدروس لمتابعة المفاهيم المرتبطة بهذه التجارب.</p></div><a href="/#cours" data-ar="استكشف الدروس" data-fr="Explorer les cours">استكشف الدروس</a></section>
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
-<script src="laboratory.js?v=20261117-10" defer></script>
+<script src="laboratory.js?v=20261117-11" defer></script>
 </body></html>

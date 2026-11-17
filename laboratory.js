@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('mitosis-lab'))renderMitosis();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('mitosis-lab'))renderMitosis();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -879,7 +879,7 @@ const mitosisDetails={
  prophase:{ar:'تتكثف الصبغيات وتصبح أوضح، ويتشكل مغزل الانقسام تدريجياً.',fr:'Les chromosomes se condensent et deviennent visibles ; le fuseau mitotique se met progressivement en place.'},
  metaphase:{ar:'تصطف الصبغيات على المستوى الاستوائي للخلية.',fr:'Les chromosomes s’alignent sur le plan équatorial de la cellule.'},
  anaphase:{ar:'تنفصل الكروماتيدات الشقيقة وتتجه نحو قطبي الخلية.',fr:'Les chromatides sœurs se séparent et migrent vers les deux pôles de la cellule.'},
- telophase:{ar:'تتكون نواتان جديدتان وتبدأ الصبغيات في التفكك.',fr:'Deux nouveaux noyaux se reforment et les chromosomes commencent à se décondense.'}
+ telophase:{ar:'تتكون نواتان جديدتان وتبدأ الصبغيات في التفكك.',fr:'Deux nouveaux noyaux se reforment et les chromosomes commencent à se décondenser.'}
 };
 const mitosisNames={
  prophase:{ar:'الطور التمهيدي',fr:'Prophase'},
@@ -922,6 +922,36 @@ document.querySelectorAll('[data-mitosis-stage]').forEach(button=>button.addEven
 }));
 $('mitosis-reset')?.addEventListener('click',()=>{mitosisStep=0;renderMitosis();});
 renderMitosis();
+
+
+const dnaComplement={A:'T',T:'A',C:'G',G:'C'};
+let dnaChecked=false,dnaScore=null;
+function renderDnaPairing(){
+ const selects=[...document.querySelectorAll('[data-dna-position]')];
+ selects.forEach(select=>{select.disabled=dnaChecked;});
+ const feedback=$('dna-feedback');
+ if(!feedback)return;
+ if(dnaChecked&&dnaScore!==null)feedback.textContent=lang==='ar'?'نتيجتك: '+dnaScore+' / 4. '+(dnaScore===4?'ممتاز! السلسلة المكملة هي TGCA.':'راجع قاعدة A مع T وقاعدة C مع G، ثم أعد المحاولة.'):'Votre résultat : '+dnaScore+' / 4. '+(dnaScore===4?'Excellent ! Le brin complémentaire est TGCA.':'Revoyez les associations A-T et C-G, puis réessayez.');
+ else feedback.textContent=lang==='ar'?'أكمل القواعد الأربع ثم اضغط على زر التحقق.':'Complétez les quatre bases puis cliquez sur Vérifier.';
+}
+document.querySelectorAll('[data-dna-position]').forEach(select=>select.addEventListener('change',()=>{dnaChecked=false;dnaScore=null;document.querySelectorAll('[data-dna-position]').forEach(item=>item.disabled=false);renderDnaPairing();}));
+$('dna-check')?.addEventListener('click',()=>{
+ const selects=[...document.querySelectorAll('[data-dna-position]')];
+ if(selects.some(select=>!select.value)){
+  $('dna-feedback').textContent=lang==='ar'?'أكمل الخانات الأربع قبل التحقق.':'Complétez les quatre cases avant la vérification.';return;
+ }
+ const given=['A','C','G','T'];
+ const score=selects.filter((select,index)=>select.value===dnaComplement[given[index]]).length;
+ dnaScore=score;dnaChecked=true;selects.forEach(select=>select.disabled=true);
+ $('dna-feedback').textContent=lang==='ar'
+  ?'نتيجتك: '+score+' / 4. '+(score===4?'ممتاز! السلسلة المكملة هي TGCA.':'راجع قاعدة A مع T وقاعدة C مع G، ثم أعد المحاولة.')
+  :'Votre résultat : '+score+' / 4. '+(score===4?'Excellent ! Le brin complémentaire est TGCA.':'Revoyez les associations A-T et C-G, puis réessayez.');
+});
+$('dna-reset')?.addEventListener('click',()=>{
+ dnaChecked=false;dnaScore=null;document.querySelectorAll('[data-dna-position]').forEach(select=>{select.value='';select.disabled=false;});renderDnaPairing();
+});
+renderDnaPairing();
+
 
 function updateBiodiversityAbundance(){
  const inputs=[...document.querySelectorAll('[data-abundance]')];
