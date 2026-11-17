@@ -327,3 +327,24 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-dark .gs-genetics-distribution h3,.gs-dark .gs-genetics-bar-row>span,.gs-dark .gs-genetics-bar-row strong{color:#d8eddd}
 .gs-dark .gs-genetics-track{background:#354b3a}.gs-dark .gs-genetics-distribution>p{color:#b8cbbd}
 @media(prefers-reduced-motion:reduce){.gs-genetics-track>span{transition:none}}
+
+
+/* Ecosystem knowledge-check quiz */
+.gs-eco-quiz{margin-top:22px;padding:clamp(16px,3vw,25px);background:#fff;border:1px solid #e0ebe3;border-radius:20px;box-shadow:0 10px 26px #214f380b}
+.gs-eco-quiz-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}
+.gs-eco-quiz-head h3{color:#28573b;margin:.55rem 0;font-size:1.2rem}
+.gs-eco-quiz-head p,.gs-eco-quiz-footer p{color:#65796b;line-height:1.8;margin:0}
+.gs-eco-quiz-head>strong{flex:0 0 auto;padding:10px 14px;border-radius:12px;background:#eaf5eb;color:#286343;font-size:1.1rem}
+.gs-eco-question{padding:15px 0;border-top:1px solid #e7eee8}
+.gs-eco-question h4{color:#345d43;line-height:1.8;margin:0 0 12px}
+.gs-eco-answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.gs-eco-answers button{border:1px solid #dce9df;border-radius:12px;padding:11px;background:#f7fbf8;color:#315d42;font:inherit;font-weight:700;cursor:pointer}
+.gs-eco-answers button:disabled{cursor:default;opacity:1}
+.gs-eco-answers button.is-correct{background:#e2f4e6;border-color:#75b783;color:#22643a}
+.gs-eco-answers button.is-wrong{background:#fff0e9;border-color:#d89b83;color:#934d35}
+.gs-eco-answers button:focus-visible,.gs-eco-quiz-footer button:focus-visible{outline:3px solid #276e49;outline-offset:3px}
+.gs-eco-question>p{min-height:24px;margin:8px 0 0;color:#52745e;font-weight:700}
+.gs-eco-quiz-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:14px;border-top:1px solid #e7eee8}
+.gs-eco-quiz-footer button{border:0;border-radius:11px;padding:11px 16px;background:#236b48;color:#fff;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}
+@media(max-width:650px){.gs-eco-answers{grid-template-columns:1fr}.gs-eco-quiz-footer{align-items:stretch;flex-direction:column}.gs-eco-quiz-footer button{width:100%}}
+@media(prefers-reduced-motion:reduce){.gs-eco-quiz *{scroll-behavior:auto}}
