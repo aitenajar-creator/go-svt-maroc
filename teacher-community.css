@@ -28,3 +28,24 @@
 
 /* Visible count for the currently loaded shared-library results */
 .tc-library-results-summary{margin:0 0 12px;color:var(--tc-muted);font-size:12px;font-weight:700}
+
+
+/* Keep shared-resource cards readable with long Arabic titles and filenames. */
+.tc-resource-card{display:flex;flex-direction:column;min-width:0}
+.tc-resource-top{gap:10px;align-items:flex-start}
+.tc-resource-top .tc-pill{max-width:calc(100% - 55px);text-align:center;white-space:normal;overflow-wrap:anywhere;line-height:1.7}
+.tc-resource-card h3,.tc-resource-card p,.tc-resource-meta>span{min-width:0;overflow-wrap:anywhere;word-break:normal}
+.tc-resource-card h3{line-height:1.8}
+.tc-resource-card p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;line-clamp:4;overflow:hidden;min-height:0}
+.tc-resource-meta{align-items:flex-start;line-height:1.8}
+.tc-resource-meta>span{max-width:100%}
+.tc-resource-actions{margin-top:auto;padding-top:12px;flex-wrap:wrap}
+.tc-resource-actions button{min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.7}
+@media(max-width:560px){
+  .tc-resource-card{padding:16px;border-radius:15px}
+  .tc-resource-card h3{font-size:14px}
+  .tc-resource-card p{-webkit-line-clamp:5;line-clamp:5}
+  .tc-resource-meta{gap:6px 9px}
+  .tc-resource-actions{gap:7px}
+  .tc-resource-actions button{flex:1 1 105px;padding:9px 7px;font-size:10px}
+}
