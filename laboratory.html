@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-10">
+<link rel="stylesheet" href="laboratory.css?v=20261117-11">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -351,6 +351,19 @@
     <small data-ar="مؤشرات افتراضية للتعلم فقط؛ لا تمثل قياسات بيئية أو تنبؤاً علمياً." data-fr="Indices fictifs à des fins pédagogiques ; ils ne représentent ni des mesures environnementales ni une prévision scientifique.">مؤشرات افتراضية للتعلم فقط؛ لا تمثل قياسات بيئية أو تنبؤاً علمياً.</small>
    </div>
    <p class="gs-photo-note" data-ar="تختلف آثار الملوثات باختلاف طبيعتها وتركيزها ومدة التعرض وحساسية الكائنات الحية. هذه المحاكاة تفسيرية ولا تمثل قياساً ميدانياً أو تشخيصاً لجودة الماء أو الهواء." data-fr="Les effets des polluants varient selon leur nature, leur concentration, la durée d’exposition et la sensibilité des organismes. Cette simulation est explicative ; elle ne constitue ni une mesure de terrain ni un diagnostic de la qualité de l’eau ou de l’air.">تختلف آثار الملوثات باختلاف طبيعتها وتركيزها ومدة التعرض وحساسية الكائنات الحية. هذه المحاكاة تفسيرية ولا تمثل قياساً ميدانياً أو تشخيصاً لجودة الماء أو الهواء.</p>
+
+   <div class="gs-water-quality-lab" id="water-quality-lab">
+    <div class="gs-water-quality-heading"><span aria-hidden="true">🧪</span><div><h3 data-ar="مختبر مؤشرات جودة الماء" data-fr="Laboratoire des indicateurs de qualité de l’eau">مختبر مؤشرات جودة الماء</h3><p data-ar="حلّل عينة افتراضية بتغيير ثلاثة مؤشرات، ثم اقرأ التفسير العلمي المبسط." data-fr="Analysez un échantillon fictif en modifiant trois indicateurs, puis consultez une interprétation scientifique simplifiée.">حلّل عينة افتراضية بتغيير ثلاثة مؤشرات، ثم اقرأ التفسير العلمي المبسط.</p></div></div>
+    <div class="gs-water-quality-controls">
+     <div><label for="water-quality-ph"><span data-ar="درجة الحموضة (pH)" data-fr="Potentiel hydrogène (pH)">درجة الحموضة (pH)</span><output id="water-quality-ph-value" for="water-quality-ph">6.5</output></label><input id="water-quality-ph" type="range" min="4" max="10" step="0.1" value="6.5"><small data-ar="مؤشر يصف مدى حمضية الماء أو قاعديته." data-fr="Indique le caractère acide ou basique de l’eau.">مؤشر يصف مدى حمضية الماء أو قاعديته.</small></div>
+     <div><label for="water-quality-turbidity"><span data-ar="العكارة (وحدة افتراضية)" data-fr="Turbidité (unité illustrative)">العكارة (وحدة افتراضية)</span><output id="water-quality-turbidity-value" for="water-quality-turbidity">12</output></label><input id="water-quality-turbidity" type="range" min="0" max="50" step="1" value="12"><small data-ar="ارتفاع العكارة يعني أن الماء يحتوي على جسيمات عالقة أكثر." data-fr="Une turbidité élevée indique davantage de particules en suspension.">ارتفاع العكارة يعني أن الماء يحتوي على جسيمات عالقة أكثر.</small></div>
+     <div><label for="water-quality-oxygen"><span data-ar="الأكسجين المذاب (mg/L)" data-fr="Oxygène dissous (mg/L)">الأكسجين المذاب (mg/L)</span><output id="water-quality-oxygen-value" for="water-quality-oxygen">7.0</output></label><input id="water-quality-oxygen" type="range" min="0" max="12" step="0.5" value="7"><small data-ar="الأكسجين المذاب ضروري لتنفس كثير من الكائنات المائية." data-fr="L’oxygène dissous est essentiel à la respiration de nombreux organismes aquatiques.">الأكسجين المذاب ضروري لتنفس de nombreux organismes aquatiques.</small></div>
+    </div>
+    <div class="gs-water-quality-results" aria-live="polite"><div><span data-ar="قراءة العينة" data-fr="Lecture de l’échantillon">قراءة العينة</span><strong id="water-quality-status">توازن تقريبي</strong></div><div><span data-ar="المؤشر الذي يحتاج الانتباه" data-fr="Indicateur à surveiller">المؤشر الذي يحتاج الانتباه</span><strong id="water-quality-focus">—</strong></div></div>
+    <p class="gs-water-quality-feedback" id="water-quality-feedback" aria-live="polite">غيّر القيم لاستكشاف أثر كل مؤشر.</p>
+    <button type="button" id="water-quality-reset" data-ar="إعادة القيم الأولية" data-fr="Réinitialiser les valeurs">إعادة القيم الأولية</button>
+    <small data-ar="نشاط تعليمي مبسط فقط: لا تمثل الحدود هنا معياراً قانونياً أو حكماً على صلاحية الماء للشرب. يتطلب التقييم الحقيقي قياسات ميدانية ومعايير مناسبة لنوع الوسط." data-fr="Activité pédagogique simplifiée : ces seuils ne constituent ni une norme réglementaire ni un avis sur la potabilité. Une évaluation réelle exige des mesures de terrain et des critères adaptés au milieu.">نشاط تعليمي مبسط فقط: لا تمثل الحدود هنا معياراً قانونياً أو حكماً على صلاحية الماء للشرب. يتطلب التقييم الحقيقي قياسات ميدانية ومعايير مناسبة لنوع الوسط.</small>
+   </div>
   </div>
  </section>
 
