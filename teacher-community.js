@@ -644,15 +644,21 @@
   }
   function activityDetails(details) {
     if (!details || typeof details !== 'object') return '';
+    const displayValue = (key, value) => {
+      if (value === null || value === undefined || value === '') return '—';
+      if (key === 'category') return categories[value] || String(value);
+      if (key === 'status') return ({published:'منشور',hidden:'مخفي'})[value] || String(value);
+      if (key === 'is_shared') return value === true ? 'مشترك' : value === false ? 'خاص' : String(value);
+      return String(value);
+    };
     return Object.entries(details).map(([key,value]) => {
       const label = activityFields[key] || key;
       if (value && typeof value === 'object' && ('before' in value || 'after' in value)) {
-        const before = value.before === null || value.before === undefined ? '—' : String(value.before);
-        const after = value.after === null || value.after === undefined ? '—' : String(value.after);
+        const before = displayValue(key, value.before);
+        const after = displayValue(key, value.after);
         return label + ': ' + before + ' ← ' + after;
       }
-      if (key === 'is_shared' || key === 'status') return label + ': ' + String(value);
-      return label + ': ' + String(value);
+      return label + ': ' + displayValue(key, value);
     }).join(' · ');
   }
   async function loadAdminActivity(reset = true) {
