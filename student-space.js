@@ -858,7 +858,17 @@
             !(window.StudentAccount && window.StudentAccount.isLoggedIn())) return;
         const active = container.querySelector('.space-tab.active');
         const tabName = active ? active.dataset.tab : 'dashboard';
+
+        // Keep the student's place when a form action refreshes the dashboard.
+        // Native <details> panels remain closed by default on a fresh visit, but
+        // any panels the student already opened stay open after saving/deleting.
+        const openTaskIndexes = [];
+        container.querySelectorAll('details.gs-student-task').forEach(function (task, index) {
+            if (task.open) openTaskIndexes.push(index);
+        });
+
         renderStudentSpace();
+
         if (tabName && tabName !== 'dashboard') {
             container.querySelectorAll('.space-tab').forEach(function (b) {
                 b.classList.toggle('active', b.dataset.tab === tabName);
@@ -867,6 +877,11 @@
                 p.classList.toggle('active', p.id === 'panel-' + tabName);
             });
         }
+
+        const refreshedTasks = container.querySelectorAll('details.gs-student-task');
+        openTaskIndexes.forEach(function (index) {
+            if (refreshedTasks[index]) refreshedTasks[index].open = true;
+        });
     }
 
     // ============================================
