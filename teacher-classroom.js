@@ -67,6 +67,42 @@
         padding:clamp(.9rem,2vw,1.2rem);
         transition:box-shadow .2s ease,transform .2s ease;
       }
+      /* Teacher/admin information rows and conversation items: clearer grouped surfaces. */
+      #gs-classroom.gs-cl-teacher-view .gs-cl-row{
+        padding:.9rem 1rem;
+        border:1px solid rgba(55,112,83,.14);
+        border-radius:14px;
+        background:linear-gradient(135deg,#f5faf6,#eaf4ed);
+        box-shadow:0 3px 10px rgba(24,67,48,.045);
+        line-height:1.65;
+      }
+      #gs-classroom.gs-cl-teacher-view .gs-cl-bubble{
+        border:1px solid rgba(55,112,83,.13);
+        border-radius:14px;
+        background:linear-gradient(135deg,#f0f7f2,#e5f0e8);
+        line-height:1.65;
+      }
+      #gs-classroom.gs-cl-teacher-view input:focus,
+      #gs-classroom.gs-cl-teacher-view select:focus,
+      #gs-classroom.gs-cl-teacher-view textarea:focus{
+        border-color:#438365;
+        box-shadow:0 0 0 3px rgba(67,131,101,.15);
+        outline:none;
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view .gs-cl-row{
+        background:linear-gradient(135deg,#243a2c,#293f31);
+        border-color:#3a5c46;
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view .gs-cl-bubble{
+        background:linear-gradient(135deg,#263e30,#2e4938);
+        border-color:#3a5c46;
+      }
+      html.gs-dark #gs-classroom.gs-cl-teacher-view input:focus,
+      html.gs-dark #gs-classroom.gs-cl-teacher-view select:focus,
+      html.gs-dark #gs-classroom.gs-cl-teacher-view textarea:focus{
+        border-color:#75ae8c;
+        box-shadow:0 0 0 3px rgba(117,174,140,.2);
+      }
       #gs-classroom.gs-cl-teacher-view .gs-cl-card>h3{
         display:flex;
         align-items:center;
