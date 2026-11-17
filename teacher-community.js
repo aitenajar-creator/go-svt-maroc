@@ -938,7 +938,8 @@
       document.body.appendChild(link);
       link.click();
       link.remove();
-      URL.revokeObjectURL(url);
+      // Keep the object URL alive briefly so the browser can start consuming the download.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       if (status) status.textContent = 'تم تجهيز ملف CSV ويحتوي على ' + rows.length + ' عملية مطابقة.';
     } catch (error) {
       console.error('[Teacher community activity export]', error);
