@@ -185,6 +185,7 @@
     if (reset) {
       resources = []; libraryOffset = 0; libraryHasMore = false;
       $('tc-resource-grid').replaceChildren();
+      if ($('tc-library-results-summary')) $('tc-library-results-summary').hidden = true;
       $('tc-library-state').hidden = false;
       $('tc-library-state').textContent = 'جارٍ البحث في جميع الموارد المشتركة...';
       $('tc-library-more').hidden = true;
@@ -253,6 +254,11 @@
   function renderLibrary() {
     $('tc-library-state').hidden = resources.length > 0;
     $('tc-library-state').textContent = resources.length ? '' : 'لا توجد موارد مطابقة. جرّب تغيير كلمات البحث أو التصنيف.';
+    const summary = $('tc-library-results-summary');
+    if (summary) {
+      summary.hidden = resources.length === 0;
+      summary.textContent = resources.length ? 'الموارد المعروضة: ' + resources.length : '';
+    }
     $('tc-resource-grid').innerHTML = resources.map(r => resourceCard(r, r.owner_id === user.id)).join('');
   }
   async function loadMyResources(reset = true) {
