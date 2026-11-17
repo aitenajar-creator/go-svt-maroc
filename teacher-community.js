@@ -14,7 +14,7 @@
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   const PAGE_SIZE = 50;
-  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
+  let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, librarySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, adminLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false;
 
   function message(id, value, good) {
     const el = $(id); if (!el) return;
@@ -158,17 +158,26 @@
     $('tc-resource-grid').innerHTML = resources.map(r => resourceCard(r, r.owner_id === user.id)).join('');
   }
   async function loadMyResources(reset = true) {
-    if (!user) return;
+    if (!user || myLoading) return;
+    myLoading = true;
+    const moreButton = $('tc-my-resources-more');
+    if (moreButton) moreButton.disabled = true;
     if (reset) { myOffset = 0; myHasMore = false; $('tc-my-resources').replaceChildren(); }
-    const { data, error } = await client.from('teacher_community_resources').select('*')
-      .eq('owner_id',user.id).order('created_at',{ascending:false}).order('id',{ascending:false})
-      .range(myOffset, myOffset + PAGE_SIZE - 1);
-    if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state">تعذر تحميل ملفاتك.</div>'; return; }
-    const page = data || [];
-    myOffset += page.length; myHasMore = page.length === PAGE_SIZE;
-    $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
-    $('tc-my-resources-more').hidden = !myHasMore;
-    if (reset && !page.length) $('tc-my-resources').innerHTML = '<div class="tc-state">لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.</div>';
+    try {
+      const start = reset ? 0 : myOffset;
+      const { data, error } = await client.from('teacher_community_resources').select('*')
+        .eq('owner_id',user.id).order('created_at',{ascending:false}).order('id',{ascending:false})
+        .range(start, start + PAGE_SIZE - 1);
+      if (error) { $('tc-my-resources').innerHTML = '<div class="tc-state">تعذر تحميل ملفاتك.</div>'; return; }
+      const page = data || [];
+      myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
+      $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
+      $('tc-my-resources-more').hidden = !myHasMore;
+      if (reset && !page.length) $('tc-my-resources').innerHTML = '<div class="tc-state">لم ترفع أي ملفات بعد. ابدأ بمشاركة أول مورد تربوي.</div>';
+    } finally {
+      myLoading = false;
+      if (moreButton) moreButton.disabled = false;
+    }
   }
   async function downloadResource(id) {
     // Open the tab during the original click gesture; browsers may block window.open
@@ -249,6 +258,12 @@
     await Promise.all([loadLibrary(),loadMyResources()]);
   }
   async function loadAdmin(reset = true, only = 'both') {
+    if (!isAdmin || adminLoading) return;
+    adminLoading = true;
+    const memberMoreButton = $('tc-admin-members-more'), resourceMoreButton = $('tc-admin-resources-more');
+    if (memberMoreButton) memberMoreButton.disabled = true;
+    if (resourceMoreButton) resourceMoreButton.disabled = true;
+    try {
     if (reset) {
       adminMembersOffset = 0; adminResourcesOffset = 0;
       adminMembersMore = false; adminResourcesMore = false;
@@ -277,6 +292,11 @@
     if (reset && only !== 'members' && !resourcePage.length) $('tc-admin-resources').innerHTML = '<div class="tc-state">لا توجد موارد.</div>';
     $('tc-admin-members-more').hidden = !adminMembersMore;
     $('tc-admin-resources-more').hidden = !adminResourcesMore;
+    } finally {
+      adminLoading = false;
+      if (memberMoreButton) memberMoreButton.disabled = false;
+      if (resourceMoreButton) resourceMoreButton.disabled = false;
+    }
   }
   async function handleAuth(e) {
     e.preventDefault(); message('tc-auth-message','');
