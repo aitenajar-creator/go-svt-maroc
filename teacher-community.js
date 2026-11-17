@@ -1007,7 +1007,7 @@
         }
         throw saved.error;
       }
-      $('tc-upload-form').reset(); $('tc-upload-dialog').close();
+      $('tc-upload-form').reset(); updateSelectedFileHint(); $('tc-upload-dialog').close();
       await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
     } catch(err) { message('tc-upload-message',err.message || 'فشل رفع الملف.'); }
     finally {
