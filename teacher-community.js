@@ -779,7 +779,7 @@
     try {
       const filter = $('tc-my-filter').value;
       const rawSearch = $('tc-my-search').value.trim();
-      const search = rawSearch.replace(/[^\\p{L}\\p{N}\\s_-]/gu, ' ').replace(/\\s+/g, ' ').trim().slice(0, 80);
+      const search = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       const sort = $('tc-my-sort').value;
       const rows = [];
       const pageSize = 500;
@@ -808,7 +808,7 @@
       const lines = [['العنوان','الوصف','التصنيف','اسم الملف','نوع الملف','الحجم بالبايت','حالة النشر','المشاركة','تاريخ الإضافة','آخر تحديث','معرّف المورد'],
         ...rows.map(row => [row.title,row.description,categoryNames[row.category] || row.category,row.file_name,row.mime_type,row.size_bytes,
           row.status === 'hidden' ? 'مخفي' : 'منشور',row.is_shared ? 'مشترك' : 'خاص',row.created_at,row.updated_at,row.id])];
-      const csv = '\\uFEFF' + lines.map(line => line.map(csvCell).join(',')).join('\\r\\n');
+      const csv = '\uFEFF' + lines.map(line => line.map(csvCell).join(',')).join('\r\n');
       const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
