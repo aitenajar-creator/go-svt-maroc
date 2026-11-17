@@ -707,6 +707,17 @@
     }
     return query;
   }
+  async function findActivityActorIds(search) {
+    const actorIds = new Set();
+    // The platform administrator may not have a teacher membership row.
+    // Include the current admin account when the search refers to platform management.
+    if (/[إا]دار[هة]/u.test(search) || search.includes('المنصة')) actorIds.add(user.id);
+    const actorResult = await client.from('teacher_community_members')
+      .select('user_id').ilike('display_name', '%' + search + '%').limit(100);
+    if (actorResult.error) throw actorResult.error;
+    (actorResult.data || []).forEach(person => { if (person.user_id) actorIds.add(person.user_id); });
+    return [...actorIds];
+  }
   async function loadAdminActivity(reset = true) {
     if (!isAdmin) return;
     if (adminActivityLoading) {
@@ -735,13 +746,10 @@
       if (actionFilter) activityQuery = activityQuery.eq('action', actionFilter);
       if (activitySearch) activityQuery = activityQuery.ilike('resource_title', '%' + activitySearch + '%');
       if (actorSearch) {
-        const actorResult = await client.from('teacher_community_members')
-          .select('user_id').ilike('display_name', '%' + actorSearch + '%').limit(100);
-        if (actorResult.error) throw actorResult.error;
-        const actorIds = (actorResult.data || []).map(person => person.user_id).filter(Boolean);
+        const actorIds = await findActivityActorIds(actorSearch);
         if (!actorIds.length) {
           adminActivityOffset = 0; adminActivityMore = false;
-          panel.innerHTML = '<div class="tc-state">لا توجد عمليات باسم أستاذ يطابق البحث.</div>';
+          panel.innerHTML = '<div class="tc-state">لا توجد عمليات باسم المنفذ يطابق البحث.</div>';
           moreButton.hidden = true;
           return;
         }
@@ -879,12 +887,7 @@
       const rawActorSearch = $('tc-admin-activity-actor').value.trim();
       const actorSearch = rawActorSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       let actorIds = null;
-      if (actorSearch) {
-        const actorResult = await client.from('teacher_community_members')
-          .select('user_id').ilike('display_name', '%' + actorSearch + '%').limit(100);
-        if (actorResult.error) throw actorResult.error;
-        actorIds = (actorResult.data || []).map(person => person.user_id).filter(Boolean);
-      }
+      if (actorSearch) actorIds = await findActivityActorIds(actorSearch);
       const rows = [];
       const pageSize = 500;
       for (let offset = 0; offset < 10000; offset += pageSize) {
