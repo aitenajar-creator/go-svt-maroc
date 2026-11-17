@@ -545,3 +545,20 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-dark .gs-cascade-panel li:before{background:#365843;color:#e2f4e6}
 @media(max-width:700px){.gs-cascade-panel ol{grid-template-columns:1fr}.gs-cascade-panel li{min-height:0}.gs-cascade-panel li:not(:last-child):after{content:"↓";inset-inline-end:50%;top:auto;bottom:-18px}}
 
+
+.gs-water-allocation{display:grid;gap:12px;margin-top:18px;padding:18px;border:1px solid #d8e8dc;border-radius:17px;background:linear-gradient(145deg,#f2faf4,#fff)}
+.gs-water-allocation h3{margin:0;color:#285b3b}
+.gs-water-allocation>p{margin:0;line-height:1.75;color:#587161}
+.gs-water-allocation-controls{display:grid;gap:8px}
+.gs-water-allocation-controls label{display:flex;justify-content:space-between;gap:12px;font-weight:700}
+.gs-water-allocation-controls output{font-variant-numeric:tabular-nums;color:#23754b}
+.gs-water-allocation-controls input{width:100%;accent-color:#258454}
+.gs-water-allocation-total{display:flex;justify-content:space-between;gap:12px;padding:12px;border-radius:12px;background:#e4f2e8;color:#24583a;font-weight:750}
+.gs-water-allocation-total strong{font-variant-numeric:tabular-nums}
+.gs-water-allocation-total strong.is-over{color:#b42318}
+.gs-water-allocation button{justify-self:start;border:0;border-radius:11px;padding:10px 16px;background:#26784b;color:white;font-weight:700;cursor:pointer}
+.gs-water-allocation small{color:#718176;line-height:1.6}
+.gs-dark .gs-water-allocation{background:#1d3528;border-color:#3b5d47}
+.gs-dark .gs-water-allocation h3,.gs-dark .gs-water-allocation>p{color:#d2e8d8}
+.gs-dark .gs-water-allocation-total{background:#2b4935;color:#e0f2e4}
+.gs-dark .gs-water-allocation small{color:#b2c9b8}
