@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
-<link rel="stylesheet" href="laboratory.css?v=20261117-12">
+<link rel="stylesheet" href="laboratory.css?v=20261117-13">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -313,6 +313,23 @@
     <div class="gs-biodiv-question" data-biodiv-question="2"><h4 data-ar="3. أي إجراء يساعد على حماية التنوع البيولوجي؟" data-fr="3. Quelle action contribue à protéger la biodiversité ?">3. أي إجراء يساعد على حماية التنوع البيولوجي؟</h4><div class="gs-biodiv-answers"><button type="button" data-biodiv-answer="2" data-ar="حماية المواطن الطبيعية والحد من التلوث" data-fr="Protéger les habitats et réduire la pollution">حماية المواطن الطبيعية والحد من التلوث</button><button type="button" data-biodiv-answer="2" data-ar="تدمير الغطاء النباتي" data-fr="Détruire la couverture végétale">تدمير الغطاء النباتي</button><button type="button" data-biodiv-answer="2" data-ar="إدخال أنواع دخيلة دون تقييم" data-fr="Introduire des espèces exotiques sans évaluation">إدخال أنواع دخيلة دون تقييم</button></div><p class="gs-biodiv-answer-feedback" aria-live="polite"></p></div>
     <div class="gs-biodiv-quiz-footer"><strong id="biodiv-quiz-score" aria-live="polite" data-ar="النتيجة: 0 / 3" data-fr="Score : 0 / 3">النتيجة: 0 / 3</strong><button type="button" id="biodiv-quiz-reset" data-ar="إعادة المحاولة" data-fr="Recommencer">إعادة المحاولة</button></div>
    </div>
+
+   <div class="gs-biodiv-sampling" id="biodiv-sampling">
+    <div class="gs-biodiv-sampling-heading"><span aria-hidden="true">🔎</span><div><h3 data-ar="مهمة ميدانية: عيّنة داخل مربع بيئي" data-fr="Mission de terrain : échantillon dans un quadrat">مهمة ميدانية: عيّنة داخل مربع بيئي</h3><p data-ar="تخيّل أنك وضعت مربعاً للدراسة في وسط طبيعي. حدّد الأنواع التي رصدتها في العينة، ثم احسب غنى الأنواع." data-fr="Imaginez avoir placé un quadrat dans un milieu naturel. Cochez les espèces observées, puis calculez la richesse spécifique.">تخيّل أنك وضعت مربعاً للدراسة في وسط طبيعي. حدّد الأنواع التي رصدتها في العينة، ثم احسب غنى الأنواع.</p></div></div>
+    <fieldset class="gs-biodiv-sampling-options">
+     <legend data-ar="الكائنات المرصودة في العينة الافتراضية" data-fr="Organismes observés dans l’échantillon fictif">الكائنات المرصودة في العينة الافتراضية</legend>
+     <label><input type="checkbox" data-sample-species="plant"><span>🌱</span><strong data-ar="نبات عشبي" data-fr="Plante herbacée">نبات عشبي</strong></label>
+     <label><input type="checkbox" data-sample-species="insect"><span>🦋</span><strong data-ar="حشرة" data-fr="Insecte">حشرة</strong></label>
+     <label><input type="checkbox" data-sample-species="bird"><span>🐦</span><strong data-ar="طائر" data-fr="Oiseau">طائر</strong></label>
+     <label><input type="checkbox" data-sample-species="fungus"><span>🍄</span><strong data-ar="فطر" data-fr="Champignon">فطر</strong></label>
+     <label><input type="checkbox" data-sample-species="snail"><span>🐌</span><strong data-ar="حلزون" data-fr="Escargot">حلزون</strong></label>
+    </fieldset>
+    <div class="gs-biodiv-sampling-result" aria-live="polite"><span data-ar="غنى الأنواع المرصودة" data-fr="Richesse spécifique observée">غنى الأنواع المرصودة</span><strong id="biodiv-sampling-count">0 / 5</strong></div>
+    <p id="biodiv-sampling-feedback" aria-live="polite" data-ar="حدّد الكائنات التي رصدتها لاحتساب عدد الأنواع المختلفة." data-fr="Cochez les organismes observés pour compter les espèces différentes.">حدّد الكائنات التي رصدتها لاحتساب عدد الأنواع المختلفة.</p>
+    <button type="button" id="biodiv-sampling-reset" data-ar="مسح العينة" data-fr="Effacer l’échantillon">مسح العينة</button>
+    <small data-ar="غنى الأنواع هو عدد الأنواع المختلفة المرصودة، ولا يعبّر وحده عن كل جوانب التنوع البيولوجي أو وفرة الأفراد. للمقارنة العلمية، يجب توحيد مساحة العينة وجهد الرصد وظروفه." data-fr="La richesse spécifique correspond au nombre d’espèces différentes observées. Elle ne décrit pas à elle seule toute la biodiversité ni l’abondance des individus. Pour comparer des relevés, il faut standardiser la surface, l’effort et les conditions d’observation.">غنى الأنواع هو عدد الأنواع المختلفة المرصودة، ولا يعبّر وحده عن كل جوانب التنوع البيولوجي أو وفرة الأفراد. للمقارنة العلمية، يجب توحيد مساحة العينة وجهد الرصد وظروفه.</small>
+   </div>
+
 
   </div>
  </section>
