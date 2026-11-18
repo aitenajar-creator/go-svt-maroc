@@ -2473,3 +2473,48 @@ html[dir="rtl"] .content-card.pdf-resource-card .pdf-card-layout {
 /* Student task category hub */
 .gs-student-category-hub{margin:18px 0;padding:20px;border:1px solid #dce9de;border-radius:22px;background:#f6faf6}.gs-student-category-heading{text-align:center;margin-bottom:16px}.gs-student-category-heading h3{margin:7px 0;color:#235638}.gs-student-category-heading p{margin:0;color:#5d7563}.gs-student-category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.gs-student-category-card{display:flex;flex-direction:column;gap:8px;padding:15px;border-radius:16px;background:#fff;border:1px solid #dce9de;text-decoration:none;color:#285b3b;min-height:135px}.gs-student-category-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#e9f4ea;font-size:1.3rem}.gs-student-category-card strong{font-size:1rem}.gs-student-category-card small{color:#58715e;line-height:1.6}.gs-student-category-link{margin-top:auto;font-weight:800;color:#2d8050}.gs-student-category-card:hover{border-color:#77ad81;transform:translateY(-2px)}.gs-student-category-card:focus-visible{outline:3px solid #7bb68a;outline-offset:3px}
 @media(max-width:560px){.gs-student-category-grid{grid-template-columns:1fr 1fr}.gs-student-category-card{min-height:120px;padding:12px}}
+
+/* Restore usable width for both resource-card frames.
+   The outer card fills the content row; the preview and information panels
+   each receive half of that width instead of collapsing to narrow tracks. */
+.content-grid > .content-card.file-resource-card,
+.content-grid > .track-content-group .content-card.file-resource-card {
+    grid-column: 1 / -1 !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card > .file-card-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-rows: minmax(360px, auto) !important;
+    grid-template-areas: "preview details" !important;
+    align-items: stretch !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel,
+.content-card.file-resource-card > .file-card-layout > .file-info-panel {
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+}
+@media (max-width: 640px) {
+    .content-grid > .content-card.file-resource-card,
+    .content-grid > .track-content-group .content-card.file-resource-card {
+        grid-column: 1 / -1 !important;
+    }
+    .content-card.file-resource-card > .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+        grid-template-rows: minmax(210px, auto) !important;
+        gap: .45rem !important;
+    }
+}
