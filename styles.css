@@ -2787,3 +2787,20 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
         grid-template-areas: "preview" "details" !important;
     }
 }
+
+
+/* Keep the final layout correction responsive to the card's own width.
+   This rule must follow the desktop two-column rule above so narrow cards
+   do not inherit two compressed columns inside multi-column resource grids. */
+@container file-resource-card (max-width: 560px) {
+    .content-card.file-resource-card > .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas: "preview" "details" !important;
+    }
+    .content-card.file-resource-card > .file-card-layout > .file-preview-panel,
+    .content-card.file-resource-card > .file-card-layout > .file-info-panel {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+}
