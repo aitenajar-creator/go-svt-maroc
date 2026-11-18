@@ -7,7 +7,7 @@ const dict={
 };
 let lang='ar',cell='plant',selectedRockProcess=null,selectedRockMaterial='magma',selectedRockStep='cooling',selectedEcoLevel='producer',removedSpecies=null,selectedFoodWeb=null,selectedHabitat=null,selectedPressure=null,selectedPollution=null,selectedPollutionAction=null,selectedWaterCycle=null;
 const $=id=>document.getElementById(id);
-function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('enzyme-activity'))renderEnzymeLab();if($('enzyme-factors-activity'))updateEnzymeFactors();if($('transcription-activity'))renderTranscription();if($('mitosis-lab'))renderMitosis();if($('meiosis-compare-lab'))renderMeiosisCompare();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
+function setLang(next){lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('[data-ar][data-fr]').forEach(el=>el.textContent=el.dataset[lang]);$('lab-language').textContent=lang==='ar'?'Français':'العربية';const active=document.querySelector('.gs-cell-type.is-active');if(active)active.textContent=active.dataset[lang];if(cell==='animal'){$('organelle-title').textContent=lang==='ar'?'الخلية الحيوانية':'Cellule animale';$('organelle-description').textContent=lang==='ar'?'تتميز بغياب الجدار الخلوي والبلاستيدات الخضراء، وتكون فجواتها صغيرة عادة.':'Elle ne possède ni paroi cellulosique ni chloroplastes ; ses vacuoles sont généralement petites.';$('organelle-tip').textContent=lang==='ar'?'اختر أحد المكونات المشتركة للتعرف على وظيفته.':'Choisissez une structure commune pour découvrir son rôle.';}else showOrganelle('nucleus');if($('lab-light'))updatePhotosynthesis();if($('gen-parent-one'))updateGenetics();if($('geo-explanation'))setGeology(document.querySelector('.gs-geology-choice.is-active')?.dataset.geology||'horizontal');if(selectedRockProcess)showRockProcess(selectedRockProcess);renderRockPath();if($('eco-level-detail'))showEcoLevel(selectedEcoLevel);if($('energy-input'))updateEnergyTransfer();if($('digestive-journey'))renderDigestiveLab();if($('eco-population-feedback'))updateEcoPopulation();if(removedSpecies)showBalanceResult(removedSpecies);if(selectedFoodWeb)showFoodWeb(selectedFoodWeb);if(selectedHabitat)showHabitat(selectedHabitat);if(selectedPressure)showPressure(selectedPressure);if(selectedPollution)showPollution(selectedPollution);if(selectedPollutionAction)showPollutionAction(selectedPollutionAction);if($('pollution-load'))updatePollutionSimulator();if($('water-quality-ph'))updateWaterQualityLab();if($('water-treatment-lab'))renderWaterTreatmentLab();if($('biodiv-sampling'))updateBiodiversitySampling();if($('biodiv-abundance'))updateBiodiversityAbundance();if($('enzyme-activity'))renderEnzymeLab();if($('enzyme-factors-activity'))updateEnzymeFactors();if($('transcription-activity'))renderTranscription();if($('mitosis-lab'))renderMitosis();if($('meiosis-compare-lab'))renderMeiosisCompare();if($('dna-pairing'))renderDnaPairing();if($('food-chain-builder')){foodChainStep=Math.min(foodChainStep,4);renderFoodChain();}if($('water-quality-quiz-result'))updateWaterQualityQuiz();renderWaterManagementQuiz();renderBiodiversityQuiz();renderRelativeDatingQuiz();if(selectedWaterCycle)showWaterCycle(selectedWaterCycle);updateWaterCycleScore();}
 function showOrganelle(key){const v=dict[key][lang];$('organelle-title').textContent=v[0];$('organelle-description').textContent=v[1];$('organelle-tip').textContent=v[2];}
 
 
@@ -1178,6 +1178,61 @@ $('energy-transfer-reset').addEventListener('click',()=>{
  $('energy-input').value='10000';$('energy-efficiency').value='10';updateEnergyTransfer();
 });
 updateEnergyTransfer();
+
+
+const digestiveStages=[
+ {id:'mouth',ar:'الفم',fr:'Bouche',arRole:'يُقطّع الغذاء ويمتزج باللعاب، فتبدأ عملية الهضم.',frRole:'Les aliments sont broyés et mélangés à la salive : la digestion commence.'},
+ {id:'pharynx',ar:'البلعوم',fr:'Pharynx',arRole:'يمر عبره الغذاء من الفم نحو المريء أثناء البلع.',frRole:'Les aliments passent de la bouche vers l’œsophage lors de la déglutition.'},
+ {id:'esophagus',ar:'المريء',fr:'Œsophage',arRole:'ينقل الغذاء إلى المعدة بواسطة حركات عضلية.',frRole:'Il transporte les aliments vers l’estomac grâce à des contractions musculaires.'},
+ {id:'stomach',ar:'المعدة',fr:'Estomac',arRole:'يخلط الغذاء بالعصارة المعدية ويواصل تفكيكه.',frRole:'Elle mélange les aliments au suc gastrique et poursuit leur transformation.'},
+ {id:'small',ar:'الأمعاء الدقيقة',fr:'Intestin grêle',arRole:'يكتمل معظم الهضم ويتم امتصاص أغلب المغذيات.',frRole:'La digestion s’y achève en grande partie et la plupart des nutriments y sont absorbés.'},
+ {id:'large',ar:'الأمعاء الغليظة',fr:'Gros intestin',arRole:'يُمتص جزء كبير من الماء وتتكوّن الفضلات.',frRole:'Une grande partie de l’eau y est absorbée et les matières fécales se forment.'}
+];
+let digestiveIndex=0,digestiveScore=0,digestiveAnswered=false;
+function renderDigestiveLab(){
+ const stage=digestiveStages[digestiveIndex],ar=lang==='ar';
+ $('digestive-step-label').textContent=ar?'المحطة '+(digestiveIndex+1)+' من 6':'Étape '+(digestiveIndex+1)+' sur 6';
+ $('digestive-score').textContent=digestiveScore+' / 6';
+ $('digestive-progress-bar').style.width=(digestiveIndex/6*100)+'%';
+ $('digestive-question-title').textContent=ar?'ما المحطة رقم '+(digestiveIndex+1)+' في مسار الغذاء؟':'Quelle est l’étape n° '+(digestiveIndex+1)+' du trajet des aliments ?';
+ $('digestive-question-hint').textContent=ar?'اختر العضو الذي يأتي في هذا الترتيب.':'Choisissez l’organe correspondant à cette étape.';
+ const distractors=digestiveStages.filter(x=>x.id!==stage.id);
+ const choices=[stage,...distractors.slice((digestiveIndex+1)%distractors.length,((digestiveIndex+1)%distractors.length)+2)];
+ const ordered=choices.sort((a,b)=>a.id.localeCompare(b.id));
+ $('digestive-options').innerHTML=ordered.map(x=>'<button type="button" data-organ="'+x.id+'">'+x[ar?'ar':'fr']+'</button>').join('');
+ $('digestive-options').querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>chooseDigestive(btn.dataset.organ,btn)));
+ $('digestive-feedback').textContent=ar?'اختر إجابة لعرض التفسير.':'Choisissez une réponse pour afficher l’explication.';
+ $('digestive-next').disabled=true;
+ $('digestive-next').textContent=ar?'المحطة التالية':'Étape suivante';
+ $('digestive-route').innerHTML=digestiveStages.slice(0,digestiveIndex).map((x,i)=>'<li><strong>'+(i+1)+'. '+x[ar?'ar':'fr']+'</strong><span>'+x[ar?'arRole':'frRole']+'</span></li>').join('');
+}
+function chooseDigestive(id,btn){
+ if(digestiveAnswered)return;
+ const expected=digestiveStages[digestiveIndex],ar=lang==='ar';
+ const ok=id===expected.id;
+ digestiveAnswered=true;
+ if(ok)digestiveScore++;
+ $('digestive-score').textContent=digestiveScore+' / 6';
+ $('digestive-progress-bar').style.width=((digestiveIndex+1)/6*100)+'%';
+ $('digestive-options').querySelectorAll('button').forEach(b=>{b.disabled=true;if(b.dataset.organ===expected.id)b.classList.add('is-correct');});
+ if(!ok)btn.classList.add('is-wrong');
+ $('digestive-feedback').textContent=(ok?(ar?'إجابة صحيحة! ':'Bonne réponse ! '):(ar?'ليس تماماً. المحطة الصحيحة هي: ':'Pas tout à fait. La bonne étape est : ')+expected[ar?'ar':'fr']+'. ')+expected[ar?'arRole':'frRole'];
+ $('digestive-next').disabled=false;
+ $('digestive-next').textContent=digestiveIndex===5?(ar?'عرض النتيجة':'Voir le résultat'):(ar?'المحطة التالية':'Étape suivante');
+}
+$('digestive-next').addEventListener('click',()=>{
+ if(!digestiveAnswered)return;
+ if(digestiveIndex<5){digestiveIndex++;digestiveAnswered=false;renderDigestiveLab();return;}
+ const ar=lang==='ar';
+ $('digestive-question-title').textContent=ar?'أكملت رحلة الغذاء!':'Vous avez terminé le trajet des aliments !';
+ $('digestive-question-hint').textContent=ar?'أحسنت استكشاف محطات الجهاز الهضمي.':'Bravo, vous avez exploré les étapes de l’appareil digestif.';
+ $('digestive-options').innerHTML='';
+ $('digestive-feedback').textContent=(ar?'نتيجتك: ':'Votre score : ')+digestiveScore+' / 6';
+ $('digestive-next').disabled=true;
+ $('digestive-route').innerHTML=digestiveStages.map((x,i)=>'<li><strong>'+(i+1)+'. '+x[ar?'ar':'fr']+'</strong><span>'+x[ar?'arRole':'frRole']+'</span></li>').join('');
+});
+$('digestive-reset').addEventListener('click',()=>{digestiveIndex=0;digestiveScore=0;digestiveAnswered=false;renderDigestiveLab();});
+renderDigestiveLab();
 
 loadCommonsPhotos();
 })();

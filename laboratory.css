@@ -768,3 +768,35 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-dark .gs-enzyme-factor-result>div:first-child{color:#d9ecdd}
 .gs-dark .gs-enzyme-factor-meter{background:#314b38}
 @media(max-width:540px){.gs-enzyme-factor-result>div:first-child{align-items:flex-start;flex-direction:column}}
+\n
+/* Interactive digestive journey */
+.gs-digestive-card{background:#fff;border:1px solid #dce9de;border-radius:22px;padding:clamp(16px,3vw,28px);box-shadow:0 12px 32px #183c2410}
+.gs-digestive-progress{display:flex;justify-content:space-between;gap:12px;font-weight:800;color:#285b3b}
+.gs-digestive-track{height:9px;background:#e8f0e9;border-radius:99px;overflow:hidden;margin:12px 0 22px}
+.gs-digestive-track>div{height:100%;width:0;background:linear-gradient(90deg,#2d8050,#8acb78);border-radius:inherit;transition:width .25s}
+.gs-digestive-question{padding:18px;border-radius:16px;background:#f1f7f1;margin-bottom:18px}
+.gs-digestive-question h3{margin:0 0 7px;color:#214d32}
+.gs-digestive-question p{margin:0;color:#58715e}
+.gs-digestive-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+.gs-digestive-options button,.gs-digestive-actions button{border:1px solid #cfe0d1;border-radius:13px;padding:13px 15px;background:#f8fbf8;color:#285b3b;font:inherit;font-weight:800;cursor:pointer;transition:.2s}
+.gs-digestive-options button:hover:not(:disabled){background:#eaf5eb;border-color:#6fa77a}
+.gs-digestive-options button:disabled{cursor:default;opacity:.8}
+.gs-digestive-options button.is-correct{background:#e0f3e4;border-color:#4a9a5c;color:#205b30}
+.gs-digestive-options button.is-wrong{background:#fff0ed;border-color:#d88a7d;color:#8b3328}
+.gs-digestive-feedback{margin-top:16px;padding:14px;border-radius:13px;background:#f1f7f1;color:#34563c;line-height:1.8;min-height:52px}
+.gs-digestive-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.gs-digestive-actions button:first-child{background:#286b43;color:#fff;border-color:#286b43}
+.gs-digestive-actions button:disabled{opacity:.45;cursor:not-allowed}
+.gs-digestive-route{display:grid;gap:10px;margin:20px 0 0;padding-inline-start:25px}
+.gs-digestive-route li{padding:10px 12px;border-radius:12px;background:#f7faf7}
+.gs-digestive-route li strong,.gs-digestive-route li span{display:block}
+.gs-digestive-route li span{margin-top:4px;color:#58715e;font-size:.92rem;line-height:1.7}
+.gs-dark .gs-digestive-card{background:#17291d;border-color:#3b5942}
+.gs-dark .gs-digestive-progress,.gs-dark .gs-digestive-question h3{color:#d9ecdd}
+.gs-dark .gs-digestive-track{background:#314b38}
+.gs-dark .gs-digestive-question,.gs-dark .gs-digestive-feedback,.gs-dark .gs-digestive-route li{background:#203a29;color:#d9ecdd}
+.gs-dark .gs-digestive-question p,.gs-dark .gs-digestive-route li span{color:#b7cbbb}
+.gs-dark .gs-digestive-options button{background:#203a29;border-color:#405d47;color:#d9ecdd}
+.gs-dark .gs-digestive-options button.is-correct{background:#244b30;border-color:#6dbb7b}
+.gs-dark .gs-digestive-options button.is-wrong{background:#512f2b;border-color:#a96a60}
+@media(max-width:560px){.gs-digestive-actions{display:grid;grid-template-columns:1fr}.gs-digestive-options{grid-template-columns:1fr 1fr}}
