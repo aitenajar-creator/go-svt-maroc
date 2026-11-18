@@ -1677,3 +1677,56 @@ body{background:#f4f8f5}
     border-radius: 11px !important;
   }
 }
+
+
+/* PDF preview priority: show the complete first page in a larger, clearer frame.
+   The preview receives most of the card width; the original page ratio is kept. */
+.content-card.file-resource-card > .file-card-layout {
+  grid-template-columns: minmax(0, 1.9fr) minmax(220px, .8fr) !important;
+  grid-template-areas: "preview details" !important;
+  gap: .9rem !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel {
+  min-width: 0 !important;
+  padding: .65rem !important;
+  border: 2px solid #a9cbb5 !important;
+  border-radius: 16px !important;
+  background: linear-gradient(145deg, #eaf2ed, #f7faf8) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 8px 22px rgba(25,75,49,.10) !important;
+  overflow: visible !important;
+}
+.content-card.file-resource-card .file-preview-panel > .pdf-thumbnail,
+.content-card.file-resource-card .file-preview-panel > .image-thumbnail,
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: top center !important;
+  background: #fff !important;
+  box-shadow: 0 3px 14px rgba(20,48,34,.16) !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-info-panel {
+  min-width: 0 !important;
+}
+@media (max-width: 640px) {
+  .content-card.file-resource-card > .file-card-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "preview" "details" !important;
+  }
+  .content-card.file-resource-card > .file-card-layout > .file-preview-panel {
+    padding: .5rem !important;
+  }
+}
