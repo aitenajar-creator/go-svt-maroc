@@ -2804,3 +2804,69 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
         max-width: 100% !important;
     }
 }
+
+
+/* Final visual balance: enlarge the document preview and prevent the
+   information panel from becoming a narrow vertical strip. */
+.content-card.file-resource-card > .file-card-layout {
+    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr) !important;
+    grid-template-areas: "preview details" !important;
+    align-items: stretch !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel {
+    min-width: 0 !important;
+    width: 100% !important;
+    align-self: stretch !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel > .content-card-thumbnail {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 260px !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    background: #f4f7f5 !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel .image-thumbnail img {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    object-position: top center !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-info-panel {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    box-sizing: border-box !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-info-panel *,
+.content-card.file-resource-card > .file-card-layout > .file-info-panel > .card-actions > * {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+}
+@container file-resource-card (max-width: 760px) {
+    .content-card.file-resource-card > .file-card-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas: "preview" "details" !important;
+    }
+    .content-card.file-resource-card > .file-card-layout > .file-info-panel {
+        min-width: 0 !important;
+        padding: .9rem !important;
+    }
+}
