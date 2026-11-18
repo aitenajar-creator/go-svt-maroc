@@ -1188,7 +1188,6 @@
         body.tc-standalone-category .tc-category-hub,
         body.tc-standalone-category #contribute { display:none !important; }
         body.tc-standalone-category #library { padding-top:24px; }
-        body.tc-standalone-category .tc-section-heading:before { content:'← العودة إلى تصنيفات مجتمع الأساتذة'; display:block; width:fit-content; margin-bottom:14px; padding:10px 14px; border-radius:10px; background:#176b54; color:white; font-weight:800; cursor:pointer; }
       `;
       document.head.appendChild(style);
       const back = document.createElement('a');
