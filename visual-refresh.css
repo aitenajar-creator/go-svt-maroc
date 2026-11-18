@@ -1730,3 +1730,67 @@ body{background:#f4f8f5}
     padding: .5rem !important;
   }
 }
+
+
+/* Final preview sizing: dominant image area with a frame that hugs the page. */
+.content-card.file-resource-card > .file-card-layout {
+  grid-template-columns: minmax(0, 3fr) minmax(180px, .72fr) !important;
+  grid-template-areas: "preview details" !important;
+  align-items: start !important;
+  gap: .8rem !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel {
+  align-self: start !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 2px solid #8db99d !important;
+  border-radius: 13px !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgba(25,75,49,.14) !important;
+  box-sizing: border-box !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel > .content-card-thumbnail {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  object-position: center top !important;
+  vertical-align: top !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-info-panel {
+  align-self: start !important;
+  min-width: 0 !important;
+}
+@media (max-width: 640px) {
+  .content-card.file-resource-card > .file-card-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "preview" "details" !important;
+  }
+  .content-card.file-resource-card > .file-card-layout > .file-preview-panel {
+    width: 100% !important;
+  }
+}
