@@ -136,6 +136,7 @@ function updatePhotosynthesis(){
 $('lab-light').addEventListener('input',updatePhotosynthesis);
 $('lab-co2').addEventListener('input',updatePhotosynthesis);
 $('lab-water').addEventListener('input',updatePhotosynthesis);
+$('lab-temperature').addEventListener('input',updatePhotosynthesis);
 
 $('lab-language').addEventListener('click',()=>setLang(lang==='ar'?'fr':'ar'));
 $('lab-menu').addEventListener('click',()=>{const nav=document.querySelector('.gs-lab-page .main-nav');nav.classList.toggle('active');});
