@@ -1786,10 +1786,13 @@ function openScientificPhotoPreview(card){
 
     function renderDashboard() {
         const stats = getDashboardStats();
+        const studentTaskCategoryMap = {"استكشف الخلية":"biology","مختبر التركيب الضوئي":"biology","اختبر فهمك للخلية والتركيب الضوئي":"biology","أطلس أجهزة جسم الإنسان":"biology","مسارات التعلم حسب المستوى":"learning","المختبر المجهري":"biology","تجربة التركيب الضوئي":"biology","مكتبة الصور العلمية":"media","بطاقات الذاكرة العلمية":"learning","قاموس مصطلحات علوم الحياة والأرض":"learning","مساري الدراسي":"learning","تحدي اليوم":"learning","توصيات التعلم":"learning","ملخص نشاطك الدراسي":"tracking"};
         const taskGroup = (icon, titleAr, titleFr, content) => {
             const title = lang() === 'fr' ? titleFr : titleAr;
             const openHint = lang() === 'fr' ? 'Cliquer pour afficher' : 'اضغط لعرض المحتوى';
-            return `<details class="gs-student-task"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-hint">${openHint}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
+            const taskKey = {"استكشف الخلية":"cell","مختبر التركيب الضوئي":"photosynthesis","اختبر فهمك للخلية والتركيب الضوئي":"quiz","أطلس أجهزة جسم الإنسان":"human","مسارات التعلم حسب المستوى":"paths","المختبر المجهري":"microscope","تجربة التركيب الضوئي":"photo-experiment","مكتبة الصور العلمية":"scientific-media","بطاقات الذاكرة العلمية":"memory","قاموس مصطلحات علوم الحياة والأرض":"glossary","مساري الدراسي":"personal-path","تحدي اليوم":"daily","توصيات التعلم":"recommendations","ملخص نشاطك الدراسي":"activity"}[titleAr] || '';
+            const taskCategory = studentTaskCategoryMap[titleAr] || '';
+            return `<details class="gs-student-task" data-task-key="${taskKey}" data-task-category="${taskCategory}"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-hint">${openHint}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
         };
         const profiles = getProfiles();
         const currentProfile = getCurrentProfile();
@@ -1837,6 +1840,7 @@ function openScientificPhotoPreview(card){
                 <a class="gs-primary-link" href="#cours">${lang() === 'ar' ? 'ابدأ التعلم الآن' : 'Commencer'} <span aria-hidden="true">←</span></a>
             </section>
             ${academicBanner}
+            ${hub}
             ${taskGroup('🧫', 'استكشف الخلية', 'Explorer la cellule', renderPlantCellExplorer())}
             ${taskGroup('🌿', 'مختبر التركيب الضوئي', 'Laboratoire de photosynthèse', renderPhotosynthesisLab())}
             ${taskGroup('🧪', 'اختبر فهمك للخلية والتركيب الضوئي', 'Tester vos connaissances : cellule et photosynthèse', renderCellPhotosynthesisQuiz())}
@@ -2675,6 +2679,17 @@ function openScientificPhotoPreview(card){
         `;
 
         container.innerHTML = html;
+        const taskParams = new URLSearchParams(window.location.search);
+        const studentCategory = taskParams.get('studentCategory');
+        const studentTaskKey = taskParams.get('studentTask');
+        if (studentCategory || studentTaskKey) {
+            const taskNodes = Array.from(container.querySelectorAll('details.gs-student-task[data-task-key]'));
+            taskNodes.forEach(node => { node.hidden = studentTaskKey ? node.dataset.taskKey !== studentTaskKey : node.dataset.taskCategory !== studentCategory; });
+            const targetTask = taskNodes.find(node => node.dataset.taskKey === studentTaskKey);
+            if (targetTask) { targetTask.open = true; targetTask.scrollIntoView({behavior:'smooth',block:'center'}); }
+            const hubNode = container.querySelector('.gs-student-category-hub');
+            if (hubNode && studentTaskKey) hubNode.hidden = true;
+        }
         loadScientificMediaImages(container);
         if (container.dataset.gsStudyJumpsBound !== 'true') {
             container.dataset.gsStudyJumpsBound = 'true';

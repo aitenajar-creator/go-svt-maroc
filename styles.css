@@ -2752,3 +2752,7 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
         transition: none;
     }
 }
+
+/* Student task category hub */
+.gs-student-category-hub{margin:18px 0;padding:20px;border:1px solid #dce9de;border-radius:22px;background:#f6faf6}.gs-student-category-heading{text-align:center;margin-bottom:16px}.gs-student-category-heading h3{margin:7px 0;color:#235638}.gs-student-category-heading p{margin:0;color:#5d7563}.gs-student-category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.gs-student-category-card{display:flex;flex-direction:column;gap:8px;padding:15px;border-radius:16px;background:#fff;border:1px solid #dce9de;text-decoration:none;color:#285b3b;min-height:135px}.gs-student-category-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#e9f4ea;font-size:1.3rem}.gs-student-category-card strong{font-size:1rem}.gs-student-category-card small{color:#58715e;line-height:1.6}.gs-student-category-link{margin-top:auto;font-weight:800;color:#2d8050}.gs-student-category-card:hover{border-color:#77ad81;transform:translateY(-2px)}.gs-student-category-card:focus-visible{outline:3px solid #7bb68a;outline-offset:3px}
+@media(max-width:560px){.gs-student-category-grid{grid-template-columns:1fr 1fr}.gs-student-category-card{min-height:120px;padding:12px}}
