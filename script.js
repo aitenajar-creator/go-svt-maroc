@@ -801,7 +801,7 @@ function switchLanguage() {
 }
 
 // ---------- التنقل ----------
-function navigateTo(sectionId) {
+function navigateTo(sectionId, options = {}) {
     const target = document.getElementById(sectionId);
     if (!target) return;
 
@@ -815,7 +815,9 @@ function navigateTo(sectionId) {
     const nav = document.querySelector('.main-nav');
     if (nav) nav.classList.remove('active');
 
-    history.replaceState(null, '', '#' + sectionId);
+    if (options.updateHistory !== false && location.hash !== '#' + sectionId) {
+        history.pushState({ sectionId }, '', '#' + sectionId);
+    }
     window.scrollTo(0, 0);
 
     // Render student space content if navigating to student-space section
@@ -861,6 +863,16 @@ function setupNavigation() {
 
         e.preventDefault();
         navigateTo(id);
+    });
+
+    // Keep the visible section synchronized with browser Back/Forward navigation.
+    window.addEventListener('popstate', function () {
+        const id = location.hash.replace(/^#/, '');
+        if (id && document.getElementById(id)?.classList.contains('section')) {
+            navigateTo(id, { updateHistory: false });
+        } else {
+            navigateTo('accueil', { updateHistory: false });
+        }
     });
 }
 
@@ -1000,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const initial = location.hash.substring(1);
     const target = initial && document.getElementById(initial);
-    if (target && target.classList.contains('section')) navigateTo(initial);
+    if (target && target.classList.contains('section')) navigateTo(initial, { updateHistory: false });
 
     reloadAllSections();
 });
