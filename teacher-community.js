@@ -1178,6 +1178,27 @@
   async function init() {
     wire();
     const requestedCategory = new URLSearchParams(window.location.search).get('category');
+    if (requestedCategory) {
+      document.body.classList.add('tc-standalone-category');
+      const style = document.createElement('style');
+      style.id = 'tc-standalone-category-style';
+      style.textContent = `
+        body.tc-standalone-category .tc-hero,
+        body.tc-standalone-category .tc-benefits,
+        body.tc-standalone-category .tc-category-hub,
+        body.tc-standalone-category #contribute { display:none !important; }
+        body.tc-standalone-category #library { padding-top:24px; }
+        body.tc-standalone-category .tc-section-heading:before { content:'← العودة إلى تصنيفات مجتمع الأساتذة'; display:block; width:fit-content; margin-bottom:14px; padding:10px 14px; border-radius:10px; background:#176b54; color:white; font-weight:800; cursor:pointer; }
+      `;
+      document.head.appendChild(style);
+      const back = document.createElement('a');
+      back.href = 'teacher-community.html#resource-categories';
+      back.textContent = '← العودة إلى تصنيفات مجتمع الأساتذة';
+      back.className = 'tc-category-back-link';
+      back.style.cssText = 'display:inline-flex;margin:0 0 16px;padding:11px 15px;border-radius:11px;background:#176b54;color:#fff;text-decoration:none;font-weight:800';
+      const library = document.getElementById('library');
+      if (library) library.insertBefore(back, library.firstChild);
+    }
     const categorySelect = $('tc-category');
     if (requestedCategory && categorySelect && Array.from(categorySelect.options).some(option => option.value === requestedCategory)) categorySelect.value = requestedCategory;
     if (!config || !window.supabase || !window.supabase.createClient) {
