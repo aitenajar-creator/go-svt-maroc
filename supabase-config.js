@@ -21,9 +21,41 @@
   const client = window.supabaseClient;
   if (!client) return;
 
+  // Share auth validation across simultaneous cloud requests. This avoids a burst of
+  // identical /auth/v1/user calls when a browser still holds a revoked session.
+  let authUserLookup = null;
+  let invalidSessionCleanup = null;
+
+  async function clearInvalidLocalSession() {
+    if (!invalidSessionCleanup) {
+      invalidSessionCleanup = Promise.resolve()
+        .then(() => client.auth.signOut({ scope: 'local' }))
+        .catch(error => {
+          console.warn('[GoSVT] Could not clear the invalid local session:', error && error.message);
+        })
+        .finally(() => { invalidSessionCleanup = null; });
+    }
+    await invalidSessionCleanup;
+  }
+
   async function authenticatedStudentId(expectedStudentId) {
-    const { data, error } = await client.auth.getUser();
-    if (error) throw error;
+    if (!authUserLookup) {
+      authUserLookup = Promise.resolve()
+        .then(() => client.auth.getUser())
+        .finally(() => { authUserLookup = null; });
+    }
+
+    const { data, error } = await authUserLookup;
+    if (error) {
+      const authError = [error.code, error.name, error.message].filter(Boolean).join(' ');
+      if (/session_not_found|refresh_token_not_found|invalid_token|jwt_expired|session_expired/i.test(authError)) {
+        console.warn('[GoSVT] The saved session is no longer valid; returning to sign-in.');
+        await clearInvalidLocalSession();
+        return null;
+      }
+      throw error;
+    }
+
     const actualStudentId = data && data.user ? data.user.id : null;
     // A delayed request from a previous account must never read or write for the new account.
     if (expectedStudentId && actualStudentId !== expectedStudentId) return null;
