@@ -1233,5 +1233,6 @@ $('digestive-next').addEventListener('click',()=>{
 });
 $('digestive-reset').addEventListener('click',()=>{digestiveIndex=0;digestiveScore=0;digestiveAnswered=false;renderDigestiveLab();});
 renderDigestiveLab();
-\nloadCommonsPhotos();
+
+loadCommonsPhotos();
 })();
