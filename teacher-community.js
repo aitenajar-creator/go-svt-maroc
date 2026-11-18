@@ -1184,7 +1184,7 @@
       style.id = 'tc-standalone-category-style';
       style.textContent = `
         body.tc-standalone-category .tc-header nav,
-        body.tc-standalone-category .tc-header-actions,
+        body.tc-standalone-category #tc-invite-friends,
         body.tc-standalone-category .tc-hero,
         body.tc-standalone-category .tc-benefits,
         body.tc-standalone-category .tc-category-hub,
