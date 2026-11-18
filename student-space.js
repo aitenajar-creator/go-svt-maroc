@@ -854,7 +854,10 @@
         const container = document.getElementById('student-space-content');
         if (!container || !container.children.length) return; // sera rendu à l'ouverture de la section
         // Preserve typed login fields while signed out, but switch to the dashboard immediately after a successful sign-in.
-        if (container.querySelector('.gs-auth') &&
+        // Preserve credentials only when the actual login form is visible.
+        // The verification placeholder has no form; once auth becomes ready,
+        // it must be replaced with the login gate instead of remaining stuck.
+        if (container.querySelector('.gs-auth-form') &&
             !(window.StudentAccount && window.StudentAccount.isLoggedIn())) return;
         const active = container.querySelector('.space-tab.active');
         const tabName = active ? active.dataset.tab : 'dashboard';
