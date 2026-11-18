@@ -1090,7 +1090,7 @@
   }
   function wire() {
     $('tc-invite-friends').addEventListener('click', inviteFriends);
-    $('tc-account').addEventListener('click',()=>user?$('tc-dashboard').scrollIntoView({behavior:'smooth'}):openAuth('login'));
+    $('tc-account').addEventListener('click',()=>{if(!user){openAuth('login');return;}if(document.body.classList.contains('tc-standalone-category')){window.location.href='teacher-community.html#tc-dashboard';return;}$('tc-dashboard').scrollIntoView({behavior:'smooth'});});
     $('tc-hero-join').addEventListener('click',()=>user?$('tc-dashboard').scrollIntoView({behavior:'smooth'}):openAuth('register'));
     $('tc-auth-form').addEventListener('submit',handleAuth);
     document.querySelectorAll('[data-auth-view]').forEach(b=>b.addEventListener('click',()=>{authView=b.dataset.authView;openAuth(authView);}));
