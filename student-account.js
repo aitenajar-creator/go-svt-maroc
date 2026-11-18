@@ -72,6 +72,16 @@
     }
   }
 
+  function withAuthTimeout(promise, label, ms = 9000) {
+    let timer;
+    return Promise.race([
+      Promise.resolve(promise),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(label + ' timed out')), ms);
+      })
+    ]).finally(() => clearTimeout(timer));
+  }
+
   async function applySessionInternal(session, generation) {
     const sessionUser = session && session.user ? session.user : null;
     const uid = sessionUser && sessionUser.id;
@@ -98,11 +108,11 @@
     if (sessionUser) {
       let data = null, error = null;
       try {
-        ({ data, error } = await client
+        ({ data, error } = await withAuthTimeout(client
           .from('profiles')
           .select('id,display_name,role')
           .eq('id', uid)
-          .maybeSingle());
+          .maybeSingle(), 'Student profile lookup'));
       } catch (err) {
         if (generation !== sessionGeneration) return;
         console.warn('[GoSVT] Profile read deferred:', err && err.message);
@@ -370,10 +380,10 @@
       }
       emit();
     });
-    client.auth.getSession()
+    withAuthTimeout(client.auth.getSession(), 'Supabase getSession', 9000)
       .then(({ data, error }) => {
         if (error) console.error(error);
-        return applySession(data && data.session);
+        return withAuthTimeout(applySession(data && data.session), 'Initial session verification', 12000);
       })
       .catch(e => {
         console.error(e);
