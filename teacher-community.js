@@ -1177,6 +1177,9 @@
   }
   async function init() {
     wire();
+    const requestedCategory = new URLSearchParams(window.location.search).get('category');
+    const categorySelect = $('tc-category');
+    if (requestedCategory && categorySelect && Array.from(categorySelect.options).some(option => option.value === requestedCategory)) categorySelect.value = requestedCategory;
     if (!config || !window.supabase || !window.supabase.createClient) {
       $('tc-library-state').textContent='إعداد الاتصال غير متاح. تحقق من تحميل إعداد Supabase.';
       return;
