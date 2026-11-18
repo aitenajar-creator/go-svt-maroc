@@ -2705,6 +2705,8 @@ function openScientificPhotoPreview(card){
                     body.gs-standalone-student-task #student-space-content #panel-dashboard { display:block !important; }
                     body.gs-standalone-student-task #student-space-content .gs-standalone-task-back { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 16px; padding:14px 18px; background:#fff; border:1px solid #dce9de; border-radius:16px; }
                     body.gs-standalone-student-task #student-space-content .gs-standalone-task-back a { display:inline-block; padding:10px 15px; border-radius:11px; background:#246b48; color:#fff; text-decoration:none; font-weight:800; }
+                    body.gs-standalone-student-task #student-space-content .gs-standalone-task-unavailable { margin:18px 0; padding:24px; border:1px solid #f0d4a4; border-radius:16px; background:#fffaf0; color:#624b22; }
+                    body.gs-standalone-student-task #student-space-content .gs-standalone-task-unavailable a { display:inline-block; margin-top:10px; padding:10px 14px; border-radius:10px; background:#246b48; color:#fff; text-decoration:none; font-weight:800; }
                     body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] { margin-top:0; }
                     body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] > summary { display:none !important; }
                     body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] > .gs-student-task-body { display:block !important; }
@@ -2719,7 +2721,16 @@ function openScientificPhotoPreview(card){
             const taskNodes = Array.from(container.querySelectorAll('details.gs-student-task[data-task-key]'));
             taskNodes.forEach(node => { node.hidden = studentTaskKey ? node.dataset.taskKey !== studentTaskKey : node.dataset.taskCategory !== studentCategory; });
             const targetTask = taskNodes.find(node => node.dataset.taskKey === studentTaskKey);
-            if (targetTask) { targetTask.open = true; targetTask.scrollIntoView({behavior:'smooth',block:'center'}); }
+            if (targetTask) {
+                targetTask.open = true;
+                targetTask.scrollIntoView({behavior:'smooth',block:'center'});
+            } else if (studentTaskKey) {
+                const unavailable = document.createElement('section');
+                unavailable.className = 'gs-standalone-task-unavailable';
+                unavailable.setAttribute('role', 'status');
+                unavailable.innerHTML = '<h2>تعذر العثور على هذه المهمة</h2><p>قد يكون رابط المهمة قديماً أو أن المهمة نُقلت إلى تصنيف آخر.</p><a href="student-task-categories.html?category=' + encodeURIComponent(studentCategory || 'learning') + '">العودة إلى قائمة المهام</a>';
+                container.appendChild(unavailable);
+            }
             const hubNode = container.querySelector('.gs-student-category-hub');
             if (hubNode && studentTaskKey) hubNode.hidden = true;
         }
