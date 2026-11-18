@@ -1499,3 +1499,181 @@ body{background:#f4f8f5}
 .gs-dark #student-space .gs-continue-model-link{background:linear-gradient(110deg,#1e3d2b,#254b34);border-color:#426d50;color:#e5f4e8}
 .gs-dark #student-space .gs-continue-model-link small{color:#c1d9c7}
 @media(prefers-reduced-motion:reduce){#student-space .gs-continue-model-link{transition:none}#student-space .gs-continue-model-link:hover{transform:none}}
+
+
+/* FINAL RESOURCE-CARD CASCADE FIX
+   visual-refresh.css is loaded after styles.css. Keep this final, scoped
+   layout authoritative so the general .content-grid>.content-card rules
+   cannot collapse the two dedicated resource panels. */
+.content-grid > .content-card.file-resource-card,
+.content-grid > .track-content-group > .content-grid > .content-card.file-resource-card {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  padding: .75rem !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+.content-card.file-resource-card > .file-card-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) !important;
+  grid-template-rows: auto !important;
+  grid-template-areas: "preview details" !important;
+  align-items: stretch !important;
+  justify-items: stretch !important;
+  gap: .75rem !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  direction: ltr !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel,
+.content-card.file-resource-card > .file-card-layout > .file-info-panel {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-self: stretch !important;
+  justify-self: stretch !important;
+  float: none !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: .75rem !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  border: 1px solid #cbded2 !important;
+  border-radius: 14px !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel {
+  grid-area: preview !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  background: #f0f4f2 !important;
+}
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail,
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail {
+  display: block !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: top center !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-info-panel {
+  grid-area: details !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: .65rem !important;
+  background: #fff !important;
+  direction: rtl !important;
+  text-align: start !important;
+  overflow-wrap: anywhere !important;
+}
+.content-card.file-resource-card .file-info-panel > h3,
+.content-card.file-resource-card .file-info-panel > .file-name {
+  display: block !important;
+  position: static !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  writing-mode: horizontal-tb !important;
+  transform: none !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  gap: .5rem !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: .15rem 0 0 !important;
+  padding: 0 !important;
+}
+.content-card.file-resource-card .file-info-panel > .card-actions a,
+.content-card.file-resource-card .file-info-panel > .card-actions button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 40px !important;
+  height: auto !important;
+  margin: 0 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  writing-mode: horizontal-tb !important;
+  text-align: center !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: .3rem !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin-top: auto !important;
+  padding-top: .45rem !important;
+}
+.content-card.file-resource-card .file-info-panel > .gs-tools > .gs-tool {
+  display: inline-flex !important;
+  flex: 1 1 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  min-height: 34px !important;
+}
+@media (max-width: 640px) {
+  .content-grid > .content-card.file-resource-card,
+  .content-grid > .track-content-group > .content-grid > .content-card.file-resource-card {
+    grid-column: 1 / -1 !important;
+  }
+  .content-card.file-resource-card > .file-card-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "preview" "details" !important;
+    gap: .55rem !important;
+  }
+  .content-card.file-resource-card > .file-card-layout > .file-preview-panel,
+  .content-card.file-resource-card > .file-card-layout > .file-info-panel {
+    padding: .55rem !important;
+    border-radius: 11px !important;
+  }
+}
