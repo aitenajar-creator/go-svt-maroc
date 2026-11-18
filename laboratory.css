@@ -733,7 +733,7 @@ html[dir="ltr"] .gs-watercycle-arrow{transform:rotate(180deg)}
 .gs-enzyme-footer button{border:0;border-radius:11px;padding:10px 16px;background:#286b47;color:white;font:inherit;font-weight:800;cursor:pointer}
 .gs-enzyme-card>small{color:#78877c;line-height:1.9}
 .gs-dark .gs-enzyme-card{background:#17291d;border-color:#3b5942}
-.gs-dark .gs-enzyme-intro,.gs-dark .gs-enzyme-question,#enzyme-feedback{background:#203a29;color:#d9ecdd}
+.gs-dark .gs-enzyme-intro,.gs-dark .gs-enzyme-question,.gs-dark #enzyme-feedback{background:#203a29;color:#d9ecdd}
 .gs-dark .gs-enzyme-intro p,.gs-dark .gs-enzyme-question>p,.gs-dark .gs-enzyme-footer,.gs-dark .gs-enzyme-card>small{color:#b7cbbb}
 .gs-dark .gs-enzyme-question{border-color:#405d47}
 .gs-dark .gs-enzyme-question h3{color:#d9ecdd}
