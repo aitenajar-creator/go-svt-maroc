@@ -45,7 +45,10 @@
 
   function emit() {
     document.dispatchEvent(new CustomEvent('gosvt:auth-changed', { detail: { loggedIn: !!user, userId: user && user.id, profile } }));
-    if (window.StudentSpace) window.StudentSpace.refresh();
+    if (window.StudentSpace && typeof window.StudentSpace.refresh === 'function') {
+      try { window.StudentSpace.refresh(); }
+      catch (err) { console.error('[GoSVT] Student workspace refresh deferred:', err); }
+    }
   }
   function getMap() {
     try {
@@ -349,7 +352,10 @@
   document.addEventListener('submit', async e => { if(e.target.id!=='gs-chpw-form')return; e.preventDefault(); const f=e.target, p=f.querySelector('#gs-c-new').value, p2=f.querySelector('#gs-c-new2').value; if(p.length<8)return msg(f,L('كلمة المرور يجب أن تتكون من 8 أحرف على الأقل.','8 caractères minimum.')); if(p!==p2)return msg(f,L('كلمتا المرور غير متطابقتين.','Les mots de passe ne correspondent pas.')); const b=f.querySelector('button'); b.disabled=true; try{const {error}=await client.auth.updateUser({password:p});if(error)throw error;f.reset();msg(f,L('تم تغيير كلمة المرور.','Mot de passe modifié.'));}catch(err){msg(f,errorText(err));}finally{b.disabled=false;} });
   function initAuth() {
     if (!client) { ready = true; emit(); return; }
-    client.auth.onAuthStateChange((event, session) => {
+
+    // Do not let a synchronous SDK/bootstrap error leave the student space
+    // permanently displaying the session-verification message.
+    const handleAuthEvent = (event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         recoveryMode = true;
         view = 'reset';
@@ -361,7 +367,6 @@
         if (window.GoSVTStudyNotes && typeof window.GoSVTStudyNotes.deactivate === 'function') {
           window.GoSVTStudyNotes.deactivate();
         }
-        // Invalidate any pending profile lookup or cloud restore from the old session.
         sessionGeneration++;
         sessionApply = null;
         setAccountSwitching(false);
@@ -379,16 +384,45 @@
         return;
       }
       emit();
-    });
-    withAuthTimeout(client.auth.getSession(), 'Supabase getSession', 9000)
+    };
+
+    try {
+      if (!client.auth || typeof client.auth.onAuthStateChange !== 'function') {
+        throw new Error('Supabase auth state listener is unavailable');
+      }
+      client.auth.onAuthStateChange(handleAuthEvent);
+    } catch (err) {
+      console.error('[GoSVT Auth] Could not register auth listener:', err);
+      // Continue with getSession; the page can still initialize and display
+      // the current account even if realtime auth events are unavailable.
+    }
+
+    let bootstrapTimer = setTimeout(() => {
+      if (ready) return;
+      console.warn('[GoSVT Auth] Session bootstrap watchdog released the loading gate.');
+      ready = true;
+      emit();
+    }, 15000);
+
+    Promise.resolve()
+      .then(() => {
+        if (!client.auth || typeof client.auth.getSession !== 'function') {
+          throw new Error('Supabase getSession is unavailable');
+        }
+        return withAuthTimeout(client.auth.getSession(), 'Supabase getSession', 9000);
+      })
       .then(({ data, error }) => {
-        if (error) console.error(error);
+        if (error) console.error('[GoSVT Auth] Session lookup:', error);
         return withAuthTimeout(applySession(data && data.session), 'Initial session verification', 12000);
       })
       .catch(e => {
-        console.error(e);
+        console.error('[GoSVT Auth] Session bootstrap failed:', e);
         ready = true;
         emit();
+      })
+      .finally(() => {
+        clearTimeout(bootstrapTimer);
+        bootstrapTimer = null;
       });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAuth); else initAuth();
