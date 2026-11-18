@@ -1183,11 +1183,18 @@
       const style = document.createElement('style');
       style.id = 'tc-standalone-category-style';
       style.textContent = `
+        body.tc-standalone-category .tc-header nav,
+        body.tc-standalone-category .tc-header-actions,
         body.tc-standalone-category .tc-hero,
         body.tc-standalone-category .tc-benefits,
         body.tc-standalone-category .tc-category-hub,
-        body.tc-standalone-category #contribute { display:none !important; }
-        body.tc-standalone-category #library { padding-top:24px; }
+        body.tc-standalone-category #contribute,
+        body.tc-standalone-category #tc-dashboard,
+        body.tc-standalone-category .tc-admin-activity-section,
+        body.tc-standalone-category footer { display:none !important; }
+        body.tc-standalone-category .tc-header { position:relative; }
+        body.tc-standalone-category #library { padding-top:24px; min-height:calc(100vh - 90px); }
+        body.tc-standalone-category main { padding-bottom:32px; }
       `;
       document.head.appendChild(style);
       const back = document.createElement('a');
