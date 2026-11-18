@@ -1822,6 +1822,40 @@ function openScientificPhotoPreview(card){
             ? (lang() === 'ar' ? academicNames[academic.study_track][0] : academicNames[academic.study_track][1]) : '';
         const academicBanner = academicName
             ? `<div class="gs-student-level">🎓 <span>${lang() === 'ar' ? 'مستواك الدراسي:' : 'Votre niveau :'}</span> <strong>${escapeHtml(academicName)}</strong></div>` : '';
+        // Category hub: keep task panels organized and open each category on its own page.
+        const hub = `<section class="gs-student-category-hub" aria-labelledby="gs-student-category-title">
+            <div class="gs-student-category-heading">
+                <span class="gs-eyebrow">GO SVT MAROC · ESPACE ÉLÈVE</span>
+                <h3 id="gs-student-category-title">${lang() === 'ar' ? 'اكتشف مساحتي' : 'Explorez votre espace'}</h3>
+                <p>${lang() === 'ar' ? 'اختر تصنيفاً لعرض مهامه في صفحة مستقلة.' : 'Choisissez une catégorie pour afficher ses activités sur une page dédiée.'}</p>
+            </div>
+            <div class="gs-student-category-grid">
+                <a class="gs-student-category-card" href="student-task-categories.html?category=biology">
+                    <span class="gs-student-category-icon" aria-hidden="true">🧬</span>
+                    <strong>${lang() === 'ar' ? 'مختبرات علوم الحياة' : 'Laboratoires de biologie'}</strong>
+                    <small>${lang() === 'ar' ? 'الخلية والتركيب الضوئي وجسم الإنسان والتجارب' : 'Cellule, photosynthèse, corps humain et expériences'}</small>
+                    <span class="gs-student-category-link">${lang() === 'ar' ? 'فتح التصنيف ←' : 'Ouvrir la catégorie ←'}</span>
+                </a>
+                <a class="gs-student-category-card" href="student-task-categories.html?category=learning">
+                    <span class="gs-student-category-icon" aria-hidden="true">🧠</span>
+                    <strong>${lang() === 'ar' ? 'أدوات التعلم' : 'Outils d’apprentissage'}</strong>
+                    <small>${lang() === 'ar' ? 'المسارات والبطاقات والقاموس والتحديات' : 'Parcours, cartes mémoire, glossaire et défis'}</small>
+                    <span class="gs-student-category-link">${lang() === 'ar' ? 'فتح التصنيف ←' : 'Ouvrir la catégorie ←'}</span>
+                </a>
+                <a class="gs-student-category-card" href="student-task-categories.html?category=media">
+                    <span class="gs-student-category-icon" aria-hidden="true">🖼️</span>
+                    <strong>${lang() === 'ar' ? 'المكتبة العلمية' : 'Médiathèque scientifique'}</strong>
+                    <small>${lang() === 'ar' ? 'الصور العلمية والموارد البصرية' : 'Images et ressources visuelles'}</small>
+                    <span class="gs-student-category-link">${lang() === 'ar' ? 'فتح التصنيف ←' : 'Ouvrir la catégorie ←'}</span>
+                </a>
+                <a class="gs-student-category-card" href="student-task-categories.html?category=tracking">
+                    <span class="gs-student-category-icon" aria-hidden="true">📊</span>
+                    <strong>${lang() === 'ar' ? 'تتبعي وإنجازاتي' : 'Suivi et progrès'}</strong>
+                    <small>${lang() === 'ar' ? 'التقدم الدراسي والنتائج والنشاط' : 'Progression, résultats et activité'}</small>
+                    <span class="gs-student-category-link">${lang() === 'ar' ? 'فتح التصنيف ←' : 'Ouvrir la catégorie ←'}</span>
+                </a>
+            </div>
+        </section>`;
         const html = `
             <div class="dashboard-header">
                 ${accountBar || `<div class="profile-selector">
