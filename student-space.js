@@ -2683,6 +2683,39 @@ function openScientificPhotoPreview(card){
         const studentCategory = taskParams.get('studentCategory');
         const studentTaskKey = taskParams.get('studentTask');
         if (studentCategory || studentTaskKey) {
+            document.body.classList.add('gs-standalone-student-task');
+            let standaloneStyle = document.getElementById('gs-standalone-student-task-style');
+            if (!standaloneStyle) {
+                standaloneStyle = document.createElement('style');
+                standaloneStyle.id = 'gs-standalone-student-task-style';
+                standaloneStyle.textContent = `
+                    body.gs-standalone-student-task .header,
+                    body.gs-standalone-student-task .footer,
+                    body.gs-standalone-student-task > nav,
+                    body.gs-standalone-student-task > footer,
+                    body.gs-standalone-student-task .section:not(#student-space) { display:none !important; }
+                    body.gs-standalone-student-task #student-space { display:block !important; min-height:100vh; padding:18px 0 50px; background:#f3f8f4; }
+                    body.gs-standalone-student-task #student-space > .container > .section-title { display:none !important; }
+                    body.gs-standalone-student-task #student-space-content .dashboard-header,
+                    body.gs-standalone-student-task #student-space-content .space-nav,
+                    body.gs-standalone-student-task #student-space-content .gs-student-welcome,
+                    body.gs-standalone-student-task #student-space-content .gs-student-category-hub,
+                    body.gs-standalone-student-task #student-space-content .data-actions { display:none !important; }
+                    body.gs-standalone-student-task #student-space-content .space-panel:not(#panel-dashboard) { display:none !important; }
+                    body.gs-standalone-student-task #student-space-content #panel-dashboard { display:block !important; }
+                    body.gs-standalone-student-task #student-space-content .gs-standalone-task-back { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 16px; padding:14px 18px; background:#fff; border:1px solid #dce9de; border-radius:16px; }
+                    body.gs-standalone-student-task #student-space-content .gs-standalone-task-back a { display:inline-block; padding:10px 15px; border-radius:11px; background:#246b48; color:#fff; text-decoration:none; font-weight:800; }
+                    body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] { margin-top:0; }
+                    body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] > summary { display:none !important; }
+                    body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] > .gs-student-task-body { display:block !important; }
+                `;
+                document.head.appendChild(standaloneStyle);
+            }
+            const back = document.createElement('div');
+            back.className = 'gs-standalone-task-back';
+            back.innerHTML = '<strong>GO SVT Maroc · المهمة المستقلة</strong><a href="student-task-categories.html?category=' + encodeURIComponent(studentCategory || 'learning') + '">← العودة إلى قائمة المهام</a>';
+            container.insertBefore(back, container.firstChild);
+
             const taskNodes = Array.from(container.querySelectorAll('details.gs-student-task[data-task-key]'));
             taskNodes.forEach(node => { node.hidden = studentTaskKey ? node.dataset.taskKey !== studentTaskKey : node.dataset.taskCategory !== studentCategory; });
             const targetTask = taskNodes.find(node => node.dataset.taskKey === studentTaskKey);
