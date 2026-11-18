@@ -1794,3 +1794,48 @@ body{background:#f4f8f5}
     width: 100% !important;
   }
 }
+
+
+/* Resource cards: give the preview the actual available width.
+   The previous minimum width on the details column could dominate cards
+   when the parent content grid placed several cards side by side. */
+.content-grid:has(> .content-card.file-resource-card),
+.content-grid:has(> .track-content-group > .content-grid > .content-card.file-resource-card) {
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start !important;
+}
+.content-grid > .content-card.file-resource-card,
+.content-grid > .track-content-group > .content-grid > .content-card.file-resource-card {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+.content-card.file-resource-card > .file-card-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 4fr) minmax(150px, .7fr) !important;
+  grid-template-areas: "preview details" !important;
+  align-items: start !important;
+  gap: .8rem !important;
+  width: 100% !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel {
+  grid-area: preview !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-self: start !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-info-panel {
+  grid-area: details !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-self: start !important;
+}
+@media (max-width: 640px) {
+  .content-grid:has(> .content-card.file-resource-card),
+  .content-grid:has(> .track-content-group > .content-grid > .content-card.file-resource-card) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .content-card.file-resource-card > .file-card-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "preview" "details" !important;
+  }
+}
