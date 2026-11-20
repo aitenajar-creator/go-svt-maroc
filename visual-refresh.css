@@ -2016,3 +2016,61 @@ body{background:#f4f8f5}
     padding: 12px !important;
   }
 }
+
+
+/* CONTAINED PDF PREVIEW — override legacy card-wide PDF positioning.
+   PDF thumbnails now live inside .file-preview-panel; never position them
+   against the outer card or let legacy pseudo layers escape that frame. */
+.content-card.file-resource-card:has(.pdf-thumbnail)::before {
+  content: none !important;
+  display: none !important;
+}
+.content-card.file-resource-card .file-preview-panel {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail,
+.content-card.file-resource-card .file-preview-panel > .pdf-thumbnail,
+.content-card.file-resource-card .file-preview-panel > .image-thumbnail {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: auto !important;
+  float: none !important;
+  transform: none !important;
+  flex: 0 0 auto !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  background: #fff !important;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+  position: relative !important;
+  inset: auto !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  transform: none !important;
+  object-fit: contain !important;
+  object-position: top center !important;
+}
