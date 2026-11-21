@@ -95,6 +95,25 @@ async function start(){
  }
  const frame=$('lesson-frame'),resumeButton=$('resume-btn'),readingProgress=$('reading-progress');
  const readingKey='gosvt-private-reading:'+user.id+':'+id;
+ // Reading comfort controls affect only the current lesson view.
+ let readingFontSize=18, highContrast=false;
+ function applyReadingPreferences(){
+  try{
+   const doc=frame.contentDocument;
+   if(!doc||!doc.body)return;
+   doc.body.style.fontSize=readingFontSize+'px';
+   doc.body.style.lineHeight='1.85';
+   doc.body.style.backgroundColor=highContrast?'#101820':'#ffffff';
+   doc.body.style.color=highContrast?'#f5f7fa':'#25352b';
+   doc.querySelectorAll('a').forEach(a=>{a.style.color=highContrast?'#8ecbff':'';});
+   const contrastButton=$('contrast-toggle');
+   if(contrastButton)contrastButton.setAttribute('aria-pressed',String(highContrast));
+  }catch(preferenceError){console.warn('Reading preferences unavailable',preferenceError);}
+ }
+ $('font-smaller').addEventListener('click',()=>{readingFontSize=Math.max(14,readingFontSize-1);applyReadingPreferences();});
+ $('font-larger').addEventListener('click',()=>{readingFontSize=Math.min(28,readingFontSize+1);applyReadingPreferences();});
+ $('font-reset').addEventListener('click',()=>{readingFontSize=18;highContrast=false;applyReadingPreferences();});
+ $('contrast-toggle').addEventListener('click',()=>{highContrast=!highContrast;applyReadingPreferences();});
  let savedPosition=0;
  try{const saved=JSON.parse(localStorage.getItem(readingKey)||'null');if(saved&&Number.isFinite(saved.position))savedPosition=Math.max(0,saved.position);}catch(storageError){}
  function updateReadingUI(percent){
@@ -121,7 +140,7 @@ async function start(){
    refresh();
   }catch(readError){console.warn('Reading position tracking unavailable',readError);}
  });
- frame.srcdoc=html;$('lesson-frame-wrap').hidden=false;$('lesson-status').hidden=true;
+ frame.srcdoc=html;frame.addEventListener('load',applyReadingPreferences,{once:true});$('lesson-frame-wrap').hidden=false;$('lesson-status').hidden=true;
  const banks=[
  {match:/flux de la matière|flux de la matiere/i,questions:[
  {q:"Dans une chaîne alimentaire, la matière organique est d’abord produite par…",a:["les producteurs autotrophes","les consommateurs secondaires","les décomposeurs uniquement"],correct:0,why:"Les producteurs (notamment les végétaux chlorophylliens) fabriquent de la matière organique à partir de matière minérale."},
