@@ -1323,7 +1323,23 @@
             .filter(result => result.percentage < 70)
             .sort((a, b) => a.percentage - b.percentage)
             .slice(0, 3);
-        if (!needsReview.length) return '';
+        const stats = getDashboardStats();
+        const nextStep = !stats.lessonsViewed
+            ? { href: '#cours', icon: '📖', ar: 'ابدأ بدرس واحد اليوم', fr: 'Commencez par un cours aujourd’hui', detailAr: 'اختر درساً لفهم فكرة جديدة قبل الانتقال إلى التمارين.', detailFr: 'Choisissez un cours pour comprendre une nouvelle notion avant les exercices.', actionAr: 'اكتشف الدروس', actionFr: 'Découvrir les cours' }
+            : stats.exercisesDone < stats.lessonsViewed
+                ? { href: '#exercices', icon: '🧩', ar: 'طبّق ما تعلمته', fr: 'Appliquez ce que vous avez appris', detailAr: 'التمارين تساعدك على تثبيت المفاهيم التي درستها.', detailFr: 'Les exercices vous aident à consolider les notions étudiées.', actionAr: 'انتقل إلى التمارين', actionFr: 'Accéder aux exercices' }
+                : !stats.testsTaken
+                    ? { href: '#quiz', icon: '⚡', ar: 'اختبر فهمك', fr: 'Testez votre compréhension', detailAr: 'جرّب اختباراً قصيراً لتحديد ما أتقنته وما يحتاج إلى مراجعة.', detailFr: 'Essayez un quiz court pour repérer ce qui est acquis et ce qui reste à revoir.', actionAr: 'ابدأ اختباراً', actionFr: 'Lancer un quiz' }
+                    : { href: '#examens', icon: '🏆', ar: 'استعد للامتحان', fr: 'Préparez-vous aux examens', detailAr: 'انتقل إلى امتحان أو فرض للتدرب على توظيف مكتسباتك.', detailFr: 'Entraînez-vous avec un examen pour mobiliser vos acquis.', actionAr: 'تصفح الامتحانات', actionFr: 'Voir les examens' };
+        const nextStepCard = `<article class="gs-next-step-card">
+            <span class="gs-next-step-icon" aria-hidden="true">${nextStep.icon}</span>
+            <div class="gs-next-step-copy">
+                <strong>${lang() === 'ar' ? nextStep.ar : nextStep.fr}</strong>
+                <p>${lang() === 'ar' ? nextStep.detailAr : nextStep.detailFr}</p>
+                <a href="${nextStep.href}">${lang() === 'ar' ? nextStep.actionAr : nextStep.actionFr} ←</a>
+            </div>
+        </article>`;
+        if (!needsReview.length) return nextStepCard;
 
         return `
             <section class="gs-review-recommendations">
@@ -1354,7 +1370,7 @@
                             '<small>' + (lang() === 'ar' ? 'أعد المراجعة' : 'Revoir') + ' ←</small></a>';
                     }).join('')}
                 </div>
-            </section>`;
+            </section>${nextStepCard}`;
     }
 
     function renderPlantCellExplorer() {
