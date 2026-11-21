@@ -2,4 +2,6 @@
 layout: null
 permalink: /content.json
 ---
-{{ site.static_files | map: "path" | jsonify }}
+{% assign static_paths = site.static_files | map: "path" %}
+{% assign page_paths = site.pages | map: "path" %}
+{{ static_paths | concat: page_paths | uniq | jsonify }}
