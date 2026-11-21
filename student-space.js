@@ -874,7 +874,10 @@
 
         if (tabName && tabName !== 'dashboard') {
             container.querySelectorAll('.space-tab').forEach(function (b) {
-                b.classList.toggle('active', b.dataset.tab === tabName);
+                const selected = b.dataset.tab === tabName;
+                b.classList.toggle('active', selected);
+                b.setAttribute('aria-selected', selected ? 'true' : 'false');
+                b.tabIndex = selected ? 0 : -1;
             });
             container.querySelectorAll('.space-panel').forEach(function (p) {
                 p.classList.toggle('active', p.id === 'panel-' + tabName);
@@ -2710,39 +2713,39 @@ function openScientificPhotoPreview(card){
 
         let html = `
             <div class="student-space">
-                <div class="space-nav">
-                    <button class="space-tab active" data-tab="dashboard">${t('dashboard')}</button>
-                    <button class="space-tab" data-tab="progress">${t('progress')}</button>
-                    <button class="space-tab" data-tab="history">${t('history')}</button>
-                    <button class="space-tab" data-tab="mistakes">${t('mistakes')}</button>
-                    <button class="space-tab" data-tab="favorites">${t('favorites')}</button>
-                    <button class="space-tab" data-tab="motivation">${t('motivation')}</button>
-                    <button class="space-tab" data-tab="planner">🗓 ${t('planner')}</button>
-                    <button class="space-tab" data-tab="notes">🗒 ${t('notesTab')}</button>
+                <div class="space-nav" role="tablist" aria-label="${lang() === 'ar' ? 'أقسام مساحة التلميذ' : 'Sections de l’espace élève'}">
+                    <button id="student-tab-dashboard" class="space-tab active" role="tab" aria-selected="true" aria-controls="panel-dashboard" tabindex="0" data-tab="dashboard">${t('dashboard')}</button>
+                    <button id="student-tab-progress" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-progress" tabindex="-1" data-tab="progress">${t('progress')}</button>
+                    <button id="student-tab-history" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-history" tabindex="-1" data-tab="history">${t('history')}</button>
+                    <button id="student-tab-mistakes" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-mistakes" tabindex="-1" data-tab="mistakes">${t('mistakes')}</button>
+                    <button id="student-tab-favorites" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-favorites" tabindex="-1" data-tab="favorites">${t('favorites')}</button>
+                    <button id="student-tab-motivation" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-motivation" tabindex="-1" data-tab="motivation">${t('motivation')}</button>
+                    <button id="student-tab-planner" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-planner" tabindex="-1" data-tab="planner">🗓 ${t('planner')}</button>
+                    <button id="student-tab-notes" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-notes" tabindex="-1" data-tab="notes">🗒 ${t('notesTab')}</button>
                 </div>
                 <div class="space-content">
-                    <div class="space-panel active" id="panel-dashboard">
+                    <div class="space-panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="student-tab-dashboard" tabindex="0">
                         ${renderDashboard()}
                     </div>
-                    <div class="space-panel" id="panel-progress">
+                    <div class="space-panel" id="panel-progress" role="tabpanel" aria-labelledby="student-tab-progress" tabindex="0">
                          ${panelTask('📈','تقدمي الدراسي','Ma progression',renderProgress())} 
                     </div>
-                    <div class="space-panel" id="panel-history">
+                    <div class="space-panel" id="panel-history" role="tabpanel" aria-labelledby="student-tab-history" tabindex="0">
                         ${panelTask('🕘','سجل الاختبارات','Historique des quiz',renderHistory())}
                     </div>
-                    <div class="space-panel" id="panel-mistakes">
+                    <div class="space-panel" id="panel-mistakes" role="tabpanel" aria-labelledby="student-tab-mistakes" tabindex="0">
                         ${panelTask('🧩','مراجعة أخطائي','Révision de mes erreurs',renderMistakes())}
                     </div>
-                    <div class="space-panel" id="panel-favorites">
+                    <div class="space-panel" id="panel-favorites" role="tabpanel" aria-labelledby="student-tab-favorites" tabindex="0">
                         ${panelTask('⭐','مواردي المفضلة','Mes favoris',renderFavorites())}
                     </div>
-                    <div class="space-panel" id="panel-motivation">
+                    <div class="space-panel" id="panel-motivation" role="tabpanel" aria-labelledby="student-tab-motivation" tabindex="0">
                         ${panelTask('🏅','التحفيز والأهداف','Motivation et objectifs',renderMotivation())}
                     </div>
-                    <div class="space-panel" id="panel-planner">
+                    <div class="space-panel" id="panel-planner" role="tabpanel" aria-labelledby="student-tab-planner" tabindex="0">
                         ${panelTask('🗓','خطة المراجعة','Mon planning de révision',renderPlanner())}
                     </div>
-                    <div class="space-panel" id="panel-notes">
+                    <div class="space-panel" id="panel-notes" role="tabpanel" aria-labelledby="student-tab-notes" tabindex="0">
                         ${panelTask('🗒','ملاحظاتي','Mes notes',renderNotes())}
                     </div>
                 </div>
@@ -3211,9 +3214,37 @@ function openScientificPhotoPreview(card){
         });
 
         // Add event listeners
-        container.querySelectorAll('.space-tab').forEach(tab => {
+        const studentTabs = Array.from(container.querySelectorAll('.space-tab'));
+        function activateStudentTab(tab, moveFocus) {
+            const tabName = tab.dataset.tab;
+            studentTabs.forEach(function (item) {
+                const selected = item === tab;
+                item.classList.toggle('active', selected);
+                item.setAttribute('aria-selected', selected ? 'true' : 'false');
+                item.tabIndex = selected ? 0 : -1;
+            });
+            container.querySelectorAll('.space-panel').forEach(function (panel) {
+                panel.classList.toggle('active', panel.id === 'panel-' + tabName);
+            });
+            if (moveFocus) tab.focus();
+        }
+        studentTabs.forEach(tab => {
+            tab.addEventListener('keydown', function(event) {
+                const index = studentTabs.indexOf(this);
+                let nextIndex = null;
+                if (event.key === 'ArrowRight') nextIndex = (index + 1) % studentTabs.length;
+                else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + studentTabs.length) % studentTabs.length;
+                else if (event.key === 'Home') nextIndex = 0;
+                else if (event.key === 'End') nextIndex = studentTabs.length - 1;
+                if (nextIndex !== null) {
+                    event.preventDefault();
+                    activateStudentTab(studentTabs[nextIndex], true);
+                    studentTabs[nextIndex].click();
+                }
+            });
             tab.addEventListener('click', function() {
                 const tabName = this.dataset.tab;
+                activateStudentTab(this, false);
 
                 // Favorites may have changed since the student space was rendered.
                 if (tabName === 'favorites') {
@@ -3224,13 +3255,7 @@ function openScientificPhotoPreview(card){
                     }
                 }
 
-                // Update tabs
-                container.querySelectorAll('.space-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Update panels
-                container.querySelectorAll('.space-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById(`panel-${tabName}`).classList.add('active');
+
             });
         });
 
