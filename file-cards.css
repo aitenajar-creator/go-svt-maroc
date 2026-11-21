@@ -289,7 +289,7 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
 .content-grid:has(> .track-content-group),
 .content-grid#latest-content {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)) !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)) !important;
   align-items: stretch !important;
   gap: 1rem !important;
 }
@@ -310,7 +310,7 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
 }
 .content-grid > .track-content-group > .content-grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)) !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)) !important;
   align-items: stretch !important;
   gap: 1rem !important;
 }
@@ -332,7 +332,7 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
     grid-column: auto !important;
   }
 }
-@media (max-width: 520px) {
+@media (max-width: 440px) {
   .content-grid:has(> .content-card.file-resource-card),
   .content-grid:has(> .track-content-group),
   .content-grid#latest-content,
