@@ -1878,9 +1878,9 @@ function openScientificPhotoPreview(card){
             </section>
             <nav class="gs-student-quick-actions" aria-label="${lang() === 'ar' ? 'وصول سريع إلى أقسام التعلم' : 'Accès rapide aux sections d’apprentissage'}">
                 <a href="#cours"><span aria-hidden="true">📖</span><strong>${lang() === 'ar' ? 'الدروس' : 'Cours'}</strong></a>
-                <a href="#exercices"><span aria-hidden="true">🧩</span><strong>${lang() === 'ar' ? 'التمارين' : 'Exercices'}</strong></a>
-                <a href="#quiz"><span aria-hidden="true">⚡</span><strong>${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}</strong></a>
-                <a href="#examens"><span aria-hidden="true">🏆</span><strong>${lang() === 'ar' ? 'الامتحانات' : 'Examens'}</strong></a>
+                <a href="#exercices" aria-label="${lang() === 'ar' ? 'الانتقال إلى قسم التمارين' : 'Accéder aux exercices'}" title="${lang() === 'ar' ? 'التمارين' : 'Exercices'}"><span aria-hidden="true">🧩</span><strong>${lang() === 'ar' ? 'التمارين' : 'Exercices'}</strong></a>
+                <a href="#quiz" aria-label="${lang() === 'ar' ? 'الانتقال إلى الاختبارات التفاعلية' : 'Accéder aux quiz interactifs'}" title="${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}"><span aria-hidden="true">⚡</span><strong>${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}</strong></a>
+                <a href="#examens" aria-label="${lang() === 'ar' ? 'الانتقال إلى قسم الامتحانات' : 'Accéder aux examens'}" title="${lang() === 'ar' ? 'الامتحانات' : 'Examens'}"><span aria-hidden="true">🏆</span><strong>${lang() === 'ar' ? 'الامتحانات' : 'Examens'}</strong></a>
             </nav>
             ${academicBanner}
             ${hub}
