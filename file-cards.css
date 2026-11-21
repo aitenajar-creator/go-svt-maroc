@@ -281,3 +281,98 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
     inset-inline-end: .6rem !important;
   }
 }
+
+
+/* Resource library grid: show several complete file cards per row.
+   Each card keeps its preview frame above its information/actions frame. */
+.content-grid:has(> .content-card.file-resource-card),
+.content-grid:has(> .track-content-group),
+.content-grid#latest-content {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)) !important;
+  align-items: stretch !important;
+  gap: 1rem !important;
+}
+
+.content-grid > .content-card.file-resource-card,
+.content-grid > .track-content-group .content-card.file-resource-card,
+#latest-content > .content-card.file-resource-card {
+  grid-column: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+/* Track groups remain full width, while their files use the same 2–3 column grid. */
+.content-grid > .track-content-group {
+  grid-column: 1 / -1 !important;
+  min-width: 0 !important;
+}
+.content-grid > .track-content-group > .content-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)) !important;
+  align-items: stretch !important;
+  gap: 1rem !important;
+}
+.content-grid > .track-content-group .content-card.file-resource-card {
+  grid-column: auto !important;
+}
+
+/* Compact card composition: large preview first, details and tools below. */
+.content-card.file-resource-card > .file-card-layout,
+html[dir="rtl"] .content-card.file-resource-card > .file-card-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  grid-template-areas: "preview" "details" !important;
+  direction: ltr !important;
+  gap: .65rem !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-preview-panel {
+  grid-area: preview !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.content-card.file-resource-card > .file-card-layout > .file-info-panel {
+  grid-area: details !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail,
+.content-card.file-resource-card .file-preview-panel > .pdf-thumbnail,
+.content-card.file-resource-card .file-preview-panel > .image-thumbnail {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
+.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* Two columns on medium screens; one column on narrow phones. */
+@media (max-width: 760px) {
+  .content-grid:has(> .content-card.file-resource-card),
+  .content-grid:has(> .track-content-group),
+  .content-grid#latest-content,
+  .content-grid > .track-content-group > .content-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .7rem !important;
+  }
+  .content-grid > .content-card.file-resource-card,
+  .content-grid > .track-content-group .content-card.file-resource-card {
+    grid-column: auto !important;
+  }
+}
+@media (max-width: 520px) {
+  .content-grid:has(> .content-card.file-resource-card),
+  .content-grid:has(> .track-content-group),
+  .content-grid#latest-content,
+  .content-grid > .track-content-group > .content-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .75rem !important;
+  }
+}
