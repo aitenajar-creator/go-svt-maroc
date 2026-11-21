@@ -2716,7 +2716,7 @@ function openScientificPhotoPreview(card){
 
         let html = `
             <div class="student-space">
-                <div class="space-nav" role="tablist" aria-label="${lang() === 'ar' ? 'أقسام مساحة التلميذ' : 'Sections de l’espace élève'}">
+                <div class="space-nav" role="tablist" aria-orientation="horizontal" aria-label="${lang() === 'ar' ? 'أقسام مساحة التلميذ' : 'Sections de l’espace élève'}">
                     <button id="student-tab-dashboard" class="space-tab active" role="tab" aria-selected="true" aria-controls="panel-dashboard" tabindex="0" data-tab="dashboard">${t('dashboard')}</button>
                     <button id="student-tab-progress" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-progress" tabindex="-1" data-tab="progress">${t('progress')}</button>
                     <button id="student-tab-history" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-history" tabindex="-1" data-tab="history">${t('history')}</button>
@@ -3238,8 +3238,9 @@ function openScientificPhotoPreview(card){
             tab.addEventListener('keydown', function(event) {
                 const index = studentTabs.indexOf(this);
                 let nextIndex = null;
-                if (event.key === 'ArrowRight') nextIndex = (index + 1) % studentTabs.length;
-                else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + studentTabs.length) % studentTabs.length;
+                const isRtl = getComputedStyle(this.parentElement).direction === 'rtl';
+                if (event.key === 'ArrowRight') nextIndex = (index + (isRtl ? -1 : 1) + studentTabs.length) % studentTabs.length;
+                else if (event.key === 'ArrowLeft') nextIndex = (index + (isRtl ? 1 : -1) + studentTabs.length) % studentTabs.length;
                 else if (event.key === 'Home') nextIndex = 0;
                 else if (event.key === 'End') nextIndex = studentTabs.length - 1;
                 if (nextIndex !== null) {
