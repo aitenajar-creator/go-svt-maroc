@@ -80,11 +80,36 @@
         <div class="section-heading"><div><p class="eyebrow">PUBLISHED LIBRARY</p><h2>المحتوى الذي أضفته</h2></div><button id="refresh-btn" class="quiet-btn" type="button">تحديث ↻</button></div>
         <div id="resource-list" class="resource-list"><p class="muted">جاري تحميل المحتوى...</p></div>
       </section>
+<section class="panel" id="private-lessons-panel" hidden>
+ <div class="section-heading"><div><p class="eyebrow">PRIVATE STUDENT LESSONS</p><h2>الدروس الخاصة بمساحة التلميذ</h2></div><span class="heading-icon">📚</span></div>
+ <p class="muted">تُحفظ هذه الدروس في قاعدة بيانات خاصة، ولا تظهر في الفهرس العام. يمكن للمدير نشرها أو إخفاؤها.</p>
+ <form id="private-lesson-form" class="upload-grid">
+  <div class="field"><label for="private-lesson-title">عنوان الدرس</label><input id="private-lesson-title" required maxlength="180"></div>
+  <div class="field"><label for="private-lesson-slug">معرّف الدرس (لاتيني)</label><input id="private-lesson-slug" required pattern="[a-z0-9-]{3,100}" placeholder="lesson-name"></div>
+  <div class="field"><label for="private-lesson-level">المستوى</label><select id="private-lesson-level"><option>TC</option><option>1BAC</option><option>2BAC</option></select></div>
+  <div class="field"><label for="private-lesson-track">الشعبة</label><select id="private-lesson-track"><option>TCS</option><option>TCL</option><option>1BACSE</option><option>1BACSM</option><option>1BACL</option><option>2BACSVT</option><option>2BACSP</option><option>2BACSM</option></select></div>
+  <div class="field"><label for="private-lesson-language">اللغة</label><select id="private-lesson-language"><option value="fr">Français</option><option value="ar">العربية</option></select></div>
+  <div class="field"><label for="private-lesson-file">ملف HTML (حتى 500KB)</label><input id="private-lesson-file" type="file" accept=".html,.htm" required></div>
+  <div class="field wide"><label><input id="private-lesson-publish" type="checkbox" checked> نشر الدرس للتلاميذ المسجلين</label></div>
+  <div class="field wide"><button id="private-lesson-save" class="primary-btn" type="submit">حفظ الدرس الخاص</button></div>
+ </form>
+ <p id="private-lesson-msg" class="message" role="status"></p>
+ <div class="section-heading"><h3>الدروس المسجلة</h3><button id="private-lessons-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+ <div id="private-lessons-list" class="resource-list">جاري التحميل…</div>
+</section>
+<style>
+#private-lessons-panel .private-admin-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 0;border-bottom:1px solid #e7eee5}
+#private-lessons-panel .private-admin-item small{display:block;color:#718074;margin-top:.2rem}
+#private-lessons-panel .private-admin-actions{display:flex;gap:.5rem;align-items:center}
+#private-lessons-panel .private-admin-actions a,#private-lessons-panel .private-admin-actions button{border:0;border-radius:8px;padding:.5rem .75rem;background:#eaf2e8;color:#28563a;text-decoration:none;font-weight:700;cursor:pointer}
+</style>
+
       <p class="security-note">🔒 لا تمنح هذه الصفحة صلاحيات بحد ذاتها؛ يتم التحقق من دور admin في قاعدة البيانات عند كل عملية، كما تحمي سياسات التخزين والبيانات عمليات الرفع والحذف.</p>
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="admin.js?v=20261112-5"></script>
+  <script src="admin-private-lessons.js?v=1"></script>
 </body>
 </html>
