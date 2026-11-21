@@ -874,7 +874,10 @@
 
         if (tabName && tabName !== 'dashboard') {
             container.querySelectorAll('.space-tab').forEach(function (b) {
-                b.classList.toggle('active', b.dataset.tab === tabName);
+                const selected = b.dataset.tab === tabName;
+                b.classList.toggle('active', selected);
+                b.setAttribute('aria-selected', selected ? 'true' : 'false');
+                b.tabIndex = selected ? 0 : -1;
             });
             container.querySelectorAll('.space-panel').forEach(function (p) {
                 p.classList.toggle('active', p.id === 'panel-' + tabName);
