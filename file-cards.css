@@ -37,7 +37,7 @@
 
 .content-card.file-resource-card > .file-card-layout {
   display: grid !important;
-  grid-template-columns: minmax(0, 2.8fr) minmax(220px, .9fr) !important;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) !important;
   grid-template-rows: auto !important;
   grid-template-areas: "preview details" !important;
   align-items: stretch !important;
@@ -152,7 +152,7 @@
 }
 html[dir="rtl"] .content-card.file-resource-card > .file-card-layout {
   direction: rtl !important;
-  grid-template-columns: minmax(220px, .9fr) minmax(0, 2.8fr) !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) !important;
   grid-template-areas: "details preview" !important;
 }
 html[dir="rtl"] .content-card.file-resource-card .file-info-panel {
