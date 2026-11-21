@@ -880,7 +880,10 @@
                 b.tabIndex = selected ? 0 : -1;
             });
             container.querySelectorAll('.space-panel').forEach(function (p) {
-                p.classList.toggle('active', p.id === 'panel-' + tabName);
+                const selected = p.id === 'panel-' + tabName;
+                p.classList.toggle('active', selected);
+                p.hidden = !selected;
+                p.setAttribute('aria-hidden', selected ? 'false' : 'true');
             });
         }
 
@@ -2724,28 +2727,28 @@ function openScientificPhotoPreview(card){
                     <button id="student-tab-notes" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-notes" tabindex="-1" data-tab="notes">🗒 ${t('notesTab')}</button>
                 </div>
                 <div class="space-content">
-                    <div class="space-panel active" id="panel-dashboard" role="tabpanel" aria-labelledby="student-tab-dashboard" tabindex="0">
+                    <div class="space-panel active" id="panel-dashboard" role="tabpanel" aria-hidden="false" aria-labelledby="student-tab-dashboard" tabindex="0">
                         ${renderDashboard()}
                     </div>
-                    <div class="space-panel" id="panel-progress" role="tabpanel" aria-labelledby="student-tab-progress" tabindex="0">
+                    <div class="space-panel" id="panel-progress" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-progress" tabindex="0">
                          ${panelTask('📈','تقدمي الدراسي','Ma progression',renderProgress())} 
                     </div>
-                    <div class="space-panel" id="panel-history" role="tabpanel" aria-labelledby="student-tab-history" tabindex="0">
+                    <div class="space-panel" id="panel-history" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-history" tabindex="0">
                         ${panelTask('🕘','سجل الاختبارات','Historique des quiz',renderHistory())}
                     </div>
-                    <div class="space-panel" id="panel-mistakes" role="tabpanel" aria-labelledby="student-tab-mistakes" tabindex="0">
+                    <div class="space-panel" id="panel-mistakes" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-mistakes" tabindex="0">
                         ${panelTask('🧩','مراجعة أخطائي','Révision de mes erreurs',renderMistakes())}
                     </div>
-                    <div class="space-panel" id="panel-favorites" role="tabpanel" aria-labelledby="student-tab-favorites" tabindex="0">
+                    <div class="space-panel" id="panel-favorites" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-favorites" tabindex="0">
                         ${panelTask('⭐','مواردي المفضلة','Mes favoris',renderFavorites())}
                     </div>
-                    <div class="space-panel" id="panel-motivation" role="tabpanel" aria-labelledby="student-tab-motivation" tabindex="0">
+                    <div class="space-panel" id="panel-motivation" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-motivation" tabindex="0">
                         ${panelTask('🏅','التحفيز والأهداف','Motivation et objectifs',renderMotivation())}
                     </div>
-                    <div class="space-panel" id="panel-planner" role="tabpanel" aria-labelledby="student-tab-planner" tabindex="0">
+                    <div class="space-panel" id="panel-planner" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-planner" tabindex="0">
                         ${panelTask('🗓','خطة المراجعة','Mon planning de révision',renderPlanner())}
                     </div>
-                    <div class="space-panel" id="panel-notes" role="tabpanel" aria-labelledby="student-tab-notes" tabindex="0">
+                    <div class="space-panel" id="panel-notes" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-notes" tabindex="0">
                         ${panelTask('🗒','ملاحظاتي','Mes notes',renderNotes())}
                     </div>
                 </div>
@@ -3224,7 +3227,10 @@ function openScientificPhotoPreview(card){
                 item.tabIndex = selected ? 0 : -1;
             });
             container.querySelectorAll('.space-panel').forEach(function (panel) {
-                panel.classList.toggle('active', panel.id === 'panel-' + tabName);
+                const selected = panel.id === 'panel-' + tabName;
+                panel.classList.toggle('active', selected);
+                panel.hidden = !selected;
+                panel.setAttribute('aria-hidden', selected ? 'false' : 'true');
             });
             if (moveFocus) tab.focus();
         }
