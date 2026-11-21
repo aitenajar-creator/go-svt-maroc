@@ -1361,9 +1361,17 @@
                             'cell-photosynthesis-revision': 'gs-svt-revision-title'
                         };
                         const target = internalTargets[result.quizId];
-                        if (target) return '<button type="button" class="gs-review-recommendation gs-review-jump" data-study-anchor="' + target + '">' +
-                            '<span>' + getQuizDisplayName(result.quizId) + '</span><strong>' + result.percentage + '%</strong>' +
-                            '<small>' + (lang() === 'ar' ? 'انتقل إلى المراجعة' : 'Ouvrir la révision') + ' ←</small></button>';
+                        if (target) {
+                            const reviewName = getQuizDisplayName(result.quizId);
+                            const reviewAction = lang() === 'ar' ? 'انتقل إلى المراجعة' : 'Ouvrir la révision';
+                            const accessibleLabel = lang() === 'ar'
+                                ? reviewName + '، نتيجتك ' + result.percentage + ' بالمئة، ' + reviewAction
+                                : reviewName + ', votre résultat : ' + result.percentage + ' pour cent, ' + reviewAction;
+                            return '<button type="button" class="gs-review-recommendation gs-review-jump" data-study-anchor="' + target +
+                                '" aria-label="' + escapeHtml(accessibleLabel) + '">' +
+                                '<span>' + escapeHtml(reviewName) + '</span><strong>' + result.percentage + '%</strong>' +
+                                '<small>' + reviewAction + ' ←</small></button>';
+                        }
                         const path = result.quizId.charAt(0) === '/' ? result.quizId.slice(1) : result.quizId;
                         if (!path.startsWith('quiz/') || !path.toLowerCase().endsWith('.json') ||
                             path.split('/').includes('..') || path.includes('?') || path.includes('#')) return '';
