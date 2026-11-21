@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-21T17:58:27.477545+00:00",
+  "generated": "2026-11-21T18:05:29.534277+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -74,7 +74,9 @@
             },
             "Cours HTML": {
               "__files": [
-                "Chapitre I - La sortie écologique.html"
+                "Chapitre I - La sortie écologique.html",
+                "Chapitre IV - Flux de la matière et de l'énergie dans l'écosystème.html",
+                "Chapitre V - Les équilibres naturels.html"
               ]
             }
           }
