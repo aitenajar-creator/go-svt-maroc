@@ -42,8 +42,50 @@ async function start(){
   const panel=document.createElement('section');panel.className='gs-learning-objectives';
   panel.innerHTML='<h2>🎯 Objectifs d’apprentissage</h2><p>À la fin de ce cours, je peux :</p><div class="gs-objective-list"></div><p class="gs-objective-progress" role="status">0/'+objectiveSet.items.length+' objectifs cochés</p>';
   const css=document.createElement('style');css.textContent='.gs-learning-objectives{max-width:1100px;margin:1rem auto;padding:1.1rem 1.25rem;border:1px solid #d5e5d2;border-radius:15px;background:#f4faf2;color:#244631}.gs-learning-objectives h2{margin:.1rem 0 .5rem}.gs-objective-list label{display:flex;align-items:flex-start;gap:.6rem;padding:.55rem .25rem;border-bottom:1px solid #e2ece0;cursor:pointer}.gs-objective-list label:last-child{border-bottom:0}.gs-objective-list input{margin-top:.25rem;accent-color:#2b7147}.gs-objective-progress{font-weight:700;margin:.75rem 0 0}';document.head.appendChild(css);
-  const list=panel.querySelector('.gs-objective-list');objectiveSet.items.forEach((item,i)=>{const label=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';cb.setAttribute('aria-label','Objectif '+(i+1));label.append(cb,document.createTextNode(item));list.appendChild(label);});
-  const progress=panel.querySelector('.gs-objective-progress');list.addEventListener('change',()=>{const done=list.querySelectorAll('input:checked').length;progress.textContent=done+'/'+objectiveSet.items.length+' objectifs cochés'+(done===objectiveSet.items.length?' — Bravo, tous les objectifs sont cochés !':'');});
+  const list=panel.querySelector('.gs-objective-list');
+  const progress=panel.querySelector('.gs-objective-progress');
+  const status=document.createElement('p');status.setAttribute('role','status');status.textContent='Chargement de votre progression…';panel.appendChild(status);
+  let savedObjectives={};
+  const objectiveKey='private-lesson:'+id;
+  function renderObjectiveProgress(){
+   const done=list.querySelectorAll('input:checked').length;
+   progress.textContent=done+'/'+objectiveSet.items.length+' objectifs cochés'+(done===objectiveSet.items.length?' — Bravo, tous les objectifs sont cochés !':'');
+  }
+  objectiveSet.items.forEach((item,i)=>{
+   const label=document.createElement('label'),cb=document.createElement('input');
+   cb.type='checkbox';cb.setAttribute('aria-label','Objectif '+(i+1));cb.disabled=true;
+   label.append(cb,document.createTextNode(item));list.appendChild(label);
+  });
+  (async function(){
+   try{
+    const result=await client.from('student_learning_state').select('lesson_objectives').eq('student_id',user.id).maybeSingle();
+    if(result.error)throw result.error;
+    savedObjectives=result.data&&result.data.lesson_objectives&&typeof result.data.lesson_objectives==='object'?result.data.lesson_objectives:{};
+    const checks=list.querySelectorAll('input[type="checkbox"]');
+    const saved=Array.isArray(savedObjectives[objectiveKey])?savedObjectives[objectiveKey]:[];
+    checks.forEach((cb,i)=>{cb.checked=saved.includes(i);cb.disabled=false;});
+    renderObjectiveProgress();
+    status.textContent='Progression synchronisée avec votre compte.';
+   }catch(loadError){
+    list.querySelectorAll('input').forEach(cb=>cb.disabled=false);
+    status.textContent='Sauvegarde indisponible pour le moment : vos coches restent temporaires.';
+    console.warn('Impossible de charger les objectifs du cours',loadError);
+   }
+  })();
+  list.addEventListener('change',async function(){
+   renderObjectiveProgress();
+   const checks=Array.from(list.querySelectorAll('input[type="checkbox"]'));
+   savedObjectives[objectiveKey]=checks.map((cb,i)=>cb.checked?i:null).filter(i=>i!==null);
+   status.textContent='Enregistrement…';
+   try{
+    const result=await client.from('student_learning_state').upsert({student_id:user.id,lesson_objectives:savedObjectives,updated_at:new Date().toISOString()},{onConflict:'student_id'});
+    if(result.error)throw result.error;
+    status.textContent='Progression enregistrée dans votre compte.';
+   }catch(saveError){
+    status.textContent='Échec de sauvegarde. Vérifiez votre connexion puis réessayez.';
+    console.error('Impossible de sauvegarder les objectifs du cours',saveError);
+   }
+  });
   $('lesson-frame-wrap').before(panel);
  }
  $('lesson-frame').srcdoc=html;$('lesson-frame-wrap').hidden=false;$('lesson-status').hidden=true;
