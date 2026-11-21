@@ -1876,6 +1876,12 @@ function openScientificPhotoPreview(card){
                 <div class="gs-welcome-tags"><span>🧬 ${lang() === 'ar' ? 'افهم' : 'Comprendre'}</span><span>🔬 ${lang() === 'ar' ? 'استكشف' : 'Explorer'}</span><span>🎯 ${lang() === 'ar' ? 'أتقن' : 'Maîtriser'}</span></div></div>
                 <a class="gs-primary-link" href="#cours">${lang() === 'ar' ? 'ابدأ التعلم الآن' : 'Commencer'} <span aria-hidden="true">←</span></a>
             </section>
+            <nav class="gs-student-quick-actions" aria-label="${lang() === 'ar' ? 'وصول سريع إلى أقسام التعلم' : 'Accès rapide aux sections d’apprentissage'}">
+                <a href="#cours"><span aria-hidden="true">📖</span><strong>${lang() === 'ar' ? 'الدروس' : 'Cours'}</strong></a>
+                <a href="#exercices"><span aria-hidden="true">🧩</span><strong>${lang() === 'ar' ? 'التمارين' : 'Exercices'}</strong></a>
+                <a href="#quiz"><span aria-hidden="true">⚡</span><strong>${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}</strong></a>
+                <a href="#examens"><span aria-hidden="true">🏆</span><strong>${lang() === 'ar' ? 'الامتحانات' : 'Examens'}</strong></a>
+            </nav>
             ${academicBanner}
             ${hub}
             ${taskGroup('🧫', 'استكشف الخلية', 'Explorer la cellule', renderPlantCellExplorer())}
