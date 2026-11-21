@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-21T18:09:12.944722+00:00",
+  "generated": "2026-11-21T21:15:56.109641+00:00",
   "tree": {
     "cours": {
       "__files": [
@@ -35,12 +35,7 @@
             "__files": [
               "eleves- cours 2bacsvt-francais- unite 1 -Chap 2-role de muscle strie.pdf",
               "eleves-ait enajar-cours 2bacsvt-francais- unite 1 -chap1-consomation d'energie.pdf"
-            ],
-            "Cours HTML": {
-              "__files": [
-                "Unite - De l ADN aux proteines, du genotype au phenotype et au metabolisme.html"
-              ]
-            }
+            ]
           }
         },
         "TC": {
@@ -75,13 +70,6 @@
             "Chapitre 5": {
               "__files": [
                 "eleves-TCS  AIT ENAJAR U1C5.pdf"
-              ]
-            },
-            "Cours HTML": {
-              "__files": [
-                "Chapitre I - La sortie écologique.html",
-                "Chapitre IV - Flux de la matière et de l'énergie dans l'écosystème.html",
-                "Chapitre V - Les équilibres naturels.html"
               ]
             }
           }
