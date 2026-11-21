@@ -3354,6 +3354,14 @@ function openScientificPhotoPreview(card){
         .space-panel.active {
             display: block;
         }
+        .space-panel:focus-visible {
+            outline: 3px solid #b7791f;
+            outline-offset: 4px;
+            border-radius: 12px;
+        }
+        html.gs-dark .space-panel:focus-visible {
+            outline-color: #a7d4b4;
+        }
         /* Image-inspired task cards: rich green overlays, glass icon tile and rounded edges. */
         .gs-student-task{margin:1rem 0;border:1px solid rgba(255,255,255,.58);border-radius:23px;background:#fff;overflow:hidden;box-shadow:0 9px 24px rgba(20,55,43,.12);transition:transform .22s ease,box-shadow .22s ease}
         .gs-student-task>summary{position:relative;isolation:isolate;display:flex;align-items:center;gap:.9rem;min-height:112px;padding:1rem 1.2rem;cursor:pointer;list-style:none;color:#fff;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.42);background-color:#244b40;background-image:radial-gradient(ellipse at 82% 18%,rgba(210,231,207,.22),transparent 34%),linear-gradient(112deg,rgba(7,43,35,.91),rgba(35,83,68,.68) 58%,rgba(172,195,183,.55))}
