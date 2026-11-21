@@ -93,7 +93,35 @@ async function start(){
   });
   $('lesson-frame-wrap').before(panel);
  }
- $('lesson-frame').srcdoc=html;$('lesson-frame-wrap').hidden=false;$('lesson-status').hidden=true;
+ const frame=$('lesson-frame'),resumeButton=$('resume-btn'),readingProgress=$('reading-progress');
+ const readingKey='gosvt-private-reading:'+user.id+':'+id;
+ let savedPosition=0;
+ try{const saved=JSON.parse(localStorage.getItem(readingKey)||'null');if(saved&&Number.isFinite(saved.position))savedPosition=Math.max(0,saved.position);}catch(storageError){}
+ function updateReadingUI(percent){
+  if(readingProgress){readingProgress.hidden=false;readingProgress.textContent='تقدم القراءة: '+percent+'%';}
+  if(resumeButton){resumeButton.hidden=percent<5||percent>=95;resumeButton.textContent='متابعة القراءة ('+percent+'%)';}
+ }
+ resumeButton.addEventListener('click',()=>{
+  try{const win=frame.contentWindow;if(win)win.scrollTo({top:savedPosition,behavior:'smooth'});}catch(e){}
+ });
+ frame.addEventListener('load',()=>{
+  try{
+   const win=frame.contentWindow,doc=win.document;
+   if(!win||!doc)return;
+   const measure=()=>Math.max(0,doc.documentElement.scrollHeight-win.innerHeight);
+   const refresh=()=>{
+    const max=measure(),position=Math.min(max,Math.max(0,win.scrollY||doc.documentElement.scrollTop||0));
+    const percent=max?Math.min(100,Math.round(position/max*100)):0;
+    try{localStorage.setItem(readingKey,JSON.stringify({position,percent,updatedAt:Date.now()}));}catch(storageError){}
+    savedPosition=position;updateReadingUI(percent);
+   };
+   if(savedPosition>0)updateReadingUI(Math.min(100,Math.round(savedPosition/Math.max(1,measure())*100)));
+   win.addEventListener('scroll',refresh,{passive:true});
+   win.addEventListener('resize',refresh);
+   refresh();
+  }catch(readError){console.warn('Reading position tracking unavailable',readError);}
+ });
+ frame.srcdoc=html;$('lesson-frame-wrap').hidden=false;$('lesson-status').hidden=true;
  const banks=[
  {match:/flux de la matière|flux de la matiere/i,questions:[
  {q:"Dans une chaîne alimentaire, la matière organique est d’abord produite par…",a:["les producteurs autotrophes","les consommateurs secondaires","les décomposeurs uniquement"],correct:0,why:"Les producteurs (notamment les végétaux chlorophylliens) fabriquent de la matière organique à partir de matière minérale."},
