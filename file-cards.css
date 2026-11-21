@@ -318,41 +318,6 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
   grid-column: auto !important;
 }
 
-/* Compact card composition: large preview first, details and tools below. */
-.content-card.file-resource-card > .file-card-layout,
-html[dir="rtl"] .content-card.file-resource-card > .file-card-layout {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) !important;
-  grid-template-rows: auto auto !important;
-  grid-template-areas: "preview" "details" !important;
-  direction: ltr !important;
-  gap: .65rem !important;
-}
-.content-card.file-resource-card > .file-card-layout > .file-preview-panel {
-  grid-area: preview !important;
-  width: 100% !important;
-  min-width: 0 !important;
-}
-.content-card.file-resource-card > .file-card-layout > .file-info-panel {
-  grid-area: details !important;
-  width: 100% !important;
-  min-width: 0 !important;
-}
-.content-card.file-resource-card .file-preview-panel > .content-card-thumbnail,
-.content-card.file-resource-card .file-preview-panel > .pdf-thumbnail,
-.content-card.file-resource-card .file-preview-panel > .image-thumbnail {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-.content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas,
-.content-card.file-resource-card .file-preview-panel .image-thumbnail img {
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
-  object-fit: contain !important;
-}
-
 /* Two columns on medium screens; one column on narrow phones. */
 @media (max-width: 760px) {
   .content-grid:has(> .content-card.file-resource-card),
