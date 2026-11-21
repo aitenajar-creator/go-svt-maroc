@@ -127,6 +127,8 @@ async function start(){
  try{const saved=JSON.parse(localStorage.getItem(readingKey)||'null');if(saved&&Number.isFinite(saved.position))savedPosition=Math.max(0,saved.position);}catch(storageError){}
  function updateReadingUI(percent){
   if(readingProgress){readingProgress.hidden=false;readingProgress.textContent='تقدم القراءة: '+percent+'%';}
+  const progressBar=$('reading-progress-bar');
+  if(progressBar){progressBar.hidden=false;progressBar.value=percent;progressBar.setAttribute('aria-valuetext',percent+'%');}
   if(resumeButton){resumeButton.hidden=percent<5||percent>=95;resumeButton.textContent='متابعة القراءة ('+percent+'%)';}
  }
  resumeButton.addEventListener('click',()=>{
