@@ -1330,7 +1330,9 @@
                 ? { href: '#exercices', icon: '🧩', ar: 'طبّق ما تعلمته', fr: 'Appliquez ce que vous avez appris', detailAr: 'التمارين تساعدك على تثبيت المفاهيم التي درستها.', detailFr: 'Les exercices vous aident à consolider les notions étudiées.', actionAr: 'انتقل إلى التمارين', actionFr: 'Accéder aux exercices' }
                 : !stats.testsTaken
                     ? { href: '#quiz', icon: '⚡', ar: 'اختبر فهمك', fr: 'Testez votre compréhension', detailAr: 'جرّب اختباراً قصيراً لتحديد ما أتقنته وما يحتاج إلى مراجعة.', detailFr: 'Essayez un quiz court pour repérer ce qui est acquis et ce qui reste à revoir.', actionAr: 'ابدأ اختباراً', actionFr: 'Lancer un quiz' }
-                    : { href: '#examens', icon: '🏆', ar: 'استعد للامتحان', fr: 'Préparez-vous aux examens', detailAr: 'انتقل إلى امتحان أو فرض للتدرب على توظيف مكتسباتك.', detailFr: 'Entraînez-vous avec un examen pour mobiliser vos acquis.', actionAr: 'تصفح الامتحانات', actionFr: 'Voir les examens' };
+                    : stats.averageScore < 70
+                        ? { href: '#quiz', icon: '🎯', ar: 'عزّز نتائجك بالمراجعة', fr: 'Renforcez vos acquis par la révision', detailAr: 'معدلك الحالي أقل من 70٪. أعد التدريب على الاختبارات وراجع المفاهيم التي تحتاج إلى ترسيخ قبل الانتقال إلى امتحان شامل.', detailFr: 'Votre moyenne actuelle est inférieure à 70 %. Reprenez les quiz et consolidez les notions à revoir avant de passer à un examen complet.', actionAr: 'واصل التدريب', actionFr: 'Continuer les quiz' }
+                        : { href: '#examens', icon: '🏆', ar: 'استعد للامتحان', fr: 'Préparez-vous aux examens', detailAr: 'انتقل إلى امتحان أو فرض للتدرب على توظيف مكتسباتك.', detailFr: 'Entraînez-vous avec un examen pour mobiliser vos acquis.', actionAr: 'تصفح الامتحانات', actionFr: 'Voir les examens' };
         const nextStepCard = `<article class="gs-next-step-card">
             <span class="gs-next-step-icon" aria-hidden="true">${nextStep.icon}</span>
             <div class="gs-next-step-copy">
