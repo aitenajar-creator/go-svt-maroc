@@ -1326,7 +1326,7 @@
         const stats = getDashboardStats();
         const nextStep = !stats.lessonsViewed
             ? { href: '#cours', icon: '📖', ar: 'ابدأ بدرس واحد اليوم', fr: 'Commencez par un cours aujourd’hui', detailAr: 'اختر درساً لفهم فكرة جديدة قبل الانتقال إلى التمارين.', detailFr: 'Choisissez un cours pour comprendre une nouvelle notion avant les exercices.', actionAr: 'اكتشف الدروس', actionFr: 'Découvrir les cours' }
-            : stats.exercisesDone < stats.lessonsViewed
+            : stats.exercisesDone === 0
                 ? { href: '#exercices', icon: '🧩', ar: 'طبّق ما تعلمته', fr: 'Appliquez ce que vous avez appris', detailAr: 'التمارين تساعدك على تثبيت المفاهيم التي درستها.', detailFr: 'Les exercices vous aident à consolider les notions étudiées.', actionAr: 'انتقل إلى التمارين', actionFr: 'Accéder aux exercices' }
                 : !stats.testsTaken
                     ? { href: '#quiz', icon: '⚡', ar: 'اختبر فهمك', fr: 'Testez votre compréhension', detailAr: 'جرّب اختباراً قصيراً لتحديد ما أتقنته وما يحتاج إلى مراجعة.', detailFr: 'Essayez un quiz court pour repérer ce qui est acquis et ce qui reste à revoir.', actionAr: 'ابدأ اختباراً', actionFr: 'Lancer un quiz' }
