@@ -841,3 +841,18 @@ html.gs-dark .gs-exam-filter-empty{border-color:#49634d;color:#c5d3c5}
 html[dir="ltr"] .gs-student-quick-actions a{flex-direction:row}
 html.gs-dark .gs-student-quick-actions a{background:linear-gradient(135deg,#203328,#263e2d);border-color:#405d45;color:#d9f0d9}
 @media(max-width:640px){.gs-student-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}.gs-student-quick-actions a{min-height:48px;padding:.6rem}}
+
+
+/* Student dashboard: guided next learning step */
+.gs-next-step-card{display:flex;align-items:flex-start;gap:.9rem;margin:.85rem 0;padding:1rem;border:1px solid #cfe2cf;border-radius:16px;background:linear-gradient(135deg,#f5fbf5,#eaf5ed);color:#284b31}
+.gs-next-step-icon{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:13px;background:#dcefe0;font-size:1.45rem}
+.gs-next-step-copy{min-width:0;flex:1}
+.gs-next-step-copy strong{display:block;font-size:1rem}
+.gs-next-step-copy p{margin:.35rem 0 .65rem;line-height:1.6;color:#506a54}
+.gs-next-step-copy a{display:inline-flex;align-items:center;gap:.35rem;font-weight:700;color:#24613a;text-decoration:none}
+.gs-next-step-copy a:hover{text-decoration:underline}
+html.gs-dark .gs-next-step-card{background:linear-gradient(135deg,#203328,#263e2d);border-color:#405d45;color:#d9f0d9}
+html.gs-dark .gs-next-step-icon{background:#344d3b}
+html.gs-dark .gs-next-step-copy p{color:#c0d5c2}
+html.gs-dark .gs-next-step-copy a{color:#bce5bd}
+@media(max-width:520px){.gs-next-step-card{gap:.7rem;padding:.85rem}.gs-next-step-icon{flex-basis:40px;width:40px;height:40px}}
