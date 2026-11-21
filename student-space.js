@@ -1312,11 +1312,13 @@
     function renderStudyRecommendations() {
         const data = getProfileData(currentProfileId);
         const latestByQuiz = Object.create(null);
-        (data.quizResults || []).forEach(result => {
-            if (!result || typeof result.quizId !== 'string' ||
-                !Number.isFinite(result.percentage) || !Number.isFinite(result.date)) return;
-            if (!latestByQuiz[result.quizId] || result.date > latestByQuiz[result.quizId].date) {
-                latestByQuiz[result.quizId] = result;
+        // Use the same validation rules as dashboard statistics so malformed
+        // imported legacy results cannot create misleading review recommendations.
+        getValidQuizResults(data).forEach(result => {
+            const quizId = result.quizId.trim();
+            const normalized = { ...result, quizId, percentage: Number(result.percentage), date: Number(result.date) };
+            if (!latestByQuiz[quizId] || normalized.date > latestByQuiz[quizId].date) {
+                latestByQuiz[quizId] = normalized;
             }
         });
         const needsReview = Object.values(latestByQuiz)
