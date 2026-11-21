@@ -1342,8 +1342,7 @@
         if (!needsReview.length) return nextStepCard;
 
         return `
-            <section class="gs-review-recommendations">`;
-
+            <section class="gs-review-recommendations">
                 <div class="gs-review-recommendations-head">
                     <span>🎯</span>
                     <div>
