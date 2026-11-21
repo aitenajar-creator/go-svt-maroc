@@ -95,8 +95,17 @@ async function start(){
  }
  const frame=$('lesson-frame'),resumeButton=$('resume-btn'),readingProgress=$('reading-progress');
  const readingKey='gosvt-private-reading:'+user.id+':'+id;
- // Reading comfort controls affect only the current lesson view.
+ const preferenceKey='gosvt-private-reading-preferences:'+user.id;
+ // Keep reading comfort preferences on this device for the signed-in student.
  let readingFontSize=18, highContrast=false;
+ try{
+  const preferences=JSON.parse(localStorage.getItem(preferenceKey)||'null');
+  if(preferences&&Number.isFinite(preferences.fontSize))readingFontSize=Math.min(28,Math.max(14,preferences.fontSize));
+  if(preferences&&typeof preferences.highContrast==='boolean')highContrast=preferences.highContrast;
+ }catch(preferenceStorageError){}
+ function saveReadingPreferences(){
+  try{localStorage.setItem(preferenceKey,JSON.stringify({fontSize:readingFontSize,highContrast}));}catch(preferenceStorageError){}
+ }
  function applyReadingPreferences(){
   try{
    const doc=frame.contentDocument;
@@ -110,10 +119,10 @@ async function start(){
    if(contrastButton)contrastButton.setAttribute('aria-pressed',String(highContrast));
   }catch(preferenceError){console.warn('Reading preferences unavailable',preferenceError);}
  }
- $('font-smaller').addEventListener('click',()=>{readingFontSize=Math.max(14,readingFontSize-1);applyReadingPreferences();});
- $('font-larger').addEventListener('click',()=>{readingFontSize=Math.min(28,readingFontSize+1);applyReadingPreferences();});
- $('font-reset').addEventListener('click',()=>{readingFontSize=18;highContrast=false;applyReadingPreferences();});
- $('contrast-toggle').addEventListener('click',()=>{highContrast=!highContrast;applyReadingPreferences();});
+ $('font-smaller').addEventListener('click',()=>{readingFontSize=Math.max(14,readingFontSize-1);applyReadingPreferences();saveReadingPreferences();});
+ $('font-larger').addEventListener('click',()=>{readingFontSize=Math.min(28,readingFontSize+1);applyReadingPreferences();saveReadingPreferences();});
+ $('font-reset').addEventListener('click',()=>{readingFontSize=18;highContrast=false;applyReadingPreferences();saveReadingPreferences();});
+ $('contrast-toggle').addEventListener('click',()=>{highContrast=!highContrast;applyReadingPreferences();saveReadingPreferences();});
  let savedPosition=0;
  try{const saved=JSON.parse(localStorage.getItem(readingKey)||'null');if(saved&&Number.isFinite(saved.position))savedPosition=Math.max(0,saved.position);}catch(storageError){}
  function updateReadingUI(percent){
