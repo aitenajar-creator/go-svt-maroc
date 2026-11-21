@@ -3723,6 +3723,14 @@ function openScientificPhotoPreview(card){
                 font-size: 0.9rem;
             }
         }
+        @media (forced-colors: active) {
+            .space-tab:focus-visible,
+            .space-panel:focus-visible,
+            .gs-student-task > summary:focus-visible {
+                outline: 2px solid Highlight !important;
+                outline-offset: 3px;
+            }
+        }
     `;
     document.head.appendChild(styles);
 
