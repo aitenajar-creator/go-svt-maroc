@@ -3650,6 +3650,14 @@ function openScientificPhotoPreview(card){
         .gs-badge-track{height:5px;overflow:hidden;background:#edf0eb;border-radius:8px}
         .gs-badge-track i{display:block;height:100%;background:#78ad70;border-radius:8px}
         @media(max-width:520px){.gs-achievements{padding:.9rem}.gs-achievements-heading{align-items:flex-start}.gs-badges-grid{grid-template-columns:1fr}}
+        @media(prefers-reduced-motion:reduce){
+            .student-space *, .student-space *::before, .student-space *::after{
+                animation-duration:.01ms!important;
+                animation-iteration-count:1!important;
+                transition-duration:.01ms!important;
+                scroll-behavior:auto!important;
+            }
+        }
         @keyframes gsSpaceIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
         @media(max-width:800px){.gs-path-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media(max-width:520px){.gs-path-steps{grid-template-columns:1fr 1fr}.gs-path-steps a{padding:.8rem}.gs-student-welcome:after{font-size:6rem;right:2%}[dir="rtl"] .gs-student-welcome:after{right:auto;left:2%}}
