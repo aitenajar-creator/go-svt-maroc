@@ -1456,7 +1456,7 @@
             <h4>${path.title}</h4><p>${path.desc}</p>
             <div class="gs-level-path-links">${path.steps.map(step=>`<button type="button" data-study-anchor="${step[0]}"><span>↗</span>${step[1]}</button>`).join('')}</div>
           </article>`).join('')}</div>
-          <p class="gs-level-paths-note">${fr?'Parcours de découverte complémentaires : consultez aussi les cours, exercices et examens officiels de votre niveau.':'هذه مسارات استكشاف مساعدة؛ احرص أيضاً على مراجعة الدروس والتمارين والامتحانات الخاصة بمستواك.'} <a href="#cours" aria-label="${lang() === 'ar' ? 'الانتقال إلى قسم الدروس' : 'Accéder aux cours'}" title="${lang() === 'ar' ? 'الدروس' : 'Cours'}">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
+          <p class="gs-level-paths-note">${fr?'Parcours de découverte complémentaires : consultez aussi les cours, exercices et examens officiels de votre niveau.':'هذه مسارات استكشاف مساعدة؛ احرص أيضاً على مراجعة الدروس والتمارين والامتحانات الخاصة بمستواك.'} <a href="#cours">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
           ${track?`<span class="gs-level-path-track">${fr?'Filière de votre profil : ':'مسلك ملفك الدراسي: '}${escapeHtml(track)}</span>`:''}
         </section>`;
     }
