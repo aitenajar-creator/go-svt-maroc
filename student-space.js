@@ -3589,7 +3589,9 @@ function openScientificPhotoPreview(card){
         .gs-note-heading{display:flex;align-items:center;justify-content:space-between;gap:.5rem}.gs-note-card p{white-space:normal;overflow-wrap:anywhere;line-height:1.7}
         /* Modern learning dashboard refresh */
         .student-space{max-width:1280px;padding:clamp(1rem,2.5vw,2rem);color:#20352c}
-        .space-nav{position:relative;gap:.55rem;padding:.55rem;margin:0 0 1.35rem;background:#f4f7f2;border:1px solid #e5ece3;border-radius:16px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin}
+        .space-nav{position:relative;gap:.55rem;padding:.55rem;margin:0 0 1.35rem;background:#f4f7f2;border:1px solid #e5ece3;border-radius:16px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin;scroll-padding-inline:.55rem;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+        .space-tab{scroll-snap-align:start;touch-action:pan-x}
+        .space-tab:focus-visible{outline:3px solid #d18a24;outline-offset:2px;position:relative;z-index:1}
         .space-tab{flex:0 0 auto;padding:.72rem 1.05rem;border:1px solid transparent;border-radius:11px;background:transparent;color:#52665a;white-space:nowrap}
         .space-tab:hover{background:#e8f0e5;transform:translateY(-1px)}
         .space-tab.active{background:linear-gradient(135deg,#236b43,#174c35);color:#fff;box-shadow:0 5px 14px rgba(28,91,57,.2)}
