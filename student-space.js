@@ -1959,7 +1959,7 @@ function openScientificPhotoPreview(card){
                     <div class="stat-value">${stats.averageScore}%</div>
                     <div class="stat-label">${t('averageScore')}</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" title="${lang() === 'ar' ? 'النسبة = عدد الدروس المكتملة ÷ عدد الدروس التي شاهدتها × 100' : 'Pourcentage = leçons terminées ÷ leçons consultées × 100'}" aria-label="${lang() === 'ar' ? 'نسبة إتمام الدروس التي شاهدتها: ' + stats.globalProgress + ' بالمئة. تحسب بقسمة الدروس المكتملة على الدروس التي شاهدتها.' : 'Leçons consultées terminées : ' + stats.globalProgress + ' pour cent. Calculé en divisant les leçons terminées par les leçons consultées.'}">
                     <div class="stat-icon">🎯</div>
                     <div class="stat-value">${stats.globalProgress}%</div>
                     <div class="stat-label">${t('globalProgress')}</div>
