@@ -1456,7 +1456,7 @@
             <h4>${path.title}</h4><p>${path.desc}</p>
             <div class="gs-level-path-links">${path.steps.map(step=>`<button type="button" data-study-anchor="${step[0]}"><span>↗</span>${step[1]}</button>`).join('')}</div>
           </article>`).join('')}</div>
-          <p class="gs-level-paths-note">${fr?'Parcours de découverte complémentaires : consultez aussi les cours, exercices et examens officiels de votre niveau.':'هذه مسارات استكشاف مساعدة؛ احرص أيضاً على مراجعة الدروس والتمارين والامتحانات الخاصة بمستواك.'} <a href="#cours">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
+          <p class="gs-level-paths-note">${fr?'Parcours de découverte complémentaires : consultez aussi les cours, exercices et examens officiels de votre niveau.':'هذه مسارات استكشاف مساعدة؛ احرص أيضاً على مراجعة الدروس والتمارين والامتحانات الخاصة بمستواك.'} <a href="#cours" aria-label="${lang() === 'ar' ? 'الانتقال إلى قسم الدروس' : 'Accéder aux cours'}" title="${lang() === 'ar' ? 'الدروس' : 'Cours'}">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
           ${track?`<span class="gs-level-path-track">${fr?'Filière de votre profil : ':'مسلك ملفك الدراسي: '}${escapeHtml(track)}</span>`:''}
         </section>`;
     }
@@ -1878,9 +1878,9 @@ function openScientificPhotoPreview(card){
             </section>
             <nav class="gs-student-quick-actions" aria-label="${lang() === 'ar' ? 'وصول سريع إلى أقسام التعلم' : 'Accès rapide aux sections d’apprentissage'}">
                 <a href="#cours"><span aria-hidden="true">📖</span><strong>${lang() === 'ar' ? 'الدروس' : 'Cours'}</strong></a>
-                <a href="#exercices"><span aria-hidden="true">🧩</span><strong>${lang() === 'ar' ? 'التمارين' : 'Exercices'}</strong></a>
-                <a href="#quiz"><span aria-hidden="true">⚡</span><strong>${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}</strong></a>
-                <a href="#examens"><span aria-hidden="true">🏆</span><strong>${lang() === 'ar' ? 'الامتحانات' : 'Examens'}</strong></a>
+                <a href="#exercices" aria-label="${lang() === 'ar' ? 'الانتقال إلى قسم التمارين' : 'Accéder aux exercices'}" title="${lang() === 'ar' ? 'التمارين' : 'Exercices'}"><span aria-hidden="true">🧩</span><strong>${lang() === 'ar' ? 'التمارين' : 'Exercices'}</strong></a>
+                <a href="#quiz" aria-label="${lang() === 'ar' ? 'الانتقال إلى الاختبارات التفاعلية' : 'Accéder aux quiz interactifs'}" title="${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}"><span aria-hidden="true">⚡</span><strong>${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}</strong></a>
+                <a href="#examens" aria-label="${lang() === 'ar' ? 'الانتقال إلى قسم الامتحانات' : 'Accéder aux examens'}" title="${lang() === 'ar' ? 'الامتحانات' : 'Examens'}"><span aria-hidden="true">🏆</span><strong>${lang() === 'ar' ? 'الامتحانات' : 'Examens'}</strong></a>
             </nav>
             ${academicBanner}
             ${hub}
