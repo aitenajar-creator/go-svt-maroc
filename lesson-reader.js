@@ -72,19 +72,24 @@ async function start(){
     console.warn('Impossible de charger les objectifs du cours',loadError);
    }
   })();
-  list.addEventListener('change',async function(){
+  let objectiveSaveQueue=Promise.resolve();
+  let objectiveSaveVersion=0;
+  list.addEventListener('change',function(){
    renderObjectiveProgress();
    const checks=Array.from(list.querySelectorAll('input[type="checkbox"]'));
    savedObjectives[objectiveKey]=checks.map((cb,i)=>cb.checked?i:null).filter(i=>i!==null);
+   const snapshot=JSON.parse(JSON.stringify(savedObjectives));
+   const version=++objectiveSaveVersion;
    status.textContent='Enregistrement…';
-   try{
-    const result=await client.from('student_learning_state').upsert({student_id:user.id,lesson_objectives:savedObjectives,updated_at:new Date().toISOString()},{onConflict:'student_id'});
+   // Serialize writes so rapid checkbox changes cannot finish out of order.
+   objectiveSaveQueue=objectiveSaveQueue.catch(()=>{}).then(async()=>{
+    const result=await client.from('student_learning_state').upsert({student_id:user.id,lesson_objectives:snapshot,updated_at:new Date().toISOString()},{onConflict:'student_id'});
     if(result.error)throw result.error;
-    status.textContent='Progression enregistrée dans votre compte.';
-   }catch(saveError){
-    status.textContent='Échec de sauvegarde. Vérifiez votre connexion puis réessayez.';
+    if(version===objectiveSaveVersion)status.textContent='Progression enregistrée dans votre compte.';
+   }).catch(saveError=>{
+    if(version===objectiveSaveVersion)status.textContent='Échec de sauvegarde. Vérifiez votre connexion puis réessayez.';
     console.error('Impossible de sauvegarder les objectifs du cours',saveError);
-   }
+   });
   });
   $('lesson-frame-wrap').before(panel);
  }
