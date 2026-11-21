@@ -21,11 +21,11 @@ const SECTION_NAMES = {
 };
 const SUBJECT_NAMES = { francais: 'Français', arabe: 'العربية' };
 const FILE_ICONS = {
-    pdf: '📕', doc: '📘', docx: '📘', ppt: '📙', pptx: '📙', xls: '📗', xlsx: '📗',
+    pdf: '📕', html: '🌐', htm: '🌐', doc: '📘', docx: '📘', ppt: '📙', pptx: '📙', xls: '📗', xlsx: '📗',
     jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️',
     mp4: '🎬', mp3: '🎧', zip: '🗜️', rar: '🗜️'
 };
-const PREVIEWABLE = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
+const PREVIEWABLE = ['pdf', 'html', 'htm', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
 
 let currentLang = 'fr';
 let manifestPromise = null;
@@ -623,6 +623,8 @@ function openPreview(path) {
             ? `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(location.origin + url)}`
             : url;
         body.innerHTML = `<iframe src="${src}" title="PDF"></iframe>`;
+    } else if (['html', 'htm'].includes(getExt(path))) {
+        body.innerHTML = `<iframe src="${url}" title="${escapeHtml(getFileTitle(path.split('/').pop()))}" loading="lazy" sandbox="allow-same-origin"></iframe>`;
     } else {
         body.innerHTML = `<img src="${url}" alt="${escapeHtml(getFileTitle(path.split('/').pop()))}" decoding="async">`;
         const previewImage = body.querySelector('img');
