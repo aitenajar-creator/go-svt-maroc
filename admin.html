@@ -8,7 +8,7 @@
   <title>إدارة GO SVT Maroc</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=20261122-tabs1">
+  <link rel="stylesheet" href="admin.css?v=20261122-reports1">
 </head>
 <body>
   <main class="admin-shell">
@@ -41,6 +41,7 @@
         <button type="button" class="admin-tab active" data-admin-tab="platform-overview" aria-selected="true">نظرة عامة</button>
         <button type="button" class="admin-tab" data-admin-tab="platform-trends-panel" aria-selected="false">مؤشرات النمو</button>
         <button type="button" class="admin-tab" data-admin-tab="platform-health-panel" aria-selected="false">سلامة المنصة</button>
+        <button type="button" class="admin-tab" data-admin-tab="pedagogical-reports-panel" aria-selected="false">التقارير التربوية</button>
         <button type="button" class="admin-tab" data-admin-tab="activity-panel" aria-selected="false">سجل الأنشطة</button>
         <button type="button" class="admin-tab" data-admin-tab="accounts-panel" aria-selected="false">الحسابات</button>
         <button type="button" class="admin-tab" data-admin-tab="role-requests-panel" aria-selected="false">طلبات الأدوار</button>
@@ -73,6 +74,17 @@
         <p id="trends-message" class="message muted" role="status">سيتم حساب المؤشرات بعد التحقق من صلاحية المدير.</p>
         <div class="table-wrap"><table class="admin-trends-table"><thead><tr><th>المؤشر</th><th>الفترة الحالية</th><th>الفترة السابقة</th><th>التغير</th></tr></thead><tbody id="trends-table-body"><tr><td colspan="4">لم يتم تحميل البيانات بعد.</td></tr></tbody></table></div>
         <p class="muted">تعتمد الأرقام على تاريخ إنشاء السجلات في قاعدة البيانات. لا تمثل بالضرورة عدد المستخدمين النشطين أو الزيارات.</p>
+      </section>
+      <section class="panel admin-tab-content" id="pedagogical-reports-panel">
+        <div class="section-heading"><div><p class="eyebrow">PEDAGOGICAL CONTENT REPORTS</p><h2>التقارير التربوية</h2><p class="muted">مؤشرات إجمالية حول توفر المحتوى المنشور حسب المستوى الدراسي.</p></div><button id="pedagogical-reports-refresh" class="quiet-btn" type="button">تحديث التقرير ↻</button></div>
+        <div class="stats-grid platform-stats">
+          <article class="stat-card"><span>📘</span><strong id="report-total-lessons">—</strong><small>الدروس الخاصة المنشورة</small></article>
+          <article class="stat-card"><span>📝</span><strong id="report-total-exercises">—</strong><small>التمارين المنشورة</small></article>
+          <article class="stat-card"><span>📚</span><strong id="report-total-resources">—</strong><small>موارد المكتبة النشطة</small></article>
+        </div>
+        <p id="pedagogical-reports-message" class="message muted" role="status">سيتم تحميل التقرير بعد التحقق من صلاحية المدير.</p>
+        <div class="table-wrap"><table class="admin-trends-table"><thead><tr><th>المستوى</th><th>الدروس المنشورة</th><th>موارد المكتبة</th></tr></thead><tbody id="pedagogical-reports-body"><tr><td colspan="3">لم يتم تحميل البيانات بعد.</td></tr></tbody></table></div>
+        <p class="muted health-note">هذا التقرير يقيس توفر المحتوى التعليمي المنشور فقط. لا يعرض تقدم التلاميذ أو ملاحظاتهم أو خططهم أو مفضلاتهم؛ فهذه البيانات محمية بسياسات RLS الخاصة بكل حساب.</p>
       </section>
       <section class="panel admin-tab-content" id="platform-health-panel">
         <div class="section-heading"><div><p class="eyebrow">PLATFORM HEALTH</p><h2>سلامة خدمات المنصة</h2><p class="muted">فحوصات قراءة فقط للتأكد من الاتصال بالجداول الأساسية وإمكانية الوصول إليها.</p></div><button id="health-refresh" class="quiet-btn" type="button">إعادة الفحص ↻</button></div>
@@ -199,7 +211,7 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="admin.js?v=20261122-tabs1"></script>
+  <script src="admin.js?v=20261122-reports1"></script>
   <script src="admin-private-lessons.js?v=20261122-2"></script>
 </body>
 </html>

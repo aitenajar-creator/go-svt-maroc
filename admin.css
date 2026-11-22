@@ -41,3 +41,8 @@
 .admin-tab-content[hidden]{display:none!important}
 #platform-stats-panel .stats-grid{margin:0}
 @media(max-width:680px){.admin-tabs{position:static;gap:7px;padding:9px}.admin-tab{flex:1 1 calc(50% - 7px);padding:10px 8px;font-size:12px}}
+
+#pedagogical-reports-panel .table-wrap{width:100%;overflow-x:auto}
+#pedagogical-reports-panel .admin-trends-table{width:100%;border-collapse:collapse;min-width:440px}
+#pedagogical-reports-panel .admin-trends-table th,#pedagogical-reports-panel .admin-trends-table td{padding:.8rem .65rem;text-align:right;border-bottom:1px solid #e6ece7;font-size:.92rem}
+#pedagogical-reports-panel .admin-trends-table th{background:#f3f7f3;color:#315b43;font-weight:800}

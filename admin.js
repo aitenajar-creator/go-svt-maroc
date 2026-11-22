@@ -78,7 +78,7 @@
     initAdminTabs();
     await Promise.all([
       loadResources(), loadFounderProfile(), loadPlatformOverview(),
-      loadAccounts(), loadRoleRequests(), loadPlatformHealth(), loadActivity(), loadPlatformTrends()
+      loadAccounts(), loadRoleRequests(), loadPlatformHealth(), loadActivity(), loadPlatformTrends(), loadPedagogicalReports()
     ]);
   }
   async function loadPlatformTrends() {
@@ -199,6 +199,49 @@
       row.append(info, tag);
       host.append(row);
     });
+  }
+  async function loadPedagogicalReports() {
+    const status = $('pedagogical-reports-message');
+    const body = $('pedagogical-reports-body');
+    status.textContent = 'جارٍ إعداد التقرير التربوي...';
+    body.replaceChildren();
+    const count = async (table, filters = []) => {
+      let query = client.from(table).select('id', { count: 'exact', head: true });
+      filters.forEach(([column, operator, value]) => { query = query[operator](column, value); });
+      const { count: total, error } = await query;
+      if (error) throw error;
+      return total ?? 0;
+    };
+    try {
+      const [lessons, exercises, resources] = await Promise.all([
+        count('private_student_lessons', [['is_published','eq',true]]),
+        count('exercises', [['is_published','eq',true]]),
+        count('site_content_items', [['is_deleted','eq',false]])
+      ]);
+      $('report-total-lessons').textContent = String(lessons);
+      $('report-total-exercises').textContent = String(exercises);
+      $('report-total-resources').textContent = String(resources);
+      const levels = ['TC','1BAC','2BAC'];
+      const rows = await Promise.all(levels.map(async level => {
+        const [levelLessons, levelResources] = await Promise.all([
+          count('private_student_lessons', [['is_published','eq',true],['study_level','eq',level]]),
+          count('site_content_items', [['is_deleted','eq',false],['study_level','eq',level]])
+        ]);
+        return { level, lessons: levelLessons, resources: levelResources };
+      }));
+      rows.forEach(item => {
+        const tr = document.createElement('tr');
+        [item.level, String(item.lessons), String(item.resources)].forEach(value => {
+          const td = document.createElement('td'); td.textContent = value; tr.append(td);
+        });
+        body.append(tr);
+      });
+      status.textContent = 'تم تحديث التقرير بنجاح · الأرقام إجمالية للمحتوى المنشور فقط.';
+      status.className = 'message success';
+    } catch (error) {
+      status.textContent = 'تعذر إكمال التقرير: ' + (error.message || String(error));
+      status.className = 'message error';
+    }
   }
   async function loadPlatformHealth() {
     const list = $('platform-health-list');
@@ -616,6 +659,7 @@
   $('resource-search').addEventListener('input', renderResources);
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
   $('health-refresh').addEventListener('click', loadPlatformHealth);
+  $('pedagogical-reports-refresh').addEventListener('click', loadPedagogicalReports);
   $('activity-refresh').addEventListener('click', loadActivity);
   $('trends-refresh').addEventListener('click', loadPlatformTrends);
   $('trend-period').addEventListener('change', loadPlatformTrends);
