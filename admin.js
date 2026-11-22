@@ -52,10 +52,30 @@
     loginPanel.hidden = false;
     message(loginMessage, 'هذا الحساب غير مخوّل لإدارة الموقع. يرجى الدخول بحساب المدير المعتمد.', 'error');
   }
+  function initAdminTabs() {
+    const tabs = Array.from(document.querySelectorAll('[data-admin-tab]'));
+    const panels = Array.from(document.querySelectorAll('[data-admin-tab-content], .admin-tab-content'));
+    function activate(id) {
+      panels.forEach(panel => { panel.hidden = panel.id !== id; });
+      tabs.forEach(tab => {
+        const active = tab.dataset.adminTab === id;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+    }
+    tabs.forEach(tab => {
+      if (tab.dataset.bound === 'true') return;
+      tab.dataset.bound = 'true';
+      tab.addEventListener('click', () => activate(tab.dataset.adminTab));
+    });
+    activate('platform-overview');
+  }
+
   async function enter(user) {
     if (!await verifyAdmin(user)) { showDenied(); return; }
     loginPanel.hidden = true;
     dashboard.hidden = false;
+    initAdminTabs();
     await Promise.all([
       loadResources(), loadFounderProfile(), loadPlatformOverview(),
       loadAccounts(), loadRoleRequests(), loadPlatformHealth(), loadActivity(), loadPlatformTrends()
