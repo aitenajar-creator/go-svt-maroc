@@ -143,9 +143,19 @@
   function renderAccounts() {
     const list = $('accounts-list');
     const query = ($('accounts-search').value || '').trim().toLocaleLowerCase();
-    const rows = accountCache.filter(x => (String(x.display_name || '') + ' ' + x.id + ' ' + x.role).toLocaleLowerCase().includes(query));
+    const roleFilter = $('accounts-role-filter').value;
+    const knownRoles = ['admin', 'teacher', 'student'];
+    const rows = accountCache.filter(account => {
+      const role = String(account.role || '').trim().toLocaleLowerCase();
+      const matchesRole = roleFilter === 'all' ||
+        (roleFilter === 'other' && !knownRoles.includes(role)) ||
+        role === roleFilter;
+      const searchable = (String(account.display_name || '') + ' ' + account.id + ' ' + String(account.role || '')).toLocaleLowerCase();
+      return matchesRole && searchable.includes(query);
+    });
+    $('accounts-count').textContent = 'النتائج المطابقة: ' + rows.length + ' من أصل ' + accountCache.length + ' حساباً محمّلاً' + (accountCache.length === 250 ? ' (أحدث 250 حساباً)' : '');
     list.replaceChildren();
-    if (!rows.length) { list.textContent = 'لا توجد حسابات مطابقة.'; return; }
+    if (!rows.length) { list.textContent = 'لا توجد حسابات مطابقة لهذه المعايير.'; return; }
     rows.forEach(account => {
       const row = document.createElement('article'); row.className = 'resource-row';
       const info = document.createElement('div');
@@ -376,6 +386,7 @@
   $('accounts-refresh').addEventListener('click', loadAccounts);
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
   $('accounts-search').addEventListener('input', renderAccounts);
+  $('accounts-role-filter').addEventListener('change', renderAccounts);
   $('signout-btn').addEventListener('click', async () => {
     await client.auth.signOut();
     currentUser = null; dashboard.hidden = true; loginPanel.hidden = false;
