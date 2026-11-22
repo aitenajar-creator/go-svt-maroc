@@ -37,6 +37,27 @@
         <div><p class="eyebrow">SITE OWNER CONTROL CENTER</p><h1>مرحباً بك في لوحة الإدارة</h1><p id="admin-identity" class="muted"></p></div>
         <button id="signout-btn" class="quiet-btn" type="button">تسجيل الخروج</button>
       </div>
+      <section class="panel" id="platform-overview">
+        <div class="section-heading"><div><p class="eyebrow">GLOBAL PLATFORM OVERVIEW</p><h2>نظرة عامة على المنصة</h2><p class="muted">مؤشرات مباشرة من قاعدة بيانات الموقع الرئيسية.</p></div><button id="overview-refresh" class="quiet-btn" type="button">تحديث المؤشرات ↻</button></div>
+        <div class="stats-grid platform-stats">
+          <article class="stat-card"><span>👥</span><strong id="overview-users">—</strong><small>الحسابات المسجلة</small></article>
+          <article class="stat-card"><span>🎓</span><strong id="overview-students">—</strong><small>حسابات التلاميذ</small></article>
+          <article class="stat-card"><span>👩‍🏫</span><strong id="overview-teachers">—</strong><small>حسابات الأساتذة</small></article>
+          <article class="stat-card"><span>🏫</span><strong id="overview-classes">—</strong><small>الأقسام التعليمية</small></article>
+          <article class="stat-card"><span>📝</span><strong id="overview-exercises">—</strong><small>الاختبارات المنشورة</small></article>
+          <article class="stat-card"><span>📨</span><strong id="overview-requests">—</strong><small>طلبات تغيير الدور المعلقة</small></article>
+        </div>
+        <p id="overview-message" class="message muted" role="status">سيتم تحميل المؤشرات بعد التحقق من صلاحية المدير.</p>
+        <div class="admin-shortcuts">
+          <a href="#founder-editor">هوية صاحب الموقع</a><a href="#site-content-manager">محتوى الموقع</a><a href="#private-lessons-panel">دروس مساحة التلميذ</a><a href="teacher-community.html">مجتمع الأساتذة</a><a href="teacher-classroom.html">فضاء الأقسام</a>
+        </div>
+      </section>
+      <section class="panel" id="accounts-panel">
+        <div class="section-heading"><div><p class="eyebrow">ACCOUNT DIRECTORY</p><h2>دليل الحسابات والأدوار</h2><p class="muted">عرض إداري للقراءة فقط؛ تغيير الأدوار يظل محمياً بإجراءات الصلاحيات الحالية.</p></div><button id="accounts-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="field"><label for="accounts-search">البحث بالاسم أو معرّف الحساب</label><input id="accounts-search" type="search" placeholder="اكتب الاسم أو جزءاً من المعرّف"></div>
+        <p id="accounts-message" class="message muted" role="status"></p>
+        <div id="accounts-list" class="resource-list"><p class="muted">جاري تحميل الحسابات...</p></div>
+      </section>
       <div class="stats-grid">
         <article class="stat-card"><span>📚</span><strong id="resource-count">—</strong><small>ملفاً منشوراً عبر الإدارة</small></article>
         <article class="stat-card"><span>☁️</span><strong>Supabase</strong><small>التخزين السحابي</small></article>
