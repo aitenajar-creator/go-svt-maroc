@@ -18,6 +18,7 @@
   ]);
   const categoryLabels = {cours:'الدروس',exercices:'التمارين',examens:'الامتحانات',fiches:'الجذاذات',resumes:'الملخصات',documents:'الوثائق',ressources:'الموارد',divers:'متفرقات'};
   let currentUser = null;
+  let resourceCache = [];
   let roleRequestCache = [];
   let uploadInProgress = false;
 
@@ -216,15 +217,35 @@
   }
   async function loadResources() {
     const list = $('resource-list');
-    list.innerHTML = '<p class="muted">جاري تحميل المحتوى...</p>';
+    list.textContent = 'جارٍ تحميل المحتوى...';
     const { data, error } = await client.from('site_content_items')
       .select('id,title,category,language,study_level,study_track,file_name,storage_path,created_at,is_deleted')
       .order('created_at', { ascending: false }).limit(100);
-    if (error) { list.textContent = 'تعذر تحميل الملفات: ' + error.message; return; }
-    $('resource-count').textContent = String(data.length);
-    if (!data.length) { list.innerHTML = '<p class="muted">لم تضف ملفات بعد. ابدأ بإضافة أول مورد.</p>'; return; }
+    if (error) {
+      resourceCache = [];
+      list.textContent = 'تعذر تحميل الملفات: ' + error.message;
+      $('resource-summary').textContent = 'تعذر تحميل ملخص الموارد.';
+      return;
+    }
+    resourceCache = data || [];
+    $('resource-count').textContent = String(resourceCache.filter(item => !item.is_deleted).length);
+    renderResources();
+  }
+  function renderResources() {
+    const list = $('resource-list');
+    const filter = $('resource-state-filter').value;
+    const rows = resourceCache.filter(item => filter === 'all' ||
+      (filter === 'active' && !item.is_deleted) || (filter === 'deleted' && item.is_deleted));
+    const activeCount = resourceCache.filter(item => !item.is_deleted).length;
+    const hiddenCount = resourceCache.length - activeCount;
+    $('resource-summary').textContent = 'الموارد النشطة: ' + activeCount + ' · المخفية أو التي تنتظر استكمال الحذف: ' + hiddenCount + ' · النتائج المعروضة: ' + rows.length + ' من أصل ' + resourceCache.length + ' (بحد أقصى 100).';
     list.replaceChildren();
-    data.forEach(item => {
+    if (!rows.length) {
+      list.textContent = filter === 'deleted' ? 'لا توجد موارد مخفية أو عمليات حذف معلقة.' :
+        filter === 'active' ? 'لا توجد موارد نشطة ضمن العناصر المحمّلة.' : 'لم تضف ملفات بعد. ابدأ بإضافة أول مورد.';
+      return;
+    }
+    rows.forEach(item => {
       const row = document.createElement('article'); row.className = 'resource-row';
       const info = document.createElement('div');
       const title = document.createElement('strong'); title.textContent = item.title;
@@ -232,11 +253,15 @@
       meta.textContent = [categoryLabels[item.category] || item.category,item.study_level,item.study_track,item.language === 'arabe' ? 'العربية' : 'Français'].filter(Boolean).join(' · ');
       info.append(title,meta);
       const actions = document.createElement('div'); actions.className = 'resource-actions';
-      const open = document.createElement('a'); open.href = publicUrl(item.storage_path); open.target = '_blank'; open.rel = 'noopener'; open.textContent = 'فتح الملف';
+      if (!item.is_deleted) {
+        const open = document.createElement('a'); open.href = publicUrl(item.storage_path); open.target = '_blank'; open.rel = 'noopener'; open.textContent = 'فتح الملف';
+        actions.append(open);
+      } else {
+        const pending = document.createElement('small'); pending.textContent = 'مخفي عن الزوار — في انتظار إتمام حذف الملف'; pending.className = 'muted'; info.append(pending);
+      }
       const del = document.createElement('button'); del.type = 'button'; del.className = 'delete-btn'; del.textContent = item.is_deleted ? 'إعادة محاولة الحذف' : 'حذف';
-      if (item.is_deleted) { const pending = document.createElement('small'); pending.textContent = 'مخفي عن الزوار — في انتظار إتمام حذف الملف'; pending.className = 'muted'; info.append(pending); }
       del.addEventListener('click', () => removeResource(item, del));
-      actions.append(open,del); row.append(info,actions); list.append(row);
+      actions.append(del); row.append(info,actions); list.append(row);
     });
   }
   async function removeResource(item, button) {
@@ -392,6 +417,7 @@
     finally { button.disabled=false; }
   });
   $('refresh-btn').addEventListener('click', loadResources);
+  $('resource-state-filter').addEventListener('change', renderResources);
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
   $('health-refresh').addEventListener('click', loadPlatformHealth);
   $('accounts-refresh').addEventListener('click', loadAccounts);
