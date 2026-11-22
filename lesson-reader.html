@@ -5,18 +5,4 @@
 </style></head><body>
 <header class="top"><h1 id="lesson-title">GO SVT Maroc — Lecture du cours</h1><div class="actions"><button class="secondary" id="font-smaller" type="button" aria-label="تصغير حجم الخط">A−</button><button class="secondary" id="font-larger" type="button" aria-label="تكبير حجم الخط">A+</button><button class="secondary" id="font-reset" type="button">حجم عادي</button><button class="secondary" id="contrast-toggle" type="button" aria-pressed="false">تباين مريح</button><span class="reading-progress" id="reading-progress" hidden aria-live="polite"></span><progress class="reading-progress-bar" id="reading-progress-bar" max="100" value="0" hidden aria-label="تقدم القراءة"></progress><button class="secondary" id="resume-btn" type="button" hidden>متابعة القراءة</button><button id="print-btn" type="button">Télécharger / Imprimer en PDF</button><button class="secondary" id="back-btn" type="button">Retour à mon espace</button></div></header>
 <p class="status" id="lesson-status" role="status">Vérification de votre compte…</p><main class="frame-wrap" id="lesson-frame-wrap" hidden><iframe id="lesson-frame" title="Contenu du cours" sandbox="allow-same-origin"></iframe></main>
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="supabase-config.js"></script><script defer src="lesson-reader.js?v=8" onerror="var s=document.getElementById('lesson-status');if(s){s.hidden=false;s.textContent='تعذر تحميل ملف تشغيل عارض الدرس (lesson-reader.js). تحقق من اتصال الشبكة أو حظر الملفات الخارجية.';}"></script><script>
-(function(){
-  window.setTimeout(function(){
-    var status=document.getElementById('lesson-status');
-    if(!status || status.hidden) return;
-    if(!window.GoSVTLessonReaderBooted){
-      status.textContent='تعذر تشغيل ملف عارض الدرس. قد يكون الملف لم يُحمّل أو توجد مشكلة JavaScript. أعد تحميل الصفحة ثم أرسل هذه الرسالة للإدارة.';
-      console.error('[GoSVT] lesson-reader.js did not finish booting.');
-    } else if(status.textContent==='Vérification de votre compte…'){
-      status.textContent='بدأ عارض الدرس لكنه لم يبدأ التحقق من الحساب. يرجى إرسال صورة لهذه الرسالة إلى الإدارة.';
-      console.error('[GoSVT] lesson reader remained at its initial status.');
-    }
-  },10000);
-})();
-</script></body></html>
+<script src="lesson-reader-bootstrap.js?v=1"></script></body></html>
