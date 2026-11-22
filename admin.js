@@ -421,11 +421,20 @@
   }
   async function loadAccounts() {
     if (accountsLoading) return;
+    const previousCache = accountCache;
+    const previousHasMore = accountsHasMore;
     accountCache = [];
     accountsHasMore = false;
-    $('accounts-list').textContent = 'جارٍ تحميل الحسابات...';
     $('accounts-load-more').hidden = true;
-    await loadMoreAccounts(true);
+    const loaded = await loadMoreAccounts(true);
+    if (loaded === false) {
+      accountCache = previousCache;
+      accountsHasMore = previousHasMore;
+      renderAccounts();
+      $('accounts-message').textContent = 'تعذر تحديث الحسابات؛ احتُفظ بالقائمة السابقة ويمكن إعادة المحاولة.';
+      $('accounts-message').className = 'message error';
+      $('accounts-load-more').hidden = !accountsHasMore;
+    }
   }
   async function loadMoreAccounts(initial = false) {
     if (accountsLoading || !currentUser) return;
@@ -445,8 +454,10 @@
       accountsHasMore = batch.length === 250;
       renderAccounts();
       status.textContent = 'تم تحميل ' + accountCache.length + ' حساباً' + (accountsHasMore ? '، ويمكن تحميل الدفعة التالية.' : '، وصلت إلى نهاية القائمة.');
+      return true;
     } catch (error) {
       status.textContent = 'تعذر تحميل الحسابات: ' + (error.message || String(error));
+      return false;
       if (initial && !accountCache.length) $('accounts-list').textContent = 'تعذر تحميل الحسابات.';
     } finally {
       accountsLoading = false;
@@ -486,11 +497,21 @@
   }
   async function loadRoleRequests() {
     if (roleRequestsLoading) return;
+    const previousCache = roleRequestCache;
+    const previousHasMore = roleRequestsHasMore;
     roleRequestCache = [];
     roleRequestsHasMore = false;
     $('role-requests-load-more').hidden = true;
-    $('role-requests-list').textContent = 'جارٍ تحميل الطلبات...';
-    await loadMoreRoleRequests(true);
+    const loaded = await loadMoreRoleRequests(true);
+    if (loaded === false) {
+      roleRequestCache = previousCache;
+      roleRequestsHasMore = previousHasMore;
+      renderRoleRequests();
+      $('role-requests-message').textContent = 'تعذر تحديث الطلبات؛ احتُفظ بالقائمة السابقة ويمكن إعادة المحاولة.';
+      $('role-requests-message').className = 'message error';
+      if (initial) return false;
+      $('role-requests-load-more').hidden = !roleRequestsHasMore;
+    }
   }
   async function loadMoreRoleRequests(initial = false) {
     if (roleRequestsLoading || !currentUser || (!initial && !roleRequestsHasMore)) return;
@@ -514,6 +535,7 @@
         ? 'هذه القائمة للعرض فقط؛ لا يمكن تغيير حالة الطلب من خلالها.'
         : 'لا توجد طلبات تغيير أدوار مسجلة.';
       $('role-requests-message').className = 'message muted';
+      return true;
     } catch (error) {
       if (initial) {
         roleRequestCache = [];
