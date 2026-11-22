@@ -1665,17 +1665,33 @@
             const credit = card.querySelector('.gs-science-media-credit');
             if (!photo || !query) return;
             try {
-                const params = new URLSearchParams({
+                // Use Commons' explicit search endpoint first, then request image
+                // metadata for the returned file titles. This is more reliable than
+                // generator=search for namespace-6 media lookups.
+                const searchParams = new URLSearchParams({
                     action: 'query', format: 'json', origin: '*',
-                    generator: 'search', gsrnamespace: '6',
-                    gsrsearch: query, gsrlimit: '10',
-                    prop: 'imageinfo', iiprop: 'url|extmetadata|size|mime', iiurlwidth: '640'
+                    list: 'search', srnamespace: '6',
+                    srsearch: query + ' filetype:bitmap', srlimit: '15'
                 });
-                const response = await fetch('https://commons.wikimedia.org/w/api.php?' + params.toString(), {
+                const searchResponse = await fetch('https://commons.wikimedia.org/w/api.php?' + searchParams.toString(), {
                     headers: { Accept: 'application/json' }
                 });
-                if (!response.ok) throw new Error('Wikimedia request failed');
-                const payload = await response.json();
+                if (!searchResponse.ok) throw new Error('Wikimedia file search failed: HTTP ' + searchResponse.status);
+                const searchPayload = await searchResponse.json();
+                const titles = searchPayload && searchPayload.query && Array.isArray(searchPayload.query.search)
+                    ? searchPayload.query.search.map(function(item) { return item.title; }).filter(Boolean)
+                    : [];
+                if (!titles.length) throw new Error('No matching Wikimedia image files');
+                const infoParams = new URLSearchParams({
+                    action: 'query', format: 'json', origin: '*',
+                    prop: 'imageinfo', titles: titles.join('|'),
+                    iiprop: 'url|extmetadata|size|mime', iiurlwidth: '640'
+                });
+                const infoResponse = await fetch('https://commons.wikimedia.org/w/api.php?' + infoParams.toString(), {
+                    headers: { Accept: 'application/json' }
+                });
+                if (!infoResponse.ok) throw new Error('Wikimedia image metadata failed: HTTP ' + infoResponse.status);
+                const payload = await infoResponse.json();
                 const candidates = payload && payload.query && payload.query.pages
                     ? Object.values(payload.query.pages).map(function(candidate) {
                         const imageInfo = candidate && Array.isArray(candidate.imageinfo) ? candidate.imageinfo[0] : null;
@@ -1683,10 +1699,10 @@
                     }).filter(function(item) {
                         const mime = String(item.info && item.info.mime || '').toLowerCase();
                         const imageUrl = String(item.info && item.info.thumburl || '').toLowerCase();
-                        const isRaster = /^image\/(jpeg|png|webp|gif|tiff)$/i.test(mime) ||
-                            (!mime && /\.(jpe?g|png|webp|gif|tiff?)(\?|$)/i.test(imageUrl));
+                        const isRaster = /^image\\/(jpeg|png|webp|gif|tiff)$/i.test(mime) ||
+                            (!mime && /\\.(jpe?g|png|webp|gif|tiff?)(\\?|$)/i.test(imageUrl));
                         return item.info && item.info.thumburl && item.info.descriptionurl && isRaster &&
-                            Number(item.info.width) >= 320 && Number(item.info.height) >= 200;
+                            Number(item.info.width) >= 240 && Number(item.info.height) >= 160;
                     }).sort(function(a, b) {
                         return (Number(b.info.width) * Number(b.info.height)) - (Number(a.info.width) * Number(a.info.height));
                     }) : [];
