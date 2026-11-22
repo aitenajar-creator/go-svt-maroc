@@ -51,7 +51,8 @@ async function start(){
    safe=u.hostname==='raw.githubusercontent.com'&&/\.pdf(?:$|[?#])/i.test(u.href);
   }catch(e){}
   if(!safe){frame.remove();return;}
-  frame.setAttribute('sandbox','allow-same-origin allow-downloads');
+  // No sandbox: browser PDF viewers may fail to render inside sandboxed frames.
+  // The iframe source is restricted above to trusted raw GitHub PDF files.
   frame.setAttribute('loading','lazy');
   frame.setAttribute('referrerpolicy','no-referrer');
  });
