@@ -197,7 +197,8 @@
     try {
       const host = $('activity-list');
       const summary = $('activity-summary');
-      host.textContent = 'جارٍ تحميل سجل الأنشطة...';
+      summary.textContent = 'جارٍ تحديث سجل الأنشطة؛ ستبقى البيانات الحالية ظاهرة أثناء التحديث.';
+      summary.className = 'message';
     const sources = [
       { type: 'accounts', label: 'حساب جديد', run: () => client.from('profiles').select('display_name,role,created_at').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.display_name || 'حساب جديد', detail: 'إنشاء حساب · ' + (({admin:'مدير',teacher:'أستاذ',student:'تلميذ'})[row.role] || row.role || 'دور غير محدد') }) },
       { type: 'content', label: 'مورد جديد في المكتبة', run: () => client.from('site_content_items').select('title,category,study_level,study_track,created_at,is_deleted').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.title || 'مورد دون عنوان', detail: [categoryLabels[row.category] || row.category, row.study_level, row.study_track, row.is_deleted ? 'مخفي' : 'نشط'].filter(Boolean).join(' · ') }) },
@@ -210,17 +211,21 @@
       try {
         const { data, error } = await source.run();
         if (error) return { source: source.label, error: error.message, rows: [] };
-        return { source: source.label, rows: (data || []).map(row => ({ type: source.type, ...source.map(row), created_at: row.created_at })) };
+        return { source: source.label, rows: (data || []).map(row => ({ sourceKey: source.label, type: source.type, ...source.map(row), created_at: row.created_at })) };
       } catch (error) {
         return { source: source.label, error: error.message || String(error), rows: [] };
       }
     }));
-    activityCache = results.flatMap(result => result.rows).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const previousCache = activityCache;
+    activityCache = results.flatMap(result => result.error
+      ? previousCache.filter(item => item.sourceKey === result.source)
+      : result.rows
+    ).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     $('activity-export').disabled = activityCache.length === 0;
     renderActivity();
     const failed = results.filter(result => result.error);
-    summary.textContent = 'تم تحميل ' + activityCache.length + ' نشاطاً من آخر السجلات المتاحة' +
-      (failed.length ? ' · تعذر فحص ' + failed.length + ' مصدر: ' + failed.map(x => x.source).join('، ') : ' · جميع المصادر استجابت بنجاح') +
+    summary.textContent = 'تم تحميل أو الاحتفاظ بـ ' + activityCache.length + ' نشاطاً' +
+      (failed.length ? ' · تعذر تحديث ' + failed.length + ' مصدر، فاحتُفظ ببياناته السابقة إن توفرت: ' + failed.map(x => x.source).join('، ') : ' · جميع المصادر استجابت بنجاح') +
       '. تُعرض حتى 12 إضافة أو طلباً من كل مصدر.';
     summary.className = 'message ' + (failed.length ? 'error' : 'success');
     } finally {
