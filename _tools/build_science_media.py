@@ -54,9 +54,11 @@ for query in QUERIES:
     try:
         search = api({
             "action": "query", "format": "json", "list": "search",
-            "srnamespace": 6, "srsearch": query, "srlimit": 20,
+            "srnamespace": 6, "srsearch": query, "srlimit": 50,
         })
-        titles = [item.get("title") for item in search.get("query", {}).get("search", []) if item.get("title")]
+        search_items = [item for item in search.get("query", {}).get("search", []) if item.get("title")]
+        titles = [item.get("title") for item in search_items]
+        search_rank = {item.get("title"): index for index, item in enumerate(search_items)}
         if not titles:
             catalogue[query] = {"error": "No matching files found on Wikimedia Commons"}
             print("NO RESULTS:", query)
@@ -101,6 +103,7 @@ for query in QUERIES:
                     not license_name or not author_name):
                     continue
             candidates.append({
+                "search_rank": search_rank.get(page.get("title", ""), 999),
                 "title": page.get("title", ""),
                 "image_url": info.get("thumburl") or info.get("url"),
                 "original_url": info.get("url") or info.get("thumburl"),
@@ -117,9 +120,14 @@ for query in QUERIES:
                 "is_micrograph": bool(any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology")) and license_name and author_name),
                 "metadata_screened": bool(any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology")) and license_name and author_name),
             })
-        candidates.sort(key=lambda item: item["width"] * item["height"], reverse=True)
+        # Keep Commons relevance first; use resolution only to break ties.
+        candidates.sort(key=lambda item: (
+            item.get("search_rank", 999),
+            -(item["width"] * item["height"])
+        ))
         if candidates:
             chosen = candidates[0]
+            chosen.pop("search_rank", None)
             # Download thumbnail during CI for same-origin delivery.
             try:
                 remote = chosen["image_url"]
