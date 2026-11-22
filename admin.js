@@ -523,7 +523,11 @@
   function renderRoleRequests() {
     const list = $('role-requests-list');
     const rows = getFilteredRoleRequests();
-    $('role-requests-count').textContent = 'الطلبات المطابقة: ' + rows.length + ' من أصل ' + roleRequestCache.length + ' طلباً محمّلاً (بحد أقصى 50).';
+    $('role-requests-count').textContent =
+      'الطلبات المطابقة: ' + rows.length + ' من أصل ' + roleRequestCache.length +
+      ' طلباً محمّلاً' + (roleRequestsHasMore
+        ? ' — توجد نتائج أخرى يمكن تحميلها.'
+        : ' — تم تحميل جميع النتائج المتاحة.');
     const exportButton = $('role-requests-export');
     if (exportButton) exportButton.disabled = !rows.length;
     list.replaceChildren();
@@ -916,7 +920,11 @@
     link.download = 'go-svt-maroc-role-requests-' + new Date().toISOString().slice(0,10) + '.csv';
     document.body.append(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    $('role-requests-message').textContent = 'تم تصدير ' + rows.length + ' طلباً مطابقاً من ' + roleRequestCache.length + ' طلباً محمّلاً (بحد أقصى 50).';
+    $('role-requests-message').textContent =
+      'تم تصدير ' + rows.length + ' طلباً مطابقاً من ' + roleRequestCache.length +
+      ' طلباً محمّلاً' + (roleRequestsHasMore
+        ? ' — قد توجد طلبات أخرى لم تُحمّل بعد.'
+        : ' — تم تحميل جميع النتائج المتاحة.');
     $('role-requests-message').className = 'message success';
   });
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
