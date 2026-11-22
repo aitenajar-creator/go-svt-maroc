@@ -332,6 +332,8 @@
     stamp.className = 'message ' + (failed ? 'error' : 'success');
   }
   let accountCache = [];
+  let accountsHasMore = false;
+  let accountsLoading = false;
   async function loadPlatformOverview() {
     const status = $('overview-message');
     status.textContent = 'جارٍ تحديث مؤشرات المنصة...';
@@ -359,16 +361,38 @@
     status.className = 'message ' + (errors.length ? 'error' : 'success');
   }
   async function loadAccounts() {
-    const list = $('accounts-list');
+    accountCache = [];
+    accountsHasMore = false;
+    $('accounts-list').textContent = 'جارٍ تحميل الحسابات...';
+    $('accounts-load-more').hidden = true;
+    await loadMoreAccounts(true);
+  }
+  async function loadMoreAccounts(initial = false) {
+    if (accountsLoading || !currentUser) return;
+    accountsLoading = true;
+    const button = $('accounts-load-more');
     const status = $('accounts-message');
-    list.textContent = 'جارٍ تحميل الحسابات...';
-    const { data, error } = await client.from('profiles')
-      .select('id,display_name,role,created_at')
-      .order('created_at', { ascending: false }).limit(250);
-    if (error) { list.textContent = 'تعذر تحميل الحسابات: ' + error.message; return; }
-    accountCache = data || [];
-    renderAccounts();
-    status.textContent = 'الحسابات المعروضة: ' + accountCache.length + (accountCache.length === 250 ? ' (أحدث 250 حساباً)' : '');
+    button.disabled = true;
+    button.textContent = 'جارٍ تحميل الحسابات...';
+    try {
+      const from = accountCache.length;
+      const to = from + 249;
+      const result = await client.from('profiles').select('id,display_name,role,created_at').order('created_at', { ascending: false }).range(from, to);
+      if (result.error) throw result.error;
+      const batch = result.data || [];
+      accountCache = accountCache.concat(batch);
+      accountsHasMore = batch.length === 250;
+      renderAccounts();
+      status.textContent = 'تم تحميل ' + accountCache.length + ' حساباً' + (accountsHasMore ? '، ويمكن تحميل الدفعة التالية.' : '، وصلت إلى نهاية القائمة.');
+    } catch (error) {
+      status.textContent = 'تعذر تحميل الحسابات: ' + (error.message || String(error));
+      if (initial && !accountCache.length) $('accounts-list').textContent = 'تعذر تحميل الحسابات.';
+    } finally {
+      accountsLoading = false;
+      button.disabled = false;
+      button.hidden = !accountsHasMore;
+      button.textContent = 'تحميل 250 حساباً إضافياً ↓';
+    }
   }
   function renderAccounts() {
     const list = $('accounts-list');
@@ -383,7 +407,7 @@
       const searchable = (String(account.display_name || '') + ' ' + account.id + ' ' + String(account.role || '')).toLocaleLowerCase();
       return matchesRole && searchable.includes(query);
     });
-    $('accounts-count').textContent = 'النتائج المطابقة: ' + rows.length + ' من أصل ' + accountCache.length + ' حساباً محمّلاً' + (accountCache.length === 250 ? ' (أحدث 250 حساباً)' : '');
+    $('accounts-count').textContent = 'النتائج المطابقة: ' + rows.length + ' من أصل ' + accountCache.length + ' حساباً محمّلاً' + (accountsHasMore ? ' · توجد دفعات إضافية لم تُحمّل بعد؛ البحث يشمل الحسابات المحمّلة فقط.' : ' · تم تحميل القائمة كاملة.');
     list.replaceChildren();
     if (!rows.length) { list.textContent = 'لا توجد حسابات مطابقة لهذه المعايير.'; return; }
     rows.forEach(account => {
@@ -730,6 +754,7 @@
   $('activity-type-filter').addEventListener('change', renderActivity);
   $('activity-search').addEventListener('input', renderActivity);
   $('accounts-refresh').addEventListener('click', loadAccounts);
+  $('accounts-load-more').addEventListener('click', function () { loadMoreAccounts(false); });
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
   $('role-requests-filter').addEventListener('change', renderRoleRequests);
   $('accounts-search').addEventListener('input', renderAccounts);
