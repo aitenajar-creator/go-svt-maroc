@@ -235,8 +235,43 @@
     return String(value || '').toLocaleLowerCase().normalize('NFKD')
       .replace(/[\u064B-\u065F\u0670]/g, '').replace(/\u0640/g, '').trim();
   }
+  function renderResourceStatistics() {
+    const host = $('resource-statistics');
+    if (!host) return;
+    host.replaceChildren();
+    const dimensions = [
+      { title: 'حسب التصنيف', key: 'category', labels: categoryLabels },
+      { title: 'حسب المستوى', key: 'study_level', labels: { TC: 'TC', '1BAC': '1BAC', '2BAC': '2BAC' } },
+      { title: 'حسب الشعبة والمسلك', key: 'study_track', labels: {} },
+      { title: 'حسب اللغة', key: 'language', labels: { francais: 'Français', arabe: 'العربية' } }
+    ];
+    dimensions.forEach(dimension => {
+      const counts = new Map();
+      resourceCache.filter(item => !item.is_deleted).forEach(item => {
+        const raw = item[dimension.key];
+        const key = raw || 'غير محدد';
+        counts.set(key, (counts.get(key) || 0) + 1);
+      });
+      const card = document.createElement('article');
+      card.className = 'stat-card resource-stat-card';
+      const heading = document.createElement('strong');
+      heading.textContent = dimension.title;
+      const detail = document.createElement('small');
+      const entries = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+      detail.textContent = entries.length
+        ? entries.map(([key, count]) => (dimension.labels[key] || key) + ': ' + count).join(' · ')
+        : 'لا توجد موارد نشطة';
+      card.append(heading, detail);
+      host.append(card);
+    });
+    const note = document.createElement('p');
+    note.className = 'muted resource-stats-note';
+    note.textContent = 'الإحصائيات محسوبة من الموارد النشطة ضمن آخر ' + resourceCache.length + ' مورداً محمّلاً (بحد أقصى 100)، وليست حصيلة شاملة إذا تجاوزت المكتبة هذا العدد.';
+    host.append(note);
+  }
   function renderResources() {
     const list = $('resource-list');
+    renderResourceStatistics();
     const filter = $('resource-state-filter').value;
     const categoryFilter = $('resource-category-filter').value;
     const levelFilter = $('resource-level-filter').value;
