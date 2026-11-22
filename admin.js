@@ -234,8 +234,14 @@
   function renderResources() {
     const list = $('resource-list');
     const filter = $('resource-state-filter').value;
-    const rows = resourceCache.filter(item => filter === 'all' ||
-      (filter === 'active' && !item.is_deleted) || (filter === 'deleted' && item.is_deleted));
+    const categoryFilter = $('resource-category-filter').value;
+    const levelFilter = $('resource-level-filter').value;
+    const rows = resourceCache.filter(item => {
+      const matchesState = filter === 'all' || (filter === 'active' && !item.is_deleted) || (filter === 'deleted' && item.is_deleted);
+      const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+      const matchesLevel = levelFilter === 'all' || (levelFilter === 'none' && !item.study_level) || item.study_level === levelFilter;
+      return matchesState && matchesCategory && matchesLevel;
+    });
     const activeCount = resourceCache.filter(item => !item.is_deleted).length;
     const hiddenCount = resourceCache.length - activeCount;
     $('resource-summary').textContent = 'الموارد النشطة: ' + activeCount + ' · المخفية أو التي تنتظر استكمال الحذف: ' + hiddenCount + ' · النتائج المعروضة: ' + rows.length + ' من أصل ' + resourceCache.length + ' (بحد أقصى 100).';
@@ -418,6 +424,8 @@
   });
   $('refresh-btn').addEventListener('click', loadResources);
   $('resource-state-filter').addEventListener('change', renderResources);
+  $('resource-category-filter').addEventListener('change', renderResources);
+  $('resource-level-filter').addEventListener('change', renderResources);
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
   $('health-refresh').addEventListener('click', loadPlatformHealth);
   $('accounts-refresh').addEventListener('click', loadAccounts);
