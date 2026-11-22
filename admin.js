@@ -495,6 +495,8 @@
       return filter === 'all' || (filter === 'other' && !knownStatuses.includes(state)) || state === filter;
     });
     $('role-requests-count').textContent = 'الطلبات المطابقة: ' + rows.length + ' من أصل ' + roleRequestCache.length + ' طلباً محمّلاً (بحد أقصى 50).';
+    const exportButton = $('role-requests-export');
+    if (exportButton) exportButton.disabled = !rows.length;
     list.replaceChildren();
     if (!rows.length) { list.textContent = 'لا توجد طلبات بهذه الحالة.'; return; }
     rows.forEach(item => {
@@ -859,6 +861,40 @@
   });
   $('accounts-refresh').addEventListener('click', loadAccounts);
   $('accounts-load-more').addEventListener('click', function () { loadMoreAccounts(false); });
+  $('role-requests-export').addEventListener('click', () => {
+    if (!currentUser || !roleRequestCache.length) return;
+    const filter = $('role-requests-filter').value;
+    const knownStatuses = ['pending', 'approved', 'rejected'];
+    const rows = roleRequestCache.filter(item => {
+      const state = String(item.status || '').trim().toLocaleLowerCase();
+      return filter === 'all' || (filter === 'other' && !knownStatuses.includes(state)) || state === filter;
+    });
+    if (!rows.length) return;
+    const labels = {student:'تلميذ',teacher:'أستاذ',admin:'مدير'};
+    const states = {pending:'قيد المراجعة',approved:'مقبول',rejected:'مرفوض'};
+    const cell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    const output = [
+      ['الدور المطلوب','الحالة','مقدم الطلب (معرّف)','الحساب المستهدف (معرّف)','تاريخ الطلب','راجع الطلب (معرّف)','تاريخ المراجعة'],
+      ...rows.map(item => [
+        labels[item.requested_role] || item.requested_role || 'غير محدد',
+        states[item.status] || item.status || 'غير محدد',
+        item.requested_by, item.target_user_id,
+        item.created_at ? new Date(item.created_at).toLocaleString('ar-MA') : '',
+        item.reviewed_by || '',
+        item.reviewed_at ? new Date(item.reviewed_at).toLocaleString('ar-MA') : ''
+      ])
+    ];
+    const csv = '\\uFEFF' + output.map(row => row.map(cell).join(',')).join('\\r\\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'go-svt-maroc-role-requests-' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    $('role-requests-message').textContent = 'تم تصدير ' + rows.length + ' طلباً مطابقاً من ' + roleRequestCache.length + ' طلباً محمّلاً (بحد أقصى 50).';
+    $('role-requests-message').className = 'message success';
+  });
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
   $('role-requests-filter').addEventListener('change', renderRoleRequests);
   $('accounts-search').addEventListener('input', renderAccounts);
