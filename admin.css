@@ -20,3 +20,13 @@
 .resource-statistics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.resource-stat-card{min-width:0}.resource-stat-card strong{font-size:15px}.resource-stat-card small{line-height:1.8;overflow-wrap:anywhere}.resource-stats-note{grid-column:1/-1;font-size:12px;margin:0 2px}@media(max-width:680px){.resource-statistics{grid-template-columns:1fr}}
 
 #activity-panel .activity-row{align-items:center}#activity-panel .activity-row strong,#activity-panel .activity-row small{display:block}#activity-panel .activity-row small{margin-top:4px;line-height:1.7;overflow-wrap:anywhere}.activity-tag{flex-shrink:0;padding:5px 9px;border-radius:8px;background:#edf5f0;color:#28654e;font-size:12px;font-weight:800}@media(max-width:680px){#activity-panel .activity-row{align-items:flex-start}}
+
+#platform-trends-panel .trend-period{max-width:420px;margin:.5rem 0 1rem}
+#platform-trends-panel .table-wrap{width:100%;overflow-x:auto}
+#platform-trends-panel .admin-trends-table{width:100%;border-collapse:collapse;min-width:560px}
+#platform-trends-panel .admin-trends-table th,#platform-trends-panel .admin-trends-table td{padding:.8rem .65rem;text-align:right;border-bottom:1px solid var(--border-color,#e6ece7);font-size:.92rem}
+#platform-trends-panel .admin-trends-table th{background:#f3f7f3;color:#315b43;font-weight:800}
+#platform-trends-panel .trend-up{color:#187447;font-weight:800}
+#platform-trends-panel .trend-down{color:#a44b3d;font-weight:800}
+#platform-trends-panel .trend-flat{color:#68756c;font-weight:700}
+@media(max-width:640px){#platform-trends-panel .admin-trends-table th,#platform-trends-panel .admin-trends-table td{padding:.65rem .45rem;font-size:.84rem}}
