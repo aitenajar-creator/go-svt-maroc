@@ -421,7 +421,7 @@
     try {
       const from = accountCache.length;
       const to = from + 249;
-      const result = await client.from('profiles').select('id,display_name,role,created_at').order('created_at', { ascending: false }).range(from, to);
+      const result = await client.from('profiles').select('id,display_name,role,created_at').order('created_at', { ascending: false }).order('id', { ascending: true }).range(from, to);
       if (result.error) throw result.error;
       const batch = result.data || [];
       accountCache = accountCache.concat(batch);
@@ -487,7 +487,7 @@
     try {
       const { data, error } = await client.from('role_change_requests')
         .select('id,requested_by,target_user_id,requested_role,status,created_at,reviewed_by,reviewed_at')
-        .order('created_at', { ascending: false }).range(from, from + 49);
+        .order('created_at', { ascending: false }).order('id', { ascending: true }).range(from, from + 49);
       if (error) throw error;
       const incoming = data || [];
       roleRequestCache = roleRequestCache.concat(incoming);
