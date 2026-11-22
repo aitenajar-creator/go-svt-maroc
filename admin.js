@@ -235,7 +235,7 @@
         const wrap = document.createElement('div');
         wrap.className = 'report-share';
         const value = document.createElement('strong');
-        value.textContent = share.toFixed(1).replace(/\\.0$/, '') + '%';
+        value.textContent = share.toFixed(1).replace(/\.0$/, '') + '%';
         const track = document.createElement('span');
         track.className = 'report-share-track';
         const fill = document.createElement('span');
@@ -714,7 +714,7 @@
       ['المستوى','الشعبة أو المسلك','الدروس المنشورة','حصة من إجمالي الدروس (%)','موارد المكتبة'],
       ...pedagogicalReportRows.map(item => [item.level, item.track, item.lessons, item.share, item.resources])
     ];
-    const csv = '\\uFEFF' + rows.map(row => row.map(csvCell).join(',')).join('\\r\\n');
+    const csv = '\uFEFF' + rows.map(row => row.map(csvCell).join(',')).join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
