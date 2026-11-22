@@ -193,7 +193,23 @@ async function start(){
    refresh();
   }catch(readError){console.warn('Reading position tracking unavailable',readError);}
  });
- frame.srcdoc=html;frame.addEventListener('load',applyReadingPreferences,{once:true});$('lesson-frame-wrap').hidden=false;$('lesson-status').hidden=true;
+ // Load via document.write fallback as well as srcdoc: avoids browser edge cases where
+ // srcdoc content is not committed to the frame's document.
+ frame.addEventListener('load',function(){
+  try{
+   const frameDoc=frame.contentDocument;
+   const textLength=(frameDoc&&frameDoc.body&&frameDoc.body.innerText||'').trim().length;
+   if(textLength<80){
+    console.warn('[GoSVT reader] srcdoc rendered too little text; retrying via document.write');
+    frameDoc.open();frameDoc.write(html);frameDoc.close();
+   }
+  }catch(frameError){console.error('[GoSVT reader] fallback render error',frameError);}
+  applyReadingPreferences();
+ },{once:true});
+ frame.srcdoc=html;
+ $('lesson-frame-wrap').hidden=false;$('lesson-status').hidden=false;
+ say('تم تحميل الدرس. إذا لم يظهر المحتوى، أعد المحاولة أو أرسل هذه الرسالة للإدارة.');
+
  const banks=[
  {match:/flux de la matière|flux de la matiere/i,questions:[
  {q:"Dans une chaîne alimentaire, la matière organique est d’abord produite par…",a:["les producteurs autotrophes","les consommateurs secondaires","les décomposeurs uniquement"],correct:0,why:"Les producteurs (notamment les végétaux chlorophylliens) fabriquent de la matière organique à partir de matière minérale."},
