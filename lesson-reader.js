@@ -41,7 +41,20 @@ async function start(){
   if(lessonResult.error||!lesson){say('هذا الدرس غير متاح لحسابك أو لم يعد منشوراً.');return;}
  $('lesson-title').textContent=lesson.title;
  const doc=new DOMParser().parseFromString(lesson.content_html,'text/html');
- doc.querySelectorAll('script,iframe,object,embed,form,base').forEach(n=>n.remove());
+ doc.querySelectorAll('script,object,embed,form,base').forEach(n=>n.remove());
+ // Preserve only trusted original-course PDF previews from this repository's raw GitHub host.
+ doc.querySelectorAll('iframe').forEach(function(frame){
+  const raw=frame.getAttribute('src')||'';
+  let safe=false;
+  try{
+   const u=new URL(raw,location.href);
+   safe=u.hostname==='raw.githubusercontent.com'&&/\\.pdf(?:$|[?#])/i.test(u.href);
+  }catch(e){}
+  if(!safe){frame.remove();return;}
+  frame.setAttribute('sandbox','allow-same-origin allow-downloads');
+  frame.setAttribute('loading','lazy');
+  frame.setAttribute('referrerpolicy','no-referrer');
+ });
  doc.querySelectorAll('*').forEach(el=>{[...el.attributes].forEach(a=>{if(/^on/i.test(a.name)||(/^(href|src)$/i.test(a.name)&&/^\s*javascript:/i.test(a.value)))el.removeAttribute(a.name);});});
  // Course files may hide their static body until an initialization script runs. Scripts stay disabled in this reader, so reveal authored content safely.
  doc.querySelectorAll('[hidden], [aria-hidden="true"]').forEach(el=>{el.removeAttribute('hidden');el.removeAttribute('aria-hidden');});
