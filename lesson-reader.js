@@ -197,5 +197,6 @@ async function start(){
  }
 
 }
+window.GoSVTLessonReaderBooted=true;
 start().catch(e=>{console.error('[GoSVT lesson reader] initialization failed:',e);say(e&&String(e.message||e).includes('timeout')?'استغرق الاتصال وقتاً أطول من اللازم. تحقق من الإنترنت ثم أعد تحميل الدرس.':'تعذر تحميل الدرس بسبب خطأ في الاتصال. أعد المحاولة، وإذا تكرر الخطأ تواصل مع الإدارة.');});
 })();
