@@ -860,7 +860,7 @@
         if (container.querySelector('.gs-auth-form') &&
             !(window.StudentAccount && window.StudentAccount.isLoggedIn())) return;
         const active = container.querySelector('.space-tab.active');
-        const tabName = active ? active.dataset.tab : 'dashboard';
+        const tabName = active ? active.dataset.tab : null;
 
         // Keep the student's place when a form action refreshes the dashboard.
         // Native <details> panels remain closed by default on a fresh visit, but
@@ -872,7 +872,7 @@
 
         renderStudentSpace();
 
-        if (tabName && tabName !== 'dashboard') {
+        if (tabName) {
             container.querySelectorAll('.space-tab').forEach(function (b) {
                 const selected = b.dataset.tab === tabName;
                 b.classList.toggle('active', selected);
@@ -1821,7 +1821,7 @@ function openScientificPhotoPreview(card){
         </section>`;
     }
 
-    function renderDashboard() {
+    function renderDashboard(includeAccountBar = true) {
         const stats = getDashboardStats();
         const studentTaskCategoryMap = {"Accès rapide":"learning","استكشف الخلية":"biology","مختبر التركيب الضوئي":"biology","اختبر فهمك للخلية والتركيب الضوئي":"biology","أطلس أجهزة جسم الإنسان":"biology","مسارات التعلم حسب المستوى":"learning","المختبر المجهري":"biology","تجربة التركيب الضوئي":"biology","مكتبة الصور العلمية":"media","بطاقات الذاكرة العلمية":"learning","قاموس مصطلحات علوم الحياة والأرض":"learning","مساري الدراسي":"learning","تحدي اليوم":"learning","توصيات التعلم":"learning","ملخص نشاطك الدراسي":"tracking","Accès rapide":"learning"};
         const taskGroup = (icon, titleAr, titleFr, content) => {
@@ -1840,7 +1840,7 @@ function openScientificPhotoPreview(card){
             profilesOptions += `<option value="${escapeHtml(id)}" ${isActive ? 'selected' : ''}>${escapeHtml(profile.name)}</option>`;
         });
 
-        const accountBar = window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
+        const accountBar = includeAccountBar && window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
         const academic = window.StudentAccount && window.StudentAccount.getProfile ? window.StudentAccount.getProfile() : null;
         const academicNames = {
             TCS: ['الجذع المشترك العلمي', 'Tronc commun scientifique'],
@@ -2714,44 +2714,37 @@ function openScientificPhotoPreview(card){
             return `<section class="gs-student-panel-content"><header class="gs-student-panel-heading"><span class="gs-student-panel-icon" aria-hidden="true">${icon}</span><h2>${title}</h2></header><div class="gs-student-panel-body">${content}</div></section>`;
         };
 
+        const accountBar = window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
         let html = `
-            <div class="student-space">
-                <div class="space-nav" role="tablist" aria-orientation="horizontal" aria-label="${lang() === 'ar' ? 'أقسام مساحة التلميذ' : 'Sections de l’espace élève'}">
-                    <button id="student-tab-dashboard" class="space-tab active" role="tab" aria-selected="true" aria-controls="panel-dashboard" tabindex="0" data-tab="dashboard">${t('dashboard')}</button>
-                    <button id="student-tab-progress" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-progress" tabindex="-1" data-tab="progress">${t('progress')}</button>
-                    <button id="student-tab-history" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-history" tabindex="-1" data-tab="history">${t('history')}</button>
-                    <button id="student-tab-mistakes" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-mistakes" tabindex="-1" data-tab="mistakes">${t('mistakes')}</button>
-                    <button id="student-tab-favorites" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-favorites" tabindex="-1" data-tab="favorites">${t('favorites')}</button>
-                    <button id="student-tab-motivation" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-motivation" tabindex="-1" data-tab="motivation">${t('motivation')}</button>
-                    <button id="student-tab-planner" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-planner" tabindex="-1" data-tab="planner">🗓 ${t('planner')}</button>
-                    <button id="student-tab-notes" class="space-tab" role="tab" aria-selected="false" aria-controls="panel-notes" tabindex="-1" data-tab="notes">🗒 ${t('notesTab')}</button>
-                </div>
-                <div class="space-content">
-                    <div class="space-panel active" id="panel-dashboard" role="tabpanel" aria-hidden="false" aria-labelledby="student-tab-dashboard" tabindex="0">
-                        ${renderDashboard()}
+            <div class="student-space gs-student-shell">
+                <header class="gs-student-shell-header">
+                    ${accountBar ? `<div class="gs-account-topbar">${accountBar}</div>` : ''}
+                    <div class="gs-student-shell-title">
+                        <span class="gs-eyebrow">GO SVT MAROC · ESPACE ÉLÈVE</span>
+                        <h2>${lang() === 'ar' ? 'مساحتي التعليمية' : 'Mon espace d’apprentissage'}</h2>
+                        <p>${lang() === 'ar' ? 'اختر أحد الأقسام لعرض محتواه.' : 'Choisissez une rubrique pour afficher son contenu.'}</p>
                     </div>
-                    <div class="space-panel" id="panel-progress" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-progress" tabindex="0">
-                         ${panelTask('📈','تقدمي الدراسي','Ma progression',renderProgress())} 
-                    </div>
-                    <div class="space-panel" id="panel-history" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-history" tabindex="0">
-                        ${panelTask('🕘','سجل الاختبارات','Historique des quiz',renderHistory())}
-                    </div>
-                    <div class="space-panel" id="panel-mistakes" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-mistakes" tabindex="0">
-                        ${panelTask('🧩','مراجعة أخطائي','Révision de mes erreurs',renderMistakes())}
-                    </div>
-                    <div class="space-panel" id="panel-favorites" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-favorites" tabindex="0">
-                        ${panelTask('⭐','مواردي المفضلة','Mes favoris',renderFavorites())}
-                    </div>
-                    <div class="space-panel" id="panel-motivation" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-motivation" tabindex="0">
-                        ${panelTask('🏅','التحفيز والأهداف','Motivation et objectifs',renderMotivation())}
-                    </div>
-                    <div class="space-panel" id="panel-planner" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-planner" tabindex="0">
-                        ${panelTask('🗓','خطة المراجعة','Mon planning de révision',renderPlanner())}
-                    </div>
-                    <div class="space-panel" id="panel-notes" role="tabpanel" aria-hidden="true" hidden aria-labelledby="student-tab-notes" tabindex="0">
-                        ${panelTask('🗒','ملاحظاتي','Mes notes',renderNotes())}
-                    </div>
-                </div>
+                </header>
+                <nav class="space-nav" aria-label="${lang() === 'ar' ? 'أقسام مساحة التلميذ' : 'Sections de l’espace élève'}">
+                    <button id="student-tab-dashboard" class="space-tab" type="button" aria-controls="panel-dashboard" aria-expanded="false" data-tab="dashboard">🏠 ${t('dashboard')}</button>
+                    <button id="student-tab-progress" class="space-tab" type="button" aria-controls="panel-progress" aria-expanded="false" data-tab="progress">📈 ${t('progress')}</button>
+                    <button id="student-tab-history" class="space-tab" type="button" aria-controls="panel-history" aria-expanded="false" data-tab="history">🕘 ${t('history')}</button>
+                    <button id="student-tab-mistakes" class="space-tab" type="button" aria-controls="panel-mistakes" aria-expanded="false" data-tab="mistakes">🧩 ${t('mistakes')}</button>
+                    <button id="student-tab-favorites" class="space-tab" type="button" aria-controls="panel-favorites" aria-expanded="false" data-tab="favorites">⭐ ${t('favorites')}</button>
+                    <button id="student-tab-motivation" class="space-tab" type="button" aria-controls="panel-motivation" aria-expanded="false" data-tab="motivation">🏅 ${t('motivation')}</button>
+                    <button id="student-tab-planner" class="space-tab" type="button" aria-controls="panel-planner" aria-expanded="false" data-tab="planner">🗓 ${t('planner')}</button>
+                    <button id="student-tab-notes" class="space-tab" type="button" aria-controls="panel-notes" aria-expanded="false" data-tab="notes">🗒 ${t('notesTab')}</button>
+                </nav>
+                <main class="space-content">
+                    <section class="space-panel" id="panel-dashboard" aria-hidden="true" hidden>${renderDashboard(false)}</section>
+                    <section class="space-panel" id="panel-progress" aria-hidden="true" hidden>${panelTask('📈','تقدمي الدراسي','Ma progression',renderProgress())}</section>
+                    <section class="space-panel" id="panel-history" aria-hidden="true" hidden>${panelTask('🕘','سجل الاختبارات','Historique des quiz',renderHistory())}</section>
+                    <section class="space-panel" id="panel-mistakes" aria-hidden="true" hidden>${panelTask('🧩','مراجعة أخطائي','Révision de mes erreurs',renderMistakes())}</section>
+                    <section class="space-panel" id="panel-favorites" aria-hidden="true" hidden>${panelTask('⭐','مواردي المفضلة','Mes favoris',renderFavorites())}</section>
+                    <section class="space-panel" id="panel-motivation" aria-hidden="true" hidden>${panelTask('🏅','التحفيز والأهداف','Motivation et objectifs',renderMotivation())}</section>
+                    <section class="space-panel" id="panel-planner" aria-hidden="true" hidden>${panelTask('🗓','خطة المراجعة','Mon planning de révision',renderPlanner())}</section>
+                    <section class="space-panel" id="panel-notes" aria-hidden="true" hidden>${panelTask('🗒','ملاحظاتي','Mes notes',renderNotes())}</section>
+                </main>
             </div>
         `;
 
@@ -3223,8 +3216,7 @@ function openScientificPhotoPreview(card){
             studentTabs.forEach(function (item) {
                 const selected = item === tab;
                 item.classList.toggle('active', selected);
-                item.setAttribute('aria-selected', selected ? 'true' : 'false');
-                item.tabIndex = selected ? 0 : -1;
+                item.setAttribute('aria-expanded', selected ? 'true' : 'false');
             });
             container.querySelectorAll('.space-panel').forEach(function (panel) {
                 const selected = panel.id === 'panel-' + tabName;
