@@ -5,6 +5,8 @@ Images and metadata are resolved during GitHub Actions, not from each learner's
 browser. This removes the browser-to-Commons API/CORS dependency.
 """
 import json
+import hashlib
+import mimetypes
 import time
 import urllib.parse
 import urllib.request
@@ -46,6 +48,8 @@ def plain(value):
     return re.sub(r"\\s+", " ", html.unescape(re.sub(r"<[^>]*>", " ", str(value or "")))).strip()
 
 catalogue = {}
+cache_dir = Path('science-media-cache')
+cache_dir.mkdir(parents=True, exist_ok=True)
 for query in QUERIES:
     try:
         search = api({
@@ -86,8 +90,30 @@ for query in QUERIES:
             })
         candidates.sort(key=lambda item: item["width"] * item["height"], reverse=True)
         if candidates:
-            catalogue[query] = candidates[0]
-            print("OK:", query, "=>", candidates[0]["title"])
+            chosen = candidates[0]
+            # Download thumbnail during CI for same-origin delivery.
+            try:
+                remote = chosen["image_url"]
+                ext = mimetypes.guess_extension(chosen.get("mime", "")) or ".jpg"
+                if ext in (".jpe", ".jpeg"): ext = ".jpg"
+                filename = hashlib.sha256((query + remote).encode("utf-8")).hexdigest()[:18] + ext
+                local_path = cache_dir / filename
+                if not local_path.exists():
+                    request = urllib.request.Request(remote, headers={"User-Agent": USER_AGENT})
+                    with urllib.request.urlopen(request, timeout=40) as response:
+                        image_bytes = response.read()
+                    if len(image_bytes) < 5000:
+                        raise ValueError("thumbnail download too small")
+                    local_path.write_bytes(image_bytes)
+                chosen["remote_image_url"] = remote
+                chosen["image_url"] = "science-media-cache/" + filename
+                chosen["image_cached_locally"] = True
+                print("CACHED:", query, "=>", chosen["title"], filename)
+            except Exception as download_error:
+                print("CACHE FAILED:", query, str(download_error)[:200])
+                chosen["image_cached_locally"] = False
+            catalogue[query] = chosen
+            print("OK:", query, "=>", chosen["title"])
         else:
             catalogue[query] = {"error": "No suitable raster image found"}
             print("NO SUITABLE IMAGE:", query)

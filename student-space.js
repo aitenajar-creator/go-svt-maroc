@@ -1666,7 +1666,7 @@
             /heart/i.test(query) ? 'heart' :
             /lung|alveoli/i.test(query) ? 'lung' : 'fossil';
         const diagrams = {
-            cell: {title:fr?'Cellule végétale — schéma':'الخلية النباتية — رسم توضيحي', shapes:'<rect x="80" y="54" width="340" height="205" rx="42" fill="#e6f5d9" stroke="#47854a" stroke-width="9"/><rect x="98" y="72" width="304" height="169" rx="34" fill="#f5ffeb" stroke="#86bd75" stroke-width="4"/><ellipse cx="245" cy="155" rx="45" ry="37" fill="#b7a2e6" stroke="#6c50a0" stroke-width="4"/><circle cx="253" cy="154" r="12" fill="#68469b"/>'+Array.from({length:7},(_,n)=>'<ellipse cx="'+(135+n*38)+'" cy="'+(95+(n%2)*120)+'" rx="16" ry="8" fill="#6ab66a" stroke="#327e40" stroke-width="3"/>').join('()')},
+            cell: {title:fr?'Cellule végétale — schéma':'الخلية النباتية — رسم توضيحي', shapes:'<rect x="80" y="54" width="340" height="205" rx="42" fill="#e6f5d9" stroke="#47854a" stroke-width="9"/><rect x="98" y="72" width="304" height="169" rx="34" fill="#f5ffeb" stroke="#86bd75" stroke-width="4"/><ellipse cx="245" cy="155" rx="45" ry="37" fill="#b7a2e6" stroke="#6c50a0" stroke-width="4"/><circle cx="253" cy="154" r="12" fill="#68469b"/>'+Array.from({length:7},(_,n)=>'<ellipse cx="'+(135+n*38)+'" cy="'+(95+(n%2)*120)+'" rx="16" ry="8" fill="#6ab66a" stroke="#327e40" stroke-width="3"/>').join('')},
             leaf: {title:fr?'Stomate et cellules de garde':'الثغر والخلايا الحارسة', shapes:'<path d="M120 170 Q200 40 350 115 Q320 255 145 235Z" fill="#b7e4a3" stroke="#3b8d4e" stroke-width="6"/><path d="M150 215Q235 170 330 120" fill="none" stroke="#57975a" stroke-width="5"/><ellipse cx="235" cy="173" rx="40" ry="22" fill="#f7fff0" stroke="#22743a" stroke-width="6"/><ellipse cx="198" cy="173" rx="28" ry="38" fill="#4ca66b"/><ellipse cx="272" cy="173" rx="28" ry="38" fill="#4ca66b"/>'},
             blood:{title:fr?'Cellules sanguines':'خلايا الدم',shapes:Array.from({length:9},(_,n)=>'<ellipse cx="'+(115+(n%3)*120)+'" cy="'+(90+Math.floor(n/3)*80)+'" rx="37" ry="24" fill="#e85e67" stroke="#b93a43" stroke-width="3"/><ellipse cx="'+(115+(n%3)*120)+'" cy="'+(90+Math.floor(n/3)*80)+'" rx="18" ry="9" fill="#c94250"/>').join('')+'<circle cx="350" cy="210" r="28" fill="#8c70c4" stroke="#634694" stroke-width="4"/>'},
             heart:{title:fr?'Cœur — circulation':'القلب — الدورة الدموية',shapes:'<path d="M250 215 C80 120 160 60 220 105 C265 60 345 90 330 145 C320 180 285 205 250 235Z" fill="#e55b63" stroke="#9e3340" stroke-width="5"/><path d="M230 110 L230 65 M285 115 L310 55" stroke="#4c82c5" stroke-width="18" stroke-linecap="round"/><path d="M160 160 Q95 210 120 250 M325 150 Q400 210 380 250" fill="none" stroke="#4b91cf" stroke-width="12"/>'},
@@ -1686,6 +1686,8 @@
         const cards = Array.from(root.querySelectorAll(selector));
         if (!cards.length) return;
         const fr = lang() === 'fr';
+        // Display self-contained diagrams immediately, then upgrade to cached photos.
+        cards.forEach(card => setScienceDiagramFallback(card, fr, card.getAttribute('data-science-search') || ''));
         let items={};
         try {
             const response = await fetch(new URL('science-media.json', document.baseURI).href, {cache:'no-cache',headers:{Accept:'application/json'}});
@@ -1699,8 +1701,10 @@
             const item=items[query];
             if(!item||!item.image_url||!item.source_url){setScienceDiagramFallback(card,fr,query);return;}
             try {
-                const imageUrl=new URL(item.image_url), sourceUrl=new URL(item.source_url), originalUrl=item.original_url?new URL(item.original_url):imageUrl;
-                if(imageUrl.hostname!=='upload.wikimedia.org'||originalUrl.hostname!=='upload.wikimedia.org'||sourceUrl.hostname!=='commons.wikimedia.org')throw new Error('Wikimedia URL invalid');
+                const imageUrl=new URL(item.image_url, document.baseURI), sourceUrl=new URL(item.source_url), originalUrl=item.original_url?new URL(item.original_url):imageUrl;
+                const localCached = imageUrl.origin === location.origin && imageUrl.pathname.includes('/science-media-cache/');
+                const commonsImage = imageUrl.hostname === 'upload.wikimedia.org';
+                if((!localCached&&!commonsImage)||(!localCached&&originalUrl.hostname!=='upload.wikimedia.org')||sourceUrl.hostname!=='commons.wikimedia.org')throw new Error('Wikimedia URL invalid');
                 const img=document.createElement('img');img.src=imageUrl.href;img.alt=item.title||'Scientific image';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
                 img.addEventListener('error',()=>setScienceDiagramFallback(card,fr,query),{once:true});
                 photo.replaceChildren(img);card.dataset.realImageUrl=imageUrl.href;card.dataset.originalFileUrl=originalUrl.href;card.dataset.sourcePageUrl=sourceUrl.href;
