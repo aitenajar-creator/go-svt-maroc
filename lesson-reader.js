@@ -1,5 +1,17 @@
 (function(){
 'use strict';
+// Mark execution immediately, before any DOM setup can throw.
+window.GoSVTLessonReaderBooted=true;
+window.addEventListener('error',function(event){
+ const status=document.getElementById('lesson-status');
+ if(status){status.hidden=false;status.textContent='حدث خطأ أثناء تشغيل عارض الدرس: '+String(event.message||'JavaScript error').slice(0,220);}
+ console.error('[GoSVT lesson reader] runtime error:',event.error||event.message);
+});
+window.addEventListener('unhandledrejection',function(event){
+ const status=document.getElementById('lesson-status');
+ if(status){status.hidden=false;status.textContent='تعذر إكمال عملية داخل عارض الدرس: '+String(event.reason&&event.reason.message||event.reason||'Promise error').slice(0,220);}
+ console.error('[GoSVT lesson reader] unhandled rejection:',event.reason);
+});
 const $=id=>document.getElementById(id), client=window.supabaseClient;
 const say=m=>{$('lesson-status').textContent=m;};
 $('back-btn').addEventListener('click',()=>{location.href='index.html#student-space';});
@@ -196,6 +208,5 @@ async function start(){
  }
 
 }
-window.GoSVTLessonReaderBooted=true;
 start().catch(e=>{console.error('[GoSVT lesson reader] initialization failed:',e);say(e&&String(e.message||e).includes('timeout')?'استغرق الاتصال وقتاً أطول من اللازم. تحقق من الإنترنت ثم أعد تحميل الدرس.':'تعذر تحميل الدرس بسبب خطأ في الاتصال. أعد المحاولة، وإذا تكرر الخطأ تواصل مع الإدارة.');});
 })();
