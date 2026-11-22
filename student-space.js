@@ -1893,7 +1893,7 @@ function openScientificPhotoPreview(card){
         const html = `
             ${accountBar ? `<div class="gs-account-topbar" aria-label="${lang() === 'ar' ? 'الحساب وتسجيل الخروج' : 'Compte et déconnexion'}">${accountBar}</div>` : ''}
             <div class="dashboard-header">
-                ${!accountBar ? `<div class="profile-selector">
+                ${!(window.StudentAccount && window.StudentAccount.isLoggedIn()) ? `<div class="profile-selector">
                     <label>${t('currentProfile')}:</label>
                     <select id="profile-select">${profilesOptions}</select>
                     <button class="btn-create-profile" onclick="promptCreateProfile()">+ ${t('createProfile')}</button>
