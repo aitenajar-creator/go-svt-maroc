@@ -56,18 +56,46 @@
   function initAdminTabs() {
     const tabs = Array.from(document.querySelectorAll('[data-admin-tab]'));
     const panels = Array.from(document.querySelectorAll('[data-admin-tab-content], .admin-tab-content'));
-    function activate(id) {
+    const tablist = document.getElementById('admin-tabs');
+    if (tablist) tablist.setAttribute('role', 'tablist');
+    tabs.forEach((tab, index) => {
+      const panelId = tab.dataset.adminTab;
+      tab.id = tab.id || 'admin-tab-' + panelId;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-controls', panelId);
+      tab.tabIndex = index === 0 ? 0 : -1;
+      const panel = document.getElementById(panelId);
+      if (panel) {
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tab.id);
+        panel.tabIndex = 0;
+      }
+    });
+    function activate(id, moveFocus = false) {
       panels.forEach(panel => { panel.hidden = panel.id !== id; });
       tabs.forEach(tab => {
         const active = tab.dataset.adminTab === id;
         tab.classList.toggle('active', active);
         tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        tab.tabIndex = active ? 0 : -1;
+        if (active && moveFocus) tab.focus();
       });
     }
-    tabs.forEach(tab => {
+    tabs.forEach((tab, index) => {
       if (tab.dataset.bound === 'true') return;
       tab.dataset.bound = 'true';
       tab.addEventListener('click', () => activate(tab.dataset.adminTab));
+      tab.addEventListener('keydown', event => {
+        const rtl = document.documentElement.dir === 'rtl';
+        let nextIndex = index;
+        if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = tabs.length - 1;
+        else if (event.key === (rtl ? 'ArrowLeft' : 'ArrowRight')) nextIndex = (index + 1) % tabs.length;
+        else if (event.key === (rtl ? 'ArrowRight' : 'ArrowLeft')) nextIndex = (index - 1 + tabs.length) % tabs.length;
+        else return;
+        event.preventDefault();
+        activate(tabs[nextIndex].dataset.adminTab, true);
+      });
     });
     activate('platform-overview');
   }
