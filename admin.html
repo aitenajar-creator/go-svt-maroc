@@ -49,7 +49,7 @@
         </div>
         <p id="overview-message" class="message muted" role="status">سيتم تحميل المؤشرات بعد التحقق من صلاحية المدير.</p>
         <div class="admin-shortcuts">
-          <a href="#founder-editor">هوية صاحب الموقع</a><a href="#site-content-manager">محتوى الموقع</a><a href="#private-lessons-panel">دروس مساحة التلميذ</a><a href="teacher-community.html">مجتمع الأساتذة</a>
+          <a href="#founder-editor">هوية صاحب الموقع</a><a href="#site-content-manager">محتوى الموقع</a><a href="#private-lessons-panel">دروس مساحة التلميذ</a><a href="teacher-community.html">مجتمع الأساتذة (إدارة مستقلة)</a>
         </div>
       </section>
       <section class="panel" id="accounts-panel">
@@ -57,6 +57,11 @@
         <div class="field"><label for="accounts-search">البحث بالاسم أو معرّف الحساب</label><input id="accounts-search" type="search" placeholder="اكتب الاسم أو جزءاً من المعرّف"></div>
         <p id="accounts-message" class="message muted" role="status"></p>
         <div id="accounts-list" class="resource-list"><p class="muted">جاري تحميل الحسابات...</p></div>
+      </section>
+      <section class="panel" id="role-requests-panel">
+        <div class="section-heading"><div><p class="eyebrow">ROLE REQUESTS</p><h2>طلبات تغيير الأدوار</h2><p class="muted">مراجعة الطلبات الواردة. تغيير الدور غير متاح من هذه الواجهة حالياً حفاظاً على حماية الأدوار.</p></div><button id="role-requests-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <p id="role-requests-message" class="message muted" role="status"></p>
+        <div id="role-requests-list" class="resource-list"><p class="muted">جاري تحميل الطلبات...</p></div>
       </section>
       <div class="stats-grid">
         <article class="stat-card"><span>📚</span><strong id="resource-count">—</strong><small>ملفاً منشوراً عبر الإدارة</small></article>
