@@ -1657,88 +1657,65 @@
     }
 
     async function loadScientificMediaImages(root) {
-        const cards = root.querySelectorAll('.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search], .gs-real-science-photo[data-science-search]');
+        const selector = '.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search], .gs-real-science-photo[data-science-search]';
+        const cards = Array.from(root.querySelectorAll(selector));
+        if (!cards.length) return;
         const fr = lang() === 'fr';
-        await Promise.all(Array.from(cards).map(async function(card) {
-            const query = card.getAttribute('data-science-search') || '';
-            const photo = card.querySelector('.gs-science-media-photo');
-            const credit = card.querySelector('.gs-science-media-credit');
-            if (!photo || !query) return;
-            try {
-                // Use Commons' explicit search endpoint first, then request image
-                // metadata for the returned file titles. This is more reliable than
-                // generator=search for namespace-6 media lookups.
-                async function searchCommons(searchTerm) {
-                    const params = new URLSearchParams({
-                        action: 'query', format: 'json', origin: '*',
-                        list: 'search', srnamespace: '6', srlimit: '25',
-                        srsearch: searchTerm
-                    });
-                    const response = await fetch('https://commons.wikimedia.org/w/api.php?' + params.toString(), {
-                        headers: { Accept: 'application/json' }
-                    });
-                    if (!response.ok) throw new Error('Wikimedia file search failed: HTTP ' + response.status);
-                    const data = await response.json();
-                    return data && data.query && Array.isArray(data.query.search)
-                        ? data.query.search.map(function(item) { return item.title; }).filter(Boolean)
-                        : [];
+        try {
+            // The catalogue is generated during deployment. Learners' browsers
+            // only request a same-origin JSON file; they never call Commons API.
+            const response = await fetch(new URL('science-media.json', document.baseURI).href, {
+                cache: 'no-cache',
+                headers: { Accept: 'application/json' }
+            });
+            if (!response.ok) throw new Error('Catalogue local indisponible (HTTP ' + response.status + ')');
+            const catalogue = await response.json();
+            const items = catalogue && catalogue.items ? catalogue.items : {};
+            await Promise.all(cards.map(async function(card) {
+                const query = card.getAttribute('data-science-search') || '';
+                const photo = card.querySelector('.gs-science-media-photo');
+                const credit = card.querySelector('.gs-science-media-credit');
+                if (!photo || !query) return;
+                const item = items[query];
+                if (!item || !item.image_url || !item.source_url) {
+                    const reason = item && item.error ? item.error : 'لا توجد صورة موثقة لهذا التصنيف في الفهرس الحالي';
+                    card.dataset.previewUnavailable = 'true';
+                    card.dataset.previewError = reason;
+                    if (credit) credit.textContent = fr ? 'Image non disponible · ' + reason : 'الصورة غير متاحة: ' + reason;
+                    const note = photo.querySelector('small');
+                    if (note) note.textContent = fr ? 'Image non disponible' : 'الصورة غير متاحة حالياً';
+                    return;
                 }
-                // First try the precise raster filter; if Commons returns no files,
-                // retry the same scientific query without that restrictive operator.
-                let titles = await searchCommons(query + ' filetype:bitmap');
-                if (!titles.length) titles = await searchCommons(query);
-                if (!titles.length) throw new Error('No matching Wikimedia image files after fallback search');
-                const infoParams = new URLSearchParams({
-                    action: 'query', format: 'json', origin: '*',
-                    prop: 'imageinfo', titles: titles.join('|'),
-                    iiprop: 'url|extmetadata|size|mime', iiurlwidth: '640'
-                });
-                const infoResponse = await fetch('https://commons.wikimedia.org/w/api.php?' + infoParams.toString(), {
-                    headers: { Accept: 'application/json' }
-                });
-                if (!infoResponse.ok) throw new Error('Wikimedia image metadata failed: HTTP ' + infoResponse.status);
-                const payload = await infoResponse.json();
-                const candidates = payload && payload.query && payload.query.pages
-                    ? Object.values(payload.query.pages).map(function(candidate) {
-                        const imageInfo = candidate && Array.isArray(candidate.imageinfo) ? candidate.imageinfo[0] : null;
-                        return { page: candidate, info: imageInfo };
-                    }).filter(function(item) {
-                        const mime = String(item.info && item.info.mime || '').toLowerCase();
-                        const imageUrl = String(item.info && (item.info.thumburl || item.info.url) || '').toLowerCase();
-                        const isRaster = /^image\/(jpeg|png|webp|gif|tiff)$/i.test(mime) ||
-                            (!mime && /\.(jpe?g|png|webp|gif|tiff?)(\?|$)/i.test(imageUrl));
-                        return item.info && (item.info.thumburl || item.info.url) && item.info.descriptionurl && isRaster &&
-                            Number(item.info.width) >= 160 && Number(item.info.height) >= 120;
-                    }).sort(function(a, b) {
-                        return (Number(b.info.width) * Number(b.info.height)) - (Number(a.info.width) * Number(a.info.height));
-                    }) : [];
-                const selected = candidates[0];
-                const page = selected && selected.page;
-                const info = selected && selected.info;
-                if (!info) throw new Error('No suitable raster image (minimum 160×120)');
-                const imageUrl = new URL(info.thumburl || info.url);
-                const pageUrl = new URL(info.descriptionurl);
-                if (imageUrl.hostname !== 'upload.wikimedia.org' || pageUrl.hostname !== 'commons.wikimedia.org') {
-                    throw new Error('Unexpected Wikimedia URL');
+                const imageUrl = new URL(item.image_url);
+                const sourceUrl = new URL(item.source_url);
+                const originalUrl = item.original_url ? new URL(item.original_url) : imageUrl;
+                if (imageUrl.hostname !== 'upload.wikimedia.org' ||
+                    originalUrl.hostname !== 'upload.wikimedia.org' ||
+                    sourceUrl.hostname !== 'commons.wikimedia.org') {
+                    throw new Error('Lien Wikimedia non autorisé');
                 }
-                const meta = info.extmetadata || {};
-                const plain = function(value) {
-                    const raw = value && (value.value || value);
-                    return String(raw || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ')
-                        .replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/gi, "'")
-                        .replace(/\s+/g, ' ').trim();
-                };
-                const license = plain(meta.LicenseShortName) || (fr ? 'Licence à vérifier' : 'يجب التحقق من الترخيص');
-                const author = plain(meta.Artist) || plain(meta.Credit) || (fr ? 'Auteur non indiqué' : 'المؤلف غير محدد');
                 const img = document.createElement('img');
                 img.src = imageUrl.href;
-                img.alt = page.title || (fr ? 'Photographie scientifique' : 'صورة علمية');
+                img.alt = item.title || (fr ? 'Photographie scientifique' : 'صورة علمية');
                 img.loading = 'lazy';
                 img.decoding = 'async';
                 img.referrerPolicy = 'no-referrer';
+                img.addEventListener('error', function() {
+                    card.dataset.previewUnavailable = 'true';
+                    card.dataset.previewError = 'Échec du chargement du fichier image';
+                    if (credit) credit.textContent = fr ? 'Échec du chargement de la photo Wikimedia' : 'تعذر تحميل ملف الصورة من ويكيميديا';
+                    const note = photo.querySelector('small');
+                    if (note) note.textContent = fr ? 'Image indisponible' : 'تعذر تحميل الصورة';
+                }, { once: true });
                 photo.replaceChildren(img);
                 card.dataset.realImageUrl = imageUrl.href;
-                card.dataset.sourcePageUrl = pageUrl.href;
+                card.dataset.originalFileUrl = originalUrl.href;
+                card.dataset.sourcePageUrl = sourceUrl.href;
+                card.href = '#';
+                card.removeAttribute('target');
+                card.setAttribute('aria-haspopup', 'dialog');
+                card.setAttribute('aria-label', (item.title || '') + ' — ' + (item.license || ''));
+                if (credit) credit.textContent = '© ' + (item.author || (fr ? 'Auteur non indiqué' : 'المؤلف غير محدد')) + ' · ' + (item.license || (fr ? 'Licence non indiquée' : 'الترخيص غير محدد'));
                 const microscope = card.closest('.gs-microscope-lab');
                 if (microscope && microscope.dataset.activeSlide === card.dataset.microSource) {
                     const art = microscope.querySelector('.gs-micro-art');
@@ -1754,30 +1731,17 @@
                     }
                     if (overlay) overlay.textContent = fr ? 'Microphotographie réelle' : 'صورة مجهرية حقيقية';
                 }
-                card.dataset.realImageUrl = imageUrl.href;
-                card.dataset.sourcePageUrl = pageUrl.href;
-                card.href = '#';
-                card.removeAttribute('target');
-                card.setAttribute('aria-haspopup', 'dialog');
-                card.setAttribute('aria-label', (page.title || '') + ' — ' + license);
-                if (credit) credit.textContent = (fr ? '© ' : '© ') + author + ' · ' + license;
-            } catch (error) {
-                // Keep the failure reason visible so network/API/search failures
-                // can be distinguished instead of presenting one misleading message.
-                const reason = String(error && error.message || error || 'Unknown error').slice(0, 180);
-                console.warn('[GO SVT Commons image]', query, reason);
-                card.href = '#';
-                card.removeAttribute('target');
+            }));
+        } catch (error) {
+            const reason = String(error && error.message || error || 'Unknown error').slice(0, 180);
+            console.error('[GO SVT local science catalogue]', reason);
+            cards.forEach(function(card) {
                 card.dataset.previewUnavailable = 'true';
                 card.dataset.previewError = reason;
-                card.setAttribute('aria-disabled', 'true');
-                if (credit) credit.textContent = fr
-                    ? 'Image indisponible · ' + reason
-                    : 'تعذر تحميل الصورة · ' + reason;
-                const note = photo.querySelector('small');
-                if (note) note.textContent = fr ? 'Image unavailable' : 'تعذر تحميل الصورة';
-            }
-        }));
+                const credit = card.querySelector('.gs-science-media-credit');
+                if (credit) credit.textContent = fr ? 'Catalogue indisponible · ' + reason : 'تعذر تحميل فهرس الصور · ' + reason;
+            });
+        }
     }
 
 
