@@ -188,10 +188,16 @@
     status.className = 'message ' + (failed.length ? 'error' : 'success');
   }
   let activityCache = [];
+  let activityLoading = false;
   async function loadActivity() {
-    const host = $('activity-list');
-    const summary = $('activity-summary');
-    host.textContent = 'جارٍ تحميل سجل الأنشطة...';
+    if (activityLoading) return;
+    activityLoading = true;
+    const refreshButton = $('activity-refresh');
+    if (refreshButton) { refreshButton.disabled = true; refreshButton.textContent = 'جارٍ التحديث...'; }
+    try {
+      const host = $('activity-list');
+      const summary = $('activity-summary');
+      host.textContent = 'جارٍ تحميل سجل الأنشطة...';
     const sources = [
       { type: 'accounts', label: 'حساب جديد', run: () => client.from('profiles').select('display_name,role,created_at').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.display_name || 'حساب جديد', detail: 'إنشاء حساب · ' + (({admin:'مدير',teacher:'أستاذ',student:'تلميذ'})[row.role] || row.role || 'دور غير محدد') }) },
       { type: 'content', label: 'مورد جديد في المكتبة', run: () => client.from('site_content_items').select('title,category,study_level,study_track,created_at,is_deleted').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.title || 'مورد دون عنوان', detail: [categoryLabels[row.category] || row.category, row.study_level, row.study_track, row.is_deleted ? 'مخفي' : 'نشط'].filter(Boolean).join(' · ') }) },
@@ -217,6 +223,10 @@
       (failed.length ? ' · تعذر فحص ' + failed.length + ' مصدر: ' + failed.map(x => x.source).join('، ') : ' · جميع المصادر استجابت بنجاح') +
       '. تُعرض حتى 12 إضافة أو طلباً من كل مصدر.';
     summary.className = 'message ' + (failed.length ? 'error' : 'success');
+    } finally {
+      activityLoading = false;
+      if (refreshButton) { refreshButton.disabled = false; refreshButton.textContent = 'تحديث ↻'; }
+    }
   }
   function renderActivity() {
     const host = $('activity-list');
