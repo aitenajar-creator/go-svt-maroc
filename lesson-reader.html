@@ -24,7 +24,7 @@ function loadScript(src,label,timeout){
 show('تم تشغيل الصفحة. جارٍ تحميل مكتبة الاتصال…');
 loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2','مكتبة Supabase',15000)
 .then(function(){show('تم تحميل المكتبة. جارٍ إعداد الاتصال…');return loadScript('supabase-config.js?v=20261122-2','إعداد الاتصال',12000)})
-.then(function(){show('تم إعداد الاتصال. جارٍ تحميل الدرس…');return loadScript('lesson-reader.js?v=20261122-3','عارض الدرس',12000)})
+.then(function(){show('تم إعداد الاتصال. جارٍ تحميل الدرس…');return loadScript('lesson-reader.js?v=20261122-4','عارض الدرس',12000)})
 .catch(function(error){console.error('[GoSVT inline reader bootstrap]',error);show((error&&error.message?error.message:'تعذر تشغيل العارض')+' يرجى إعادة المحاولة أو إرسال رسالة الخطأ إلى الإدارة.')});
 })();
 </script></body></html>
