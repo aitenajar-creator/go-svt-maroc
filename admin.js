@@ -58,8 +58,70 @@
     dashboard.hidden = false;
     await Promise.all([
       loadResources(), loadFounderProfile(), loadPlatformOverview(),
-      loadAccounts(), loadRoleRequests(), loadPlatformHealth(), loadActivity()
+      loadAccounts(), loadRoleRequests(), loadPlatformHealth(), loadActivity(), loadPlatformTrends()
     ]);
+  }
+  async function loadPlatformTrends() {
+    const days = Number($('trend-period').value) || 30;
+    const end = new Date();
+    const start = new Date(end.getTime() - days * 86400000);
+    const previousStart = new Date(start.getTime() - days * 86400000);
+    const iso = date => date.toISOString();
+    const sources = [
+      { label: 'الحسابات الجديدة', table: 'profiles' },
+      { label: 'الموارد المضافة للمكتبة', table: 'site_content_items' },
+      { label: 'الدروس الخاصة المضافة', table: 'private_student_lessons' },
+      { label: 'التمارين المنشأة', table: 'exercises' },
+      { label: 'الأقسام المنشأة', table: 'classes' },
+      { label: 'طلبات تغيير الأدوار', table: 'role_change_requests' }
+    ];
+    const status = $('trends-message');
+    const body = $('trends-table-body');
+    status.textContent = 'جارٍ حساب مؤشرات النمو...';
+    body.replaceChildren();
+    const results = await Promise.all(sources.map(async source => {
+      const countRange = async (from, to) => {
+        let query = client.from(source.table).select('id', { count: 'exact', head: true })
+          .gte('created_at', iso(from)).lt('created_at', iso(to));
+        if (source.table === 'site_content_items') query = query.eq('is_deleted', false);
+        if (source.table === 'exercises') query = query.eq('is_published', true);
+        if (source.table === 'private_student_lessons') query = query.eq('is_published', true);
+        const { count, error } = await query;
+        if (error) throw error;
+        return count ?? 0;
+      };
+      try {
+        const [current, previous] = await Promise.all([
+          countRange(start, end), countRange(previousStart, start)
+        ]);
+        return { label: source.label, current, previous };
+      } catch (error) {
+        return { label: source.label, error: error.message || String(error) };
+      }
+    }));
+    results.forEach(result => {
+      const tr = document.createElement('tr');
+      const label = document.createElement('td'); label.textContent = result.label; tr.append(label);
+      if (result.error) {
+        const cell = document.createElement('td'); cell.colSpan = 3;
+        cell.textContent = 'تعذر حساب المؤشر: ' + result.error; tr.append(cell);
+      } else {
+        const current = document.createElement('td'); current.textContent = String(result.current);
+        const previous = document.createElement('td'); previous.textContent = String(result.previous);
+        const change = document.createElement('td');
+        const delta = result.current - result.previous;
+        const percent = result.previous === 0 ? (result.current === 0 ? '0%' : 'جديد') : ((delta / result.previous) * 100).toFixed(1).replace(/\.0$/, '') + '%';
+        change.textContent = (delta > 0 ? '+' : '') + delta + ' (' + percent + ')';
+        change.className = delta > 0 ? 'trend-up' : delta < 0 ? 'trend-down' : 'trend-flat';
+        tr.append(current, previous, change);
+      }
+      body.append(tr);
+    });
+    const failed = results.filter(x => x.error);
+    status.textContent = 'الفترة الحالية: ' + start.toLocaleDateString('ar-MA') + ' – ' + end.toLocaleDateString('ar-MA') +
+      ' · الفترة السابقة: ' + previousStart.toLocaleDateString('ar-MA') + ' – ' + start.toLocaleDateString('ar-MA') +
+      (failed.length ? ' · تعذر حساب ' + failed.length + ' مؤشرات.' : ' · اكتمل الحساب بنجاح.');
+    status.className = 'message ' + (failed.length ? 'error' : 'success');
   }
   let activityCache = [];
   async function loadActivity() {
@@ -535,6 +597,8 @@
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
   $('health-refresh').addEventListener('click', loadPlatformHealth);
   $('activity-refresh').addEventListener('click', loadActivity);
+  $('trends-refresh').addEventListener('click', loadPlatformTrends);
+  $('trend-period').addEventListener('change', loadPlatformTrends);
   $('activity-type-filter').addEventListener('change', renderActivity);
   $('activity-search').addEventListener('input', renderActivity);
   $('accounts-refresh').addEventListener('click', loadAccounts);
