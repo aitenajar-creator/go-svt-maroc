@@ -21,7 +21,7 @@ $('private-lesson-form').addEventListener('submit',async e=>{
  try{
   const html=await file.text();
   if(html.length>2000000)throw new Error('حجم الدرس أكبر من الحد المسموح (2MB).');
-  if(!/<\s*(html|body|main|article|h1|h2)\\b/i.test(html))throw new Error('يبدو أن الملف لا يحتوي على بنية HTML لدرس.');
+  if(!/<\s*(html|body|main|article|h1|h2)\b/i.test(html))throw new Error('يبدو أن الملف لا يحتوي على بنية HTML لدرس.');
   const slug=$('private-lesson-slug').value.trim().toLowerCase();
   if(!/^[a-z0-9-]{3,100}$/.test(slug))throw new Error('استعمل معرفاً لاتينياً يتكون من أحرف وأرقام وشرطات.');
   const level=$('private-lesson-level').value,track=$('private-lesson-track').value;
