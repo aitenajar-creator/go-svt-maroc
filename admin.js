@@ -486,19 +486,28 @@
     status.textContent = roleRequestCache.length ? 'هذه القائمة للعرض فقط؛ لا يمكن تغيير حالة الطلب من خلالها.' : 'لا توجد طلبات تغيير أدوار مسجلة.';
     status.className = 'message muted';
   }
+  function getFilteredRoleRequests() {
+    const filter = $('role-requests-filter').value;
+    const query = normalizeResourceSearch($('role-requests-search').value);
+    const knownStatuses = ['pending', 'approved', 'rejected'];
+    return roleRequestCache.filter(item => {
+      const state = String(item.status || '').trim().toLocaleLowerCase();
+      const matchesStatus = filter === 'all' || (filter === 'other' && !knownStatuses.includes(state)) || state === filter;
+      const searchable = normalizeResourceSearch([
+        item.requested_role, item.status, item.requested_by, item.target_user_id,
+        item.reviewed_by, item.created_at, item.reviewed_at
+      ].filter(Boolean).join(' '));
+      return matchesStatus && (!query || searchable.includes(query));
+    });
+  }
   function renderRoleRequests() {
     const list = $('role-requests-list');
-    const filter = $('role-requests-filter').value;
-    const knownStatuses = ['pending', 'approved', 'rejected'];
-    const rows = roleRequestCache.filter(item => {
-      const state = String(item.status || '').trim().toLocaleLowerCase();
-      return filter === 'all' || (filter === 'other' && !knownStatuses.includes(state)) || state === filter;
-    });
+    const rows = getFilteredRoleRequests();
     $('role-requests-count').textContent = 'الطلبات المطابقة: ' + rows.length + ' من أصل ' + roleRequestCache.length + ' طلباً محمّلاً (بحد أقصى 50).';
     const exportButton = $('role-requests-export');
     if (exportButton) exportButton.disabled = !rows.length;
     list.replaceChildren();
-    if (!rows.length) { list.textContent = 'لا توجد طلبات بهذه الحالة.'; return; }
+    if (!rows.length) { list.textContent = 'لا توجد طلبات مطابقة لمعايير البحث والتصفية.'; return; }
     rows.forEach(item => {
       const row = document.createElement('article'); row.className = 'resource-row';
       const info = document.createElement('div');
@@ -863,12 +872,7 @@
   $('accounts-load-more').addEventListener('click', function () { loadMoreAccounts(false); });
   $('role-requests-export').addEventListener('click', () => {
     if (!currentUser || !roleRequestCache.length) return;
-    const filter = $('role-requests-filter').value;
-    const knownStatuses = ['pending', 'approved', 'rejected'];
-    const rows = roleRequestCache.filter(item => {
-      const state = String(item.status || '').trim().toLocaleLowerCase();
-      return filter === 'all' || (filter === 'other' && !knownStatuses.includes(state)) || state === filter;
-    });
+    const rows = getFilteredRoleRequests();
     if (!rows.length) return;
     const labels = {student:'تلميذ',teacher:'أستاذ',admin:'مدير'};
     const states = {pending:'قيد المراجعة',approved:'مقبول',rejected:'مرفوض'};
@@ -897,6 +901,7 @@
   });
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
   $('role-requests-filter').addEventListener('change', renderRoleRequests);
+  $('role-requests-search').addEventListener('input', renderRoleRequests);
   $('accounts-search').addEventListener('input', renderAccounts);
   $('accounts-role-filter').addEventListener('change', renderAccounts);
   $('signout-btn').addEventListener('click', async () => {
