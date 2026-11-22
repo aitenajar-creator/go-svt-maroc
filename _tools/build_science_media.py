@@ -76,6 +76,7 @@ for query in QUERIES:
             candidates.append({
                 "title": page.get("title", ""),
                 "image_url": info.get("thumburl") or info.get("url"),
+                "original_url": info.get("url") or info.get("thumburl"),
                 "source_url": info.get("descriptionurl", ""),
                 "author": plain(metadata.get("Artist")) or plain(metadata.get("Credit")) or "Auteur non indiqué",
                 "license": plain(metadata.get("LicenseShortName")) or "Licence non indiquée",
