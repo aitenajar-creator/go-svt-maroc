@@ -12,7 +12,6 @@ function withTimeout(promise,label,ms=15000){
  ]).finally(()=>clearTimeout(timer));
 }
 async function start(){
- try{
   if(!client){say(window.GoSVTAuthConfigError||'تعذر تهيئة خدمة تسجيل الدخول. أعد تحميل الصفحة وحاول مجدداً.');return;}
   say('جارٍ التحقق من جلسة تسجيل الدخول…');
   const authResult=await withTimeout(client.auth.getUser(),'auth.getUser',15000);
