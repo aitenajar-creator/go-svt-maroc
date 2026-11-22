@@ -87,10 +87,12 @@ for query in QUERIES:
                     "stomata": ("stoma|stomata",),
                     "blood": ("blood|erythrocyte|leukocyte|hemoglobin|haemat",),
                     "alveoli": ("alveol|alveolus|lung",),
+                    "onion epidermis": ("onion|allium|epiderm",),
+                    "mesophyll": ("mesophyll|leaf|chloroplast",),
                 }
                 import re
                 subject = next((pattern for key, (pattern,) in subject_rules.items() if key in query.lower()), None)
-                microscopy_pattern = r"microscop|micrograph|histolog|electron microscope|sem|light microscope"
+                microscopy_pattern = r"microscop|micrograph|histolog|electron microscope|light microscope"
                 # Require method + biological subject + usable attribution/licensing metadata.
                 license_name = plain(metadata.get("LicenseShortName"))
                 author_name = plain(metadata.get("Artist")) or plain(metadata.get("Credit"))
@@ -109,8 +111,8 @@ for query in QUERIES:
                 "width": int(info.get("width", 0)),
                 "height": int(info.get("height", 0)),
                 "mime": mime,
-                "is_micrograph": bool(any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology"))),
-                "metadata_screened": bool(any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology"))),
+                "is_micrograph": bool(any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology")) and license_name and author_name),
+                "metadata_screened": bool(any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology")) and license_name and author_name),
             })
         candidates.sort(key=lambda item: item["width"] * item["height"], reverse=True)
         if candidates:
