@@ -5,4 +5,26 @@
 </style></head><body>
 <header class="top"><h1 id="lesson-title">GO SVT Maroc — Lecture du cours</h1><div class="actions"><button class="secondary" id="font-smaller" type="button" aria-label="تصغير حجم الخط">A−</button><button class="secondary" id="font-larger" type="button" aria-label="تكبير حجم الخط">A+</button><button class="secondary" id="font-reset" type="button">حجم عادي</button><button class="secondary" id="contrast-toggle" type="button" aria-pressed="false">تباين مريح</button><span class="reading-progress" id="reading-progress" hidden aria-live="polite"></span><progress class="reading-progress-bar" id="reading-progress-bar" max="100" value="0" hidden aria-label="تقدم القراءة"></progress><button class="secondary" id="resume-btn" type="button" hidden>متابعة القراءة</button><button id="print-btn" type="button">Télécharger / Imprimer en PDF</button><button class="secondary" id="back-btn" type="button">Retour à mon espace</button></div></header>
 <p class="status" id="lesson-status" role="status">جارٍ تجهيز عارض الدرس…</p><main class="frame-wrap" id="lesson-frame-wrap" hidden><iframe id="lesson-frame" title="Contenu du cours" sandbox="allow-same-origin allow-modals allow-downloads"></iframe></main>
-<script src="lesson-reader-bootstrap.js?v=20261122-1" onerror="document.getElementById(&quot;lesson-status&quot;).textContent=&quot;تعذر تحميل ملف تشغيل العارض. أعد فتح الدرس من مساحة التلميذ أو الإدارة.&quot;"></script></body></html>
+<script>
+(function(){
+'use strict';
+var status=document.getElementById('lesson-status');
+function show(message){if(status){status.hidden=false;status.textContent=message;}}
+function loadScript(src,label,timeout){
+ return new Promise(function(resolve,reject){
+  var script=document.createElement('script'),done=false,timer;
+  function finish(error){if(done)return;done=true;clearTimeout(timer);script.onload=script.onerror=null;if(error)reject(error);else resolve();}
+  script.src=src;script.async=true;
+  script.onload=function(){finish();};
+  script.onerror=function(){finish(new Error('تعذر تحميل '+label+'.'))};
+  timer=setTimeout(function(){finish(new Error('انتهت مهلة تحميل '+label+'.'))},timeout);
+  document.head.appendChild(script);
+ });
+}
+show('تم تشغيل الصفحة. جارٍ تحميل مكتبة الاتصال…');
+loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2','مكتبة Supabase',15000)
+.then(function(){show('تم تحميل المكتبة. جارٍ إعداد الاتصال…');return loadScript('supabase-config.js?v=20261122-2','إعداد الاتصال',12000)})
+.then(function(){show('تم إعداد الاتصال. جارٍ تحميل الدرس…');return loadScript('lesson-reader.js?v=20261122-2','عارض الدرس',12000)})
+.catch(function(error){console.error('[GoSVT inline reader bootstrap]',error);show((error&&error.message?error.message:'تعذر تشغيل العارض')+' يرجى إعادة المحاولة أو إرسال رسالة الخطأ إلى الإدارة.')});
+})();
+</script></body></html>
