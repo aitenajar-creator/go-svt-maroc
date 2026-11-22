@@ -97,6 +97,7 @@
  <p id="private-lesson-msg" class="message" role="status"></p>
  <div class="section-heading"><h3>الدروس المسجلة</h3><button id="private-lessons-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
  <div class="upload-grid" style="margin:.7rem 0"><div class="field"><label for="private-admin-search">البحث عن درس</label><input id="private-admin-search" type="search" placeholder="العنوان أو المعرّف"></div><div class="field"><label for="private-admin-level">تصفية حسب المستوى</label><select id="private-admin-level"><option value="">كل المستويات</option><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option></select></div><div class="field"><label for="private-admin-track">تصفية حسب الشعبة</label><select id="private-admin-track"><option value="">كل الشعب</option><option>TCS</option><option>TCL</option><option>1BACSE</option><option>1BACSM</option><option>1BACL</option><option>2BACSVT</option><option>2BACSP</option><option>2BACSM</option></select></div><div class="field"><label for="private-admin-state">حالة النشر</label><select id="private-admin-state"><option value="all">الكل</option><option value="published">منشور</option><option value="draft">مسودة</option></select></div></div>
+ <div id="private-lessons-summary" class="muted" style="padding:.8rem 0" aria-live="polite"></div>
  <div id="private-lessons-list" class="resource-list">جاري التحميل…</div>
  <div class="section-heading"><h3>إضافة صور ووثائق أصلية للدرس</h3></div>
  <form id="private-lesson-assets-form" class="upload-grid">
@@ -108,7 +109,7 @@
  </form><p id="private-asset-message" class="message" role="status"></p>
 </section>
 <style>
-#private-lessons-panel .private-admin-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 0;border-bottom:1px solid #e7eee5}
+#private-lessons-panel .private-admin-counts{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem}#private-lessons-panel .private-admin-counts span{padding:.3rem .55rem;border-radius:7px;background:#eef4eb;color:#31583c;font-size:.82rem}#private-lessons-panel .private-admin-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 0;border-bottom:1px solid #e7eee5}
 #private-lessons-panel .private-admin-item small{display:block;color:#718074;margin-top:.2rem}
 #private-lessons-panel .private-admin-actions{display:flex;gap:.5rem;align-items:center}
 #private-lessons-panel .private-admin-actions a,#private-lessons-panel .private-admin-actions button{border:0;border-radius:8px;padding:.5rem .75rem;background:#eaf2e8;color:#28563a;text-decoration:none;font-weight:700;cursor:pointer}
