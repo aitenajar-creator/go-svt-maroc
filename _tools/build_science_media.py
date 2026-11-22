@@ -45,7 +45,7 @@ def plain(value):
     if isinstance(value, dict):
         value = value.get("value", "")
     import re, html
-    return re.sub(r"\\s+", " ", html.unescape(re.sub(r"<[^>]*>", " ", str(value or "")))).strip()
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]*>", " ", str(value or "")))).strip()
 
 catalogue = {}
 cache_dir = Path('science-media-cache')
@@ -108,6 +108,9 @@ for query in QUERIES:
                 "author": plain(metadata.get("Artist")) or plain(metadata.get("Credit")) or "Auteur non indiqué",
                 "license": plain(metadata.get("LicenseShortName")) or "Licence non indiquée",
                 "description": description,
+                "date_taken": plain(metadata.get("DateTimeOriginal")) or plain(metadata.get("DateTime")) or "",
+                "credit": plain(metadata.get("Credit")) or plain(metadata.get("Attribution")) or "",
+                "object_name": plain(metadata.get("ObjectName")) or "",
                 "width": int(info.get("width", 0)),
                 "height": int(info.get("height", 0)),
                 "mime": mime,
