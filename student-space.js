@@ -1891,12 +1891,13 @@ function openScientificPhotoPreview(card){
             </div>
         </section>`;
         const html = `
+            ${accountBar ? `<div class="gs-account-topbar" aria-label="${lang() === 'ar' ? 'الحساب وتسجيل الخروج' : 'Compte et déconnexion'}">${accountBar}</div>` : ''}
             <div class="dashboard-header">
-                ${accountBar || `<div class="profile-selector">
+                ${!accountBar ? `<div class="profile-selector">
                     <label>${t('currentProfile')}:</label>
                     <select id="profile-select">${profilesOptions}</select>
                     <button class="btn-create-profile" onclick="promptCreateProfile()">+ ${t('createProfile')}</button>
-                </div>`}
+                </div>` : ''}
                 <div class="data-actions">
                     <button class="btn-export" onclick="handleExport()">${t('exportData')}</button>
                     <button class="btn-import" onclick="handleImport()">${t('importData')}</button>
@@ -3634,6 +3635,12 @@ function openScientificPhotoPreview(card){
         .gs-notes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
         .gs-note-card{padding:1rem;border:1px solid #e5eadf;border-radius:12px;background:#fff;min-width:0}
         .gs-note-heading{display:flex;align-items:center;justify-content:space-between;gap:.5rem}.gs-note-card p{white-space:normal;overflow-wrap:anywhere;line-height:1.7}
+        /* Keep account access at the very top of the student workspace. */
+        .student-space .gs-account-topbar{display:flex;align-items:center;justify-content:flex-end;gap:12px;width:100%;margin:0 0 14px;padding:12px 16px;background:#fff;border:1px solid #e2eae0;border-radius:15px;box-shadow:0 4px 14px rgba(24,57,37,.06);box-sizing:border-box}
+        .student-space .gs-account-topbar>*{max-width:100%}
+        .student-space .dashboard-header{margin-top:0}
+        html[dir="ltr"] .student-space .gs-account-topbar{justify-content:flex-start}
+        @media(max-width:560px){.student-space .gs-account-topbar{padding:10px;gap:8px;flex-wrap:wrap}}
         /* Modern learning dashboard refresh */
         .student-space{max-width:1280px;padding:clamp(1rem,2.5vw,2rem);color:#20352c}
         .space-nav{position:relative;gap:.55rem;padding:.55rem;margin:0 0 1.35rem;background:#f4f7f2;border:1px solid #e5ece3;border-radius:16px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin;scroll-padding-inline:.55rem;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
