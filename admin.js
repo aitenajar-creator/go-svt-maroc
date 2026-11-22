@@ -405,6 +405,7 @@
     status.className = 'message ' + (errors.length ? 'error' : 'success');
   }
   async function loadAccounts() {
+    if (accountsLoading) return;
     accountCache = [];
     accountsHasMore = false;
     $('accounts-list').textContent = 'جارٍ تحميل الحسابات...';
@@ -469,6 +470,7 @@
     });
   }
   async function loadRoleRequests() {
+    if (roleRequestsLoading) return;
     roleRequestCache = [];
     roleRequestsHasMore = false;
     $('role-requests-load-more').hidden = true;
