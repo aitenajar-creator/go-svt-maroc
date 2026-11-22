@@ -336,21 +336,20 @@
     const status = $('overview-message');
     status.textContent = 'جارٍ تحديث مؤشرات المنصة...';
     const jobs = await Promise.all([
-      client.from('profiles').select('id,role'),
+      client.from('profiles').select('id', { count: 'exact', head: true }),
+      client.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
+      client.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'teacher'),
       client.from('classes').select('id', { count: 'exact', head: true }),
       client.from('exercises').select('id', { count: 'exact', head: true }).eq('is_published', true),
       client.from('role_change_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       client.from('private_student_lessons').select('id', { count: 'exact', head: true }).eq('is_published', true),
       client.from('site_content_items').select('id', { count: 'exact', head: true }).eq('is_deleted', false)
     ]);
-    const [profilesResult, classesResult, exercisesResult, requestsResult, privateLessonsResult, libraryResult] = jobs;
+    const [usersResult, studentsResult, teachersResult, classesResult, exercisesResult, requestsResult, privateLessonsResult, libraryResult] = jobs;
     const errors = jobs.filter(x => x.error).map(x => x.error.message);
-    if (!profilesResult.error) {
-      const profiles = profilesResult.data || [];
-      $('overview-users').textContent = String(profiles.length);
-      $('overview-students').textContent = String(profiles.filter(x => x.role === 'student').length);
-      $('overview-teachers').textContent = String(profiles.filter(x => x.role === 'teacher').length);
-    } else { $('overview-users').textContent = '—'; $('overview-students').textContent = '—'; $('overview-teachers').textContent = '—'; }
+    $('overview-users').textContent = usersResult.error ? '—' : String(usersResult.count ?? 0);
+    $('overview-students').textContent = studentsResult.error ? '—' : String(studentsResult.count ?? 0);
+    $('overview-teachers').textContent = teachersResult.error ? '—' : String(teachersResult.count ?? 0);
     $('overview-classes').textContent = classesResult.error ? '—' : String(classesResult.count ?? 0);
     $('overview-exercises').textContent = exercisesResult.error ? '—' : String(exercisesResult.count ?? 0);
     $('overview-requests').textContent = requestsResult.error ? '—' : String(requestsResult.count ?? 0);
