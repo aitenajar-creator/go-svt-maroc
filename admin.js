@@ -56,8 +56,49 @@
     dashboard.hidden = false;
     await Promise.all([
       loadResources(), loadFounderProfile(), loadPlatformOverview(),
-      loadAccounts(), loadRoleRequests()
+      loadAccounts(), loadRoleRequests(), loadPlatformHealth()
     ]);
+  }
+  async function loadPlatformHealth() {
+    const list = $('platform-health-list');
+    const stamp = $('platform-health-time');
+    list.replaceChildren();
+    const checks = [
+      ['profiles', 'حسابات المستخدمين', () => client.from('profiles').select('id', { count: 'exact', head: true })],
+      ['student_progress', 'تقدم التلاميذ', () => client.from('student_progress').select('student_id', { count: 'exact', head: true })],
+      ['student_notes', 'ملاحظات التلاميذ', () => client.from('student_notes').select('student_id', { count: 'exact', head: true })],
+      ['student_study_plan', 'خطط المراجعة', () => client.from('student_study_plan').select('student_id', { count: 'exact', head: true })],
+      ['student_favorites', 'المفضلة', () => client.from('student_favorites').select('student_id', { count: 'exact', head: true })],
+      ['private_student_lessons', 'دروس مساحة التلميذ الخاصة', () => client.from('private_student_lessons').select('id', { count: 'exact', head: true })],
+      ['site_content_items', 'مكتبة محتوى الموقع', () => client.from('site_content_items').select('id', { count: 'exact', head: true })],
+      ['role_change_requests', 'طلبات تغيير الأدوار', () => client.from('role_change_requests').select('id', { count: 'exact', head: true })]
+    ];
+    const results = await Promise.all(checks.map(async ([key, label, run]) => {
+      try {
+        const result = await run();
+        return { key, label, ok: !result.error, count: result.count, error: result.error && result.error.message };
+      } catch (error) {
+        return { key, label, ok: false, error: error.message || String(error) };
+      }
+    }));
+    results.forEach(item => {
+      const row = document.createElement('article');
+      row.className = 'health-row';
+      const info = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = item.label;
+      const detail = document.createElement('small');
+      detail.textContent = item.ok ? 'استجابة ناجحة · ' + (item.count ?? 0) + ' سجل' : 'تعذر الفحص: ' + (item.error || 'خطأ غير محدد');
+      info.append(title, detail);
+      const badge = document.createElement('span');
+      badge.className = 'health-status ' + (item.ok ? 'ok' : 'fail');
+      badge.textContent = item.ok ? 'متصل' : 'يحتاج مراجعة';
+      row.append(info, badge);
+      list.append(row);
+    });
+    const failed = results.filter(x => !x.ok).length;
+    stamp.textContent = 'آخر فحص: ' + new Date().toLocaleString('ar-MA') + (failed ? ' · خدمات تحتاج مراجعة: ' + failed : ' · جميع الفحوصات ناجحة');
+    stamp.className = 'message ' + (failed ? 'error' : 'success');
   }
   let accountCache = [];
   async function loadPlatformOverview() {
@@ -327,6 +368,7 @@
   });
   $('refresh-btn').addEventListener('click', loadResources);
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
+  $('health-refresh').addEventListener('click', loadPlatformHealth);
   $('accounts-refresh').addEventListener('click', loadAccounts);
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
   $('accounts-search').addEventListener('input', renderAccounts);
