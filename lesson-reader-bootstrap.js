@@ -15,7 +15,7 @@ function loadScript(src,label,timeout){
 }
 show('جارٍ تشغيل عارض الدرس وتحميل مكتبة الاتصال…');
 loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2','مكتبة Supabase',12000)
- .then(function(){show('تم تحميل مكتبة الاتصال. جارٍ إعداد الحساب…');return loadScript('supabase-config.js?v=reader8','إعداد الاتصال',10000);})
- .then(function(){show('تم إعداد الاتصال. جارٍ تشغيل عارض الدرس…');return loadScript('lesson-reader.js?v=9','ملف عارض الدرس',10000);})
+ .then(function(){show('تم تحميل مكتبة الاتصال. جارٍ إعداد الحساب…');return loadScript('supabase-config.js?v=20261122-1','إعداد الاتصال',10000);})
+ .then(function(){show('تم إعداد الاتصال. جارٍ تشغيل عارض الدرس…');return loadScript('lesson-reader.js?v=20261122-1','ملف عارض الدرس',10000);})
  .catch(function(error){console.error('[GoSVT reader loader]',error);show((error&&error.message?error.message:'تعذر تشغيل عارض الدرس')+' يرجى إعادة تحميل الصفحة. إذا تكرر الخطأ أرسل هذه الرسالة للإدارة.');});
 })();
