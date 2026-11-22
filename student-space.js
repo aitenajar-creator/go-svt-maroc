@@ -1668,7 +1668,7 @@
                 const params = new URLSearchParams({
                     action: 'query', format: 'json', origin: '*',
                     generator: 'search', gsrnamespace: '6',
-                    gsrsearch: query + ' filetype:bitmap', gsrlimit: '5',
+                    gsrsearch: query, gsrlimit: '10',
                     prop: 'imageinfo', iiprop: 'url|extmetadata|size|mime', iiurlwidth: '640'
                 });
                 const response = await fetch('https://commons.wikimedia.org/w/api.php?' + params.toString(), {
@@ -1681,8 +1681,11 @@
                         const imageInfo = candidate && Array.isArray(candidate.imageinfo) ? candidate.imageinfo[0] : null;
                         return { page: candidate, info: imageInfo };
                     }).filter(function(item) {
-                        return item.info && item.info.thumburl && item.info.descriptionurl &&
-                            /^image\/(jpeg|png|webp|gif|tiff)$/i.test(item.info.mime || '') &&
+                        const mime = String(item.info && item.info.mime || '').toLowerCase();
+                        const imageUrl = String(item.info && item.info.thumburl || '').toLowerCase();
+                        const isRaster = /^image\/(jpeg|png|webp|gif|tiff)$/i.test(mime) ||
+                            (!mime && /\.(jpe?g|png|webp|gif|tiff?)(\?|$)/i.test(imageUrl));
+                        return item.info && item.info.thumburl && item.info.descriptionurl && isRaster &&
                             Number(item.info.width) >= 320 && Number(item.info.height) >= 200;
                     }).sort(function(a, b) {
                         return (Number(b.info.width) * Number(b.info.height)) - (Number(a.info.width) * Number(a.info.height));
