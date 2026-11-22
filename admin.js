@@ -58,8 +58,65 @@
     dashboard.hidden = false;
     await Promise.all([
       loadResources(), loadFounderProfile(), loadPlatformOverview(),
-      loadAccounts(), loadRoleRequests(), loadPlatformHealth()
+      loadAccounts(), loadRoleRequests(), loadPlatformHealth(), loadActivity()
     ]);
+  }
+  let activityCache = [];
+  async function loadActivity() {
+    const host = $('activity-list');
+    const summary = $('activity-summary');
+    host.textContent = 'جارٍ تحميل سجل الأنشطة...';
+    const sources = [
+      { type: 'accounts', label: 'حساب جديد', run: () => client.from('profiles').select('display_name,role,created_at').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.display_name || 'حساب جديد', detail: 'إنشاء حساب · ' + (({admin:'مدير',teacher:'أستاذ',student:'تلميذ'})[row.role] || row.role || 'دور غير محدد') }) },
+      { type: 'content', label: 'مورد جديد في المكتبة', run: () => client.from('site_content_items').select('title,category,study_level,study_track,created_at,is_deleted').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.title || 'مورد دون عنوان', detail: [categoryLabels[row.category] || row.category, row.study_level, row.study_track, row.is_deleted ? 'مخفي' : 'نشط'].filter(Boolean).join(' · ') }) },
+      { type: 'lessons', label: 'درس جديد لمساحة التلميذ', run: () => client.from('private_student_lessons').select('title,study_level,study_track,is_published,created_at').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.title || 'درس دون عنوان', detail: [row.study_level, row.study_track, row.is_published ? 'منشور' : 'مسودة'].filter(Boolean).join(' · ') }) },
+      { type: 'requests', label: 'طلب تغيير دور', run: () => client.from('role_change_requests').select('requested_role,status,created_at').order('created_at', { ascending: false }).limit(12), map: row => ({ title: 'طلب دور ' + (({admin:'مدير',teacher:'أستاذ',student:'تلميذ'})[row.requested_role] || row.requested_role || 'غير محدد'), detail: ({pending:'قيد المراجعة',approved:'مقبول',rejected:'مرفوض'})[row.status] || row.status || 'حالة غير محددة' }) },
+      { type: 'learning', label: 'تمرين جديد', run: () => client.from('exercises').select('title,is_published,created_at').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.title || 'تمرين دون عنوان', detail: row.is_published ? 'تمرين منشور' : 'مسودة' }) },
+      { type: 'learning', label: 'قسم دراسي جديد', run: () => client.from('classes').select('name,academic_year,is_active,created_at').order('created_at', { ascending: false }).limit(12), map: row => ({ title: row.name || 'قسم دون اسم', detail: [row.academic_year, row.is_active ? 'نشط' : 'غير نشط'].filter(Boolean).join(' · ') }) }
+    ];
+    const results = await Promise.all(sources.map(async source => {
+      try {
+        const { data, error } = await source.run();
+        if (error) return { source: source.label, error: error.message, rows: [] };
+        return { source: source.label, rows: (data || []).map(row => ({ type: source.type, ...source.map(row), created_at: row.created_at })) };
+      } catch (error) {
+        return { source: source.label, error: error.message || String(error), rows: [] };
+      }
+    }));
+    activityCache = results.flatMap(result => result.rows).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    renderActivity();
+    const failed = results.filter(result => result.error);
+    summary.textContent = 'تم تحميل ' + activityCache.length + ' نشاطاً من آخر السجلات المتاحة' +
+      (failed.length ? ' · تعذر فحص ' + failed.length + ' مصدر: ' + failed.map(x => x.source).join('، ') : ' · جميع المصادر استجابت بنجاح') +
+      '. تُعرض حتى 12 إضافة أو طلباً من كل مصدر.';
+    summary.className = 'message ' + (failed.length ? 'error' : 'success');
+  }
+  function renderActivity() {
+    const host = $('activity-list');
+    const filter = $('activity-type-filter').value;
+    const query = normalizeResourceSearch($('activity-search').value);
+    const rows = activityCache.filter(item => {
+      const text = normalizeResourceSearch(item.title + ' ' + item.detail);
+      return (filter === 'all' || item.type === filter) && text.includes(query);
+    });
+    $('activity-summary').textContent = 'الأنشطة المطابقة: ' + rows.length + ' من أصل ' + activityCache.length + ' نشاطاً محمّلاً.';
+    host.replaceChildren();
+    if (!rows.length) { host.textContent = 'لا توجد أنشطة مطابقة لمعايير البحث.'; return; }
+    rows.slice(0, 60).forEach(item => {
+      const row = document.createElement('article');
+      row.className = 'health-row activity-row';
+      const info = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = item.title;
+      const detail = document.createElement('small');
+      detail.textContent = item.detail + ' · ' + new Date(item.created_at).toLocaleString('ar-MA');
+      info.append(title, detail);
+      const tag = document.createElement('span');
+      tag.className = 'activity-tag';
+      tag.textContent = ({content:'المكتبة',lessons:'الدروس',accounts:'الحسابات',learning:'التعلم',requests:'الطلبات'})[item.type] || 'نشاط';
+      row.append(info, tag);
+      host.append(row);
+    });
   }
   async function loadPlatformHealth() {
     const list = $('platform-health-list');
@@ -477,6 +534,9 @@
   $('resource-search').addEventListener('input', renderResources);
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
   $('health-refresh').addEventListener('click', loadPlatformHealth);
+  $('activity-refresh').addEventListener('click', loadActivity);
+  $('activity-type-filter').addEventListener('change', renderActivity);
+  $('activity-search').addEventListener('input', renderActivity);
   $('accounts-refresh').addEventListener('click', loadAccounts);
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
   $('role-requests-filter').addEventListener('change', renderRoleRequests);
