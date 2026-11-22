@@ -505,13 +505,14 @@
         // Keep the retry option visible when a later batch fails.
         roleRequestsHasMore = true;
       }
-      $('role-requests-list').textContent = roleRequestCache.length
-        ? 'تعذر تحميل الدفعة التالية. الطلبات المحمّلة ما زالت محفوظة؛ حاول مرة أخرى.'
-        : 'تعذر تحميل الطلبات. حاول تحديث القائمة.';
-      $('role-requests-count').textContent = roleRequestCache.length
-        ? 'تم الاحتفاظ بـ ' + roleRequestCache.length + ' طلباً محمّلاً.'
-        : 'تعذر تحميل النتائج.';
-      $('role-requests-message').textContent = 'تعذر تحميل الطلبات: ' + (error.message || String(error));
+      if (roleRequestCache.length) {
+        renderRoleRequests();
+        $('role-requests-message').textContent = 'تعذر تحميل الدفعة التالية؛ الطلبات السابقة ما زالت معروضة ومحفوظة. يمكنك إعادة المحاولة.';
+      } else {
+        $('role-requests-list').textContent = 'تعذر تحميل الطلبات. حاول تحديث القائمة.';
+        $('role-requests-count').textContent = 'تعذر تحميل النتائج.';
+        $('role-requests-message').textContent = 'تعذر تحميل الطلبات: ' + (error.message || String(error));
+      }
       $('role-requests-message').className = 'message error';
     } finally {
       roleRequestsLoading = false;
