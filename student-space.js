@@ -2711,8 +2711,7 @@ function openScientificPhotoPreview(card){
 
         const panelTask = (icon, titleAr, titleFr, content) => {
             const title = lang() === 'fr' ? titleFr : titleAr;
-            const openHint = lang() === 'fr' ? 'Cliquer pour afficher' : 'اضغط لعرض المحتوى';
-            return `<details class="gs-student-task gs-student-panel-task"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-hint">${openHint}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
+            return `<section class="gs-student-panel-content"><header class="gs-student-panel-heading"><span class="gs-student-panel-icon" aria-hidden="true">${icon}</span><h2>${title}</h2></header><div class="gs-student-panel-body">${content}</div></section>`;
         };
 
         let html = `
@@ -3754,6 +3753,24 @@ function openScientificPhotoPreview(card){
         html.gs-dark .student-space .space-tab.active{background:linear-gradient(115deg,#174d3b,#34785a);color:#fff}
         @media(max-width:560px){.student-space .space-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.student-space .space-tab{min-height:70px;padding:11px 8px;font-size:.88rem}}
         @media(max-width:360px){.student-space .space-nav{grid-template-columns:1fr}}
+        /* Compact navigation buttons matching the site's top navigation; panels stay closed until selected. */
+        .student-space .space-nav{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px;margin:0 0 18px;padding:10px;background:#f4f7f2;border:1px solid #e5ece3;border-radius:14px;overflow:visible}
+        .student-space .space-tab{display:inline-flex;flex:0 1 auto;align-items:center;justify-content:center;width:auto;min-width:0;min-height:40px;padding:8px 14px;border:1px solid #dce7dd;border-radius:10px;background:#fff;color:#365847;box-shadow:0 2px 6px rgba(20,55,43,.06);font-size:.92rem;font-weight:700;line-height:1.35;white-space:nowrap}
+        .student-space .space-tab:hover{background:#eaf2e9;color:#174c35;transform:translateY(-1px);box-shadow:0 4px 10px rgba(20,55,43,.09)}
+        .student-space .space-tab.active{background:linear-gradient(120deg,#236b43,#174c35);border-color:#236b43;color:#fff;box-shadow:0 4px 10px rgba(28,91,57,.16)}
+        .student-space .space-panel[hidden]{display:none!important}
+        .student-space .space-panel:not([hidden]){display:block}
+        .student-space .gs-student-panel-content{margin:0;padding:0;background:transparent}
+        .student-space .gs-student-panel-heading{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:13px 16px;border:1px solid #e3ebe1;border-radius:13px;background:#fff}
+        .student-space .gs-student-panel-heading h2{margin:0;color:#244d37;font-size:1.12rem;font-weight:800}
+        .student-space .gs-student-panel-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:10px;background:#edf5e9;font-size:1.2rem}
+        .student-space .gs-student-panel-body{min-width:0}
+        html.gs-dark .student-space .space-nav{background:#202e26;border-color:#35483a}
+        html.gs-dark .student-space .space-tab{background:#293a30;border-color:#405846;color:#e5f1e8}
+        html.gs-dark .student-space .space-tab.active{background:linear-gradient(120deg,#236b43,#174c35);color:#fff}
+        html.gs-dark .student-space .gs-student-panel-heading{background:#25372c;border-color:#405846}
+        html.gs-dark .student-space .gs-student-panel-heading h2{color:#e5f1e8}
+        @media(max-width:560px){.student-space .space-nav{gap:7px;padding:8px}.student-space .space-tab{min-height:38px;padding:7px 10px;font-size:.84rem;white-space:normal}}
     `;
     document.head.appendChild(styles);
 
