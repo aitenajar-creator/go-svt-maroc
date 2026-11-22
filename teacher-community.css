@@ -284,3 +284,12 @@ button:disabled {
 .tc-cat-arrow{margin-top:auto;font-weight:800;color:#2d8050;font-size:.86rem}
 .tc-cat-card:focus-visible{outline:3px solid #7bb68a;outline-offset:3px}
 @media(max-width:560px){.tc-category-hub{padding:20px 14px}.tc-category-grid{grid-template-columns:1fr 1fr}.tc-cat-card{padding:14px;min-height:135px}}
+
+
+/* Teacher workspace navigation: dashboard cards consistent with the admin and student spaces. */
+.tc-dashboard-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin:25px 0 20px;padding:0;border:0}
+.tc-dashboard-tabs button{display:flex;align-items:center;justify-content:center;min-width:0;min-height:76px;padding:14px 16px;border:1px solid rgba(255,255,255,.42);border-radius:17px;background:linear-gradient(115deg,#174a3c,#638b76);color:#fff;font:800 14px Cairo,Arial,sans-serif;line-height:1.7;white-space:normal;box-shadow:0 8px 20px rgba(20,55,43,.13)}
+.tc-dashboard-tabs button:hover{background:linear-gradient(115deg,#103c31,#477a66);color:#fff;transform:translateY(-2px);box-shadow:0 12px 24px rgba(20,55,43,.18)}
+.tc-dashboard-tabs button.active{background:linear-gradient(115deg,#103d32,#2d7259);color:#fff;border-color:#b8d6c2;box-shadow:0 10px 24px rgba(17,74,57,.24)}
+@media(max-width:560px){.tc-dashboard-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.tc-dashboard-tabs button{min-height:70px;padding:11px 8px;font-size:12px}}
+@media(max-width:360px){.tc-dashboard-tabs{grid-template-columns:1fr}}
