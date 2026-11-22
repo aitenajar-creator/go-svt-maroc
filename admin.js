@@ -230,11 +230,29 @@
         ]);
         return { level, lessons: levelLessons, resources: levelResources };
       }));
+      const shareCell = share => {
+        const td = document.createElement('td');
+        const wrap = document.createElement('div');
+        wrap.className = 'report-share';
+        const value = document.createElement('strong');
+        value.textContent = share.toFixed(1).replace(/\\.0$/, '') + '%';
+        const track = document.createElement('span');
+        track.className = 'report-share-track';
+        const fill = document.createElement('span');
+        fill.className = 'report-share-fill';
+        fill.style.width = Math.max(0, Math.min(100, share)) + '%';
+        track.append(fill);
+        wrap.append(value, track);
+        td.append(wrap);
+        return td;
+      };
       rows.forEach(item => {
         const tr = document.createElement('tr');
-        [item.level, String(item.lessons), String(item.resources)].forEach(value => {
+        [item.level, String(item.lessons)].forEach(value => {
           const td = document.createElement('td'); td.textContent = value; tr.append(td);
         });
+        tr.append(shareCell(lessons ? item.lessons / lessons * 100 : 0));
+        const resourceCell = document.createElement('td'); resourceCell.textContent = String(item.resources); tr.append(resourceCell);
         body.append(tr);
       });
       const trackBody = $('pedagogical-tracks-body');
@@ -252,15 +270,17 @@
         return { level, track, lessons: trackLessons, resources: trackResources };
       }));
       pedagogicalReportRows = [
-        ...rows.map(item => ({ level: item.level, track: 'كل المسالك', lessons: item.lessons, resources: item.resources })),
-        ...trackRows
+        ...rows.map(item => ({ level: item.level, track: 'كل المسالك', lessons: item.lessons, share: lessons ? Number((item.lessons / lessons * 100).toFixed(1)) : 0, resources: item.resources })),
+        ...trackRows.map(item => ({ ...item, share: lessons ? Number((item.lessons / lessons * 100).toFixed(1)) : 0 }))
       ];
       $('pedagogical-reports-export').disabled = false;
       trackRows.forEach(item => {
         const tr = document.createElement('tr');
-        [item.level, item.track, String(item.lessons), String(item.resources)].forEach(value => {
+        [item.level, item.track, String(item.lessons)].forEach(value => {
           const td = document.createElement('td'); td.textContent = value; tr.append(td);
         });
+        tr.append(shareCell(lessons ? item.lessons / lessons * 100 : 0));
+        const resourceCell = document.createElement('td'); resourceCell.textContent = String(item.resources); tr.append(resourceCell);
         trackBody.append(tr);
       });
       status.textContent = 'تم تحديث التقرير بنجاح · الأرقام إجمالية للمحتوى المنشور فقط.';
@@ -691,8 +711,8 @@
     if (!currentUser || !pedagogicalReportRows || !pedagogicalReportRows.length) return;
     const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
     const rows = [
-      ['المستوى','الشعبة أو المسلك','الدروس المنشورة','موارد المكتبة'],
-      ...pedagogicalReportRows.map(item => [item.level, item.track, item.lessons, item.resources])
+      ['المستوى','الشعبة أو المسلك','الدروس المنشورة','حصة من إجمالي الدروس (%)','موارد المكتبة'],
+      ...pedagogicalReportRows.map(item => [item.level, item.track, item.lessons, item.share, item.resources])
     ];
     const csv = '\\uFEFF' + rows.map(row => row.map(csvCell).join(',')).join('\\r\\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

@@ -53,3 +53,9 @@
 #pedagogical-reports-panel .report-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 #pedagogical-reports-panel .report-actions button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:680px){#pedagogical-reports-panel .report-actions{width:100%}#pedagogical-reports-panel .report-actions button{flex:1}}
+
+#pedagogical-reports-panel .report-share{display:grid;grid-template-columns:48px minmax(65px,1fr);align-items:center;gap:8px;min-width:120px}
+#pedagogical-reports-panel .report-share strong{font-size:12px;color:#315b43;font-variant-numeric:tabular-nums}
+#pedagogical-reports-panel .report-share-track{height:8px;border-radius:20px;background:#e8efe9;overflow:hidden;display:block}
+#pedagogical-reports-panel .report-share-fill{height:100%;display:block;border-radius:20px;background:#43836b}
+#pedagogical-reports-panel .admin-trends-table{min-width:540px}
