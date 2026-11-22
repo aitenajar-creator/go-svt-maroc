@@ -20,6 +20,8 @@
   let currentUser = null;
   let resourceCache = [];
   let roleRequestCache = [];
+  let roleRequestsHasMore = false;
+  let roleRequestsLoading = false;
   let uploadInProgress = false;
   let pedagogicalReportRows = null;
 
@@ -467,24 +469,42 @@
     });
   }
   async function loadRoleRequests() {
-    const list = $('role-requests-list');
-    const status = $('role-requests-message');
-    list.textContent = 'جارٍ تحميل الطلبات...';
+    roleRequestCache = [];
+    roleRequestsHasMore = false;
+    $('role-requests-load-more').hidden = true;
+    $('role-requests-list').textContent = 'جارٍ تحميل الطلبات...';
+    await loadMoreRoleRequests(true);
+  }
+  async function loadMoreRoleRequests(initial = false) {
+    if (roleRequestsLoading || !currentUser || (!initial && !roleRequestsHasMore)) return;
+    roleRequestsLoading = true;
+    const button = $('role-requests-load-more');
+    if (button) { button.disabled = true; button.textContent = 'جارٍ تحميل الطلبات...'; }
+    const from = roleRequestCache.length;
     const { data, error } = await client.from('role_change_requests')
       .select('id,requested_by,target_user_id,requested_role,status,created_at,reviewed_by,reviewed_at')
-      .order('created_at', { ascending: false }).limit(50);
+      .order('created_at', { ascending: false }).range(from, from + 49);
     if (error) {
-      roleRequestCache = [];
-      list.textContent = 'تعذر تحميل الطلبات: ' + error.message;
+      if (initial) roleRequestCache = [];
+      $('role-requests-list').textContent = 'تعذر تحميل الطلبات: ' + error.message;
       $('role-requests-count').textContent = 'تعذر احتساب النتائج.';
-      status.textContent = 'تحقق من صلاحية قراءة الطلبات في قاعدة البيانات.';
-      status.className = 'message error';
-      return;
+      $('role-requests-message').textContent = 'تحقق من صلاحية قراءة الطلبات في قاعدة البيانات.';
+      $('role-requests-message').className = 'message error';
+      roleRequestsHasMore = false;
+    } else {
+      const incoming = data || [];
+      roleRequestCache = roleRequestCache.concat(incoming);
+      roleRequestsHasMore = incoming.length === 50;
+      renderRoleRequests();
+      $('role-requests-message').textContent = roleRequestCache.length ? 'هذه القائمة للعرض فقط؛ لا يمكن تغيير حالة الطلب من خلالها.' : 'لا توجد طلبات تغيير أدوار مسجلة.';
+      $('role-requests-message').className = 'message muted';
     }
-    roleRequestCache = data || [];
-    renderRoleRequests();
-    status.textContent = roleRequestCache.length ? 'هذه القائمة للعرض فقط؛ لا يمكن تغيير حالة الطلب من خلالها.' : 'لا توجد طلبات تغيير أدوار مسجلة.';
-    status.className = 'message muted';
+    roleRequestsLoading = false;
+    if (button) {
+      button.hidden = !roleRequestsHasMore;
+      button.disabled = false;
+      button.textContent = 'تحميل 50 طلباً إضافياً ↓';
+    }
   }
   function getFilteredRoleRequests() {
     const filter = $('role-requests-filter').value;
@@ -900,6 +920,7 @@
     $('role-requests-message').className = 'message success';
   });
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
+  $('role-requests-load-more').addEventListener('click', () => loadMoreRoleRequests(false));
   $('role-requests-filter').addEventListener('change', renderRoleRequests);
   $('role-requests-search').addEventListener('input', renderRoleRequests);
   $('accounts-search').addEventListener('input', renderAccounts);
