@@ -60,6 +60,15 @@
         <p id="platform-health-time" class="message muted" role="status"></p>
         <p class="muted health-note">يشمل الفحص قاعدة بيانات الموقع الرئيسية فقط. مجتمع الأساتذة يعمل على مشروع Supabase مستقل ولا تُفحص خدماته من هنا.</p>
       </section>
+      <section class="panel" id="activity-panel">
+        <div class="section-heading"><div><p class="eyebrow">RECENT PLATFORM ACTIVITY</p><h2>سجل أنشطة المنصة</h2><p class="muted">آخر الإضافات والطلبات المسجلة في قاعدة البيانات الرئيسية، للمتابعة والاطلاع فقط.</p></div><button id="activity-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="upload-grid">
+          <div class="field"><label for="activity-type-filter">نوع النشاط</label><select id="activity-type-filter"><option value="all">كل الأنشطة</option><option value="content">موارد المكتبة</option><option value="lessons">دروس التلاميذ</option><option value="accounts">الحسابات</option><option value="learning">الأقسام والتمارين</option><option value="requests">طلبات تغيير الأدوار</option></select></div>
+          <div class="field"><label for="activity-search">البحث في السجل</label><input id="activity-search" type="search" placeholder="ابحث في عنوان النشاط أو تفاصيله..." autocomplete="off"></div>
+        </div>
+        <p id="activity-summary" class="muted" aria-live="polite">سيتم تحميل الأنشطة بعد دخول المدير.</p>
+        <div id="activity-list" class="health-list" aria-live="polite"><p class="muted">لا توجد بيانات محمّلة بعد.</p></div>
+      </section>
       <section class="panel" id="accounts-panel">
         <div class="section-heading"><div><p class="eyebrow">ACCOUNT DIRECTORY</p><h2>دليل الحسابات والأدوار</h2><p class="muted">عرض إداري للقراءة فقط؛ تغيير الأدوار يظل محمياً بإجراءات الصلاحيات الحالية.</p></div><button id="accounts-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
         <div class="upload-grid">
