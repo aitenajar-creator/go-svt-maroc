@@ -118,7 +118,11 @@
 
       <section class="panel">
         <div class="section-heading"><div><p class="eyebrow">PUBLISHED LIBRARY</p><h2>المحتوى الذي أضفته</h2><p class="muted">متابعة الموارد المنشورة والموارد المخفية التي تحتاج إلى استكمال الحذف.</p></div><button id="refresh-btn" class="quiet-btn" type="button">تحديث ↻</button></div>
-        <div class="field"><label for="resource-state-filter">حالة المورد</label><select id="resource-state-filter"><option value="all">جميع الموارد</option><option value="active">نشط ومنشور</option><option value="deleted">مخفي / حذف غير مكتمل</option></select></div>
+        <div class="upload-grid">
+          <div class="field"><label for="resource-state-filter">حالة المورد</label><select id="resource-state-filter"><option value="all">جميع الموارد</option><option value="active">نشط ومنشور</option><option value="deleted">مخفي / حذف غير مكتمل</option></select></div>
+          <div class="field"><label for="resource-category-filter">التصنيف</label><select id="resource-category-filter"><option value="all">جميع التصنيفات</option><option value="cours">الدروس</option><option value="exercices">التمارين</option><option value="examens">الامتحانات</option><option value="fiches">الجذاذات</option><option value="resumes">الملخصات</option><option value="documents">الوثائق</option><option value="ressources">الموارد</option><option value="divers">متفرقات</option></select></div>
+          <div class="field"><label for="resource-level-filter">المستوى الدراسي</label><select id="resource-level-filter"><option value="all">جميع المستويات</option><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option><option value="none">غير محدد</option></select></div>
+        </div>
         <p id="resource-summary" class="muted" aria-live="polite">جاري تحميل الموارد...</p>
         <div id="resource-list" class="resource-list"><p class="muted">جاري تحميل المحتوى...</p></div>
       </section>
