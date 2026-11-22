@@ -1651,7 +1651,7 @@
           <div class="gs-science-media-heading"><div><span class="gs-eyebrow">OPEN SCIENCE · MEDIA COLLECTION</span>
             <h3 id="gs-science-media-title">${fr?'Photographies scientifiques avec crédits':'صور علمية حقيقية مع توثيق مصادرها'}</h3>
             <p>${fr?'Images chargées depuis Wikimedia Commons avec auteur, licence et lien vers la fiche originale.':'صور تُحمّل مباشرة من ويكيميديا كومنز مع إظهار صاحب الصورة وترخيصها ورابط الملف الأصلي.'}</p></div><span class="gs-science-media-mark" aria-hidden="true">📷</span></div>
-          <div class="gs-science-media-grid">${topics.map((topic,i)=>`<a class="gs-science-media-card" data-science-search="${escapeHtml(topic[2])}" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=${encodeURIComponent(topic[2])}" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo" aria-hidden="true"><span>${icons[i]}</span><small>${fr?'Chargement…':'جارٍ تحميل الصورة…'}</small></span><span class="gs-science-media-copy"><strong>${topic[0]}</strong><small>${topic[1]}</small><em>${fr?'Explorer la collection':'استكشاف المجموعة'} <span aria-hidden="true">↗</span></em><small class="gs-science-media-credit">${fr?'Source et licence affichées après chargement':'سيظهر المصدر والترخيص بعد التحميل'}</small></span></a>`).join('')}</div>
+          <div class="gs-science-media-grid">${topics.map((topic,i)=>`<a class="gs-science-media-card" data-science-search="${escapeHtml(topic[2])}" href="#" aria-label="${escapeHtml(topic[0])}"><span class="gs-science-media-photo" aria-hidden="true"><span>${icons[i]}</span><small>${fr?'Chargement…':'جارٍ تحميل الصورة…'}</small></span><span class="gs-science-media-copy"><strong>${topic[0]}</strong><small>${topic[1]}</small><em>${fr?'Explorer la collection':'استكشاف المجموعة'} <span aria-hidden="true">↗</span></em><small class="gs-science-media-credit">${fr?'Source et licence affichées après chargement':'سيظهر المصدر والترخيص بعد التحميل'}</small></span></a>`).join('')}</div>
           <p class="gs-science-media-license">${fr?'Les métadonnées de licence proviennent de la fiche Wikimedia Commons de chaque fichier. Respectez les conditions indiquées avant toute réutilisation.':'تُستخرج بيانات الترخيص من صفحة كل ملف على ويكيميديا كومنز. يجب احترام شروط الترخيص قبل إعادة استخدام أي صورة.'}</p>
         </section>`;
     }
@@ -1708,7 +1708,7 @@
                 const img=document.createElement('img');img.src=imageUrl.href;img.alt=item.title||'Scientific image';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
                 img.addEventListener('error',()=>setScienceDiagramFallback(card,fr,query),{once:true});
                 photo.replaceChildren(img);card.dataset.realImageUrl=imageUrl.href;card.dataset.originalFileUrl=originalUrl.href;card.dataset.sourcePageUrl=sourceUrl.href;
-                card.href=sourceUrl.href;card.target='_blank';card.rel='noopener noreferrer';
+                card.href='#';card.removeAttribute('target');card.removeAttribute('rel');
                 if(credit)credit.textContent='© '+(item.author||'')+' · '+(item.license||'');
             }catch(error){setScienceDiagramFallback(card,fr,query);}
         }));
@@ -1744,12 +1744,10 @@ function openScientificPhotoPreview(card){
             const card = event.target.closest('.gs-science-media-card, .gs-micro-source-card, .gs-anatomy-photo-card, .gs-real-science-photo');
             if (!card) return;
             // Keep the card in-site even when its remote preview could not load.
-            if (card.dataset.previewUnavailable === 'true') {
-                event.preventDefault();
-                return;
-            }
-            if (!card.dataset.realImageUrl) return;
+            // Always keep clicks inside the learner space. Only verified photos
+            // open the in-page modal; fallback diagrams never navigate.
             event.preventDefault();
+            if (!card.dataset.realImageUrl || card.dataset.previewFallback === 'diagram') return;
             openScientificPhotoPreview(card);
         });
         document.documentElement.dataset.gsPhotoPreviewBound = 'true';

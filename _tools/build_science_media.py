@@ -77,6 +77,22 @@ for query in QUERIES:
             if int(info.get("width", 0)) < 240 or int(info.get("height", 0)) < 160:
                 continue
             metadata = info.get("extmetadata") or {}
+            description = plain(metadata.get("ImageDescription"))
+            searchable = (page.get("title", "") + " " + description).lower()
+            # Microscopy queries must pass both subject and method checks.
+            # Otherwise search relevance can return unrelated photos or diagrams.
+            if any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology")):
+                subject_rules = {
+                    "plant cell": ("plant|chloroplast|elodea|leaf|cell",),
+                    "stomata": ("stoma|stomata",),
+                    "blood": ("blood|erythrocyte|leukocyte|hemoglobin|haemat",),
+                    "alveoli": ("alveol|alveolus|lung",),
+                }
+                import re
+                subject = next((pattern for key, (pattern,) in subject_rules.items() if key in query.lower()), None)
+                microscopy_pattern = r"microscop|micrograph|histolog|electron microscope|sem|light microscope"
+                if not re.search(microscopy_pattern, searchable) or (subject and not re.search(subject, searchable)):
+                    continue
             candidates.append({
                 "title": page.get("title", ""),
                 "image_url": info.get("thumburl") or info.get("url"),
@@ -84,6 +100,7 @@ for query in QUERIES:
                 "source_url": info.get("descriptionurl", ""),
                 "author": plain(metadata.get("Artist")) or plain(metadata.get("Credit")) or "Auteur non indiqué",
                 "license": plain(metadata.get("LicenseShortName")) or "Licence non indiquée",
+                "description": description,
                 "width": int(info.get("width", 0)),
                 "height": int(info.get("height", 0)),
                 "mime": mime,
