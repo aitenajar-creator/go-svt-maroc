@@ -3738,6 +3738,15 @@ function openScientificPhotoPreview(card){
                 outline-offset: 3px;
             }
         }
+        /* Dashboard-style cards for the student-space sections. */
+        .student-space .space-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin:0 0 1.5rem;padding:0;overflow:visible;flex-wrap:initial;border:0;background:transparent;scroll-snap-type:none}
+        .student-space .space-tab{display:flex;align-items:center;justify-content:center;min-width:0;min-height:76px;padding:14px 16px;border:1px solid rgba(255,255,255,.42);border-radius:17px;background:linear-gradient(115deg,#174a3c,#638b76);color:#fff;white-space:normal;text-align:center;line-height:1.7;font-weight:800;box-shadow:0 8px 20px rgba(20,55,43,.13);scroll-snap-align:unset;touch-action:manipulation}
+        .student-space .space-tab:hover{background:linear-gradient(115deg,#103c31,#477a66);color:#fff;transform:translateY(-2px);box-shadow:0 12px 24px rgba(20,55,43,.18)}
+        .student-space .space-tab.active{background:linear-gradient(115deg,#103d32,#2d7259);color:#fff;border-color:#b8d6c2;box-shadow:0 10px 24px rgba(17,74,57,.24)}
+        html.gs-dark .student-space .space-tab{background:linear-gradient(115deg,#263f34,#456c56);color:#fff}
+        html.gs-dark .student-space .space-tab.active{background:linear-gradient(115deg,#174d3b,#34785a);color:#fff}
+        @media(max-width:560px){.student-space .space-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.student-space .space-tab{min-height:70px;padding:11px 8px;font-size:.88rem}}
+        @media(max-width:360px){.student-space .space-nav{grid-template-columns:1fr}}
     `;
     document.head.appendChild(styles);
 
