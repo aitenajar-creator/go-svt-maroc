@@ -1752,9 +1752,9 @@ function openScientificPhotoPreview(card){
  let dialog=document.getElementById('gs-science-photo-dialog');
  if(!dialog){
   dialog=document.createElement('dialog');dialog.id='gs-science-photo-dialog';
-  dialog.innerHTML='<div class="gs-photo-dialog-shell"><button type="button" class="gs-photo-dialog-close" aria-label="Close">×</button><img class="gs-photo-dialog-image" alt=""><div class="gs-photo-dialog-caption"></div><a class="gs-photo-dialog-source" target="_blank" rel="noopener noreferrer"></a></div>';
+  dialog.innerHTML='<div class="gs-photo-dialog-shell"><button type="button" class="gs-photo-dialog-close" aria-label="Close">×</button><img class="gs-photo-dialog-image" alt=""><div class="gs-photo-dialog-caption"></div><div class="gs-photo-dialog-links"><a class="gs-photo-dialog-source" target="_blank" rel="noopener noreferrer"></a><a class="gs-photo-dialog-original" target="_blank" rel="noopener noreferrer"></a></div></div>';
   const style=document.createElement('style');
-  style.textContent='#gs-science-photo-dialog{width:min(94vw,1200px);max-width:94vw;max-height:92vh;padding:0;border:0;border-radius:18px;background:#fff;color:#183326;box-shadow:0 24px 80px #0007}#gs-science-photo-dialog::backdrop{background:#07170fdd;backdrop-filter:blur(4px)}#gs-science-photo-dialog .gs-photo-dialog-shell{position:relative;display:grid;gap:12px;padding:18px;justify-items:center}#gs-science-photo-dialog .gs-photo-dialog-image{display:block;max-width:100%;max-height:72vh;width:auto;height:auto;object-fit:contain}#gs-science-photo-dialog .gs-photo-dialog-caption{font-size:.85rem;line-height:1.6;text-align:center;color:#496353}#gs-science-photo-dialog .gs-photo-dialog-source{display:inline-flex;padding:9px 14px;border-radius:999px;background:#eaf4ec;color:#17623a;font-weight:700;text-decoration:none}#gs-science-photo-dialog .gs-photo-dialog-close{position:absolute;z-index:1;inset-block-start:8px;inset-inline-end:8px;width:40px;height:40px;border:0;border-radius:50%;background:#173d2b;color:#fff;font-size:28px;cursor:pointer}';
+  style.textContent='#gs-science-photo-dialog{width:min(94vw,1200px);max-width:94vw;max-height:92vh;padding:0;border:0;border-radius:18px;background:#fff;color:#183326;box-shadow:0 24px 80px #0007}#gs-science-photo-dialog::backdrop{background:#07170fdd;backdrop-filter:blur(4px)}#gs-science-photo-dialog .gs-photo-dialog-shell{position:relative;display:grid;gap:12px;padding:18px;justify-items:center}#gs-science-photo-dialog .gs-photo-dialog-image{display:block;max-width:100%;max-height:72vh;width:auto;height:auto;object-fit:contain}#gs-science-photo-dialog .gs-photo-dialog-caption{font-size:.85rem;line-height:1.6;text-align:center;color:#496353}#gs-science-photo-dialog .gs-photo-dialog-links{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}#gs-science-photo-dialog .gs-photo-dialog-source,#gs-science-photo-dialog .gs-photo-dialog-original{display:inline-flex;padding:9px 14px;border-radius:999px;background:#eaf4ec;color:#17623a;font-weight:700;text-decoration:none}#gs-science-photo-dialog .gs-photo-dialog-close{position:absolute;z-index:1;inset-block-start:8px;inset-inline-end:8px;width:40px;height:40px;border:0;border-radius:50%;background:#173d2b;color:#fff;font-size:28px;cursor:pointer}';
   document.head.appendChild(style);document.body.appendChild(dialog);
   dialog.querySelector('.gs-photo-dialog-close').addEventListener('click',()=>dialog.close());
   dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
@@ -1764,6 +1764,9 @@ function openScientificPhotoPreview(card){
  dialog.querySelector('.gs-photo-dialog-caption').textContent=card.querySelector('.gs-science-media-credit,.lab-photo-credit')?.textContent||'';
  const source=dialog.querySelector('.gs-photo-dialog-source');
  source.href=sourceUrl;source.textContent=document.documentElement.lang==='fr'?'Voir la source et la licence sur Wikimedia Commons':'عرض المصدر والترخيص على ويكيميديا كومنز';
+ const original=dialog.querySelector('.gs-photo-dialog-original');
+ original.href=card.dataset.originalFileUrl||imageUrl;
+ original.textContent=document.documentElement.lang==='fr'?'Ouvrir le fichier original':'فتح ملف الصورة الأصلي';
  if(!dialog.open)dialog.showModal();
 }
 
