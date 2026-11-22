@@ -240,14 +240,18 @@
     const filter = $('resource-state-filter').value;
     const categoryFilter = $('resource-category-filter').value;
     const levelFilter = $('resource-level-filter').value;
+    const trackFilter = $('resource-track-filter').value;
+    const languageFilter = $('resource-language-filter').value;
     const searchTerm = normalizeResourceSearch($('resource-search').value);
     const rows = resourceCache.filter(item => {
       const matchesState = filter === 'all' || (filter === 'active' && !item.is_deleted) || (filter === 'deleted' && item.is_deleted);
       const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
       const matchesLevel = levelFilter === 'all' || (levelFilter === 'none' && !item.study_level) || item.study_level === levelFilter;
+      const matchesTrack = trackFilter === 'all' || (trackFilter === 'none' && !item.study_track) || item.study_track === trackFilter;
+      const matchesLanguage = languageFilter === 'all' || (languageFilter === 'none' && !item.language) || item.language === languageFilter;
       const searchableText = normalizeResourceSearch([item.title,item.file_name,item.study_track,item.category,item.language,item.study_level].filter(Boolean).join(' '));
       const matchesSearch = !searchTerm || searchableText.includes(searchTerm);
-      return matchesState && matchesCategory && matchesLevel && matchesSearch;
+      return matchesState && matchesCategory && matchesLevel && matchesTrack && matchesLanguage && matchesSearch;
     });
     const activeCount = resourceCache.filter(item => !item.is_deleted).length;
     const hiddenCount = resourceCache.length - activeCount;
@@ -433,6 +437,8 @@
   $('resource-state-filter').addEventListener('change', renderResources);
   $('resource-category-filter').addEventListener('change', renderResources);
   $('resource-level-filter').addEventListener('change', renderResources);
+  $('resource-track-filter').addEventListener('change', renderResources);
+  $('resource-language-filter').addEventListener('change', renderResources);
   $('resource-search').addEventListener('input', renderResources);
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
   $('health-refresh').addEventListener('click', loadPlatformHealth);
