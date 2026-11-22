@@ -52,6 +52,12 @@
           <a href="#founder-editor">هوية صاحب الموقع</a><a href="#site-content-manager">محتوى الموقع</a><a href="#private-lessons-panel">دروس مساحة التلميذ</a><a href="teacher-community.html">مجتمع الأساتذة (إدارة مستقلة)</a>
         </div>
       </section>
+      <section class="panel" id="platform-health-panel">
+        <div class="section-heading"><div><p class="eyebrow">PLATFORM HEALTH</p><h2>سلامة خدمات المنصة</h2><p class="muted">فحوصات قراءة فقط للتأكد من الاتصال بالجداول الأساسية وإمكانية الوصول إليها.</p></div><button id="health-refresh" class="quiet-btn" type="button">إعادة الفحص ↻</button></div>
+        <div id="platform-health-list" class="health-list" aria-live="polite"><p class="muted">سيتم فحص الخدمات بعد دخول المدير.</p></div>
+        <p id="platform-health-time" class="message muted" role="status"></p>
+        <p class="muted health-note">يشمل الفحص قاعدة بيانات الموقع الرئيسية فقط. مجتمع الأساتذة يعمل على مشروع Supabase مستقل ولا تُفحص خدماته من هنا.</p>
+      </section>
       <section class="panel" id="accounts-panel">
         <div class="section-heading"><div><p class="eyebrow">ACCOUNT DIRECTORY</p><h2>دليل الحسابات والأدوار</h2><p class="muted">عرض إداري للقراءة فقط؛ تغيير الأدوار يظل محمياً بإجراءات الصلاحيات الحالية.</p></div><button id="accounts-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
         <div class="field"><label for="accounts-search">البحث بالاسم أو معرّف الحساب</label><input id="accounts-search" type="search" placeholder="اكتب الاسم أو جزءاً من المعرّف"></div>
