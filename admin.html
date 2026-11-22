@@ -85,11 +85,12 @@
  <p class="muted">تُحفظ هذه الدروس في قاعدة بيانات خاصة، ولا تظهر في الفهرس العام. يمكن للمدير نشرها أو إخفاؤها.</p>
  <form id="private-lesson-form" class="upload-grid">
   <div class="field"><label for="private-lesson-title">عنوان الدرس</label><input id="private-lesson-title" required maxlength="180"></div>
+  <div class="field wide"><label for="private-lesson-description">وصف مختصر للدرس (اختياري)</label><input id="private-lesson-description" maxlength="300" placeholder="ملخص موجز يظهر للتلميذ في قائمة الدروس"></div>
   <div class="field"><label for="private-lesson-slug">معرّف الدرس (لاتيني)</label><input id="private-lesson-slug" required pattern="[a-z0-9-]{3,100}" placeholder="lesson-name"></div>
   <div class="field"><label for="private-lesson-level">المستوى</label><select id="private-lesson-level"><option>TC</option><option>1BAC</option><option>2BAC</option></select></div>
   <div class="field"><label for="private-lesson-track">الشعبة</label><select id="private-lesson-track"><option>TCS</option><option>TCL</option><option>1BACSE</option><option>1BACSM</option><option>1BACL</option><option>2BACSVT</option><option>2BACSP</option><option>2BACSM</option></select></div>
   <div class="field"><label for="private-lesson-language">اللغة</label><select id="private-lesson-language"><option value="fr">Français</option><option value="ar">العربية</option></select></div>
-  <div class="field"><label for="private-lesson-file">ملف HTML (حتى 500KB)</label><input id="private-lesson-file" type="file" accept=".html,.htm" required></div>
+  <div class="field"><label for="private-lesson-file">ملف HTML كامل (حتى 2MB)</label><input id="private-lesson-file" type="file" accept=".html,.htm" required></div>
   <div class="field wide"><label><input id="private-lesson-publish" type="checkbox" checked> نشر الدرس للتلاميذ المسجلين</label></div>
   <div class="field wide"><button id="private-lesson-save" class="primary-btn" type="submit">حفظ الدرس الخاص</button></div>
  </form>
@@ -118,6 +119,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="admin.js?v=20261112-5"></script>
-  <script src="admin-private-lessons.js?v=1"></script>
+  <script src="admin-private-lessons.js?v=20261122-2"></script>
 </body>
 </html>
