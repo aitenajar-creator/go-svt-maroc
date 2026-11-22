@@ -57,6 +57,61 @@
     await loadResources();
     await loadFounderProfile();
   }
+  let accountCache = [];
+  async function loadPlatformOverview() {
+    const status = $('overview-message');
+    status.textContent = 'جارٍ تحديث مؤشرات المنصة...';
+    const jobs = await Promise.all([
+      client.from('profiles').select('id,role'),
+      client.from('classes').select('id', { count: 'exact', head: true }),
+      client.from('exercises').select('id', { count: 'exact', head: true }).eq('is_published', true),
+      client.from('role_change_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending')
+    ]);
+    const [profilesResult, classesResult, exercisesResult, requestsResult] = jobs;
+    const errors = jobs.filter(x => x.error).map(x => x.error.message);
+    if (!profilesResult.error) {
+      const profiles = profilesResult.data || [];
+      $('overview-users').textContent = String(profiles.length);
+      $('overview-students').textContent = String(profiles.filter(x => x.role === 'student').length);
+      $('overview-teachers').textContent = String(profiles.filter(x => x.role === 'teacher').length);
+    } else { $('overview-users').textContent = '—'; $('overview-students').textContent = '—'; $('overview-teachers').textContent = '—'; }
+    $('overview-classes').textContent = classesResult.error ? '—' : String(classesResult.count ?? 0);
+    $('overview-exercises').textContent = exercisesResult.error ? '—' : String(exercisesResult.count ?? 0);
+    $('overview-requests').textContent = requestsResult.error ? '—' : String(requestsResult.count ?? 0);
+    status.textContent = errors.length ? 'تعذر تحميل بعض المؤشرات: ' + errors.join(' | ') : 'تم تحديث المؤشرات بنجاح.';
+    status.className = 'message ' + (errors.length ? 'error' : 'success');
+  }
+  async function loadAccounts() {
+    const list = $('accounts-list');
+    const status = $('accounts-message');
+    list.textContent = 'جارٍ تحميل الحسابات...';
+    const { data, error } = await client.from('profiles')
+      .select('id,display_name,role,created_at')
+      .order('created_at', { ascending: false }).limit(250);
+    if (error) { list.textContent = 'تعذر تحميل الحسابات: ' + error.message; return; }
+    accountCache = data || [];
+    renderAccounts();
+    status.textContent = 'الحسابات المعروضة: ' + accountCache.length + (accountCache.length === 250 ? ' (أحدث 250 حساباً)' : '');
+  }
+  function renderAccounts() {
+    const list = $('accounts-list');
+    const query = ($('accounts-search').value || '').trim().toLocaleLowerCase();
+    const rows = accountCache.filter(x => (String(x.display_name || '') + ' ' + x.id + ' ' + x.role).toLocaleLowerCase().includes(query));
+    list.replaceChildren();
+    if (!rows.length) { list.textContent = 'لا توجد حسابات مطابقة.'; return; }
+    rows.forEach(account => {
+      const row = document.createElement('article'); row.className = 'resource-row';
+      const info = document.createElement('div');
+      const name = document.createElement('strong'); name.textContent = account.display_name || 'دون اسم معروض';
+      const meta = document.createElement('small');
+      const roleLabel = ({admin:'مدير المنصة',teacher:'أستاذ',student:'تلميذ'})[account.role] || account.role || 'غير محدد';
+      meta.textContent = roleLabel + ' · ' + new Date(account.created_at).toLocaleDateString('ar-MA') + ' · ' + account.id;
+      info.append(name, meta);
+      const copy = document.createElement('button'); copy.type='button'; copy.className='quiet-btn'; copy.textContent='نسخ المعرّف';
+      copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(account.id); copy.textContent='تم النسخ'; } catch (_) { copy.textContent='تعذر النسخ'; } });
+      row.append(info, copy); list.append(row);
+    });
+  }
   async function loadResources() {
     const list = $('resource-list');
     list.innerHTML = '<p class="muted">جاري تحميل المحتوى...</p>';
@@ -235,6 +290,9 @@
     finally { button.disabled=false; }
   });
   $('refresh-btn').addEventListener('click', loadResources);
+  $('overview-refresh').addEventListener('click', loadPlatformOverview);
+  $('accounts-refresh').addEventListener('click', loadAccounts);
+  $('accounts-search').addEventListener('input', renderAccounts);
   $('signout-btn').addEventListener('click', async () => {
     await client.auth.signOut();
     currentUser = null; dashboard.hidden = true; loginPanel.hidden = false;
