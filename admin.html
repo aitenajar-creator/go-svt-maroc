@@ -72,6 +72,8 @@
       </section>
       <section class="panel" id="role-requests-panel">
         <div class="section-heading"><div><p class="eyebrow">ROLE REQUESTS</p><h2>طلبات تغيير الأدوار</h2><p class="muted">مراجعة الطلبات الواردة. تغيير الدور غير متاح من هذه الواجهة حالياً حفاظاً على حماية الأدوار.</p></div><button id="role-requests-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="field"><label for="role-requests-filter">تصفية الطلبات حسب الحالة</label><select id="role-requests-filter"><option value="all">جميع الحالات</option><option value="pending">قيد المراجعة</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option><option value="other">حالة أخرى أو غير محددة</option></select></div>
+        <p id="role-requests-count" class="muted" aria-live="polite">لم يتم تحميل الطلبات بعد.</p>
         <p id="role-requests-message" class="message muted" role="status"></p>
         <div id="role-requests-list" class="resource-list"><p class="muted">جاري تحميل الطلبات...</p></div>
       </section>
