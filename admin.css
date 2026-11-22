@@ -4,3 +4,10 @@
 
 #founder-editor textarea{font:inherit;width:100%;border:1px solid #d9e5df;border-radius:11px;padding:12px 13px;background:#fbfdfc;color:#18332d;resize:vertical;line-height:1.8}
 #founder-editor textarea:focus{outline:3px solid #cce9dc;border-color:#4d9679}
+
+.admin-shortcuts{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.admin-shortcuts a{display:inline-flex;padding:9px 13px;border-radius:10px;background:#edf5f0;color:#245b45;text-decoration:none;font-size:13px;font-weight:800}
+.platform-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+#accounts-panel .resource-row small{display:block;max-width:100%;overflow-wrap:anywhere;margin-top:5px}
+#accounts-panel .resource-row{align-items:center}
+@media(max-width:680px){.platform-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-shortcuts a{flex:1 1 42%;justify-content:center}}
