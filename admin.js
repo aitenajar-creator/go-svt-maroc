@@ -853,6 +853,9 @@
     link.download = 'go-svt-maroc-accounts-' + new Date().toISOString().slice(0,10) + '.csv';
     document.body.append(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const partialNotice = accountsHasMore ? ' — تنبيه: الملف يشمل الحسابات المحمّلة فقط، ولم تكتمل القائمة.' : ' — الملف يشمل القائمة كاملة.';
+    $('accounts-message').textContent = 'تم تصدير ' + rows.length + ' حساباً مطابقاً من ' + accountCache.length + ' حساباً محمّلاً' + partialNotice;
+    $('accounts-message').className = 'message success';
   });
   $('accounts-refresh').addEventListener('click', loadAccounts);
   $('accounts-load-more').addEventListener('click', function () { loadMoreAccounts(false); });
