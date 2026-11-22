@@ -1126,7 +1126,43 @@
       loadAdmin(true,'resources');
     });
     $('tc-logout').addEventListener('click',async()=>{await client.auth.signOut();user=null;member=null;isAdmin=false;setSignedInUI();});
-    document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>{const selected=x===b;x.classList.toggle('active',selected);x.setAttribute('aria-pressed',String(selected));});['mine','pending','admin'].forEach(p=>$( 'tc-'+p+'-panel').hidden=p!==b.dataset.panel);}));
+    const communityTabs = Array.from(document.querySelectorAll('.tc-dashboard-tabs [data-panel]'));
+    function activateCommunityTab(tab, moveFocus) {
+      if (!tab || tab.hidden) return;
+      communityTabs.forEach(button => {
+        const selected = button === tab;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-selected', String(selected));
+        button.tabIndex = selected ? 0 : -1;
+      });
+      ['mine','pending','admin'].forEach(panelName => {
+        const panel = $('tc-' + panelName + '-panel');
+        const selected = panelName === tab.dataset.panel;
+        panel.hidden = !selected;
+        panel.setAttribute('aria-hidden', String(!selected));
+      });
+      if (moveFocus) tab.focus();
+    }
+    communityTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        activateCommunityTab(tab, false);
+        if (tab.dataset.panel === 'admin' && isAdmin) { loadAdmin(); loadAdminActivity(true); }
+      });
+      tab.addEventListener('keydown', event => {
+        const visibleTabs = communityTabs.filter(button => !button.hidden);
+        const index = visibleTabs.indexOf(tab);
+        const rtl = getComputedStyle(tab.parentElement).direction === 'rtl';
+        let nextIndex = null;
+        if (event.key === 'ArrowRight') nextIndex = (index + (rtl ? -1 : 1) + visibleTabs.length) % visibleTabs.length;
+        else if (event.key === 'ArrowLeft') nextIndex = (index + (rtl ? 1 : -1) + visibleTabs.length) % visibleTabs.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = visibleTabs.length - 1;
+        if (nextIndex !== null) {
+          event.preventDefault();
+          activateCommunityTab(visibleTabs[nextIndex], true);
+        }
+      });
+    });
     $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin){loadAdmin();loadAdminActivity(true);}});
     $('tc-admin-activity-more').addEventListener('click',()=>loadAdminActivity(false));
     $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
