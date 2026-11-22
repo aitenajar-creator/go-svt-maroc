@@ -224,7 +224,7 @@
       const text = normalizeResourceSearch(item.title + ' ' + item.detail);
       return (filter === 'all' || item.type === filter) && text.includes(query);
     });
-    $('activity-summary').textContent = 'الأنشطة المطابقة: ' + rows.length + ' من أصل ' + activityCache.length + ' نشاطاً محمّلاً.';
+    $('activity-summary').textContent = 'الأنشطة المطابقة: ' + rows.length + ' من أصل ' + activityCache.length + ' نشاطاً محمّلاً. يُعرض هنا حتى 60 نشاطاً؛ زر التصدير يشمل جميع النتائج المطابقة المحمّلة.';
     host.replaceChildren();
     if (!rows.length) { host.textContent = 'لا توجد أنشطة مطابقة لمعايير البحث.'; return; }
     rows.slice(0, 60).forEach(item => {
