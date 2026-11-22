@@ -1668,20 +1668,26 @@
                 // Use Commons' explicit search endpoint first, then request image
                 // metadata for the returned file titles. This is more reliable than
                 // generator=search for namespace-6 media lookups.
-                const searchParams = new URLSearchParams({
-                    action: 'query', format: 'json', origin: '*',
-                    list: 'search', srnamespace: '6',
-                    srsearch: query + ' filetype:bitmap', srlimit: '15'
-                });
-                const searchResponse = await fetch('https://commons.wikimedia.org/w/api.php?' + searchParams.toString(), {
-                    headers: { Accept: 'application/json' }
-                });
-                if (!searchResponse.ok) throw new Error('Wikimedia file search failed: HTTP ' + searchResponse.status);
-                const searchPayload = await searchResponse.json();
-                const titles = searchPayload && searchPayload.query && Array.isArray(searchPayload.query.search)
-                    ? searchPayload.query.search.map(function(item) { return item.title; }).filter(Boolean)
-                    : [];
-                if (!titles.length) throw new Error('No matching Wikimedia image files');
+                async function searchCommons(searchTerm) {
+                    const params = new URLSearchParams({
+                        action: 'query', format: 'json', origin: '*',
+                        list: 'search', srnamespace: '6', srlimit: '25',
+                        srsearch: searchTerm
+                    });
+                    const response = await fetch('https://commons.wikimedia.org/w/api.php?' + params.toString(), {
+                        headers: { Accept: 'application/json' }
+                    });
+                    if (!response.ok) throw new Error('Wikimedia file search failed: HTTP ' + response.status);
+                    const data = await response.json();
+                    return data && data.query && Array.isArray(data.query.search)
+                        ? data.query.search.map(function(item) { return item.title; }).filter(Boolean)
+                        : [];
+                }
+                // First try the precise raster filter; if Commons returns no files,
+                // retry the same scientific query without that restrictive operator.
+                let titles = await searchCommons(query + ' filetype:bitmap');
+                if (!titles.length) titles = await searchCommons(query);
+                if (!titles.length) throw new Error('No matching Wikimedia image files after fallback search');
                 const infoParams = new URLSearchParams({
                     action: 'query', format: 'json', origin: '*',
                     prop: 'imageinfo', titles: titles.join('|'),
@@ -1698,11 +1704,11 @@
                         return { page: candidate, info: imageInfo };
                     }).filter(function(item) {
                         const mime = String(item.info && item.info.mime || '').toLowerCase();
-                        const imageUrl = String(item.info && item.info.thumburl || '').toLowerCase();
+                        const imageUrl = String(item.info && (item.info.thumburl || item.info.url) || '').toLowerCase();
                         const isRaster = /^image\/(jpeg|png|webp|gif|tiff)$/i.test(mime) ||
                             (!mime && /\.(jpe?g|png|webp|gif|tiff?)(\?|$)/i.test(imageUrl));
-                        return item.info && item.info.thumburl && item.info.descriptionurl && isRaster &&
-                            Number(item.info.width) >= 240 && Number(item.info.height) >= 160;
+                        return item.info && (item.info.thumburl || item.info.url) && item.info.descriptionurl && isRaster &&
+                            Number(item.info.width) >= 160 && Number(item.info.height) >= 120;
                     }).sort(function(a, b) {
                         return (Number(b.info.width) * Number(b.info.height)) - (Number(a.info.width) * Number(a.info.height));
                     }) : [];
@@ -1710,7 +1716,7 @@
                 const page = selected && selected.page;
                 const info = selected && selected.info;
                 if (!info) throw new Error('No suitable raster image (minimum 320×200)');
-                const imageUrl = new URL(info.thumburl);
+                const imageUrl = new URL(info.thumburl || info.url);
                 const pageUrl = new URL(info.descriptionurl);
                 if (imageUrl.hostname !== 'upload.wikimedia.org' || pageUrl.hostname !== 'commons.wikimedia.org') {
                     throw new Error('Unexpected Wikimedia URL');
