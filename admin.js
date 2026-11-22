@@ -434,10 +434,12 @@
       $('accounts-message').textContent = 'تعذر تحديث الحسابات؛ احتُفظ بالقائمة السابقة ويمكن إعادة المحاولة.';
       $('accounts-message').className = 'message error';
       $('accounts-load-more').hidden = !accountsHasMore;
+      $('accounts-export').disabled = accountCache.length === 0;
     }
   }
   async function loadMoreAccounts(initial = false) {
-    if (accountsLoading || !currentUser) return;
+    if (accountsLoading) return;
+    if (!currentUser) return false;
     accountsLoading = true;
     const button = $('accounts-load-more');
     const status = $('accounts-message');
@@ -457,8 +459,8 @@
       return true;
     } catch (error) {
       status.textContent = 'تعذر تحميل الحسابات: ' + (error.message || String(error));
-      return false;
       if (initial && !accountCache.length) $('accounts-list').textContent = 'تعذر تحميل الحسابات.';
+      return false;
     } finally {
       accountsLoading = false;
       button.disabled = false;
@@ -509,8 +511,9 @@
       renderRoleRequests();
       $('role-requests-message').textContent = 'تعذر تحديث الطلبات؛ احتُفظ بالقائمة السابقة ويمكن إعادة المحاولة.';
       $('role-requests-message').className = 'message error';
-      if (initial) return false;
       $('role-requests-load-more').hidden = !roleRequestsHasMore;
+      const exportButton = $('role-requests-export');
+      if (exportButton) exportButton.disabled = getFilteredRoleRequests().length === 0;
     }
   }
   async function loadMoreRoleRequests(initial = false) {
@@ -553,6 +556,7 @@
         $('role-requests-message').textContent = 'تعذر تحميل الطلبات: ' + (error.message || String(error));
       }
       $('role-requests-message').className = 'message error';
+      if (initial) return false;
     } finally {
       roleRequestsLoading = false;
       if (button) {
