@@ -205,6 +205,37 @@ async function start(){
    }
   }catch(frameError){console.error('[GoSVT reader] fallback render error',frameError);}
   applyReadingPreferences();
+  // Handle the table of contents inside the sandboxed lesson frame explicitly.
+  // This avoids browser differences in fragment navigation for srcdoc documents.
+  try{
+   const d=frame.contentDocument;
+   if(d&&!d.__goSvtTocBound){
+    d.__goSvtTocBound=true;
+    d.addEventListener('click',function(event){
+     const link=event.target&&event.target.closest?event.target.closest('a[href^="#"]'):null;
+     if(!link)return;
+     const raw=link.getAttribute('href').slice(1);
+     let targetId=raw;
+     try{targetId=decodeURIComponent(raw);}catch(e){}
+     const target=d.getElementById(targetId);
+     if(!target)return;
+     event.preventDefault();
+     target.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+   }
+   // Make sure the document's actual content is not suppressed by legacy course CSS.
+   if(d&&d.body){
+    d.body.querySelectorAll('main,article,section,header,footer,div,figure,table,ul,ol,p,h1,h2,h3,h4').forEach(function(el){
+     if(el.hidden)el.hidden=false;
+     if(el.getAttribute('aria-hidden')==='true')el.removeAttribute('aria-hidden');
+     if(el.style){
+      if(el.style.display==='none')el.style.setProperty('display','block','important');
+      if(el.style.visibility==='hidden')el.style.setProperty('visibility','visible','important');
+      if(el.style.opacity==='0')el.style.setProperty('opacity','1','important');
+     }
+    });
+   }
+  }catch(tocError){console.warn('[GoSVT reader] TOC/content recovery:',tocError);}
  },{once:true});
  frame.srcdoc=html;
  $('lesson-frame-wrap').hidden=false;$('lesson-status').hidden=false;
