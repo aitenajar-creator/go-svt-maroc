@@ -1656,94 +1656,59 @@
         </section>`;
     }
 
+    function setScienceDiagramFallback(card, fr, query) {
+        const photo = card.querySelector('.gs-science-media-photo');
+        const credit = card.querySelector('.gs-science-media-credit');
+        if (!photo) return;
+        const kind = /plant cell|chloroplast/i.test(query) ? 'cell' :
+            /stomata|leaf/i.test(query) ? 'leaf' :
+            /blood/i.test(query) ? 'blood' :
+            /heart/i.test(query) ? 'heart' :
+            /lung|alveoli/i.test(query) ? 'lung' : 'fossil';
+        const diagrams = {
+            cell: {title:fr?'Cellule végétale — schéma':'الخلية النباتية — رسم توضيحي', shapes:'<rect x="80" y="54" width="340" height="205" rx="42" fill="#e6f5d9" stroke="#47854a" stroke-width="9"/><rect x="98" y="72" width="304" height="169" rx="34" fill="#f5ffeb" stroke="#86bd75" stroke-width="4"/><ellipse cx="245" cy="155" rx="45" ry="37" fill="#b7a2e6" stroke="#6c50a0" stroke-width="4"/><circle cx="253" cy="154" r="12" fill="#68469b"/>'+Array.from({length:7},(_,n)=>'<ellipse cx="'+(135+n*38)+'" cy="'+(95+(n%2)*120)+'" rx="16" ry="8" fill="#6ab66a" stroke="#327e40" stroke-width="3"/>').join('()')},
+            leaf: {title:fr?'Stomate et cellules de garde':'الثغر والخلايا الحارسة', shapes:'<path d="M120 170 Q200 40 350 115 Q320 255 145 235Z" fill="#b7e4a3" stroke="#3b8d4e" stroke-width="6"/><path d="M150 215Q235 170 330 120" fill="none" stroke="#57975a" stroke-width="5"/><ellipse cx="235" cy="173" rx="40" ry="22" fill="#f7fff0" stroke="#22743a" stroke-width="6"/><ellipse cx="198" cy="173" rx="28" ry="38" fill="#4ca66b"/><ellipse cx="272" cy="173" rx="28" ry="38" fill="#4ca66b"/>'},
+            blood:{title:fr?'Cellules sanguines':'خلايا الدم',shapes:Array.from({length:9},(_,n)=>'<ellipse cx="'+(115+(n%3)*120)+'" cy="'+(90+Math.floor(n/3)*80)+'" rx="37" ry="24" fill="#e85e67" stroke="#b93a43" stroke-width="3"/><ellipse cx="'+(115+(n%3)*120)+'" cy="'+(90+Math.floor(n/3)*80)+'" rx="18" ry="9" fill="#c94250"/>').join('')+'<circle cx="350" cy="210" r="28" fill="#8c70c4" stroke="#634694" stroke-width="4"/>'},
+            heart:{title:fr?'Cœur — circulation':'القلب — الدورة الدموية',shapes:'<path d="M250 215 C80 120 160 60 220 105 C265 60 345 90 330 145 C320 180 285 205 250 235Z" fill="#e55b63" stroke="#9e3340" stroke-width="5"/><path d="M230 110 L230 65 M285 115 L310 55" stroke="#4c82c5" stroke-width="18" stroke-linecap="round"/><path d="M160 160 Q95 210 120 250 M325 150 Q400 210 380 250" fill="none" stroke="#4b91cf" stroke-width="12"/>'},
+            lung:{title:fr?'Alvéoles pulmonaires':'الأسناخ الرئوية',shapes:'<path d="M245 70 L245 150 M245 110 L190 140 M245 110 L300 140" stroke="#d45d82" stroke-width="18" stroke-linecap="round"/><path d="M190 140 Q100 80 105 215 Q120 280 215 230Z M300 140 Q390 80 395 215 Q380 280 285 230Z" fill="#f7b4c9" stroke="#c96388" stroke-width="5"/>'+Array.from({length:12},(_,n)=>'<circle cx="'+(130+(n%4)*65)+'" cy="'+(155+Math.floor(n/4)*35)+'" r="18" fill="#fff0f5" stroke="#ca6d90" stroke-width="3"/>').join('')},
+            fossil:{title:fr?'Fossiles et biodiversité':'المستحاثات والتنوع الحيوي',shapes:'<path d="M80 210 Q160 150 240 210 T420 210" fill="none" stroke="#b88754" stroke-width="24"/><path d="M100 100 Q170 80 250 115 T420 100" fill="none" stroke="#d9a66f" stroke-width="24"/><path d="M180 145 Q200 95 245 110 Q290 125 270 170 Q240 195 210 170Z" fill="#f4e1bb" stroke="#8f7047" stroke-width="6"/><path d="M220 125 Q240 145 220 160 Q200 170 205 145 Q215 135 220 125Z" fill="none" stroke="#8f7047" stroke-width="5"/>'}
+        };
+        const d=diagrams[kind];
+        const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 300"><rect width="500" height="300" rx="22" fill="#f5fbf6"/>'+d.shapes+'<text x="250" y="280" font-size="19" font-family="Arial,sans-serif" font-weight="bold" fill="#245c37" text-anchor="middle">'+d.title+'</text></svg>';
+        const img=document.createElement('img'); img.alt=d.title; img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); img.style.cssText='width:100%;height:100%;object-fit:contain'; photo.replaceChildren(img);
+        card.dataset.previewUnavailable='false'; card.dataset.previewFallback='diagram'; card.dataset.realImageUrl='';
+        card.href='#';card.removeAttribute('target');
+        if(credit)credit.textContent=fr?'Schéma pédagogique (illustration, non photographie)':'رسم تعليمي توضيحي (ليس صورة حقيقية)';
+    }
+
     async function loadScientificMediaImages(root) {
         const selector = '.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search], .gs-real-science-photo[data-science-search]';
         const cards = Array.from(root.querySelectorAll(selector));
         if (!cards.length) return;
         const fr = lang() === 'fr';
+        let items={};
         try {
-            // The catalogue is generated during deployment. Learners' browsers
-            // only request a same-origin JSON file; they never call Commons API.
-            const response = await fetch(new URL('science-media.json', document.baseURI).href, {
-                cache: 'no-cache',
-                headers: { Accept: 'application/json' }
-            });
-            if (!response.ok) throw new Error('Catalogue local indisponible (HTTP ' + response.status + ')');
-            const catalogue = await response.json();
-            const items = catalogue && catalogue.items ? catalogue.items : {};
-            await Promise.all(cards.map(async function(card) {
-                const query = card.getAttribute('data-science-search') || '';
-                const photo = card.querySelector('.gs-science-media-photo');
-                const credit = card.querySelector('.gs-science-media-credit');
-                if (!photo || !query) return;
-                const item = items[query];
-                if (!item || !item.image_url || !item.source_url) {
-                    const reason = item && item.error ? item.error : 'لا توجد صورة موثقة لهذا التصنيف في الفهرس الحالي';
-                    card.dataset.previewUnavailable = 'true';
-                    card.dataset.previewError = reason;
-                    if (credit) credit.textContent = fr ? 'Image non disponible · ' + reason : 'الصورة غير متاحة: ' + reason;
-                    const note = photo.querySelector('small');
-                    if (note) note.textContent = fr ? 'Image non disponible' : 'الصورة غير متاحة حالياً';
-                    return;
-                }
-                const imageUrl = new URL(item.image_url);
-                const sourceUrl = new URL(item.source_url);
-                const originalUrl = item.original_url ? new URL(item.original_url) : imageUrl;
-                if (imageUrl.hostname !== 'upload.wikimedia.org' ||
-                    originalUrl.hostname !== 'upload.wikimedia.org' ||
-                    sourceUrl.hostname !== 'commons.wikimedia.org') {
-                    throw new Error('Lien Wikimedia non autorisé');
-                }
-                const img = document.createElement('img');
-                img.src = imageUrl.href;
-                img.alt = item.title || (fr ? 'Photographie scientifique' : 'صورة علمية');
-                img.loading = 'lazy';
-                img.decoding = 'async';
-                img.referrerPolicy = 'no-referrer';
-                img.addEventListener('error', function() {
-                    card.dataset.previewUnavailable = 'true';
-                    card.dataset.previewError = 'Échec du chargement du fichier image';
-                    if (credit) credit.textContent = fr ? 'Échec du chargement de la photo Wikimedia' : 'تعذر تحميل ملف الصورة من ويكيميديا';
-                    const note = photo.querySelector('small');
-                    if (note) note.textContent = fr ? 'Image indisponible' : 'تعذر تحميل الصورة';
-                }, { once: true });
-                photo.replaceChildren(img);
-                card.dataset.realImageUrl = imageUrl.href;
-                card.dataset.originalFileUrl = originalUrl.href;
-                card.dataset.sourcePageUrl = sourceUrl.href;
-                card.href = '#';
-                card.removeAttribute('target');
-                card.setAttribute('aria-haspopup', 'dialog');
-                card.setAttribute('aria-label', (item.title || '') + ' — ' + (item.license || ''));
-                if (credit) credit.textContent = '© ' + (item.author || (fr ? 'Auteur non indiqué' : 'المؤلف غير محدد')) + ' · ' + (item.license || (fr ? 'Licence non indiquée' : 'الترخيص غير محدد'));
-                const microscope = card.closest('.gs-microscope-lab');
-                if (microscope && microscope.dataset.activeSlide === card.dataset.microSource) {
-                    const art = microscope.querySelector('.gs-micro-art');
-                    const overlay = microscope.querySelector('.gs-micro-overlay');
-                    if (art) {
-                        const preview = img.cloneNode();
-                        preview.style.width = '100%';
-                        preview.style.height = '100%';
-                        preview.style.objectFit = 'contain';
-                        preview.style.display = 'block';
-                        art.replaceChildren(preview);
-                        art.classList.add('is-real-photo');
-                    }
-                    if (overlay) overlay.textContent = fr ? 'Microphotographie réelle' : 'صورة مجهرية حقيقية';
-                }
-            }));
-        } catch (error) {
-            const reason = String(error && error.message || error || 'Unknown error').slice(0, 180);
-            console.error('[GO SVT local science catalogue]', reason);
-            cards.forEach(function(card) {
-                card.dataset.previewUnavailable = 'true';
-                card.dataset.previewError = reason;
-                const credit = card.querySelector('.gs-science-media-credit');
-                if (credit) credit.textContent = fr ? 'Catalogue indisponible · ' + reason : 'تعذر تحميل فهرس الصور · ' + reason;
-            });
-        }
+            const response = await fetch(new URL('science-media.json', document.baseURI).href, {cache:'no-cache',headers:{Accept:'application/json'}});
+            if(response.ok){const catalogue=await response.json();items=catalogue&&catalogue.items?catalogue.items:{};}
+        } catch(error) { console.warn('[GO SVT science catalogue]',error); }
+        await Promise.all(cards.map(async function(card) {
+            const query=card.getAttribute('data-science-search')||'';
+            const photo=card.querySelector('.gs-science-media-photo');
+            const credit=card.querySelector('.gs-science-media-credit');
+            if(!photo||!query)return;
+            const item=items[query];
+            if(!item||!item.image_url||!item.source_url){setScienceDiagramFallback(card,fr,query);return;}
+            try {
+                const imageUrl=new URL(item.image_url), sourceUrl=new URL(item.source_url), originalUrl=item.original_url?new URL(item.original_url):imageUrl;
+                if(imageUrl.hostname!=='upload.wikimedia.org'||originalUrl.hostname!=='upload.wikimedia.org'||sourceUrl.hostname!=='commons.wikimedia.org')throw new Error('Wikimedia URL invalid');
+                const img=document.createElement('img');img.src=imageUrl.href;img.alt=item.title||'Scientific image';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
+                img.addEventListener('error',()=>setScienceDiagramFallback(card,fr,query),{once:true});
+                photo.replaceChildren(img);card.dataset.realImageUrl=imageUrl.href;card.dataset.originalFileUrl=originalUrl.href;card.dataset.sourcePageUrl=sourceUrl.href;
+                card.href=sourceUrl.href;card.target='_blank';card.rel='noopener noreferrer';
+                if(credit)credit.textContent='© '+(item.author||'')+' · '+(item.license||'');
+            }catch(error){setScienceDiagramFallback(card,fr,query);}
+        }));
     }
-
 
 function openScientificPhotoPreview(card){
  const imageUrl=card.dataset.realImageUrl;
