@@ -54,6 +54,13 @@
           <a href="#founder-editor">هوية صاحب الموقع</a><a href="#site-content-manager">محتوى الموقع</a><a href="#private-lessons-panel">دروس مساحة التلميذ</a><a href="teacher-community.html">مجتمع الأساتذة (إدارة مستقلة)</a>
         </div>
       </section>
+      <section class="panel" id="platform-trends-panel">
+        <div class="section-heading"><div><p class="eyebrow">GROWTH ANALYTICS</p><h2>تطور المنصة ومؤشرات النمو</h2><p class="muted">مقارنة عدد السجلات المنشأة في الفترة المختارة مع الفترة السابقة المماثلة.</p></div><button id="trends-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="field trend-period"><label for="trend-period">الفترة الزمنية</label><select id="trend-period"><option value="7">آخر 7 أيام مقابل 7 أيام سابقة</option><option value="30" selected>آخر 30 يوماً مقابل 30 يوماً سابقة</option><option value="90">آخر 90 يوماً مقابل 90 يوماً سابقة</option></select></div>
+        <p id="trends-message" class="message muted" role="status">سيتم حساب المؤشرات بعد التحقق من صلاحية المدير.</p>
+        <div class="table-wrap"><table class="admin-trends-table"><thead><tr><th>المؤشر</th><th>الفترة الحالية</th><th>الفترة السابقة</th><th>التغير</th></tr></thead><tbody id="trends-table-body"><tr><td colspan="4">لم يتم تحميل البيانات بعد.</td></tr></tbody></table></div>
+        <p class="muted">تعتمد الأرقام على تاريخ إنشاء السجلات في قاعدة البيانات. لا تمثل بالضرورة عدد المستخدمين النشطين أو الزيارات.</p>
+      </section>
       <section class="panel" id="platform-health-panel">
         <div class="section-heading"><div><p class="eyebrow">PLATFORM HEALTH</p><h2>سلامة خدمات المنصة</h2><p class="muted">فحوصات قراءة فقط للتأكد من الاتصال بالجداول الأساسية وإمكانية الوصول إليها.</p></div><button id="health-refresh" class="quiet-btn" type="button">إعادة الفحص ↻</button></div>
         <div id="platform-health-list" class="health-list" aria-live="polite"><p class="muted">سيتم فحص الخدمات بعد دخول المدير.</p></div>
