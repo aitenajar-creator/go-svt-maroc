@@ -117,7 +117,9 @@
       </section>
 
       <section class="panel">
-        <div class="section-heading"><div><p class="eyebrow">PUBLISHED LIBRARY</p><h2>المحتوى الذي أضفته</h2></div><button id="refresh-btn" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="section-heading"><div><p class="eyebrow">PUBLISHED LIBRARY</p><h2>المحتوى الذي أضفته</h2><p class="muted">متابعة الموارد المنشورة والموارد المخفية التي تحتاج إلى استكمال الحذف.</p></div><button id="refresh-btn" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="field"><label for="resource-state-filter">حالة المورد</label><select id="resource-state-filter"><option value="all">جميع الموارد</option><option value="active">نشط ومنشور</option><option value="deleted">مخفي / حذف غير مكتمل</option></select></div>
+        <p id="resource-summary" class="muted" aria-live="polite">جاري تحميل الموارد...</p>
         <div id="resource-list" class="resource-list"><p class="muted">جاري تحميل المحتوى...</p></div>
       </section>
 <section class="panel" id="private-lessons-panel" hidden>
