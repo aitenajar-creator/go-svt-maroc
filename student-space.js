@@ -1699,8 +1699,8 @@
                     }).filter(function(item) {
                         const mime = String(item.info && item.info.mime || '').toLowerCase();
                         const imageUrl = String(item.info && item.info.thumburl || '').toLowerCase();
-                        const isRaster = /^image\\/(jpeg|png|webp|gif|tiff)$/i.test(mime) ||
-                            (!mime && /\\.(jpe?g|png|webp|gif|tiff?)(\\?|$)/i.test(imageUrl));
+                        const isRaster = /^image\/(jpeg|png|webp|gif|tiff)$/i.test(mime) ||
+                            (!mime && /\\.(jpe?g|png|webp|gif|tiff? )(\?|$)/i.test(imageUrl));
                         return item.info && item.info.thumburl && item.info.descriptionurl && isRaster &&
                             Number(item.info.width) >= 240 && Number(item.info.height) >= 160;
                     }).sort(function(a, b) {
