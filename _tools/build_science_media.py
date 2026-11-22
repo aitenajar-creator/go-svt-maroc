@@ -91,7 +91,12 @@ for query in QUERIES:
                 import re
                 subject = next((pattern for key, (pattern,) in subject_rules.items() if key in query.lower()), None)
                 microscopy_pattern = r"microscop|micrograph|histolog|electron microscope|sem|light microscope"
-                if not re.search(microscopy_pattern, searchable) or (subject and not re.search(subject, searchable)):
+                # Require method + biological subject + usable attribution/licensing metadata.
+                license_name = plain(metadata.get("LicenseShortName"))
+                author_name = plain(metadata.get("Artist")) or plain(metadata.get("Credit"))
+                if (not re.search(microscopy_pattern, searchable) or
+                    (subject and not re.search(subject, searchable)) or
+                    not license_name or not author_name):
                     continue
             candidates.append({
                 "title": page.get("title", ""),
@@ -104,6 +109,8 @@ for query in QUERIES:
                 "width": int(info.get("width", 0)),
                 "height": int(info.get("height", 0)),
                 "mime": mime,
+                "is_micrograph": bool(any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology"))),
+                "metadata_screened": bool(any(token in query.lower() for token in ("microscopy", "microscope", "micrograph", "histology"))),
             })
         candidates.sort(key=lambda item: item["width"] * item["height"], reverse=True)
         if candidates:

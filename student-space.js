@@ -1699,7 +1699,9 @@
             const credit=card.querySelector('.gs-science-media-credit');
             if(!photo||!query)return;
             const item=items[query];
-            if(!item||!item.image_url||!item.source_url){setScienceDiagramFallback(card,fr,query);return;}
+            const microscopyQuery=/microscopy|microscope|micrograph|histology/i.test(query);
+            // Microscopy cards only accept catalog entries explicitly screened by the build metadata filter.
+            if(!item||!item.image_url||!item.source_url||(microscopyQuery&&item.is_micrograph!==true)||(microscopyQuery&&item.metadata_screened!==true)||!item.author||!item.license||/licence non indiqu|license not indicated/i.test(item.license)){setScienceDiagramFallback(card,fr,query);return;}
             try {
                 const imageUrl=new URL(item.image_url, document.baseURI), sourceUrl=new URL(item.source_url), originalUrl=item.original_url?new URL(item.original_url):imageUrl;
                 const localCached = imageUrl.origin === location.origin && imageUrl.pathname.includes('/science-media-cache/');
