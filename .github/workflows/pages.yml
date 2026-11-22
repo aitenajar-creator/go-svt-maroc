@@ -70,6 +70,8 @@ jobs:
         env:
           QUIZ_PAGES_NOINDEX_AUTO: ${{ vars.QUIZ_PAGES_NOINDEX_AUTO }}
         run: python3 _tools/build_seo.py
+      - name: Build verified Wikimedia Commons science image catalogue
+        run: python3 _tools/build_science_media.py
       - name: Build Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
