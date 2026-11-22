@@ -479,31 +479,47 @@
     if (roleRequestsLoading || !currentUser || (!initial && !roleRequestsHasMore)) return;
     roleRequestsLoading = true;
     const button = $('role-requests-load-more');
-    if (button) { button.disabled = true; button.textContent = 'جارٍ تحميل الطلبات...'; }
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'جارٍ تحميل الطلبات...';
+    }
     const from = roleRequestCache.length;
-    const { data, error } = await client.from('role_change_requests')
-      .select('id,requested_by,target_user_id,requested_role,status,created_at,reviewed_by,reviewed_at')
-      .order('created_at', { ascending: false }).range(from, from + 49);
-    if (error) {
-      if (initial) roleRequestCache = [];
-      $('role-requests-list').textContent = 'تعذر تحميل الطلبات: ' + error.message;
-      $('role-requests-count').textContent = 'تعذر احتساب النتائج.';
-      $('role-requests-message').textContent = 'تحقق من صلاحية قراءة الطلبات في قاعدة البيانات.';
-      $('role-requests-message').className = 'message error';
-      roleRequestsHasMore = false;
-    } else {
+    try {
+      const { data, error } = await client.from('role_change_requests')
+        .select('id,requested_by,target_user_id,requested_role,status,created_at,reviewed_by,reviewed_at')
+        .order('created_at', { ascending: false }).range(from, from + 49);
+      if (error) throw error;
       const incoming = data || [];
       roleRequestCache = roleRequestCache.concat(incoming);
       roleRequestsHasMore = incoming.length === 50;
       renderRoleRequests();
-      $('role-requests-message').textContent = roleRequestCache.length ? 'هذه القائمة للعرض فقط؛ لا يمكن تغيير حالة الطلب من خلالها.' : 'لا توجد طلبات تغيير أدوار مسجلة.';
+      $('role-requests-message').textContent = roleRequestCache.length
+        ? 'هذه القائمة للعرض فقط؛ لا يمكن تغيير حالة الطلب من خلالها.'
+        : 'لا توجد طلبات تغيير أدوار مسجلة.';
       $('role-requests-message').className = 'message muted';
-    }
-    roleRequestsLoading = false;
-    if (button) {
-      button.hidden = !roleRequestsHasMore;
-      button.disabled = false;
-      button.textContent = 'تحميل 50 طلباً إضافياً ↓';
+    } catch (error) {
+      if (initial) {
+        roleRequestCache = [];
+        roleRequestsHasMore = false;
+      } else {
+        // Keep the retry option visible when a later batch fails.
+        roleRequestsHasMore = true;
+      }
+      $('role-requests-list').textContent = roleRequestCache.length
+        ? 'تعذر تحميل الدفعة التالية. الطلبات المحمّلة ما زالت محفوظة؛ حاول مرة أخرى.'
+        : 'تعذر تحميل الطلبات. حاول تحديث القائمة.';
+      $('role-requests-count').textContent = roleRequestCache.length
+        ? 'تم الاحتفاظ بـ ' + roleRequestCache.length + ' طلباً محمّلاً.'
+        : 'تعذر تحميل النتائج.';
+      $('role-requests-message').textContent = 'تعذر تحميل الطلبات: ' + (error.message || String(error));
+      $('role-requests-message').className = 'message error';
+    } finally {
+      roleRequestsLoading = false;
+      if (button) {
+        button.hidden = !roleRequestsHasMore;
+        button.disabled = false;
+        button.textContent = 'إعادة المحاولة / تحميل 50 طلباً إضافياً ↓';
+      }
     }
   }
   function getFilteredRoleRequests() {
