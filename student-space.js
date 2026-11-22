@@ -1715,7 +1715,7 @@
                 const selected = candidates[0];
                 const page = selected && selected.page;
                 const info = selected && selected.info;
-                if (!info) throw new Error('No suitable raster image (minimum 320×200)');
+                if (!info) throw new Error('No suitable raster image (minimum 160×120)');
                 const imageUrl = new URL(info.thumburl || info.url);
                 const pageUrl = new URL(info.descriptionurl);
                 if (imageUrl.hostname !== 'upload.wikimedia.org' || pageUrl.hostname !== 'commons.wikimedia.org') {
@@ -1762,17 +1762,20 @@
                 card.setAttribute('aria-label', (page.title || '') + ' — ' + license);
                 if (credit) credit.textContent = (fr ? '© ' : '© ') + author + ' · ' + license;
             } catch (error) {
-                // A failed external image lookup must never turn the image card
-                // into an accidental navigation away from GO SVT Maroc.
+                // Keep the failure reason visible so network/API/search failures
+                // can be distinguished instead of presenting one misleading message.
+                const reason = String(error && error.message || error || 'Unknown error').slice(0, 180);
+                console.warn('[GO SVT Commons image]', query, reason);
                 card.href = '#';
                 card.removeAttribute('target');
                 card.dataset.previewUnavailable = 'true';
+                card.dataset.previewError = reason;
                 card.setAttribute('aria-disabled', 'true');
                 if (credit) credit.textContent = fr
-                    ? 'Aperçu indisponible · réessayez plus tard'
-                    : 'المعاينة غير متاحة حالياً · حاول مرة أخرى لاحقاً';
+                    ? 'Image indisponible · ' + reason
+                    : 'تعذر تحميل الصورة · ' + reason;
                 const note = photo.querySelector('small');
-                if (note) note.textContent = fr ? 'Aperçu indisponible' : 'المعاينة غير متاحة حالياً';
+                if (note) note.textContent = fr ? 'Image unavailable' : 'تعذر تحميل الصورة';
             }
         }));
     }
