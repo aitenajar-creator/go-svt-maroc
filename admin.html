@@ -50,6 +50,7 @@
         <button type="button" class="admin-tab" data-admin-tab="site-content-manager" aria-selected="false">إضافة محتوى</button>
         <button type="button" class="admin-tab" data-admin-tab="published-library-panel" aria-selected="false">مكتبة المحتوى</button>
         <button type="button" class="admin-tab" data-admin-tab="private-lessons-panel" aria-selected="false">دروس مساحة التلميذ</button>
+        <button type="button" class="admin-tab" data-admin-tab="teacher-community-admin-panel" aria-selected="false">إدارة مجتمع الأساتذة</button>
       </nav>
       <section class="panel admin-tab-content" id="platform-overview">
         <div class="section-heading"><div><p class="eyebrow">GLOBAL PLATFORM OVERVIEW</p><h2>نظرة عامة على المنصة</h2><p class="muted">مؤشرات مباشرة من قاعدة بيانات الموقع الرئيسية.</p></div><button id="overview-refresh" class="quiet-btn" type="button">تحديث المؤشرات ↻</button></div>
@@ -203,6 +204,23 @@
   <div class="field wide"><button id="private-asset-upload" class="primary-btn" type="submit">رفع الصور إلى التخزين الخاص وإضافتها إلى الدرس</button></div>
  </form><p id="private-asset-message" class="message" role="status"></p>
 </section>
+<section class="panel admin-tab-content" id="teacher-community-admin-panel" hidden>
+  <div class="section-heading">
+    <div><p class="eyebrow">TEACHER COMMUNITY CONTROL</p><h2>إدارة مجتمع الأساتذة</h2><p class="muted">لوحة مستقلة لإدارة الموارد المشتركة ومتابعة نشاط مجتمع الأساتذة.</p></div>
+    <span class="heading-icon">👩‍🏫</span>
+  </div>
+  <p class="muted">يعمل مجتمع الأساتذة على مشروع Supabase مستقل عن قاعدة بيانات الموقع الرئيسية. افتح المجتمع من هنا، ثم سجّل الدخول بحساب الإدارة المعتمد الخاص بالمجتمع. تبقى صلاحياته وبياناته منفصلة ولا تتغير صلاحيات لوحة الموقع الرئيسية.</p>
+  <p><a class="primary-btn" href="teacher-community.html" target="_blank" rel="noopener noreferrer">فتح مجتمع الأساتذة في نافذة مستقلة ↗</a></p>
+  <div class="teacher-community-frame-wrap">
+    <iframe src="teacher-community.html" title="مجتمع الأساتذة وإدارته" loading="lazy" referrerpolicy="same-origin"></iframe>
+  </div>
+</section>
+<style>
+#teacher-community-admin-panel .teacher-community-frame-wrap{width:100%;margin-top:18px;border:1px solid #dfe9e3;border-radius:14px;overflow:hidden;background:#f7faf8}
+#teacher-community-admin-panel iframe{display:block;width:100%;height:1100px;border:0;background:#fff}
+@media(max-width:680px){#teacher-community-admin-panel iframe{height:1250px}}
+</style>
+
 <style>
 #private-lessons-panel .private-admin-counts{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem}#private-lessons-panel .private-admin-counts span{padding:.3rem .55rem;border-radius:7px;background:#eef4eb;color:#31583c;font-size:.82rem}#private-lessons-panel .private-admin-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 0;border-bottom:1px solid #e7eee5}
 #private-lessons-panel .private-admin-item small{display:block;color:#718074;margin-top:.2rem}
