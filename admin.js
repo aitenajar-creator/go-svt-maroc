@@ -423,6 +423,7 @@
       if (result.error) throw result.error;
       const batch = result.data || [];
       accountCache = accountCache.concat(batch);
+      $('accounts-export').disabled = accountCache.length === 0;
       accountsHasMore = batch.length === 250;
       renderAccounts();
       status.textContent = 'تم تحميل ' + accountCache.length + ' حساباً' + (accountsHasMore ? '، ويمكن تحميل الدفعة التالية.' : '، وصلت إلى نهاية القائمة.');
@@ -821,6 +822,38 @@
   $('trend-period').addEventListener('change', loadPlatformTrends);
   $('activity-type-filter').addEventListener('change', renderActivity);
   $('activity-search').addEventListener('input', renderActivity);
+  $('accounts-export').addEventListener('click', () => {
+    if (!currentUser || !accountCache.length) return;
+    const query = ($('accounts-search').value || '').trim().toLocaleLowerCase();
+    const roleFilter = $('accounts-role-filter').value;
+    const knownRoles = ['admin','teacher','student'];
+    const rows = accountCache.filter(account => {
+      const role = String(account.role || '').trim().toLocaleLowerCase();
+      const matchesRole = roleFilter === 'all' || (roleFilter === 'other' && !knownRoles.includes(role)) || role === roleFilter;
+      const searchable = (String(account.display_name || '') + ' ' + account.id + ' ' + String(account.role || '')).toLocaleLowerCase();
+      return matchesRole && searchable.includes(query);
+    });
+    if (!rows.length) return;
+    const labels = {admin:'مدير المنصة',teacher:'أستاذ',student:'تلميذ'};
+    const cell = value => '"' + String(value ?? '').replace(/"/g,'""') + '"';
+    const output = [
+      ['الاسم المعروض','الدور','معرّف الحساب','تاريخ التسجيل'],
+      ...rows.map(account => [
+        account.display_name || 'دون اسم معروض',
+        labels[account.role] || account.role || 'غير محدد',
+        account.id,
+        new Date(account.created_at).toLocaleString('ar-MA')
+      ])
+    ];
+    const csv = '\uFEFF' + output.map(row => row.map(cell).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'go-svt-maroc-accounts-' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
   $('accounts-refresh').addEventListener('click', loadAccounts);
   $('accounts-load-more').addEventListener('click', function () { loadMoreAccounts(false); });
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
