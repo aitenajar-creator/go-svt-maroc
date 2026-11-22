@@ -1163,7 +1163,7 @@
         }
       });
     });
-    $('tc-admin-tab').addEventListener('click',()=>{if(isAdmin){loadAdmin();loadAdminActivity(true);}});
+
     $('tc-admin-activity-more').addEventListener('click',()=>loadAdminActivity(false));
     $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
