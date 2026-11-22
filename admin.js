@@ -208,6 +208,7 @@
       }
     }));
     activityCache = results.flatMap(result => result.rows).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    $('activity-export').disabled = activityCache.length === 0;
     renderActivity();
     const failed = results.filter(result => result.error);
     summary.textContent = 'تم تحميل ' + activityCache.length + ' نشاطاً من آخر السجلات المتاحة' +
@@ -787,6 +788,32 @@
     document.body.append(link);
     link.click();
     link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  $('activity-export').addEventListener('click', () => {
+    if (!currentUser || !activityCache.length) return;
+    const filter = $('activity-type-filter').value;
+    const query = normalizeResourceSearch($('activity-search').value);
+    const rows = activityCache.filter(item => {
+      const text = normalizeResourceSearch(item.title + ' ' + item.detail);
+      return (filter === 'all' || item.type === filter) && text.includes(query);
+    });
+    if (!rows.length) return;
+    const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    const output = [
+      ['التصنيف','العنوان','التفاصيل','التاريخ'],
+      ...rows.map(item => [
+        ({content:'المكتبة',lessons:'الدروس',accounts:'الحسابات',learning:'التعلم',requests:'الطلبات'})[item.type] || 'نشاط',
+        item.title, item.detail, new Date(item.created_at).toLocaleString('ar-MA')
+      ])
+    ];
+    const csv = '\uFEFF' + output.map(row => row.map(csvCell).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'go-svt-maroc-activity-' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.append(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   $('activity-refresh').addEventListener('click', loadActivity);
