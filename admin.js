@@ -97,6 +97,19 @@
         activate(tabs[nextIndex].dataset.adminTab, true);
       });
     });
+    document.querySelectorAll('.admin-shortcuts a[href^="#"]').forEach(link => {
+      if (link.dataset.shortcutBound === 'true') return;
+      link.dataset.shortcutBound = 'true';
+      link.addEventListener('click', event => {
+        const targetId = link.getAttribute('href').slice(1);
+        const matchingTab = tabs.find(tab => tab.dataset.adminTab === targetId);
+        if (!matchingTab) return;
+        event.preventDefault();
+        activate(targetId);
+        const panel = document.getElementById(targetId);
+        if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
     activate('platform-overview');
   }
 
