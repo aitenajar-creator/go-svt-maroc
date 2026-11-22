@@ -1,0 +1,53 @@
+/* GO SVT Maroc — rebuilt student-space shell */
+#student-space #student-space-content .gs-student-shell{
+  max-width:1240px!important;margin:0 auto!important;padding:clamp(12px,2.2vw,28px)!important;
+  display:flex!important;flex-direction:column!important;gap:18px!important;
+}
+#student-space #student-space-content .gs-student-shell-header{
+  display:flex!important;flex-direction:column!important;gap:14px!important;
+  padding:clamp(16px,2.5vw,26px)!important;border:1px solid #dce9df!important;
+  border-radius:20px!important;background:linear-gradient(125deg,#f7fbf7,#edf6ef)!important;
+  box-shadow:0 8px 24px rgba(27,76,48,.07)!important;
+}
+#student-space #student-space-content .gs-student-shell-header .gs-account-topbar{order:0!important;width:100%!important}
+#student-space #student-space-content .gs-student-shell-title{order:1!important}
+#student-space #student-space-content .gs-student-shell-title .gs-eyebrow{display:block!important;margin-bottom:6px!important;color:#397451!important;font-size:.76rem!important;font-weight:800!important;letter-spacing:.08em!important}
+#student-space #student-space-content .gs-student-shell-title h2{margin:0!important;color:#1d5137!important;font-size:clamp(1.25rem,2.4vw,1.8rem)!important;font-weight:850!important}
+#student-space #student-space-content .gs-student-shell-title p{margin:6px 0 0!important;color:#607568!important;font-size:.94rem!important}
+#student-space #student-space-content .gs-student-shell .space-nav{
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;flex-wrap:wrap!important;
+  gap:8px!important;margin:0!important;padding:10px!important;border:1px solid #e0e9e2!important;
+  border-radius:15px!important;background:#f5f8f5!important;overflow:visible!important;
+}
+#student-space #student-space-content .gs-student-shell .space-tab{
+  display:inline-flex!important;flex:0 1 auto!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:0!important;min-height:40px!important;padding:8px 14px!important;
+  border:1px solid #d7e4da!important;border-radius:10px!important;background:#fff!important;
+  color:#315b42!important;font-family:inherit!important;font-size:.9rem!important;font-weight:750!important;
+  line-height:1.35!important;white-space:nowrap!important;box-shadow:0 2px 6px rgba(25,65,42,.055)!important;
+  cursor:pointer!important;transition:background .16s ease,border-color .16s ease,transform .16s ease!important;
+}
+#student-space #student-space-content .gs-student-shell .space-tab:hover{background:#eaf3ec!important;border-color:#a9c9b2!important;transform:translateY(-1px)!important}
+#student-space #student-space-content .gs-student-shell .space-tab.active{background:#236b43!important;border-color:#236b43!important;color:#fff!important;box-shadow:0 4px 12px rgba(35,107,67,.18)!important}
+#student-space #student-space-content .gs-student-shell .space-tab:focus-visible{outline:3px solid #d49b42!important;outline-offset:2px!important}
+#student-space #student-space-content .gs-student-shell .space-content{min-width:0!important}
+#student-space #student-space-content .gs-student-shell .space-panel[hidden]{display:none!important}
+#student-space #student-space-content .gs-student-shell .space-panel:not([hidden]){display:block!important;min-width:0!important;animation:gsStudentPanelIn .18s ease both}
+#student-space #student-space-content .gs-student-shell .gs-student-panel-heading{display:flex!important;align-items:center!important;gap:10px!important;margin:0 0 14px!important;padding:13px 16px!important;border:1px solid #e1eae2!important;border-radius:13px!important;background:#fff!important}
+#student-space #student-space-content .gs-student-shell .gs-student-panel-heading h2{margin:0!important;color:#244d37!important;font-size:1.12rem!important;font-weight:800!important}
+#student-space #student-space-content .gs-student-shell .gs-student-panel-icon{display:grid!important;place-items:center!important;width:38px!important;height:38px!important;flex:0 0 38px!important;border-radius:10px!important;background:#edf5e9!important;font-size:1.2rem!important}
+@keyframes gsStudentPanelIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+html.gs-dark #student-space #student-space-content .gs-student-shell-header{background:linear-gradient(125deg,#202e26,#263b2d)!important;border-color:#405846!important}
+html.gs-dark #student-space #student-space-content .gs-student-shell-title h2{color:#e5f1e8!important}
+html.gs-dark #student-space #student-space-content .gs-student-shell-title p{color:#c0d0c4!important}
+html.gs-dark #student-space #student-space-content .gs-student-shell .space-nav{background:#202e26!important;border-color:#35483a!important}
+html.gs-dark #student-space #student-space-content .gs-student-shell .space-tab{background:#293a30!important;border-color:#405846!important;color:#e5f1e8!important}
+html.gs-dark #student-space #student-space-content .gs-student-shell .space-tab.active{background:#236b43!important;color:#fff!important}
+html.gs-dark #student-space #student-space-content .gs-student-shell .gs-student-panel-heading{background:#25372c!important;border-color:#405846!important}
+html.gs-dark #student-space #student-space-content .gs-student-shell .gs-student-panel-heading h2{color:#e5f1e8!important}
+@media(max-width:620px){
+ #student-space #student-space-content .gs-student-shell{padding:10px!important;gap:12px!important}
+ #student-space #student-space-content .gs-student-shell .space-nav{gap:7px!important;padding:8px!important}
+ #student-space #student-space-content .gs-student-shell .space-tab{min-height:38px!important;padding:7px 10px!important;font-size:.84rem!important;white-space:normal!important}
+}
+@media(prefers-reduced-motion:reduce){#student-space #student-space-content .gs-student-shell .space-panel:not([hidden]){animation:none!important}}
