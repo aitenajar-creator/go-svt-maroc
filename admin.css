@@ -11,3 +11,6 @@
 #accounts-panel .resource-row small{display:block;max-width:100%;overflow-wrap:anywhere;margin-top:5px}
 #accounts-panel .resource-row{align-items:center}
 @media(max-width:680px){.platform-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-shortcuts a{flex:1 1 42%;justify-content:center}}
+
+#role-requests-panel .resource-row small{display:block;max-width:100%;overflow-wrap:anywhere;margin-top:5px}
+#role-requests-panel .resource-row{align-items:center}
