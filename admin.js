@@ -18,6 +18,7 @@
   ]);
   const categoryLabels = {cours:'الدروس',exercices:'التمارين',examens:'الامتحانات',fiches:'الجذاذات',resumes:'الملخصات',documents:'الوثائق',ressources:'الموارد',divers:'متفرقات'};
   let currentUser = null;
+  let roleRequestCache = [];
   let uploadInProgress = false;
 
   async function getFileSha256(file) {
@@ -177,18 +178,30 @@
       .select('id,requested_by,target_user_id,requested_role,status,created_at,reviewed_by,reviewed_at')
       .order('created_at', { ascending: false }).limit(50);
     if (error) {
+      roleRequestCache = [];
       list.textContent = 'تعذر تحميل الطلبات: ' + error.message;
+      $('role-requests-count').textContent = 'تعذر احتساب النتائج.';
       status.textContent = 'تحقق من صلاحية قراءة الطلبات في قاعدة البيانات.';
       status.className = 'message error';
       return;
     }
+    roleRequestCache = data || [];
+    renderRoleRequests();
+    status.textContent = roleRequestCache.length ? 'هذه القائمة للعرض فقط؛ لا يمكن تغيير حالة الطلب من خلالها.' : 'لا توجد طلبات تغيير أدوار مسجلة.';
+    status.className = 'message muted';
+  }
+  function renderRoleRequests() {
+    const list = $('role-requests-list');
+    const filter = $('role-requests-filter').value;
+    const knownStatuses = ['pending', 'approved', 'rejected'];
+    const rows = roleRequestCache.filter(item => {
+      const state = String(item.status || '').trim().toLocaleLowerCase();
+      return filter === 'all' || (filter === 'other' && !knownStatuses.includes(state)) || state === filter;
+    });
+    $('role-requests-count').textContent = 'الطلبات المطابقة: ' + rows.length + ' من أصل ' + roleRequestCache.length + ' طلباً محمّلاً (بحد أقصى 50).';
     list.replaceChildren();
-    if (!data || !data.length) {
-      list.textContent = 'لا توجد طلبات تغيير أدوار مسجلة.';
-      status.textContent = 'لا توجد طلبات لعرضها.';
-      return;
-    }
-    data.forEach(item => {
+    if (!rows.length) { list.textContent = 'لا توجد طلبات بهذه الحالة.'; return; }
+    rows.forEach(item => {
       const row = document.createElement('article'); row.className = 'resource-row';
       const info = document.createElement('div');
       const title = document.createElement('strong');
@@ -200,8 +213,6 @@
       info.append(title, meta);
       row.append(info); list.append(row);
     });
-    status.textContent = 'آخر ' + data.length + ' طلباً (بحد أقصى 50). هذه القائمة للعرض فقط.';
-    status.className = 'message muted';
   }
   async function loadResources() {
     const list = $('resource-list');
@@ -385,6 +396,7 @@
   $('health-refresh').addEventListener('click', loadPlatformHealth);
   $('accounts-refresh').addEventListener('click', loadAccounts);
   $('role-requests-refresh').addEventListener('click', loadRoleRequests);
+  $('role-requests-filter').addEventListener('change', renderRoleRequests);
   $('accounts-search').addEventListener('input', renderAccounts);
   $('accounts-role-filter').addEventListener('change', renderAccounts);
   $('signout-btn').addEventListener('click', async () => {
