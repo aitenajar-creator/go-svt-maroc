@@ -21,6 +21,7 @@
   let resourceCache = [];
   let roleRequestCache = [];
   let uploadInProgress = false;
+  let pedagogicalReportRows = null;
 
   async function getFileSha256(file) {
     const bytes = await file.arrayBuffer();
@@ -250,6 +251,11 @@
         ]);
         return { level, track, lessons: trackLessons, resources: trackResources };
       }));
+      pedagogicalReportRows = [
+        ...rows.map(item => ({ level: item.level, track: 'كل المسالك', lessons: item.lessons, resources: item.resources })),
+        ...trackRows
+      ];
+      $('pedagogical-reports-export').disabled = false;
       trackRows.forEach(item => {
         const tr = document.createElement('tr');
         [item.level, item.track, String(item.lessons), String(item.resources)].forEach(value => {
@@ -681,6 +687,24 @@
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
   $('health-refresh').addEventListener('click', loadPlatformHealth);
   $('pedagogical-reports-refresh').addEventListener('click', loadPedagogicalReports);
+  $('pedagogical-reports-export').addEventListener('click', () => {
+    if (!currentUser || !pedagogicalReportRows || !pedagogicalReportRows.length) return;
+    const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    const rows = [
+      ['المستوى','الشعبة أو المسلك','الدروس المنشورة','موارد المكتبة'],
+      ...pedagogicalReportRows.map(item => [item.level, item.track, item.lessons, item.resources])
+    ];
+    const csv = '\\uFEFF' + rows.map(row => row.map(csvCell).join(',')).join('\\r\\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'go-svt-maroc-pedagogical-report-' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
   $('activity-refresh').addEventListener('click', loadActivity);
   $('trends-refresh').addEventListener('click', loadPlatformTrends);
   $('trend-period').addEventListener('change', loadPlatformTrends);

@@ -49,3 +49,7 @@
 
 #pedagogical-reports-panel .report-subheading{margin:1.25rem 0 .65rem;color:#315b43;font-size:1rem}
 #pedagogical-reports-panel .table-wrap+.report-subheading{margin-top:1.4rem}
+
+#pedagogical-reports-panel .report-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+#pedagogical-reports-panel .report-actions button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:680px){#pedagogical-reports-panel .report-actions{width:100%}#pedagogical-reports-panel .report-actions button{flex:1}}
