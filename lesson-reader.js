@@ -48,7 +48,7 @@ async function start(){
   let safe=false;
   try{
    const u=new URL(raw,location.href);
-   safe=u.hostname==='raw.githubusercontent.com'&&/\\.pdf(?:$|[?#])/i.test(u.href);
+   safe=u.hostname==='raw.githubusercontent.com'&&/\.pdf(?:$|[?#])/i.test(u.href);
   }catch(e){}
   if(!safe){frame.remove();return;}
   frame.setAttribute('sandbox','allow-same-origin allow-downloads');
