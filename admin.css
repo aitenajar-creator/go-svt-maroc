@@ -46,3 +46,6 @@
 #pedagogical-reports-panel .admin-trends-table{width:100%;border-collapse:collapse;min-width:440px}
 #pedagogical-reports-panel .admin-trends-table th,#pedagogical-reports-panel .admin-trends-table td{padding:.8rem .65rem;text-align:right;border-bottom:1px solid #e6ece7;font-size:.92rem}
 #pedagogical-reports-panel .admin-trends-table th{background:#f3f7f3;color:#315b43;font-weight:800}
+
+#pedagogical-reports-panel .report-subheading{margin:1.25rem 0 .65rem;color:#315b43;font-size:1rem}
+#pedagogical-reports-panel .table-wrap+.report-subheading{margin-top:1.4rem}

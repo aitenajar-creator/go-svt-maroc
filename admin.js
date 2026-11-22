@@ -236,6 +236,27 @@
         });
         body.append(tr);
       });
+      const trackBody = $('pedagogical-tracks-body');
+      trackBody.replaceChildren();
+      const tracks = [
+        ['TC','TCS'], ['TC','TCL'],
+        ['1BAC','1BACSE'], ['1BAC','1BACSM'], ['1BAC','1BACL'],
+        ['2BAC','2BACSVT'], ['2BAC','2BACSP'], ['2BAC','2BACSM']
+      ];
+      const trackRows = await Promise.all(tracks.map(async ([level, track]) => {
+        const [trackLessons, trackResources] = await Promise.all([
+          count('private_student_lessons', [['is_published','eq',true],['study_level','eq',level],['study_track','eq',track]]),
+          count('site_content_items', [['is_deleted','eq',false],['study_level','eq',level],['study_track','eq',track]])
+        ]);
+        return { level, track, lessons: trackLessons, resources: trackResources };
+      }));
+      trackRows.forEach(item => {
+        const tr = document.createElement('tr');
+        [item.level, item.track, String(item.lessons), String(item.resources)].forEach(value => {
+          const td = document.createElement('td'); td.textContent = value; tr.append(td);
+        });
+        trackBody.append(tr);
+      });
       status.textContent = 'تم تحديث التقرير بنجاح · الأرقام إجمالية للمحتوى المنشور فقط.';
       status.className = 'message success';
     } catch (error) {
