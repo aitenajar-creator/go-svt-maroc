@@ -54,8 +54,10 @@
     if (!await verifyAdmin(user)) { showDenied(); return; }
     loginPanel.hidden = true;
     dashboard.hidden = false;
-    await loadResources();
-    await loadFounderProfile();
+    await Promise.all([
+      loadResources(), loadFounderProfile(), loadPlatformOverview(),
+      loadAccounts(), loadRoleRequests()
+    ]);
   }
   let accountCache = [];
   async function loadPlatformOverview() {
@@ -111,6 +113,40 @@
       copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(account.id); copy.textContent='تم النسخ'; } catch (_) { copy.textContent='تعذر النسخ'; } });
       row.append(info, copy); list.append(row);
     });
+  }
+  async function loadRoleRequests() {
+    const list = $('role-requests-list');
+    const status = $('role-requests-message');
+    list.textContent = 'جارٍ تحميل الطلبات...';
+    const { data, error } = await client.from('role_change_requests')
+      .select('id,requested_by,target_user_id,requested_role,status,created_at,reviewed_by,reviewed_at')
+      .order('created_at', { ascending: false }).limit(50);
+    if (error) {
+      list.textContent = 'تعذر تحميل الطلبات: ' + error.message;
+      status.textContent = 'تحقق من صلاحية قراءة الطلبات في قاعدة البيانات.';
+      status.className = 'message error';
+      return;
+    }
+    list.replaceChildren();
+    if (!data || !data.length) {
+      list.textContent = 'لا توجد طلبات تغيير أدوار مسجلة.';
+      status.textContent = 'لا توجد طلبات لعرضها.';
+      return;
+    }
+    data.forEach(item => {
+      const row = document.createElement('article'); row.className = 'resource-row';
+      const info = document.createElement('div');
+      const title = document.createElement('strong');
+      const requestedRole = ({student:'تلميذ',teacher:'أستاذ',admin:'مدير'})[item.requested_role] || item.requested_role || 'غير محدد';
+      const state = ({pending:'قيد المراجعة',approved:'مقبول',rejected:'مرفوض'})[item.status] || item.status || 'غير محدد';
+      title.textContent = 'طلب ' + requestedRole + ' — ' + state;
+      const meta = document.createElement('small');
+      meta.textContent = 'مقدم الطلب: ' + item.requested_by + ' · الحساب المستهدف: ' + item.target_user_id + ' · ' + new Date(item.created_at).toLocaleString('ar-MA');
+      info.append(title, meta);
+      row.append(info); list.append(row);
+    });
+    status.textContent = 'آخر ' + data.length + ' طلباً (بحد أقصى 50). هذه القائمة للعرض فقط.';
+    status.className = 'message muted';
   }
   async function loadResources() {
     const list = $('resource-list');
@@ -292,6 +328,7 @@
   $('refresh-btn').addEventListener('click', loadResources);
   $('overview-refresh').addEventListener('click', loadPlatformOverview);
   $('accounts-refresh').addEventListener('click', loadAccounts);
+  $('role-requests-refresh').addEventListener('click', loadRoleRequests);
   $('accounts-search').addEventListener('input', renderAccounts);
   $('signout-btn').addEventListener('click', async () => {
     await client.auth.signOut();
