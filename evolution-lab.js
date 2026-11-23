@@ -38,6 +38,6 @@ function start(){if(timer)return;if(gen>=limit)reset();const b=$('evo-run');if(b
 function stop(){if(timer){clearInterval(timer);timer=null;}const b=$('evo-run');if(b)b.textContent=t('start');}
 function reset(){stop();gen=0;dark=50;history=[50];lastInsight='';update();}
 function langUpdate(){const n=document.documentElement.lang==='fr'?'fr':'ar';if(n!==lang){lang=n;if($(rootId)&&!$(rootId).hidden)render();}}
-function init(){const host=$(rootId),btn=$('evo-open');if(!host||!btn)return;btn.addEventListener('click',()=>{host.hidden=!host.hidden;if(!host.hidden){render();host.scrollIntoView({behavior:'smooth',block:'start');}});new MutationObserver(langUpdate).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}
+function init(){const host=$(rootId),btn=$('evo-open');if(!host||!btn)return;btn.addEventListener('click',()=>{host.hidden=!host.hidden;if(!host.hidden){render();host.scrollIntoView({behavior:'smooth',block:'start'});}});new MutationObserver(langUpdate).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
