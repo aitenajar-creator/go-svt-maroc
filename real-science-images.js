@@ -225,7 +225,7 @@
     if (document.getElementById('ri-guided-reasoning-styles')) return;
     const style = document.createElement('style');
     style.id = 'ri-guided-reasoning-styles';
-    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
+    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
     document.head.appendChild(style);
   }
 
@@ -302,7 +302,77 @@
     }
   });
 
-  function createScienceChallenge(categoryKey) {
+  const SCIENCE_JOURNAL_KEY = 'gosvt_science_challenge_journal_v1';
+
+  function readScienceJournal() {
+    try {
+      const value = JSON.parse(window.localStorage.getItem(SCIENCE_JOURNAL_KEY) || '{}');
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    } catch (_) { return {}; }
+  }
+
+  function saveScienceJournalEntry(categoryKey, score) {
+    try {
+      const records = readScienceJournal();
+      const previous = records[categoryKey] || {};
+      records[categoryKey] = {
+        bestScore: Math.max(Number(previous.bestScore) || 0, score),
+        lastScore: score,
+        attempts: (Number(previous.attempts) || 0) + 1,
+        completedAt: new Date().toISOString()
+      };
+      window.localStorage.setItem(SCIENCE_JOURNAL_KEY, JSON.stringify(records));
+      return records;
+    } catch (_) { return null; }
+  }
+
+  function createScienceJournal(isFrench) {
+    const panel = document.createElement('section');
+    panel.className = 'ri-science-journal';
+    const title = document.createElement('strong');
+    title.textContent = isFrench ? 'Mon carnet de découvertes' : 'دفتر اكتشافاتي العلمية';
+    const summary = document.createElement('p');
+    summary.className = 'ri-science-journal-summary';
+    const list = document.createElement('ul');
+    list.className = 'ri-science-journal-list';
+    const names = {
+      'cell/plant': { ar: 'الخلايا النباتية', fr: 'Cellules végétales' },
+      'genetics/dna': { ar: 'الوراثة و ADN', fr: 'Génétique et ADN' },
+      'ecology/ecosystem': { ar: 'النظام البيئي', fr: 'Écosystème' },
+      'geology/rock': { ar: 'الصخور والجيولوجيا', fr: 'Roches et géologie' },
+      'cell/animal': { ar: 'الأنسجة الحيوانية', fr: 'Tissus animaux' },
+      'cell/mitosis': { ar: 'الانقسام الخلوي', fr: 'Division cellulaire' },
+      'respiratory/alveoli': { ar: 'الحويصلات الرئوية', fr: 'Alvéoles pulmonaires' }
+    };
+    function refresh() {
+      const records = readScienceJournal();
+      const keys = Object.keys(names);
+      const completed = keys.filter(function (key) { return !!records[key]; }).length;
+      const attempts = keys.reduce(function (sum, key) {
+        return sum + (records[key] ? Number(records[key].attempts) || 0 : 0);
+      }, 0);
+      summary.textContent = isFrench
+        ? completed + ' / ' + keys.length + ' thèmes explorés · ' + attempts + ' défis terminés'
+        : completed + ' من ' + keys.length + ' مواضيع مستكشفة · ' + attempts + ' تحدياً مكتملاً';
+      list.replaceChildren();
+      keys.forEach(function (key) {
+        const item = document.createElement('li');
+        const record = records[key];
+        const name = names[key][isFrench ? 'fr' : 'ar'];
+        item.textContent = record
+          ? name + ' — ' + (isFrench ? 'Meilleur résultat : ' : 'أفضل نتيجة: ') + record.bestScore + '/3 · ' + (isFrench ? 'Tentatives : ' : 'المحاولات: ') + record.attempts
+          : name + ' — ' + (isFrench ? 'À découvrir' : 'لم يُستكشف بعد');
+        item.setAttribute('data-completed', record ? 'true' : 'false');
+        list.appendChild(item);
+      });
+    }
+    panel.append(title, summary, list);
+    panel.refresh = refresh;
+    refresh();
+    return panel;
+  }
+
+  function createScienceChallenge(categoryKey, onComplete) {
     const isFrench = document.documentElement.lang === 'fr';
     const challenge = SCIENCE_CHALLENGES[categoryKey];
     const stages = CHALLENGE_STAGES[categoryKey];
@@ -413,6 +483,8 @@
         renderStep();
         return;
       }
+      const records = saveScienceJournalEntry(categoryKey, score);
+      if (typeof onComplete === 'function') onComplete(records);
       section.replaceChildren(heading, progress, feedback, next);
       heading.textContent = isFrench ? 'Défi terminé' : 'اكتمل التحدي';
       progress.textContent = isFrench
@@ -575,8 +647,10 @@
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
-    const challenge = createScienceChallenge(categoryKey);
+    const journal = createScienceJournal(isFrench);
+    const challenge = createScienceChallenge(categoryKey, function () { journal.refresh(); });
     if (challenge) activity.appendChild(challenge);
+    activity.appendChild(journal);
     activity.append(guidePanel, label, textarea, actions, review, feedback, status, privacy);
     return activity;
   }
