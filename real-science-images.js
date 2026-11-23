@@ -225,7 +225,7 @@
     if (document.getElementById('ri-guided-reasoning-styles')) return;
     const style = document.createElement('style');
     style.id = 'ri-guided-reasoning-styles';
-    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-science-badge-title{display:block;margin-top:8px}.ri-science-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.ri-science-badge{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:rgba(255,255,255,.65)}.ri-science-badge[data-unlocked=true]{border-color:#86b99a;background:rgba(22,101,52,.08)}.ri-science-badge[data-unlocked=false]{opacity:.62;filter:grayscale(.65)}.ri-science-badge-icon{font-size:1.5rem}.ri-science-badge-details{display:grid;gap:3px}.ri-science-badge-details small{font-size:.76rem;line-height:1.4}.ri-science-badge-details small:last-child{font-weight:700;color:#24613b}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
+    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-science-level{display:grid;gap:7px;padding:12px;border:1px solid #9bb9d0;border-radius:12px;background:rgba(2,132,199,.06)}.ri-science-level-meta{margin:0;font-size:.84rem;line-height:1.5}.ri-science-level-track{height:10px;overflow:hidden;border-radius:99px;background:#dbe5ed}.ri-science-level-fill{display:block;height:100%;width:0;border-radius:inherit;background:#16835d;transition:width .25s ease}.ri-science-badge-title{display:block;margin-top:8px}.ri-science-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.ri-science-badge{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:rgba(255,255,255,.65)}.ri-science-badge[data-unlocked=true]{border-color:#86b99a;background:rgba(22,101,52,.08)}.ri-science-badge[data-unlocked=false]{opacity:.62;filter:grayscale(.65)}.ri-science-badge-icon{font-size:1.5rem}.ri-science-badge-details{display:grid;gap:3px}.ri-science-badge-details small{font-size:.76rem;line-height:1.4}.ri-science-badge-details small:last-child{font-weight:700;color:#24613b}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
     document.head.appendChild(style);
   }
 
@@ -315,10 +315,17 @@
     try {
       const records = readScienceJournal();
       const previous = records[categoryKey] || {};
+      const earnedXp = 15 + (Math.max(0, Math.min(3, Number(score) || 0)) * 5);
+      const meta = records._meta && typeof records._meta === 'object' ? records._meta : {};
+      records._meta = {
+        xp: (Number(meta.xp) || 0) + earnedXp,
+        updatedAt: new Date().toISOString()
+      };
       records[categoryKey] = {
         bestScore: Math.max(Number(previous.bestScore) || 0, score),
         lastScore: score,
         attempts: (Number(previous.attempts) || 0) + 1,
+        lastXp: earnedXp,
         completedAt: new Date().toISOString()
       };
       window.localStorage.setItem(SCIENCE_JOURNAL_KEY, JSON.stringify(records));
@@ -333,6 +340,19 @@
     title.textContent = isFrench ? 'Mon carnet de découvertes' : 'دفتر اكتشافاتي العلمية';
     const summary = document.createElement('p');
     summary.className = 'ri-science-journal-summary';
+    const levelPanel = document.createElement('div');
+    levelPanel.className = 'ri-science-level';
+    const levelName = document.createElement('strong');
+    const levelMeta = document.createElement('p');
+    levelMeta.className = 'ri-science-level-meta';
+    const levelTrack = document.createElement('div');
+    levelTrack.className = 'ri-science-level-track';
+    levelTrack.setAttribute('role', 'progressbar');
+    levelTrack.setAttribute('aria-valuemin', '0');
+    levelTrack.setAttribute('aria-valuemax', '100');
+    const levelFill = document.createElement('span');
+    levelFill.className = 'ri-science-level-fill';
+    levelTrack.appendChild(levelFill);
     const badgeTitle = document.createElement('strong');
     badgeTitle.className = 'ri-science-badge-title';
     badgeTitle.textContent = isFrench ? 'Mes badges scientifiques' : 'شاراتي العلمية';
@@ -366,6 +386,26 @@
       summary.textContent = isFrench
         ? completed + ' / ' + keys.length + ' thèmes explorés · ' + attempts + ' défis terminés'
         : completed + ' من ' + keys.length + ' مواضيع مستكشفة · ' + attempts + ' تحدياً مكتملاً';
+      const xp = Math.max(0, Number(records._meta && records._meta.xp) || 0);
+      const levels = [
+        { min: 0, next: 40, ar: 'مبتدئ', fr: 'Débutant' },
+        { min: 40, next: 100, ar: 'مستكشف', fr: 'Explorateur' },
+        { min: 100, next: 180, ar: 'باحث', fr: 'Chercheur' },
+        { min: 180, next: 180, ar: 'خبير', fr: 'Expert' }
+      ];
+      const currentLevel = levels.filter(function (level) { return xp >= level.min; }).pop();
+      const progressXp = currentLevel.next > currentLevel.min
+        ? Math.min(100, Math.round(((xp - currentLevel.min) / (currentLevel.next - currentLevel.min)) * 100))
+        : 100;
+      levelName.textContent = isFrench
+        ? 'Niveau ' + currentLevel.fr + ' · ' + xp + ' XP'
+        : 'المستوى: ' + currentLevel.ar + ' · ' + xp + ' نقطة XP';
+      levelMeta.textContent = currentLevel.next > currentLevel.min
+        ? (isFrench ? (currentLevel.next - xp) + ' XP pour le niveau suivant' : 'بقيت ' + (currentLevel.next - xp) + ' نقطة للمستوى التالي')
+        : (isFrench ? 'Niveau maximal atteint' : 'وصلت إلى أعلى مستوى');
+      levelFill.style.width = progressXp + '%';
+      levelTrack.setAttribute('aria-valuenow', String(progressXp));
+      levelTrack.setAttribute('aria-label', isFrench ? 'Progression vers le niveau suivant' : 'التقدم نحو المستوى التالي');
       list.replaceChildren();
       keys.forEach(function (key) {
         const item = document.createElement('li');
@@ -405,7 +445,8 @@
         badges.appendChild(badge);
       });
     }
-    panel.append(title, summary, badgeTitle, badges, list);
+    panel.append(title, summary, levelPanel, badgeTitle, badges, list);
+    levelPanel.append(levelName, levelMeta, levelTrack);
     panel.refresh = refresh;
     refresh();
     return panel;
