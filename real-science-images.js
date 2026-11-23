@@ -200,7 +200,30 @@
     enhanceStatIcons: enhanceStatIcons
   });
 
-  function start() {
+  function installGalleryStyles() {
+    if (document.getElementById('go-svt-real-gallery-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'go-svt-real-gallery-styles';
+    style.textContent = [
+      '.ri-gallery{margin:22px 0;padding:18px;border:1px solid #dce9df;border-radius:18px;background:#f8fcf8}',
+      '.ri-gallery h4{margin:0 0 14px;color:#205b39;font-size:1.05rem}',
+      '.ri-gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px}',
+      '.ri-gallery-container{min-width:0;min-height:190px}',
+      '.ri-image-card{display:flex;flex-direction:column;gap:9px;min-width:0;padding:10px;border:1px solid #dce8df;border-radius:15px;background:#fff;color:#254c34;text-decoration:none;overflow:hidden}',
+      '.ri-image-frame{position:relative;display:block;aspect-ratio:4/3;overflow:hidden;border-radius:10px;background:#edf4ee}',
+      '.ri-image{display:block;width:100%;height:100%;object-fit:cover;transition:transform .25s}',
+      '.ri-image-card:hover .ri-image{transform:scale(1.035)}',
+      '.ri-image-overlay{position:absolute;inset:auto 8px 8px;padding:6px 9px;border-radius:8px;background:#102e20d9;color:#fff;font-size:.78rem}',
+      '.ri-image-info{display:grid;gap:5px;line-height:1.5;overflow-wrap:anywhere}',
+      '.ri-image-info strong{font-size:.88rem}',
+      '.ri-image-info .gs-science-media-credit{font-size:.75rem;color:#607466}',
+      '.ri-placeholder,.ri-error{padding:16px;border-radius:12px;background:#fff;color:#526b5a;line-height:1.7}',
+      '@media(max-width:520px){.ri-gallery{padding:12px}.ri-gallery-grid{grid-template-columns:1fr 1fr}}'
+    ].join('');
+    document.head.appendChild(style);
+  }
+
+  function start() {\n    installGalleryStyles();
     enhanceStatIcons(document);\n    enhanceGalleries(document);
     if (document.body && window.MutationObserver) {
       const observer = new MutationObserver(function (mutations) {
