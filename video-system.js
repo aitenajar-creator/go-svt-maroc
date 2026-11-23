@@ -8,8 +8,18 @@
     constructor() {
       this.videos = {};
       this.currentVideo = null;
-      this.watchedVideos = JSON.parse(localStorage.getItem('gsvt_watched_videos') || '[]');
+      this.watchedVideos = this.readWatchedVideos();
       this.loadVideos();
+    }
+
+    readWatchedVideos() {
+      try {
+        const value = JSON.parse(localStorage.getItem('gsvt_watched_videos') || '[]');
+        return Array.isArray(value) ? value.filter(item => typeof item === 'string') : [];
+      } catch (error) {
+        console.warn('Invalid watched-video history; starting with an empty history.', error);
+        return [];
+      }
     }
 
     async loadVideos() {
@@ -17,6 +27,7 @@
         const response = await fetch('videos.json');
         this.videos = await response.json();
         this.renderVideoLibrary();
+        this.setupVideoFilters();
         this.attachVideoHandlers();
       } catch (error) {
         console.error('Error loading videos:', error);
@@ -52,6 +63,15 @@
       if (!container) return;
 
       const allVideos = this.getAllVideos();
+      if (!allVideos.length) {
+        container.innerHTML = `
+          <section class="video-library-empty" role="status" aria-live="polite">
+            <h2>📹 مكتبة الفيديوهات التعليمية</h2>
+            <p>لا تتوفر حالياً فيديوهات موثقة وجاهزة للنشر. ستظهر الموارد هنا بعد التحقق من روابطها ومحتواها.</p>
+          </section>
+        `;
+        return;
+      }
       container.innerHTML = `
         <div class="video-library-header">
           <h2>📹 مكتبة الفيديوهات التعليمية</h2>
