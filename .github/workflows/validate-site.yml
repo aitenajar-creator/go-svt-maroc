@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-site
-  cancel-in-progress: true
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   validate:
