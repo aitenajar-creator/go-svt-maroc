@@ -9,14 +9,25 @@ stomach:{ar:['المعدة','تستقبل الطعام وتخلطه بالعصا
 kidneys:{ar:['الكليتان','ترشحان الدم وتساهمان في تكوين البول وتنظيم توازن الماء والأملاح في الجسم.','ترشيح الدم وتنظيم توازن الماء والأملاح.'],fr:['Les reins','Ils filtrent le sang, participent à la formation de l’urine et régulent l’équilibre hydrominéral.','Filtrer le sang et réguler l’équilibre hydrominéral.']}
 };
 const isFr=()=>document.documentElement.lang==='fr';
+let activeCleanup=null;
 function mount(root){
-if(!root||root.dataset.gs3dReady==='1')return;
+if(!root)return;
+if(activeCleanup){activeCleanup();activeCleanup=null;}
+if(root.dataset.gs3dReady==='1')return;
 root.dataset.gs3dReady='1';
 const canvas=root.querySelector('.gs-3d-canvas'),loading=root.querySelector('.gs-3d-loading');
 if(!window.THREE){loading.textContent=isFr()?'Le moteur 3D n’a pas pu être chargé. Vérifiez la connexion puis rechargez la page.':'تعذر تحميل محرك العرض ثلاثي الأبعاد. تحقق من الاتصال ثم أعد تحميل الصفحة.';return;}
 const THREE=window.THREE,scene=new THREE.Scene();scene.background=new THREE.Color(0x142b25);
 const camera=new THREE.PerspectiveCamera(35,1,.1,100);camera.position.set(0,1.1,8.5);
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
+let renderer;
+try {
+renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+} catch(error) {
+loading.textContent=isFr()?'WebGL est indisponible sur cet appareil.':'ميزة WebGL غير متاحة على هذا الجهاز.';
+console.warn('3D lab could not create a WebGL renderer:',error);
+return;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
 scene.add(new THREE.HemisphereLight(0xe9fff0,0x24352e,2.0));
 const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(4,6,7);scene.add(key);
 const fill=new THREE.DirectionalLight(0x75c6aa,1.2);fill.position.set(-5,2,-4);scene.add(fill);
@@ -68,15 +79,30 @@ const SYSTEM_FOR={heart:'circulatory',lungs:'respiratory',brain:'nervous',liver:
 function setSystem(id){if(!systems[id])return;activeSystem=id;Object.entries(systems).forEach(([key,group])=>group.visible=key===id);root.querySelectorAll('[data-3d-system]').forEach(b=>{const active=b.dataset['3dSystem']===id;b.classList.toggle('is-active',active);b.setAttribute('aria-pressed',active?'true':'false');});const first={circulatory:'heart',respiratory:'lungs',nervous:'brain',digestive:'stomach',urinary:'kidneys'}[id];select(first);}
 
 function resize(){const w=canvas.clientWidth||500,h=canvas.clientHeight||480;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
-const ro=new ResizeObserver(()=>{if(root.getBoundingClientRect().width>0)resize();});ro.observe(root);
-function draw(){requestAnimationFrame(draw);model.rotation.y=rotY;model.rotation.x=rotX;camera.position.z=8.5/zoom;camera.lookAt(0,0,0);renderer.render(scene,camera);}
+const ro=typeof ResizeObserver!=='undefined'?new ResizeObserver(()=>{if(root.getBoundingClientRect().width>0)resize();}):null;
+if(ro)ro.observe(root);
+let rafId=0,disposed=false;
+function draw(){if(disposed)return;rafId=requestAnimationFrame(draw);if(!root.isConnected)return;model.rotation.y=rotY;model.rotation.x=rotX;camera.position.z=8.5/zoom;camera.lookAt(0,0,0);renderer.render(scene,camera);}
 function pointerDown(e){drag=true;moved=false;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId);}
 function pointerMove(e){if(!drag)return;if(Math.abs(e.clientX-lastX)+Math.abs(e.clientY-lastY)>3)moved=true;rotY+=(e.clientX-lastX)*.009;rotX=Math.max(-.65,Math.min(.65,rotX+(e.clientY-lastY)*.006));lastX=e.clientX;lastY=e.clientY;}
 function pointerUp(){drag=false;}
+const handleWheel=e=>{e.preventDefault();zoom=Math.max(.72,Math.min(1.55,zoom+(e.deltaY>0?-.07:.07)));};
+const handleCanvasClick=e=>{if(moved){moved=false;return;}const rect=canvas.getBoundingClientRect();pointer.x=((e.clientX-rect.left)/rect.width)*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(model.children,true);const hit=hits.find(h=>DATA[h.object.name]||h.object.name==='lungs'||h.object.name==='kidneys');if(hit){const name=hit.object.name;if(DATA[name])select(name);}};
 canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointermove',pointerMove);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',pointerUp);
-canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.72,Math.min(1.55,zoom+(e.deltaY>0?-.07:.07)));},{passive:false});
-canvas.addEventListener('click',e=>{if(moved){moved=false;return;}const rect=canvas.getBoundingClientRect();pointer.x=((e.clientX-rect.left)/rect.width)*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(model.children,true);const hit=hits.find(h=>DATA[h.object.name]||h.object.name==='lungs'||h.object.name==='kidneys');if(hit){const name=hit.object.name;if(DATA[name])select(name);}});
-root.addEventListener('click',e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=({heart:'circulatory',lungs:'respiratory',brain:'nervous',liver:'digestive',stomach:'digestive',kidneys:'urinary'})[btn.dataset['3dOrgan']];if(system)setSystem(system);select(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem'])setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);});
+canvas.addEventListener('wheel',handleWheel,{passive:false});
+canvas.addEventListener('click',handleCanvasClick);
+const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=({heart:'circulatory',lungs:'respiratory',brain:'nervous',liver:'digestive',stomach:'digestive',kidneys:'urinary'})[btn.dataset['3dOrgan']];if(system)setSystem(system);select(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem'])setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
+root.addEventListener('click',handleRootClick);
+activeCleanup=()=>{
+disposed=true;
+if(rafId)cancelAnimationFrame(rafId);
+if(ro)ro.disconnect();
+canvas.removeEventListener('pointerdown',pointerDown);canvas.removeEventListener('pointermove',pointerMove);canvas.removeEventListener('pointerup',pointerUp);canvas.removeEventListener('pointercancel',pointerUp);
+canvas.removeEventListener('wheel',handleWheel);canvas.removeEventListener('click',handleCanvasClick);
+root.removeEventListener('click',handleRootClick);
+scene.traverse(object=>{if(object.geometry)object.geometry.dispose();if(object.material){const materials=Array.isArray(object.material)?object.material:[object.material];materials.forEach(material=>material.dispose());}});
+renderer.dispose();
+};
 setSystem('circulatory');resize();loading.hidden=true;draw();
 }
 window.GOSVT3DLab={mount};
