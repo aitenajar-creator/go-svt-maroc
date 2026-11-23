@@ -225,7 +225,7 @@
     if (document.getElementById('ri-guided-reasoning-styles')) return;
     const style = document.createElement('style');
     style.id = 'ri-guided-reasoning-styles';
-    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-science-level{display:grid;gap:7px;padding:12px;border:1px solid #9bb9d0;border-radius:12px;background:rgba(2,132,199,.06)}.ri-science-level-meta{margin:0;font-size:.84rem;line-height:1.5}.ri-science-level-track{height:10px;overflow:hidden;border-radius:99px;background:#dbe5ed}.ri-science-level-fill{display:block;height:100%;width:0;border-radius:inherit;background:#16835d;transition:width .25s ease}.ri-science-badge-title{display:block;margin-top:8px}.ri-science-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.ri-science-badge{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:rgba(255,255,255,.65)}.ri-science-badge[data-unlocked=true]{border-color:#86b99a;background:rgba(22,101,52,.08)}.ri-science-badge[data-unlocked=false]{opacity:.62;filter:grayscale(.65)}.ri-science-badge-icon{font-size:1.5rem}.ri-science-badge-details{display:grid;gap:3px}.ri-science-badge-details small{font-size:.76rem;line-height:1.4}.ri-science-badge-details small:last-child{font-weight:700;color:#24613b}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
+    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-science-missions{display:grid;gap:7px}.ri-science-mission{margin:0;padding:9px 11px;border-radius:9px;background:rgba(2,132,199,.07);font-size:.86rem;line-height:1.55}.ri-science-level{display:grid;gap:7px;padding:12px;border:1px solid #9bb9d0;border-radius:12px;background:rgba(2,132,199,.06)}.ri-science-level-meta{margin:0;font-size:.84rem;line-height:1.5}.ri-science-level-track{height:10px;overflow:hidden;border-radius:99px;background:#dbe5ed}.ri-science-level-fill{display:block;height:100%;width:0;border-radius:inherit;background:#16835d;transition:width .25s ease}.ri-science-badge-title{display:block;margin-top:8px}.ri-science-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.ri-science-badge{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:rgba(255,255,255,.65)}.ri-science-badge[data-unlocked=true]{border-color:#86b99a;background:rgba(22,101,52,.08)}.ri-science-badge[data-unlocked=false]{opacity:.62;filter:grayscale(.65)}.ri-science-badge-icon{font-size:1.5rem}.ri-science-badge-details{display:grid;gap:3px}.ri-science-badge-details small{font-size:.76rem;line-height:1.4}.ri-science-badge-details small:last-child{font-weight:700;color:#24613b}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
     document.head.appendChild(style);
   }
 
@@ -311,25 +311,58 @@
     } catch (_) { return {}; }
   }
 
+  function getScienceMissionDates(now) {
+    const date = new Date(now || Date.now());
+    const dayKey = date.toISOString().slice(0, 10);
+    const dayNumber = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 86400000);
+    const monday = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+    return { dayKey: dayKey, weekKey: monday.toISOString().slice(0, 10), dayNumber: dayNumber };
+  }
+
   function saveScienceJournalEntry(categoryKey, score) {
     try {
       const records = readScienceJournal();
       const previous = records[categoryKey] || {};
-      const earnedXp = 15 + (Math.max(0, Math.min(3, Number(score) || 0)) * 5);
+      const now = new Date();
+      const isoNow = now.toISOString();
+      const dates = getScienceMissionDates(now);
+      const categoryKeys = ['cell/plant', 'genetics/dna', 'ecology/ecosystem', 'geology/rock', 'cell/animal', 'cell/mitosis', 'respiratory/alveoli'];
+      const dailyCategory = categoryKeys[((dates.dayNumber % categoryKeys.length) + categoryKeys.length) % categoryKeys.length];
       const meta = records._meta && typeof records._meta === 'object' ? records._meta : {};
-      records._meta = {
-        xp: (Number(meta.xp) || 0) + earnedXp,
-        updatedAt: new Date().toISOString()
-      };
+      let bonusXp = 0;
+      let dailyDone = meta.dailyMissionDate === dates.dayKey;
+      let weeklyDone = meta.weeklyMissionKey === dates.weekKey;
       records[categoryKey] = {
         bestScore: Math.max(Number(previous.bestScore) || 0, score),
         lastScore: score,
         attempts: (Number(previous.attempts) || 0) + 1,
-        lastXp: earnedXp,
-        completedAt: new Date().toISOString()
+        completedAt: isoNow
       };
+      if (!dailyDone && categoryKey === dailyCategory) {
+        bonusXp += 10;
+        dailyDone = true;
+        meta.dailyMissionDate = dates.dayKey;
+      }
+      const weeklyCount = categoryKeys.filter(function (key) {
+        const record = records[key];
+        if (!record || !record.completedAt) return false;
+        return getScienceMissionDates(record.completedAt).weekKey === dates.weekKey;
+      }).length;
+      if (!weeklyDone && weeklyCount >= 3) {
+        bonusXp += 25;
+        weeklyDone = true;
+        meta.weeklyMissionKey = dates.weekKey;
+      }
+      const baseXp = 15 + (Math.max(0, Math.min(3, Number(score) || 0)) * 5);
+      const earnedXp = baseXp + bonusXp;
+      meta.xp = (Number(meta.xp) || 0) + earnedXp;
+      meta.updatedAt = isoNow;
+      records._meta = meta;
+      records[categoryKey].lastXp = earnedXp;
+      records[categoryKey].lastBonusXp = bonusXp;
       window.localStorage.setItem(SCIENCE_JOURNAL_KEY, JSON.stringify(records));
-      return records;
+      return { records: records, earnedXp: earnedXp, bonusXp: bonusXp, dailyDone: dailyDone, weeklyDone: weeklyDone };
     } catch (_) { return null; }
   }
 
@@ -340,6 +373,13 @@
     title.textContent = isFrench ? 'Mon carnet de découvertes' : 'دفتر اكتشافاتي العلمية';
     const summary = document.createElement('p');
     summary.className = 'ri-science-journal-summary';
+    const missions = document.createElement('div');
+    missions.className = 'ri-science-missions';
+    const dailyMission = document.createElement('p');
+    const weeklyMission = document.createElement('p');
+    dailyMission.className = 'ri-science-mission';
+    weeklyMission.className = 'ri-science-mission';
+    missions.append(dailyMission, weeklyMission);
     const levelPanel = document.createElement('div');
     levelPanel.className = 'ri-science-level';
     const levelName = document.createElement('strong');
@@ -386,6 +426,18 @@
       summary.textContent = isFrench
         ? completed + ' / ' + keys.length + ' thèmes explorés · ' + attempts + ' défis terminés'
         : completed + ' من ' + keys.length + ' مواضيع مستكشفة · ' + attempts + ' تحدياً مكتملاً';
+      const missionDates = getScienceMissionDates();
+      const categoryKeys = Object.keys(names);
+      const dailyCategory = categoryKeys[((missionDates.dayNumber % categoryKeys.length) + categoryKeys.length) % categoryKeys.length];
+      const dailyNames = names[dailyCategory];
+      const meta = records._meta || {};
+      const dailyDone = meta.dailyMissionDate === missionDates.dayKey;
+      const weeklyDone = meta.weeklyMissionKey === missionDates.weekKey;
+      const weeklyCount = categoryKeys.filter(function (key) {
+        return !!records[key] && !!records[key].completedAt && getScienceMissionDates(records[key].completedAt).weekKey === missionDates.weekKey;
+      }).length;
+      dailyMission.textContent = (isFrench ? 'Mission du jour : terminer le défi « ' + dailyNames.fr + ' » · +10 XP — ' : 'مهمة اليوم: إكمال تحدي «' + dailyNames.ar + '» · +10 XP — ') + (dailyDone ? (isFrench ? 'Terminée' : 'مكتملة') : (isFrench ? 'À faire' : 'بانتظارك'));
+      weeklyMission.textContent = (isFrench ? 'Mission de la semaine : explorer 3 thèmes différents · +25 XP — ' : 'مهمة الأسبوع: استكشاف 3 مواضيع مختلفة · +25 XP — ') + (weeklyDone ? (isFrench ? 'Terminée' : 'مكتملة') : (isFrench ? weeklyCount + ' / 3 thèmes' : weeklyCount + ' من 3 مواضيع'));
       const xp = Math.max(0, Number(records._meta && records._meta.xp) || 0);
       const levels = [
         { min: 0, next: 40, ar: 'مبتدئ', fr: 'Débutant' },
@@ -445,7 +497,7 @@
         badges.appendChild(badge);
       });
     }
-    panel.append(title, summary, levelPanel, badgeTitle, badges, list);
+    panel.append(title, summary, missions, levelPanel, badgeTitle, badges, list);
     levelPanel.append(levelName, levelMeta, levelTrack);
     panel.refresh = refresh;
     refresh();
@@ -563,16 +615,18 @@
         renderStep();
         return;
       }
-      const records = saveScienceJournalEntry(categoryKey, score);
+      const result = saveScienceJournalEntry(categoryKey, score);
+      const records = result && result.records ? result.records : readScienceJournal();
       if (typeof onComplete === 'function') onComplete(records);
       section.replaceChildren(heading, progress, feedback, next);
       heading.textContent = isFrench ? 'Défi terminé' : 'اكتمل التحدي';
       progress.textContent = isFrench
         ? 'Résultat indicatif : ' + score + ' / 3 bonnes réponses.'
         : 'نتيجتك التدريبية: ' + score + ' من 3 إجابات صحيحة.';
-      feedback.textContent = isFrench
+      feedback.textContent = (isFrench
         ? 'Relisez les explications et comparez-les à vos observations. Ce résultat est un entraînement, pas une note scolaire.'
-        : 'راجع التفسيرات وقارنها بملاحظاتك. هذه نتيجة تدريبية وليست نقطة مدرسية.';
+        : 'راجع التفسيرات وقارنها بملاحظاتك. هذه نتيجة تدريبية وليست نقطة مدرسية.')
+        + (result && result.bonusXp ? (isFrench ? ' Bonus de mission : +' + result.bonusXp + ' XP !' : ' مكافأة المهمة: +' + result.bonusXp + ' XP!') : '');
       next.textContent = isFrench ? 'Recommencer' : 'إعادة التحدي';
       next.hidden = false;
       next.onclick = function () {
