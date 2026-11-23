@@ -288,11 +288,10 @@
       }
       const matched = guide ? guide.terms.some(function (term) { return answer.includes(term.toLocaleLowerCase()); }) : false;
       const prompt = isFrench ? guide.fr : guide.ar;
-      feedback.textContent = (matched
+      const opening = matched
         ? (isFrench ? 'Bonne piste : vous avez mentionné une notion pertinente. ' : 'بداية موفقة: تضمنت إجابتك مفهوماً مرتبطاً بالموضوع. ')
-        : (isFrench ? 'À approfondir : essayez d’utiliser les notions scientifiques du sujet. ')
-          + prompt
-        : (isFrench ? 'À approfondir : essayez d’utiliser les notions scientifiques du sujet. ' : 'تحتاج إجابتك إلى مزيد من التحديد باستعمال مفاهيم الدرس. ') + prompt)
+        : (isFrench ? 'À approfondir : essayez d’utiliser les notions scientifiques du sujet. ' : 'تحتاج إجابتك إلى مزيد من التحديد باستعمال مفاهيم الدرس. ');
+      feedback.textContent = opening + prompt
         + (isFrench ? ' Cet accompagnement est indicatif et ne remplace pas la correction de votre enseignant.' : ' هذه المراجعة إرشادية فقط ولا تعوّض تصحيح الأستاذ.');
     });
     const privacy = document.createElement('p');
