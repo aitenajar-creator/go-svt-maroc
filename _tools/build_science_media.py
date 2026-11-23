@@ -102,6 +102,11 @@ for query in QUERIES:
                     "alveoli": ("alveol|alveolus|lung",),
                     "onion epidermis": ("onion|allium|epiderm",),
                     "mesophyll": ("mesophyll|leaf|chloroplast",),
+                    "animal tissue": ("animal|tissue|histolog|cell",),
+                    "epithelial": ("epithel|epiderm|tissue",),
+                    "muscle tissue": ("muscle|myocyte|tissue",),
+                    "neuron": ("neuron|neuronal|nerve|nervous",),
+                    "mitosis": ("mitos|divis|chromosom|root tip",),
                 }
                 import re
                 subject = next((pattern for key, (pattern,) in subject_rules.items() if key in query.lower()), None)
