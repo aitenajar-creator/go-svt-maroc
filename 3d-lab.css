@@ -1,0 +1,36 @@
+/* GO SVT Maroc — interactive 3D anatomy lab */
+#student-space-content .gs-3d-lab{margin:8px 0 24px;padding:clamp(14px,2vw,24px);border:1px solid #dce9df;border-radius:20px;background:linear-gradient(145deg,#f7fbf8,#edf5f0);color:#203c2d}
+#student-space-content .gs-3d-intro{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
+#student-space-content .gs-3d-intro h3{margin:5px 0;color:#174b32;font-size:clamp(1.3rem,2.4vw,1.9rem)}
+#student-space-content .gs-3d-intro p{margin:0;color:#587064;line-height:1.8}
+#student-space-content .gs-3d-intro>span{font-size:2.6rem}
+#student-space-content .gs-3d-workspace{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,.8fr);gap:14px}
+#student-space-content .gs-3d-view{position:relative;min-height:480px;overflow:hidden;border:1px solid #cbded1;border-radius:17px;background:radial-gradient(ellipse at 50% 38%,#284f40 0,#172e29 58%,#10201d 100%);touch-action:pan-y}
+#student-space-content .gs-3d-canvas{display:block;width:100%;height:480px;outline:0;cursor:grab;touch-action:none}
+#student-space-content .gs-3d-canvas:active{cursor:grabbing}
+#student-space-content .gs-3d-loading{position:absolute;z-index:2;inset:0;display:grid;place-items:center;color:#e8f4eb;font-weight:700;pointer-events:none}
+#student-space-content .gs-3d-loading[hidden]{display:none}
+#student-space-content .gs-3d-controls{position:absolute;top:12px;inset-inline-end:12px;display:flex;gap:7px}
+#student-space-content .gs-3d-controls button{width:39px;height:39px;border:1px solid #719181;border-radius:11px;background:#173a2ee8;color:#fff;font-size:1.35rem;cursor:pointer}
+#student-space-content .gs-3d-hint{position:absolute;bottom:12px;inset-inline-start:14px;color:#d8e9de;font-size:.8rem}
+#student-space-content .gs-3d-info{padding:20px;border:1px solid #d8e6dc;border-radius:16px;background:#fff}
+#student-space-content .gs-3d-info-kicker{color:#43805a;font-size:.72rem;font-weight:900;letter-spacing:.08em}
+#student-space-content .gs-3d-info h4{margin:7px 0;color:#174b32;font-size:1.45rem}
+#student-space-content .gs-3d-info>p{min-height:80px;margin:0;color:#52665a;line-height:1.85}
+#student-space-content .gs-3d-fact{display:grid;gap:5px;margin:14px 0;padding:12px;border-radius:12px;background:#f0f7f1;line-height:1.7}
+#student-space-content .gs-3d-fact b{color:#246341}
+#student-space-content .gs-3d-organ-list{margin-top:16px}
+#student-space-content .gs-3d-organ-list> b{display:block;margin-bottom:9px}
+#student-space-content .gs-3d-organ-list>div{display:flex;flex-wrap:wrap;gap:7px}
+#student-space-content .gs-3d-organ-list button{padding:8px 11px;border:1px solid #d7e5da;border-radius:10px;background:#f8fbf8;color:#294a36;font:inherit;font-size:.88rem;cursor:pointer}
+#student-space-content .gs-3d-organ-list button.is-active{border-color:#2e8051;background:#e5f3e9;color:#165b35;font-weight:800}
+#student-space-content .gs-3d-disclaimer{margin:12px 0 0;color:#65796d;font-size:.82rem;line-height:1.7}
+html.gs-dark #student-space-content .gs-3d-lab{background:#1d3026;border-color:#405c49;color:#e2eee5}
+html.gs-dark #student-space-content .gs-3d-intro h3,html.gs-dark #student-space-content .gs-3d-info h4{color:#bce4c8}
+html.gs-dark #student-space-content .gs-3d-intro p,html.gs-dark #student-space-content .gs-3d-info>p{color:#c0d0c5}
+html.gs-dark #student-space-content .gs-3d-info{background:#263a2e;border-color:#405c49}
+html.gs-dark #student-space-content .gs-3d-fact{background:#304936}
+html.gs-dark #student-space-content .gs-3d-organ-list button{background:#293e31;border-color:#49634f;color:#e2eee5}
+html.gs-dark #student-space-content .gs-3d-organ-list button.is-active{background:#285a3b;border-color:#72a982}
+@media(max-width:760px){#student-space-content .gs-3d-workspace{grid-template-columns:1fr}#student-space-content .gs-3d-view{min-height:390px}#student-space-content .gs-3d-canvas{height:390px}#student-space-content .gs-3d-info>p{min-height:0}}
+@media(prefers-reduced-motion:reduce){#student-space-content .gs-3d-lab *{scroll-behavior:auto!important}}
