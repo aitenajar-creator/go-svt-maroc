@@ -5,6 +5,9 @@
   const QUERY_BY_CATEGORY = Object.freeze({
     'cell/plant': 'plant cell microscopy chloroplast',
     'genetics/dna': ['DNA molecule model scientific photography', 'DNA double helix molecular model photograph', 'DNA molecular structure physical model'],
+    'cell/animal': ['animal tissue histology light microscopy micrograph', 'human epithelial tissue histology microscope', 'human muscle tissue histology microscopy', 'human neuron histology microscopy micrograph'],
+    'cell/mitosis': 'mitosis onion root tip microscope micrograph',
+    'respiratory/alveoli': ['human lung alveoli histology microscope micrograph', 'lung alveoli histology microscopy'],
     'ecology/ecosystem': 'forest ecosystem biodiversity field photography',
     'geology/rock': 'geological rock outcrop field photograph'
   });
