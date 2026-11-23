@@ -225,7 +225,7 @@
     if (document.getElementById('ri-guided-reasoning-styles')) return;
     const style = document.createElement('style');
     style.id = 'ri-guided-reasoning-styles';
-    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
+    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-science-badge-title{display:block;margin-top:8px}.ri-science-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.ri-science-badge{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:rgba(255,255,255,.65)}.ri-science-badge[data-unlocked=true]{border-color:#86b99a;background:rgba(22,101,52,.08)}.ri-science-badge[data-unlocked=false]{opacity:.62;filter:grayscale(.65)}.ri-science-badge-icon{font-size:1.5rem}.ri-science-badge-details{display:grid;gap:3px}.ri-science-badge-details small{font-size:.76rem;line-height:1.4}.ri-science-badge-details small:last-child{font-weight:700;color:#24613b}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
     document.head.appendChild(style);
   }
 
@@ -333,6 +333,11 @@
     title.textContent = isFrench ? 'Mon carnet de découvertes' : 'دفتر اكتشافاتي العلمية';
     const summary = document.createElement('p');
     summary.className = 'ri-science-journal-summary';
+    const badgeTitle = document.createElement('strong');
+    badgeTitle.className = 'ri-science-badge-title';
+    badgeTitle.textContent = isFrench ? 'Mes badges scientifiques' : 'شاراتي العلمية';
+    const badges = document.createElement('div');
+    badges.className = 'ri-science-badges';
     const list = document.createElement('ul');
     list.className = 'ri-science-journal-list';
     const names = {
@@ -344,6 +349,13 @@
       'cell/mitosis': { ar: 'الانقسام الخلوي', fr: 'Division cellulaire' },
       'respiratory/alveoli': { ar: 'الحويصلات الرئوية', fr: 'Alvéoles pulmonaires' }
     };
+    const badgeRules = [
+      { id: 'first', icon: '🔎', ar: 'بداية الاستكشاف', fr: 'Premier pas', arWhy: 'إكمال أول تحدٍّ علمي', frWhy: 'Terminer un premier défi', test: function (r, n, a) { return a > 0; } },
+      { id: 'three', icon: '🧭', ar: 'مستكشف نشيط', fr: 'Explorateur actif', arWhy: 'استكشاف ثلاثة مواضيع مختلفة', frWhy: 'Explorer trois thèmes différents', test: function (r, n) { return n >= 3; } },
+      { id: 'all', icon: '🌍', ar: 'رحّالة العلوم', fr: 'Voyageur scientifique', arWhy: 'إكمال تحدٍّ في المواضيع السبعة', frWhy: 'Terminer un défi dans les sept thèmes', test: function (r, n) { return n === 7; } },
+      { id: 'perfect', icon: '🏅', ar: 'دقة علمية', fr: 'Précision scientifique', arWhy: 'تحقيق 3 من 3 في أحد التحديات', frWhy: 'Obtenir 3 bonnes réponses sur 3', test: function (r) { return Object.keys(r).some(function (k) { return Number(r[k].bestScore) === 3; }); } },
+      { id: 'practice', icon: '📚', ar: 'مثابر في التعلم', fr: 'Persévérant', arWhy: 'إكمال خمسة تحديات على الأقل', frWhy: 'Terminer au moins cinq défis', test: function (r, n, a) { return a >= 5; } }
+    ];
     function refresh() {
       const records = readScienceJournal();
       const keys = Object.keys(names);
@@ -365,8 +377,35 @@
         item.setAttribute('data-completed', record ? 'true' : 'false');
         list.appendChild(item);
       });
+      const earned = badgeRules.filter(function (rule) { return rule.test(records, completed, attempts); });
+      badgeTitle.textContent = isFrench
+        ? 'Mes badges scientifiques · ' + earned.length + ' / ' + badgeRules.length
+        : 'شاراتي العلمية · ' + earned.length + ' من ' + badgeRules.length;
+      badges.replaceChildren();
+      badgeRules.forEach(function (rule) {
+        const unlocked = earned.some(function (item) { return item.id === rule.id; });
+        const badge = document.createElement('div');
+        badge.className = 'ri-science-badge';
+        badge.setAttribute('data-unlocked', unlocked ? 'true' : 'false');
+        const icon = document.createElement('span');
+        icon.className = 'ri-science-badge-icon';
+        icon.textContent = unlocked ? rule.icon : '🔒';
+        const details = document.createElement('span');
+        details.className = 'ri-science-badge-details';
+        const name = document.createElement('strong');
+        name.textContent = rule[isFrench ? 'fr' : 'ar'];
+        const condition = document.createElement('small');
+        condition.textContent = rule[isFrench ? 'frWhy' : 'arWhy'];
+        const state = document.createElement('small');
+        state.textContent = unlocked
+          ? (isFrench ? 'Badge obtenu' : 'تم الحصول عليها')
+          : (isFrench ? 'À débloquer' : 'لم تُفتح بعد');
+        details.append(name, condition, state);
+        badge.append(icon, details);
+        badges.appendChild(badge);
+      });
     }
-    panel.append(title, summary, list);
+    panel.append(title, summary, badgeTitle, badges, list);
     panel.refresh = refresh;
     refresh();
     return panel;
