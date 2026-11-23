@@ -194,11 +194,75 @@
         info.appendChild(guide);
       }
       card.append(frame, info);
-      container.replaceChildren(card);
+      container.replaceChildren(card, createObservationActivity(key));
       container.setAttribute('aria-busy', 'false');
     }).catch(function () {
       showGalleryFallback(container, labels);
     });
+  }
+
+  function createObservationActivity(categoryKey) {
+    const isFrench = document.documentElement.lang === 'fr';
+    const activity = document.createElement('section');
+    activity.className = 'ri-observation-activity';
+    const label = document.createElement('label');
+    const fieldId = 'ri-observation-answer-' + categoryKey.replace(/[^a-z0-9]+/gi, '-');
+    label.htmlFor = fieldId;
+    label.textContent = isFrench ? 'Votre hypothèse ou conclusion' : 'اكتب فرضيتك أو استنتاجك';
+    const textarea = document.createElement('textarea');
+    textarea.id = fieldId;
+    textarea.rows = 3;
+    textarea.maxLength = 2000;
+    textarea.placeholder = isFrench ? 'Appuyez-vous sur des indices visibles dans la photo…' : 'استند إلى أدلة وعناصر ظاهرة في الصورة…';
+    const status = document.createElement('span');
+    status.className = 'ri-observation-status';
+    status.setAttribute('role', 'status');
+    const actions = document.createElement('div');
+    actions.className = 'ri-observation-actions';
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'ri-observation-save';
+    save.textContent = isFrench ? 'Enregistrer ma réponse' : 'حفظ إجابتي';
+    const clear = document.createElement('button');
+    clear.type = 'button';
+    clear.className = 'ri-observation-clear';
+    clear.textContent = isFrench ? 'Effacer' : 'مسح';
+    const storageKey = 'gosvt_science_observation_v1_' + categoryKey;
+    try {
+      textarea.value = window.localStorage.getItem(storageKey) || '';
+      if (textarea.value) status.textContent = isFrench ? 'Réponse enregistrée sur cet appareil.' : 'إجابتك محفوظة على هذا الجهاز.';
+    } catch (_) {
+      status.textContent = isFrench ? 'Stockage local indisponible.' : 'الحفظ المحلي غير متاح في هذا المتصفح.';
+      save.disabled = true;
+    }
+    save.addEventListener('click', function () {
+      if (!textarea.value.trim()) {
+        status.textContent = isFrench ? 'Écrivez d’abord votre observation.' : 'اكتب ملاحظتك أولاً.';
+        textarea.focus();
+        return;
+      }
+      try {
+        window.localStorage.setItem(storageKey, textarea.value.trim());
+        status.textContent = isFrench ? 'Réponse enregistrée sur cet appareil.' : 'تم حفظ إجابتك على هذا الجهاز.';
+      } catch (_) {
+        status.textContent = isFrench ? 'Enregistrement impossible.' : 'تعذر الحفظ في هذا المتصفح.';
+      }
+    });
+    clear.addEventListener('click', function () {
+      try {
+        window.localStorage.removeItem(storageKey);
+        textarea.value = '';
+        status.textContent = isFrench ? 'Réponse effacée.' : 'تم مسح الإجابة.';
+      } catch (_) {
+        status.textContent = isFrench ? 'Effacement impossible.' : 'تعذر مسح الإجابة.';
+      }
+    });
+    actions.append(save, clear);
+    const privacy = document.createElement('p');
+    privacy.className = 'ri-observation-privacy';
+    privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
+    activity.append(label, textarea, actions, status, privacy);
+    return activity;
   }
 
   function showGalleryFallback(container, labels) {
@@ -267,6 +331,16 @@
       '.ri-image-description{font-size:.82rem;line-height:1.65;color:#344f3c}',
       '.ri-image-observation-question{display:grid;gap:4px;margin-top:5px;padding:9px 10px;border:1px dashed #9ab9a2;border-radius:8px;background:#fff;font-size:.82rem;line-height:1.6;color:#244b32}',
       '.ri-image-observation-question strong{font-size:.76rem;color:#1d6a3a}',
+      '.ri-observation-activity{display:grid;gap:9px;margin-top:10px;padding:13px;border:1px solid #d7e5da;border-radius:13px;background:#f7fbf7}',
+      '.ri-observation-activity label{font-size:.88rem;font-weight:700;color:#245b38}',
+      '.ri-observation-activity textarea{display:block;width:100%;min-height:82px;box-sizing:border-box;padding:10px;border:1px solid #b9cdbd;border-radius:9px;background:#fff;color:#203c2a;font:inherit;line-height:1.6;resize:vertical}',
+      '.ri-observation-activity textarea:focus{outline:3px solid #9bc9a8;outline-offset:2px}',
+      '.ri-observation-actions{display:flex;flex-wrap:wrap;gap:8px}',
+      '.ri-observation-actions button{padding:8px 13px;border:1px solid #8eaf98;border-radius:9px;background:#fff;color:#245b38;font:inherit;font-size:.82rem;cursor:pointer}',
+      '.ri-observation-actions .ri-observation-save{background:#24613b;border-color:#24613b;color:#fff}',
+      '.ri-observation-actions button:focus-visible{outline:3px solid #9bc9a8;outline-offset:2px}',
+      '.ri-observation-status{min-height:1.3em;font-size:.8rem;color:#27623c}',
+      '.ri-observation-privacy{margin:0;font-size:.74rem;color:#64786a}',
       '.ri-placeholder,.ri-error{padding:16px;border-radius:12px;background:#fff;color:#526b5a;line-height:1.7}',
       '@media(max-width:520px){.ri-gallery{padding:12px}.ri-gallery-grid{grid-template-columns:1fr 1fr}}'
     ].join('');
