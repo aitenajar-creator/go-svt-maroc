@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual-refresh.css">
 <link rel="stylesheet" href="laboratory.css?v=20261118-22">
+<link rel="stylesheet" href="review-system.css?v=20261123-1">
 </head>
 <body class="gs-lab-page">
 <header class="header">
@@ -82,6 +83,7 @@
     <small data-ar="هذا نموذج تعليمي مبسط للانقسام الخيطي في خلية حقيقية النواة؛ قد تختلف التفاصيل الشكلية بين الخلايا، ويُختتم الانقسام الخلوي عادةً بالانقسام السيتوبلازمي." data-fr="Modèle pédagogique simplifié de la mitose d’une cellule eucaryote ; certains détails varient selon les cellules. La division cellulaire s’achève généralement par la cytocinèse.">هذا نموذج تعليمي مبسط للانقسام الخيطي في خلية حقيقية النواة؛ قد تختلف التفاصيل الشكلية بين الخلايا، ويُختتم الانقسام الخلوي عادةً بالانقسام السيتوبلازمي.</small>
    </div>
   </div>
+   <div id="review-container" aria-live="polite"></div>
  </section>
    <div class="gs-meiosis-lab" id="meiosis-compare-lab">
     <div class="gs-meiosis-heading"><span aria-hidden="true">🔬</span><div><h3 data-ar="ميّز بين الانقسام الخيطي والانقسام المنصف" data-fr="Distinguez la mitose de la méiose">ميّز بين الانقسام الخيطي والانقسام المنصف</h3><p data-ar="اقرأ كل خاصية، ثم اختر نوع الانقسام المناسب. ستتلقى تصحيحاً فورياً مع تفسير مختصر." data-fr="Lisez chaque caractéristique, puis choisissez le type de division correspondant. Une correction immédiate et une brève explication vous seront proposées.">اقرأ كل خاصية، ثم اختر نوع الانقسام المناسب. ستتلقى تصحيحاً فورياً مع تفسير مختصر.</p></div></div>
@@ -665,4 +667,14 @@
 </main>
 <footer class="footer"><div class="container"><p>© Go SVT Maroc — <span data-ar="مختبر علوم الحياة والأرض" data-fr="Laboratoire SVT">مختبر علوم الحياة والأرض</span></p></div></footer>
 <script src="laboratory.js?v=20261118-12" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js?v=20261123-review"></script>
+<script src="review-system.js?v=20261123-1"></script>
+<script>
+ document.addEventListener('DOMContentLoaded', () => {
+   if (window.GoSVTReview) {
+     window.GoSVTReview.reviewUI.renderReviewSection('cell_lab', 'review-container');
+   }
+ });
+</script>
 </body></html>
