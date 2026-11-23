@@ -108,6 +108,16 @@
     'respiratory/alveoli': { ar: 'الحويصلات الرئوية', fr: 'Alvéoles pulmonaires', alt: 'صورة مجهرية للحويصلات الرئوية', descriptionAr: 'الحويصلات فضاءات صغيرة تحيط بها شعيرات دموية؛ بنيتها تساعد على تبادل الغازات بين الهواء والدم.', descriptionFr: 'Les alvéoles sont de petits espaces entourés de capillaires où s’effectuent les échanges gazeux.', questionAr: 'كيف تساعد البنية الرقيقة للحويصلات وقرب الشعيرات الدموية على تبادل الغازات؟', questionFr: 'Comment la paroi fine des alvéoles et la proximité des capillaires facilitent-elles les échanges gazeux ?' }
   });
 
+  const REVIEW_GUIDANCE = Object.freeze({
+    'cell/plant': { ar: 'ابحث عن حدود الخلايا، انتظامها، وما تسمح الصورة برؤيته فعلاً. اربط ملاحظتك ببنية النسيج دون افتراض عضيات غير واضحة.', fr: 'Repérez les limites cellulaires, leur organisation et ce que l’image montre réellement. Reliez vos observations au tissu sans supposer des organites non visibles.', terms: ['خلية', 'خلايا', 'حدود', 'نسيج', 'cellule', 'cellules', 'limites', 'tissu'] },
+    'genetics/dna': { ar: 'ميّز بين نموذج جزيئي وصورة مجهرية، واذكر اللولب المزدوج وعلاقته بتنظيم المادة الوراثية.', fr: 'Distinguez un modèle moléculaire d’une micrographie et mentionnez la double hélice et son rôle dans l’organisation du matériel génétique.', terms: ['لولب', 'مزدوج', 'وراث', 'حمض نووي', 'double hélice', 'adn', 'génétique'] },
+    'ecology/ecosystem': { ar: 'اذكر عنصراً حياً وعنصراً غير حي، ثم وضّح العلاقة المحتملة بينهما مع الاستناد إلى دليل من الصورة.', fr: 'Citez un élément biotique et un élément abiotique, puis expliquez une interaction possible à partir d’un indice visible.', terms: ['حي', 'غير حي', 'نبات', 'ماء', 'تربة', 'biotique', 'abiotique', 'eau', 'sol', 'interaction'] },
+    'geology/rock': { ar: 'صف علامات مرئية مثل اللون أو النسيج أو التطبق أو التشققات. تجنب الجزم بنوع الصخر دون معطيات إضافية.', fr: 'Décrivez des indices visibles comme la couleur, la texture, les strates ou les fissures. Évitez d’identifier la roche sans données complémentaires.', terms: ['لون', 'نسيج', 'تطبق', 'تشققات', 'couleur', 'texture', 'strates', 'fissures'] },
+    'cell/animal': { ar: 'قارن شكل الخلايا وتنظيمها، ثم اقترح كيف يمكن أن يرتبط الشكل بوظيفة النسيج.', fr: 'Comparez la forme et l’organisation des cellules, puis reliez prudemment leur forme à la fonction du tissu.', terms: ['خلايا', 'شكل', 'نسيج', 'وظيفة', 'cellules', 'forme', 'tissu', 'fonction'] },
+    'cell/mitosis': { ar: 'استند إلى مظهر النواة أو الكروموسومات لتحديد ما يمكن ملاحظته، ولا تعمم مرحلة واحدة على كل الانقسام.', fr: 'Appuyez-vous sur l’aspect du noyau ou des chromosomes et évitez de généraliser une seule phase à toute la division.', terms: ['نواة', 'كروموسوم', 'انقسام', 'chromosome', 'noyau', 'division'] },
+    'respiratory/alveoli': { ar: 'اربط رقة جدار الحويصلات وقرب الشعيرات الدموية بانتقال الغازات بين الهواء والدم.', fr: 'Reliez la finesse de la paroi alvéolaire et la proximité des capillaires aux échanges gazeux entre l’air et le sang.', terms: ['حويصل', 'شعيرات', 'غازات', 'دم', 'alvéol', 'capillaires', 'échanges gazeux', 'sang'] }
+  });
+
   const processedGalleries = new WeakSet();
 
   function renderImageContainer(container) {
@@ -258,10 +268,37 @@
       }
     });
     actions.append(save, clear);
+    const review = document.createElement('button');
+    review.type = 'button';
+    review.className = 'ri-observation-review';
+    review.textContent = isFrench ? 'Revoir mon raisonnement' : 'راجع استنتاجي';
+    const feedback = document.createElement('p');
+    feedback.className = 'ri-observation-feedback';
+    feedback.setAttribute('role', 'status');
+    feedback.hidden = true;
+    review.addEventListener('click', function () {
+      const answer = textarea.value.trim().toLocaleLowerCase();
+      const guide = REVIEW_GUIDANCE[categoryKey];
+      feedback.hidden = false;
+      if (answer.length < 25) {
+        feedback.textContent = isFrench
+          ? 'Développez votre réponse : décrivez au moins un indice visible, puis expliquez ce qu’il peut signifier.'
+          : 'وسّع إجابتك قليلاً: صف دليلاً واحداً على الأقل تراه في الصورة، ثم اشرح ما الذي يمكن أن يدل عليه.';
+        return;
+      }
+      const matched = guide ? guide.terms.some(function (term) { return answer.includes(term.toLocaleLowerCase()); }) : false;
+      const prompt = isFrench ? guide.fr : guide.ar;
+      feedback.textContent = (matched
+        ? (isFrench ? 'Bonne piste : vous avez mentionné une notion pertinente. ' : 'بداية موفقة: تضمنت إجابتك مفهوماً مرتبطاً بالموضوع. ')
+        : (isFrench ? 'À approfondir : essayez d’utiliser les notions scientifiques du sujet. ')
+          + prompt
+        : (isFrench ? 'À approfondir : essayez d’utiliser les notions scientifiques du sujet. ' : 'تحتاج إجابتك إلى مزيد من التحديد باستعمال مفاهيم الدرس. ') + prompt)
+        + (isFrench ? ' Cet accompagnement est indicatif et ne remplace pas la correction de votre enseignant.' : ' هذه المراجعة إرشادية فقط ولا تعوّض تصحيح الأستاذ.');
+    });
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
-    activity.append(label, textarea, actions, status, privacy);
+    activity.append(label, textarea, actions, review, feedback, status, privacy);
     return activity;
   }
 
