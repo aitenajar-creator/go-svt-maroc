@@ -4,7 +4,7 @@
 
   const QUERY_BY_CATEGORY = Object.freeze({
     'cell/plant': 'plant cell microscopy chloroplast',
-    'genetics/dna': 'DNA molecule model scientific photography',
+    'genetics/dna': ['DNA molecule model scientific photography', 'DNA double helix molecular model photograph', 'DNA molecular structure physical model'],
     'ecology/ecosystem': 'forest ecosystem biodiversity field photography',
     'geology/rock': 'geological rock outcrop field photograph'
   });
@@ -46,32 +46,36 @@
 
   async function getImage(category, subcategory) {
     const key = String(category || '').toLowerCase() + '/' + String(subcategory || '').toLowerCase();
-    const query = QUERY_BY_CATEGORY[key];
-    if (!query) return null;
+    const queries = QUERY_BY_CATEGORY[key];
+    if (!queries) return null;
 
     const items = await loadCatalogue();
-    const item = items[query];
-    if (!item || !item.image_url || !item.source_url || !item.license || !item.author) return null;
-    if (/licence non indiquée|auteur non indiqué/i.test(item.license + ' ' + item.author)) return null;
+    const candidates = Array.isArray(queries) ? queries : [queries];
+    for (const query of candidates) {
+      const item = items[query];
+      if (!item || !item.image_url || !item.source_url || !item.license || !item.author) continue;
+      if (/licence non indiquée|auteur non indiqué/i.test(item.license + ' ' + item.author)) continue;
 
-    const url = safeImageUrl(item.image_url);
-    const sourceUrl = safeImageUrl(item.source_url);
-    if (!url || !sourceUrl) return null;
+      const url = safeImageUrl(item.image_url);
+      const sourceUrl = safeImageUrl(item.source_url);
+      if (!url || !sourceUrl) continue;
 
-    const image = new URL(url);
-    const source = new URL(sourceUrl);
-    const localCached = image.origin === window.location.origin && image.pathname.includes('/science-media-cache/');
-    const commonsImage = image.hostname === 'upload.wikimedia.org';
-    if ((!localCached && !commonsImage) || source.hostname !== 'commons.wikimedia.org') return null;
+      const image = new URL(url);
+      const source = new URL(sourceUrl);
+      const localCached = image.origin === window.location.origin && image.pathname.includes('/science-media-cache/');
+      const commonsImage = image.hostname === 'upload.wikimedia.org';
+      if ((!localCached && !commonsImage) || source.hostname !== 'commons.wikimedia.org') continue;
 
-    if (key === 'cell/plant' && (item.is_micrograph !== true || item.metadata_screened !== true)) return null;
+      if (key === 'cell/plant' && (item.is_micrograph !== true || item.metadata_screened !== true)) continue;
 
-    const originalUrl = item.original_url ? safeImageUrl(item.original_url) : url;
-    if (!originalUrl) return null;
-    const original = new URL(originalUrl);
-    if (original.hostname !== 'upload.wikimedia.org' && original.origin !== window.location.origin) return null;
+      const originalUrl = item.original_url ? safeImageUrl(item.original_url) : url;
+      if (!originalUrl) continue;
+      const original = new URL(originalUrl);
+      if (original.hostname !== 'upload.wikimedia.org' && original.origin !== window.location.origin) continue;
 
-    return Object.assign({}, item, { url: url, source_url: source.href, original_url: original.href });
+      return Object.assign({}, item, { url: url, source_url: source.href, original_url: original.href });
+    }
+    return null;
   }
 
   function applyImage(element, imageData) {
