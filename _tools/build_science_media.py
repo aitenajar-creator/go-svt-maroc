@@ -33,6 +33,9 @@ QUERIES = [
     "human brain spinal cord anatomy specimen",
     "human kidneys urinary system anatomy specimen",
     "human skeleton bones anatomy specimen",
+    "DNA molecule model scientific photography",
+    "forest ecosystem biodiversity field photography",
+    "geological rock outcrop field photograph",
 ]
 
 def api(params):
