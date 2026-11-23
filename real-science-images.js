@@ -99,13 +99,13 @@
   }
 
   const CATEGORY_LABELS = Object.freeze({
-     'cell/plant': { ar: 'خلايا نباتية تحت المجهر', fr: 'Cellules végétales au microscope', alt: 'صورة مجهرية حقيقية لخلايا نباتية', descriptionAr: 'لاحظ حدود الخلايا، انتظامها، ومناطق اللون المختلفة. لا تفترض وجود عضية إلا إذا كانت ظاهرة بوضوح في الصورة.', descriptionFr: 'Observer les limites cellulaires, leur organisation et les zones colorées. Ne conclure à la présence d’un organite que s’il est clairement visible.' },
-     'genetics/dna': { ar: 'الوراثة والحمض النووي', fr: 'Génétique et ADN', alt: 'صورة علمية للحمض النووي', descriptionAr: 'ميّز بين الصورة المجهرية والنموذج الجزيئي. ابحث عن شكل اللولب المزدوج، وتذكّر أن النماذج قد تستخدم ألواناً اصطلاحية.', descriptionFr: 'Distinguer une micrographie d’un modèle moléculaire. Repérer la double hélice et noter que les couleurs d’un modèle sont conventionnelles.' },
-     'ecology/ecosystem': { ar: 'الأنظمة البيئية والتنوع الحيوي', fr: 'Écosystèmes et biodiversité', alt: 'صورة ميدانية لنظام بيئي', descriptionAr: 'حدّد مكونات حية وغير حية ظاهرة، ثم اقترح علاقة بيئية محتملة لا يمكن تأكيدها من الصورة وحدها.', descriptionFr: 'Identifier des éléments biotiques et abiotiques visibles, puis proposer une interaction possible sans la considérer comme confirmée par l’image seule.' },
-     'geology/rock': { ar: 'الصخور والتكوينات الجيولوجية', fr: 'Roches et formations géologiques', alt: 'صورة ميدانية لصخور جيولوجية', descriptionAr: 'لاحظ اللون، البنية، التطبق أو التشققات. لا تحدد نوع الصخر اعتماداً على الصورة فقط ما لم تدعمها معطيات إضافية.', descriptionFr: 'Observer la couleur, la texture, les strates ou les fissures. Ne déterminer le type de roche sur photo seule qu’avec prudence et données complémentaires.' },
-    'cell/animal': { ar: 'الأنسجة الحيوانية تحت المجهر', fr: 'Tissus animaux au microscope', alt: 'صورة مجهرية لأنسجة حيوانية', descriptionAr: 'تعرّف على تنظيم الخلايا في الأنسجة الحيوانية، وكيف يختلف شكل الخلايا بحسب وظيفتها.', descriptionFr: 'Observer l’organisation cellulaire des tissus animaux et relier leur forme à leur fonction.' },
-    'cell/mitosis': { ar: 'الانقسام الخلوي', fr: 'Division cellulaire', alt: 'صورة مجهرية لمراحل الانقسام الخلوي', descriptionAr: 'ابحث عن تغيرات النواة والكروموسومات خلال مراحل الانقسام، مع الانتباه إلى أن الصورة قد تمثل مرحلة واحدة فقط.', descriptionFr: 'Repérer les changements du noyau et des chromosomes. L’image peut ne montrer qu’une seule phase.' },
-    'respiratory/alveoli': { ar: 'الحويصلات الرئوية', fr: 'Alvéoles pulmonaires', alt: 'صورة مجهرية للحويصلات الرئوية', descriptionAr: 'الحويصلات فضاءات صغيرة تحيط بها شعيرات دموية؛ بنيتها تساعد على تبادل الغازات بين الهواء والدم.', descriptionFr: 'Les alvéoles sont de petits espaces entourés de capillaires où s’effectuent les échanges gazeux.' }
+     'cell/plant': { ar: 'خلايا نباتية تحت المجهر', fr: 'Cellules végétales au microscope', alt: 'صورة مجهرية حقيقية لخلايا نباتية', descriptionAr: 'لاحظ حدود الخلايا، انتظامها، ومناطق اللون المختلفة. لا تفترض وجود عضية إلا إذا كانت ظاهرة بوضوح في الصورة.', descriptionFr: 'Observer les limites cellulaires, leur organisation et les zones colorées. Ne conclure à la présence d’un organite que s’il est clairement visible.', questionAr: 'ما الذي يخبرك به انتظام الخلايا وحدودها عن بنية النسيج النباتي؟', questionFr: 'Que révèlent l’organisation et les limites des cellules sur la structure du tissu végétal ?' },
+     'genetics/dna': { ar: 'الوراثة والحمض النووي', fr: 'Génétique et ADN', alt: 'صورة علمية للحمض النووي', descriptionAr: 'ميّز بين الصورة المجهرية والنموذج الجزيئي. ابحث عن شكل اللولب المزدوج، وتذكّر أن النماذج قد تستخدم ألواناً اصطلاحية.', descriptionFr: 'Distinguer une micrographie d’un modèle moléculaire. Repérer la double hélice et noter que les couleurs d’un modèle sont conventionnelles.', questionAr: 'ما المعلومة التي يقدمها شكل اللولب المزدوج عن تنظيم المادة الوراثية؟', questionFr: 'Que nous apprend la forme en double hélice sur l’organisation du matériel génétique ?' },
+     'ecology/ecosystem': { ar: 'الأنظمة البيئية والتنوع الحيوي', fr: 'Écosystèmes et biodiversité', alt: 'صورة ميدانية لنظام بيئي', descriptionAr: 'حدّد مكونات حية وغير حية ظاهرة، ثم اقترح علاقة بيئية محتملة لا يمكن تأكيدها من الصورة وحدها.', descriptionFr: 'Identifier des éléments biotiques et abiotiques visibles, puis proposer une interaction possible sans la considérer comme confirmée par l’image seule.', questionAr: 'اختر مكوناً حياً وآخر غير حي، واقترح علاقة محتملة بينهما.', questionFr: 'Choisissez un élément biotique et un élément abiotique, puis proposez une interaction possible.' },
+     'geology/rock': { ar: 'الصخور والتكوينات الجيولوجية', fr: 'Roches et formations géologiques', alt: 'صورة ميدانية لصخور جيولوجية', descriptionAr: 'لاحظ اللون، البنية، التطبق أو التشققات. لا تحدد نوع الصخر اعتماداً على الصورة فقط ما لم تدعمها معطيات إضافية.', descriptionFr: 'Observer la couleur, la texture, les strates ou les fissures. Ne déterminer le type de roche sur photo seule qu’avec prudence et données complémentaires.', questionAr: 'ما العلامات المرئية التي يمكن أن تساعد على وصف هذه الصخرة أو التكوين؟', questionFr: 'Quels indices visibles permettent de décrire cette roche ou cette formation ?' },
+    'cell/animal': { ar: 'الأنسجة الحيوانية تحت المجهر', fr: 'Tissus animaux au microscope', alt: 'صورة مجهرية لأنسجة حيوانية', descriptionAr: 'تعرّف على تنظيم الخلايا في الأنسجة الحيوانية، وكيف يختلف شكل الخلايا بحسب وظيفتها.', descriptionFr: 'Observer l’organisation cellulaire des tissus animaux et relier leur forme à leur fonction.', questionAr: 'ما أوجه الاختلاف بين أشكال الخلايا، وكيف يمكن ربطها بوظائف النسيج؟', questionFr: 'Quelles différences de forme observez-vous et comment les relier à la fonction du tissu ?' },
+    'cell/mitosis': { ar: 'الانقسام الخلوي', fr: 'Division cellulaire', alt: 'صورة مجهرية لمراحل الانقسام الخلوي', descriptionAr: 'ابحث عن تغيرات النواة والكروموسومات خلال مراحل الانقسام، مع الانتباه إلى أن الصورة قد تمثل مرحلة واحدة فقط.', descriptionFr: 'Repérer les changements du noyau et des chromosomes. L’image peut ne montrer qu’une seule phase.', questionAr: 'ما العلامة التي تساعدك على تمييز مرحلة الانقسام الظاهرة؟', questionFr: 'Quel indice permet d’identifier la phase de division représentée ?' },
+    'respiratory/alveoli': { ar: 'الحويصلات الرئوية', fr: 'Alvéoles pulmonaires', alt: 'صورة مجهرية للحويصلات الرئوية', descriptionAr: 'الحويصلات فضاءات صغيرة تحيط بها شعيرات دموية؛ بنيتها تساعد على تبادل الغازات بين الهواء والدم.', descriptionFr: 'Les alvéoles sont de petits espaces entourés de capillaires où s’effectuent les échanges gazeux.', questionAr: 'كيف تساعد البنية الرقيقة للحويصلات وقرب الشعيرات الدموية على تبادل الغازات؟', questionFr: 'Comment la paroi fine des alvéoles et la proximité des capillaires facilitent-elles les échanges gazeux ?' }
   });
 
   const processedGalleries = new WeakSet();
@@ -181,6 +181,16 @@
         description.className = 'ri-image-description';
         description.textContent = document.documentElement.lang === 'fr' ? (labels.descriptionFr || '') : (labels.descriptionAr || '');
         guide.append(guideLabel, description);
+        if (labels.questionAr || labels.questionFr) {
+          const question = document.createElement('span');
+          question.className = 'ri-image-observation-question';
+          const questionLabel = document.createElement('strong');
+          questionLabel.textContent = document.documentElement.lang === 'fr' ? 'Question de réflexion' : 'سؤال للتفكير';
+          const questionText = document.createElement('span');
+          questionText.textContent = document.documentElement.lang === 'fr' ? (labels.questionFr || '') : (labels.questionAr || '');
+          question.append(questionLabel, questionText);
+          guide.appendChild(question);
+        }
         info.appendChild(guide);
       }
       card.append(frame, info);
@@ -255,6 +265,8 @@
       '.ri-image-observation-guide{display:grid;gap:5px;margin-top:3px;padding:9px 10px;border-inline-start:3px solid #65a17a;border-radius:8px;background:#f2f8f3}',
       '.ri-image-observation-label{font-size:.76rem;color:#27623c}',
       '.ri-image-description{font-size:.82rem;line-height:1.65;color:#344f3c}',
+      '.ri-image-observation-question{display:grid;gap:4px;margin-top:5px;padding:9px 10px;border:1px dashed #9ab9a2;border-radius:8px;background:#fff;font-size:.82rem;line-height:1.6;color:#244b32}',
+      '.ri-image-observation-question strong{font-size:.76rem;color:#1d6a3a}',
       '.ri-placeholder,.ri-error{padding:16px;border-radius:12px;background:#fff;color:#526b5a;line-height:1.7}',
       '@media(max-width:520px){.ri-gallery{padding:12px}.ri-gallery-grid{grid-template-columns:1fr 1fr}}'
     ].join('');
