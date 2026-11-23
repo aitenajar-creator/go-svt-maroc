@@ -69,7 +69,7 @@
           ? ['img.youtube.com', 'i.ytimg.com', 'upload.wikimedia.org']
           : ['www.youtube.com', 'youtube.com', 'www.youtube-nocookie.com'];
         if (!hosts.includes(url.hostname)) return '';
-        if (!allowThumbnail && !/^\\/embed\\/[A-Za-z0-9_-]{6,20}$/.test(url.pathname)) return '';
+        if (!allowThumbnail && !/^\/embed\/[A-Za-z0-9_-]{6,20}$/.test(url.pathname)) return '';
         return url.href;
       } catch (_) {
         return '';
