@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2d5a27">
+  <title>بدون اتصال | Go SVT Maroc</title>
+  <style>
+    :root{color-scheme:light;font-family:"Cairo","Segoe UI",Tahoma,sans-serif;background:#f4f7f2;color:#203b2b}
+    *{box-sizing:border-box}
+    body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 10%,#e1efdc,transparent 38%),#f4f7f2}
+    main{width:min(100%,620px);padding:clamp(24px,5vw,44px);border:1px solid #dce8d8;border-radius:24px;background:#fff;box-shadow:0 18px 55px #234b2912;text-align:center}
+    .symbol{width:76px;height:76px;margin:0 auto 18px;display:grid;place-items:center;border-radius:22px;background:#eaf3e5;font-size:38px}
+    h1{margin:0 0 12px;color:#245a36;font-size:clamp(1.5rem,4vw,2rem)}
+    p{line-height:1.9;color:#526457;margin:0 0 22px}
+    .actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+    a,button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 18px;text-decoration:none;cursor:pointer}
+    a{background:#2d5a27;color:#fff}
+    button{background:#edf3e9;color:#285333}
+    .hint{margin-top:24px;padding:16px;border-radius:14px;background:#f5f8f2;text-align:right;font-size:.95rem}
+    .hint strong{color:#285333}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="symbol" aria-hidden="true">📡</div>
+    <h1>أنت الآن دون اتصال بالإنترنت</h1>
+    <p>يمكنك العودة إلى الصفحة الرئيسية إذا كانت محفوظة على جهازك، أو فتح ملفات PDF التي سبق أن حفظتها في قسم «مراجعتي».</p>
+    <div class="actions">
+      <a href="/">العودة إلى Go SVT Maroc</a>
+      <button type="button" onclick="location.reload()">إعادة المحاولة</button>
+    </div>
+    <div class="hint">
+      <strong>للدراسة دون إنترنت:</strong>
+      احفظ الدروس وملفات PDF مسبقاً من زر الحفظ دون اتصال داخل «مراجعتي». لا تتوفر خدمات تسجيل الدخول والمزامنة والموارد الخارجية أثناء انقطاع الشبكة.
+    </div>
+  </main>
+</body>
+</html>
