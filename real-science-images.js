@@ -103,9 +103,9 @@
     'genetics/dna': { ar: 'الوراثة والحمض النووي', fr: 'Génétique et ADN', alt: 'صورة علمية للحمض النووي' },
     'ecology/ecosystem': { ar: 'الأنظمة البيئية والتنوع الحيوي', fr: 'Écosystèmes et biodiversité', alt: 'صورة ميدانية لنظام بيئي' },
     'geology/rock': { ar: 'الصخور والتكوينات الجيولوجية', fr: 'Roches et formations géologiques', alt: 'صورة ميدانية لصخور جيولوجية' },
-    'cell/animal': { ar: 'الأنسجة الحيوانية تحت المجهر', fr: 'Tissus animaux au microscope', alt: 'صورة مجهرية لأنسجة حيوانية' },
-    'cell/mitosis': { ar: 'الانقسام الخلوي', fr: 'Division cellulaire', alt: 'صورة مجهرية لمراحل الانقسام الخلوي' },
-    'respiratory/alveoli': { ar: 'الحويصلات الرئوية', fr: 'Alvéoles pulmonaires', alt: 'صورة مجهرية للحويصلات الرئوية' }
+    'cell/animal': { ar: 'الأنسجة الحيوانية تحت المجهر', fr: 'Tissus animaux au microscope', alt: 'صورة مجهرية لأنسجة حيوانية', descriptionAr: 'تعرّف على تنظيم الخلايا في الأنسجة الحيوانية، وكيف يختلف شكل الخلايا بحسب وظيفتها.', descriptionFr: 'Observer l’organisation cellulaire des tissus animaux et relier leur forme à leur fonction.' },
+    'cell/mitosis': { ar: 'الانقسام الخلوي', fr: 'Division cellulaire', alt: 'صورة مجهرية لمراحل الانقسام الخلوي', descriptionAr: 'ابحث عن تغيرات النواة والكروموسومات خلال مراحل الانقسام، مع الانتباه إلى أن الصورة قد تمثل مرحلة واحدة فقط.', descriptionFr: 'Repérer les changements du noyau et des chromosomes. L’image peut ne montrer qu’une seule phase.' },
+    'respiratory/alveoli': { ar: 'الحويصلات الرئوية', fr: 'Alvéoles pulmonaires', alt: 'صورة مجهرية للحويصلات الرئوية', descriptionAr: 'الحويصلات فضاءات صغيرة تحيط بها شعيرات دموية؛ بنيتها تساعد على تبادل الغازات بين الهواء والدم.', descriptionFr: 'Les alvéoles sont de petits espaces entourés de capillaires où s’effectuent les échanges gazeux.' }
   });
 
   const processedGalleries = new WeakSet();
@@ -171,6 +171,12 @@
       credit.className = 'gs-science-media-credit';
       credit.textContent = (item.author || '') + ' · ' + (item.license || '');
       info.append(title, credit);
+      if (labels.descriptionAr || labels.descriptionFr) {
+        const description = document.createElement('span');
+        description.className = 'ri-image-description';
+        description.textContent = document.documentElement.lang === 'fr' ? (labels.descriptionFr || '') : (labels.descriptionAr || '');
+        info.appendChild(description);
+      }
       card.append(frame, info);
       container.replaceChildren(card);
       container.setAttribute('aria-busy', 'false');
@@ -240,6 +246,7 @@
       '.ri-image-info{display:grid;gap:5px;line-height:1.5;overflow-wrap:anywhere}',
       '.ri-image-info strong{font-size:.88rem}',
       '.ri-image-info .gs-science-media-credit{font-size:.75rem;color:#607466}',
+      '.ri-image-description{font-size:.82rem;line-height:1.65;color:#344f3c}',
       '.ri-placeholder,.ri-error{padding:16px;border-radius:12px;background:#fff;color:#526b5a;line-height:1.7}',
       '@media(max-width:520px){.ri-gallery{padding:12px}.ri-gallery-grid{grid-template-columns:1fr 1fr}}'
     ].join('');
