@@ -652,10 +652,15 @@
       if (correct) score += 1;
       verified = true;
       feedback.hidden = false;
-      feedback.textContent = (correct
-        ? (isFrench ? 'Bonne réponse ! ' : 'إجابة صحيحة! ')
-        : (isFrench ? 'Réponse à revoir. ' : 'تحتاج الإجابة إلى مراجعة. '))
-        + data.why;
+      const selectedOption = data.options[Number(select.value)];
+      const correctOption = data.options[data.answer];
+      feedback.textContent = correct
+        ? (isFrench
+          ? 'Bonne réponse ! Votre choix (« ' + selectedOption + ' ») est correct. Pourquoi ? ' + data.why
+          : 'إجابة صحيحة! اختيارك (« ' + selectedOption + ' ») مناسب. لماذا؟ ' + data.why)
+        : (isFrench
+          ? 'Réponse à revoir. Vous avez choisi (« ' + selectedOption + ' »), mais la réponse la plus juste est (« ' + correctOption + ' »). Pourquoi ? ' + data.why
+          : 'تحتاج الإجابة إلى مراجعة. اخترت (« ' + selectedOption + ' »)، لكن الإجابة الأدق هي (« ' + correctOption + ' »). لماذا؟ ' + data.why);
       select.disabled = true;
       check.disabled = true;
       next.hidden = false;
