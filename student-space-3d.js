@@ -14,7 +14,6 @@ function mount(root){
 if(!root)return;
 if(activeCleanup){activeCleanup();activeCleanup=null;}
 if(root.dataset.gs3dReady==='1')return;
-root.dataset.gs3dReady='1';
 const canvas=root.querySelector('.gs-3d-canvas'),loading=root.querySelector('.gs-3d-loading');
 if(!window.THREE){loading.textContent=isFr()?'Le moteur 3D n’a pas pu être chargé. Vérifiez la connexion puis rechargez la page.':'تعذر تحميل محرك العرض ثلاثي الأبعاد. تحقق من الاتصال ثم أعد تحميل الصفحة.';return;}
 const THREE=window.THREE,scene=new THREE.Scene();scene.background=new THREE.Color(0x142b25);
@@ -28,6 +27,7 @@ console.warn('3D lab could not create a WebGL renderer:',error);
 return;
 }
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
+root.dataset.gs3dReady='1';
 scene.add(new THREE.HemisphereLight(0xe9fff0,0x24352e,2.0));
 const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(4,6,7);scene.add(key);
 const fill=new THREE.DirectionalLight(0x75c6aa,1.2);fill.position.set(-5,2,-4);scene.add(fill);
@@ -101,6 +101,7 @@ const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-a
 root.addEventListener('click',handleRootClick);
 activeCleanup=()=>{
 disposed=true;
+delete root.dataset.gs3dReady;
 if(rafId)cancelAnimationFrame(rafId);
 if(ro)ro.disconnect();
 if(io)io.disconnect();
