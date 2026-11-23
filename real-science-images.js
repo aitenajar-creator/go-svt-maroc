@@ -193,7 +193,6 @@
     const icons = [];
     if (scope.matches && scope.matches('.stat-icon[data-image-category]')) icons.push(scope);
     icons.push.apply(icons, Array.from(scope.querySelectorAll('.stat-icon[data-image-category]')));
-    const categories = ['cell/plant', 'genetics/dna', 'ecology/ecosystem', 'geology/rock'];
     await Promise.all(icons.map(async function (icon, index) {
       if (processedIcons.has(icon)) return;
       processedIcons.add(icon);
