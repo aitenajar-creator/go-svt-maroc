@@ -1659,6 +1659,9 @@
                <div data-real-images="ecology" data-real-images-sub="ecosystem"></div>
                <div data-real-images="geology" data-real-images-sub="rock"></div>
                <div data-real-images="cell" data-real-images-sub="plant"></div>
+               <div data-real-images="cell" data-real-images-sub="animal"></div>
+               <div data-real-images="cell" data-real-images-sub="mitosis"></div>
+               <div data-real-images="respiratory" data-real-images-sub="alveoli"></div>
              </div>
            </section>
            <p class="gs-science-media-license">${fr?'Les métadonnées de licence proviennent de la fiche Wikimedia Commons de chaque fichier. Respectez les conditions indiquées avant toute réutilisation.':'تُستخرج بيانات الترخيص من صفحة كل ملف على ويكيميديا كومنز. يجب احترام شروط الترخيص قبل إعادة استخدام أي صورة.'}</p>
