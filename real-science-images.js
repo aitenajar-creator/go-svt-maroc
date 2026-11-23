@@ -414,7 +414,9 @@
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
-    const challenge = createScienceChallenge(categoryKey);\n    if (challenge) activity.appendChild(challenge);\n    activity.append(guidePanel, label, textarea, actions, review, feedback, status, privacy);
+    const challenge = createScienceChallenge(categoryKey);
+    if (challenge) activity.appendChild(challenge);
+    activity.append(guidePanel, label, textarea, actions, review, feedback, status, privacy);
     return activity;
   }
 
