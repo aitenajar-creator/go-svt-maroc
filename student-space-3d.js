@@ -81,8 +81,14 @@ function setSystem(id){if(!systems[id])return;activeSystem=id;Object.entries(sys
 function resize(){const w=canvas.clientWidth||500,h=canvas.clientHeight||480;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 const ro=typeof ResizeObserver!=='undefined'?new ResizeObserver(()=>{if(root.getBoundingClientRect().width>0)resize();}):null;
 if(ro)ro.observe(root);
-let rafId=0,disposed=false;
-function draw(){if(disposed)return;rafId=requestAnimationFrame(draw);if(!root.isConnected)return;model.rotation.y=rotY;model.rotation.x=rotX;camera.position.z=8.5/zoom;camera.lookAt(0,0,0);renderer.render(scene,camera);}
+let rafId=0,disposed=false,inViewport=true;
+function canRender(){const rect=root.getBoundingClientRect();return !disposed&&root.isConnected&&document.visibilityState!=='hidden'&&inViewport&&rect.width>0&&rect.height>0;}
+function draw(){rafId=0;if(!canRender())return;model.rotation.y=rotY;model.rotation.x=rotX;camera.position.z=8.5/zoom;camera.lookAt(0,0,0);renderer.render(scene,camera);rafId=requestAnimationFrame(draw);}
+function startLoop(){if(!rafId&&canRender())rafId=requestAnimationFrame(draw);}
+const handleDocVisibility=()=>{if(document.visibilityState==='hidden'){if(rafId)cancelAnimationFrame(rafId);rafId=0;}else{resize();startLoop();}};
+document.addEventListener('visibilitychange',handleDocVisibility);
+const io=typeof IntersectionObserver!=='undefined'?new IntersectionObserver(entries=>{inViewport=!!entries[0]?.isIntersecting;if(inViewport){resize();startLoop();}else if(rafId){cancelAnimationFrame(rafId);rafId=0;}},{threshold:0.01}):null;
+if(io)io.observe(root);
 function pointerDown(e){drag=true;moved=false;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId);}
 function pointerMove(e){if(!drag)return;if(Math.abs(e.clientX-lastX)+Math.abs(e.clientY-lastY)>3)moved=true;rotY+=(e.clientX-lastX)*.009;rotX=Math.max(-.65,Math.min(.65,rotX+(e.clientY-lastY)*.006));lastX=e.clientX;lastY=e.clientY;}
 function pointerUp(){drag=false;}
@@ -97,13 +103,15 @@ activeCleanup=()=>{
 disposed=true;
 if(rafId)cancelAnimationFrame(rafId);
 if(ro)ro.disconnect();
+if(io)io.disconnect();
+document.removeEventListener('visibilitychange',handleDocVisibility);
 canvas.removeEventListener('pointerdown',pointerDown);canvas.removeEventListener('pointermove',pointerMove);canvas.removeEventListener('pointerup',pointerUp);canvas.removeEventListener('pointercancel',pointerUp);
 canvas.removeEventListener('wheel',handleWheel);canvas.removeEventListener('click',handleCanvasClick);
 root.removeEventListener('click',handleRootClick);
 scene.traverse(object=>{if(object.geometry)object.geometry.dispose();if(object.material){const materials=Array.isArray(object.material)?object.material:[object.material];materials.forEach(material=>material.dispose());}});
 renderer.dispose();
 };
-setSystem('circulatory');resize();loading.hidden=true;draw();
+setSystem('circulatory');resize();loading.hidden=true;if(!io)startLoop();
 }
 window.GOSVT3DLab={mount};
 })();
