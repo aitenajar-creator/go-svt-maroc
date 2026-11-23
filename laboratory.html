@@ -672,9 +672,19 @@
 <script src="review-system.js?v=20261123-1"></script>
 <script>
  document.addEventListener('DOMContentLoaded', () => {
-   if (window.GoSVTReview) {
-     window.GoSVTReview.reviewUI.renderReviewSection('cell_lab', 'review-container');
-   }
+   if (!window.GoSVTReview) return;
+   document.querySelectorAll('.gs-lab-section[id]').forEach(section => {
+     let host = section.querySelector(':scope > #review-container');
+     if (!host) {
+       host = document.createElement('div');
+       host.className = 'gs-lab-review-host';
+       host.id = 'review-' + section.id;
+       host.setAttribute('aria-live', 'polite');
+       section.appendChild(host);
+     }
+     const labId = section.id.replace(/-/g, '_');
+     window.GoSVTReview.reviewUI.renderReviewSection(labId, host.id);
+   });
  });
 </script>
 </body></html>
