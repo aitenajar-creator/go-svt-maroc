@@ -130,6 +130,59 @@
 
   const processedGalleries = new WeakSet();
 
+  // Ressources réellement présentes dans la bibliothèque du site.
+  // Les associations restent volontairement limitées aux documents dont le titre est explicite.
+  const RELATED_LEARNING_RESOURCES = Object.freeze({
+    'geology/rock': [
+      { path: 'divers/Les grandes structures géologiques.pdf', ar: 'مرجع: البنيات الجيولوجية الكبرى', fr: 'Référence : Les grandes structures géologiques', typeAr: 'وثيقة علمية', typeFr: 'Document scientifique' }
+    ],
+    'ecology/ecosystem': [
+      { path: 'exercices/francais/2BAC/2BACSP/POLLUTION.pdf', ar: 'تمارين: التلوث', fr: 'Exercices : Pollution', typeAr: 'تمارين – الثانية باكالوريا علوم فيزيائية', typeFr: 'Exercices – 2e Bac Sciences Physiques' },
+      { path: 'exercices/francais/2BAC/2BACSP/SERIE POLLUTION.pdf', ar: 'سلسلة تمارين حول التلوث', fr: 'Série d’exercices sur la pollution', typeAr: 'تمارين – الثانية باكالوريا علوم فيزيائية', typeFr: 'Exercices – 2e Bac Sciences Physiques' }
+    ],
+    'cell/animal': [
+      { path: "cours/francais/2BAC/2BACSVT/eleves- cours 2bacsvt-francais- unite 1 -Chap 2-role de muscle strie.pdf", ar: 'درس: دور العضلة المخططة', fr: 'Cours : Rôle du muscle strié', typeAr: 'درس – الثانية باكالوريا علوم الحياة والأرض', typeFr: 'Cours – 2e Bac Sciences de la Vie et de la Terre' }
+    ]
+  });
+
+  function createRelatedLearningPanel(categoryKey) {
+    const isFrench = document.documentElement.lang === 'fr';
+    const panel = document.createElement('section');
+    panel.className = 'ri-related-learning';
+    const heading = document.createElement('strong');
+    heading.textContent = isFrench ? 'Pour poursuivre votre apprentissage' : 'واصل تعلمك من مكتبة الموقع';
+    const intro = document.createElement('p');
+    intro.textContent = isFrench
+      ? 'Ressources disponibles dont le titre présente un lien identifiable avec ce thème.'
+      : 'موارد متاحة في الموقع، أُدرجت هنا عندما يدل عنوانها بوضوح على صلتها بهذا الموضوع.';
+    panel.append(heading, intro);
+    const resources = RELATED_LEARNING_RESOURCES[categoryKey] || [];
+    if (!resources.length) {
+      const empty = document.createElement('p');
+      empty.className = 'ri-related-learning-empty';
+      empty.textContent = isFrench
+        ? 'Aucune ressource directement correspondante n’a été identifiée dans le catalogue actuel. Cette rubrique sera enrichie lorsque des documents adaptés seront disponibles.'
+        : 'لم نعثر بعد على مورد مطابق مباشرة لهذا الموضوع في الفهرس الحالي. سيُضاف المحتوى المناسب عند توفره.';
+      panel.appendChild(empty);
+      return panel;
+    }
+    const list = document.createElement('ul');
+    resources.forEach(function (resource) {
+      const item = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = '/' + resource.path.split('/').map(encodeURIComponent).join('/');
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = isFrench ? resource.fr : resource.ar;
+      const meta = document.createElement('small');
+      meta.textContent = isFrench ? resource.typeFr : resource.typeAr;
+      item.append(link, meta);
+      list.appendChild(item);
+    });
+    panel.appendChild(list);
+    return panel;
+  }
+
   function renderImageContainer(container) {
     if (!container || processedGalleries.has(container)) return;
     processedGalleries.add(container);
@@ -214,7 +267,7 @@
         info.appendChild(guide);
       }
       card.append(frame, info);
-      container.replaceChildren(card, createObservationActivity(key));
+      container.replaceChildren(card, createObservationActivity(key), createRelatedLearningPanel(key));
       container.setAttribute('aria-busy', 'false');
     }).catch(function () {
       showGalleryFallback(container, labels);
@@ -225,7 +278,7 @@
     if (document.getElementById('ri-guided-reasoning-styles')) return;
     const style = document.createElement('style');
     style.id = 'ri-guided-reasoning-styles';
-    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-science-missions{display:grid;gap:7px}.ri-science-mission{margin:0;padding:9px 11px;border-radius:9px;background:rgba(2,132,199,.07);font-size:.86rem;line-height:1.55}.ri-science-level{display:grid;gap:7px;padding:12px;border:1px solid #9bb9d0;border-radius:12px;background:rgba(2,132,199,.06)}.ri-science-level-meta{margin:0;font-size:.84rem;line-height:1.5}.ri-science-level-track{height:10px;overflow:hidden;border-radius:99px;background:#dbe5ed}.ri-science-level-fill{display:block;height:100%;width:0;border-radius:inherit;background:#16835d;transition:width .25s ease}.ri-science-badge-title{display:block;margin-top:8px}.ri-science-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.ri-science-badge{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:rgba(255,255,255,.65)}.ri-science-badge[data-unlocked=true]{border-color:#86b99a;background:rgba(22,101,52,.08)}.ri-science-badge[data-unlocked=false]{opacity:.62;filter:grayscale(.65)}.ri-science-badge-icon{font-size:1.5rem}.ri-science-badge-details{display:grid;gap:3px}.ri-science-badge-details small{font-size:.76rem;line-height:1.4}.ri-science-badge-details small:last-child{font-weight:700;color:#24613b}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
+    style.textContent = '.ri-related-learning{display:grid;gap:9px;margin:14px 0;padding:14px;border:1px solid #b8cdbd;border-radius:13px;background:rgba(22,101,52,.045)}.ri-related-learning>strong{color:#245d3a;font-size:1rem}.ri-related-learning p{margin:0;line-height:1.65;font-size:.9rem}.ri-related-learning ul{display:grid;gap:9px;margin:0;padding-inline-start:22px}.ri-related-learning li{padding:4px 0;line-height:1.5}.ri-related-learning a{color:#176b45;font-weight:700;text-decoration:underline;text-underline-offset:3px}.ri-related-learning small{display:block;margin-top:3px;color:#64748b;font-size:.78rem}.ri-related-learning-empty{padding:9px;border-radius:8px;background:rgba(100,116,139,.08)}html.gs-dark .ri-related-learning{background:rgba(34,197,94,.06);border-color:#405846}html.gs-dark .ri-related-learning>strong,html.gs-dark .ri-related-learning a{color:#9ed8ad}.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-science-journal{display:grid;gap:8px;margin:12px 0;padding:13px;border:1px solid #a7c7b3;border-radius:12px;background:rgba(22,101,52,.05)}.ri-science-journal>strong{color:#24613b}.ri-science-journal-summary{margin:0;line-height:1.6;font-size:.9rem}.ri-science-journal-list{display:grid;gap:6px;margin:0;padding-inline-start:22px}.ri-science-journal-list li{padding:5px 0;font-size:.84rem;line-height:1.5}.ri-science-journal-list li[data-completed=true]{color:#24613b;font-weight:600}.ri-science-missions{display:grid;gap:7px}.ri-science-mission{margin:0;padding:9px 11px;border-radius:9px;background:rgba(2,132,199,.07);font-size:.86rem;line-height:1.55}.ri-science-level{display:grid;gap:7px;padding:12px;border:1px solid #9bb9d0;border-radius:12px;background:rgba(2,132,199,.06)}.ri-science-level-meta{margin:0;font-size:.84rem;line-height:1.5}.ri-science-level-track{height:10px;overflow:hidden;border-radius:99px;background:#dbe5ed}.ri-science-level-fill{display:block;height:100%;width:0;border-radius:inherit;background:#16835d;transition:width .25s ease}.ri-science-badge-title{display:block;margin-top:8px}.ri-science-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.ri-science-badge{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:rgba(255,255,255,.65)}.ri-science-badge[data-unlocked=true]{border-color:#86b99a;background:rgba(22,101,52,.08)}.ri-science-badge[data-unlocked=false]{opacity:.62;filter:grayscale(.65)}.ri-science-badge-icon{font-size:1.5rem}.ri-science-badge-details{display:grid;gap:3px}.ri-science-badge-details small{font-size:.76rem;line-height:1.4}.ri-science-badge-details small:last-child{font-weight:700;color:#24613b}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
     document.head.appendChild(style);
   }
 
