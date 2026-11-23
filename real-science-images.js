@@ -225,7 +225,7 @@
     if (document.getElementById('ri-guided-reasoning-styles')) return;
     const style = document.createElement('style');
     style.id = 'ri-guided-reasoning-styles';
-    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
+    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-hint{justify-self:start;padding:7px 12px;border:1px solid #0e7490;border-radius:8px;background:transparent;color:#0e7490;font:inherit;cursor:pointer}.ri-science-challenge-hint-text{padding:9px 11px;border-inline-start:3px solid #0e7490;border-radius:7px;background:rgba(14,116,144,.1)}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
     document.head.appendChild(style);
   }
 
@@ -240,6 +240,31 @@
     heading.textContent = isFrench ? 'Mini-défi scientifique' : 'تحدٍّ علمي قصير';
     const question = document.createElement('p');
     question.textContent = data.q;
+    const hints = {
+      'cell/plant': { ar: 'ركّز على الحدود الفاصلة بين الخلايا وكيفية انتظامها.', fr: 'Concentrez-vous sur les limites entre les cellules et leur agencement.' },
+      'genetics/dna': { ar: 'تذكّر الفرق بين تمثيل جزيء وبين صورة مجهرية لخلية.', fr: 'Rappelez-vous la différence entre un modèle moléculaire et une micrographie de cellule.' },
+      'ecology/ecosystem': { ar: 'اسأل نفسك: هل يمكن لهذا العنصر أن ينمو أو يتغذى؟', fr: 'Demandez-vous : cet élément peut-il grandir ou se nourrir ?' },
+      'geology/rock': { ar: 'التحديد العلمي يحتاج أكثر من لون واحد؛ انتبه إلى الوصف والأدلة.', fr: 'Une identification scientifique demande plus qu’une couleur : examinez plusieurs indices.' },
+      'cell/animal': { ar: 'ابدأ بمقارنة شكل الخلايا وطريقة تجمعها.', fr: 'Commencez par comparer la forme des cellules et leur organisation.' },
+      'cell/mitosis': { ar: 'تتبّع البنية التي يتغير شكلها وموقعها أثناء الانقسام.', fr: 'Suivez la structure dont l’aspect et la position changent pendant la division.' },
+      'respiratory/alveoli': { ar: 'فكّر في المسافة التي ينبغي أن تعبرها الغازات بين الهواء والدم.', fr: 'Pensez à la distance que les gaz doivent parcourir entre l’air et le sang.' }
+    };
+    const hintButton = document.createElement('button');
+    hintButton.type = 'button';
+    hintButton.className = 'ri-science-challenge-hint';
+    hintButton.textContent = isFrench ? 'Afficher un indice' : 'إظهار تلميح';
+    const hintText = document.createElement('p');
+    hintText.className = 'ri-science-challenge-hint-text';
+    hintText.textContent = hints[categoryKey][isFrench ? 'fr' : 'ar'];
+    hintText.hidden = true;
+    hintButton.setAttribute('aria-expanded', 'false');
+    hintButton.addEventListener('click', function () {
+      hintText.hidden = !hintText.hidden;
+      hintButton.setAttribute('aria-expanded', String(!hintText.hidden));
+      hintButton.textContent = isFrench
+        ? (hintText.hidden ? 'Afficher un indice' : 'Masquer l’indice')
+        : (hintText.hidden ? 'إظهار تلميح' : 'إخفاء التلميح');
+    });
     const select = document.createElement('select');
     select.className = 'ri-science-challenge-select';
     select.setAttribute('aria-label', isFrench ? 'Choisir une réponse' : 'اختر إجابة');
@@ -273,7 +298,7 @@
         : (isFrench ? 'Pas encore. La bonne réponse est : ' : 'ليست الإجابة المناسبة بعد. الإجابة الصحيحة هي: ') + data.options[data.answer] + '. ')
         + data.why;
     });
-    section.append(heading, question, select, check, feedback);
+    section.append(heading, question, hintButton, hintText, select, check, feedback);
     return section;
   }
 
