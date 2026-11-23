@@ -1652,7 +1652,16 @@
             <h3 id="gs-science-media-title">${fr?'Photographies scientifiques avec crédits':'صور علمية حقيقية مع توثيق مصادرها'}</h3>
             <p>${fr?'Images chargées depuis Wikimedia Commons avec auteur, licence et lien vers la fiche originale.':'صور تُحمّل مباشرة من ويكيميديا كومنز مع إظهار صاحب الصورة وترخيصها ورابط الملف الأصلي.'}</p></div><span class="gs-science-media-mark" aria-hidden="true">📷</span></div>
           <div class="gs-science-media-grid">${topics.map((topic,i)=>`<a class="gs-science-media-card" data-science-search="${escapeHtml(topic[2])}" href="#" aria-label="${escapeHtml(topic[0])}"><span class="gs-science-media-photo" aria-hidden="true"><span>${icons[i]}</span><small>${fr?'Chargement…':'جارٍ تحميل الصورة…'}</small></span><span class="gs-science-media-copy"><strong>${topic[0]}</strong><small>${topic[1]}</small><em>${fr?'Explorer la collection':'استكشاف المجموعة'} <span aria-hidden="true">↗</span></em><small class="gs-science-media-credit">${fr?'Source et licence affichées après chargement':'سيظهر المصدر والترخيص بعد التحميل'}</small></span></a>`).join('')}</div>
-          <p class="gs-science-media-license">${fr?'Les métadonnées de licence proviennent de la fiche Wikimedia Commons de chaque fichier. Respectez les conditions indiquées avant toute réutilisation.':'تُستخرج بيانات الترخيص من صفحة كل ملف على ويكيميديا كومنز. يجب احترام شروط الترخيص قبل إعادة استخدام أي صورة.'}</p>
+          <section class="ri-gallery" aria-label="${fr?'Galerie scientifique thématique':'معرض الصور العلمية حسب الموضوع'}">
+             <h4>${fr?'Explorer d’autres images scientifiques':'استكشف صوراً علمية إضافية'}</h4>
+             <div class="ri-gallery-grid">
+               <div data-real-images="genetics" data-real-images-sub="dna"></div>
+               <div data-real-images="ecology" data-real-images-sub="ecosystem"></div>
+               <div data-real-images="geology" data-real-images-sub="rock"></div>
+               <div data-real-images="cell" data-real-images-sub="plant"></div>
+             </div>
+           </section>
+           <p class="gs-science-media-license">${fr?'Les métadonnées de licence proviennent de la fiche Wikimedia Commons de chaque fichier. Respectez les conditions indiquées avant toute réutilisation.':'تُستخرج بيانات الترخيص من صفحة كل ملف على ويكيميديا كومنز. يجب احترام شروط الترخيص قبل إعادة استخدام أي صورة.'}</p>
         </section>`;
     }
 
