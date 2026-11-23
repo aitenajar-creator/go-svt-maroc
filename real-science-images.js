@@ -77,6 +77,102 @@
     probe.src = imageData.url;
   }
 
+  const CATEGORY_LABELS = Object.freeze({
+    'cell/plant': { ar: 'خلايا نباتية تحت المجهر', fr: 'Cellules végétales au microscope', alt: 'صورة مجهرية حقيقية لخلايا نباتية' },
+    'genetics/dna': { ar: 'الوراثة والحمض النووي', fr: 'Génétique et ADN', alt: 'صورة علمية للحمض النووي' },
+    'ecology/ecosystem': { ar: 'الأنظمة البيئية والتنوع الحيوي', fr: 'Écosystèmes et biodiversité', alt: 'صورة ميدانية لنظام بيئي' },
+    'geology/rock': { ar: 'الصخور والتكوينات الجيولوجية', fr: 'Roches et formations géologiques', alt: 'صورة ميدانية لصخور جيولوجية' }
+  });
+
+  const processedGalleries = new WeakSet();
+
+  function renderImageContainer(container) {
+    if (!container || processedGalleries.has(container)) return;
+    processedGalleries.add(container);
+    const category = (container.getAttribute('data-real-images') || '').toLowerCase();
+    const subcategory = (container.getAttribute('data-real-images-sub') || '').toLowerCase();
+    const key = category + '/' + subcategory;
+    const labels = CATEGORY_LABELS[key];
+    if (!labels) {
+      container.textContent = document.documentElement.lang === 'fr'
+        ? 'Catégorie d’image scientifique non reconnue.'
+        : 'فئة الصور العلمية غير معروفة.';
+      return;
+    }
+
+    container.classList.add('ri-gallery-container');
+    container.setAttribute('aria-busy', 'true');
+    const loading = document.createElement('p');
+    loading.className = 'ri-placeholder';
+    loading.textContent = document.documentElement.lang === 'fr' ? 'Chargement de la photo scientifique…' : 'جارٍ تحميل الصورة العلمية…';
+    container.replaceChildren(loading);
+
+    getImage(category, subcategory).then(function (item) {
+      if (!item) throw new Error('No verified image for ' + key);
+      const card = document.createElement('a');
+      card.href = '#';
+      card.className = 'gs-real-science-photo ri-image-card';
+      card.setAttribute('aria-label', (document.documentElement.lang === 'fr' ? 'Agrandir : ' : 'تكبير الصورة: ') + (item.title || labels.ar));
+      card.dataset.realImageUrl = item.url;
+      card.dataset.sourcePageUrl = item.source_url;
+      card.dataset.originalFileUrl = item.original_url || item.url;
+      card.dataset.scienceTitle = item.title || '';
+      card.dataset.scienceDescription = item.description || '';
+      card.dataset.scienceDate = item.date_taken || '';
+      card.dataset.scienceDimensions = item.width && item.height ? item.width + ' × ' + item.height + ' px' : '';
+      card.dataset.scienceMime = item.mime || '';
+      card.dataset.scienceCredit = item.credit || '';
+      const frame = document.createElement('span');
+      frame.className = 'ri-image-frame';
+      const image = document.createElement('img');
+      image.className = 'ri-image';
+      image.src = item.url;
+      image.alt = labels.alt;
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.addEventListener('error', function () {
+        card.remove();
+        showGalleryFallback(container, labels);
+      }, { once: true });
+      frame.appendChild(image);
+      const overlay = document.createElement('span');
+      overlay.className = 'ri-image-overlay';
+      overlay.textContent = document.documentElement.lang === 'fr' ? 'Cliquer pour agrandir' : 'اضغط لتكبير الصورة';
+      frame.appendChild(overlay);
+      const info = document.createElement('span');
+      info.className = 'ri-image-info';
+      const title = document.createElement('strong');
+      title.textContent = item.title || (document.documentElement.lang === 'fr' ? labels.fr : labels.ar);
+      const credit = document.createElement('span');
+      credit.className = 'gs-science-media-credit';
+      credit.textContent = (item.author || '') + ' · ' + (item.license || '');
+      info.append(title, credit);
+      card.append(frame, info);
+      container.replaceChildren(card);
+      container.setAttribute('aria-busy', 'false');
+    }).catch(function () {
+      showGalleryFallback(container, labels);
+    });
+  }
+
+  function showGalleryFallback(container, labels) {
+    container.setAttribute('aria-busy', 'false');
+    const message = document.createElement('p');
+    message.className = 'ri-error';
+    message.textContent = document.documentElement.lang === 'fr'
+      ? 'Photo vérifiée indisponible pour le moment. La source et la licence seront affichées dès qu’une image valide sera disponible.'
+      : 'الصورة الموثقة غير متاحة حالياً. لن نعرض صورة بديلة غير موثوقة أو رسماً على أنه صورة حقيقية.';
+    container.replaceChildren(message);
+  }
+
+  function enhanceGalleries(root) {
+    const scope = root && root.querySelectorAll ? root : document;
+    const containers = [];
+    if (scope.matches && scope.matches('[data-real-images][data-real-images-sub]')) containers.push(scope);
+    containers.push.apply(containers, Array.from(scope.querySelectorAll('[data-real-images][data-real-images-sub]')));
+    containers.forEach(renderImageContainer);
+  }
+
   const processedIcons = new WeakSet();
   async function enhanceStatIcons(root) {
     const scope = root && root.querySelectorAll ? root : document;
@@ -105,12 +201,12 @@
   });
 
   function start() {
-    enhanceStatIcons(document);
+    enhanceStatIcons(document);\n    enhanceGalleries(document);
     if (document.body && window.MutationObserver) {
       const observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
           mutation.addedNodes.forEach(function (node) {
-            if (node.nodeType === 1) enhanceStatIcons(node);
+            if (node.nodeType === 1) { enhanceStatIcons(node); enhanceGalleries(node); }
           });
         });
       });
