@@ -172,10 +172,16 @@
       credit.textContent = (item.author || '') + ' · ' + (item.license || '');
       info.append(title, credit);
       if (labels.descriptionAr || labels.descriptionFr) {
+        const guide = document.createElement('span');
+        guide.className = 'ri-image-observation-guide';
+        const guideLabel = document.createElement('strong');
+        guideLabel.className = 'ri-image-observation-label';
+        guideLabel.textContent = document.documentElement.lang === 'fr' ? 'Guide d’observation' : 'دليل الملاحظة العلمية';
         const description = document.createElement('span');
         description.className = 'ri-image-description';
         description.textContent = document.documentElement.lang === 'fr' ? (labels.descriptionFr || '') : (labels.descriptionAr || '');
-        info.appendChild(description);
+        guide.append(guideLabel, description);
+        info.appendChild(guide);
       }
       card.append(frame, info);
       container.replaceChildren(card);
@@ -246,6 +252,8 @@
       '.ri-image-info{display:grid;gap:5px;line-height:1.5;overflow-wrap:anywhere}',
       '.ri-image-info strong{font-size:.88rem}',
       '.ri-image-info .gs-science-media-credit{font-size:.75rem;color:#607466}',
+      '.ri-image-observation-guide{display:grid;gap:5px;margin-top:3px;padding:9px 10px;border-inline-start:3px solid #65a17a;border-radius:8px;background:#f2f8f3}',
+      '.ri-image-observation-label{font-size:.76rem;color:#27623c}',
       '.ri-image-description{font-size:.82rem;line-height:1.65;color:#344f3c}',
       '.ri-placeholder,.ri-error{padding:16px;border-radius:12px;background:#fff;color:#526b5a;line-height:1.7}',
       '@media(max-width:520px){.ri-gallery{padding:12px}.ri-gallery-grid{grid-template-columns:1fr 1fr}}'
