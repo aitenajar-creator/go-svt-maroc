@@ -223,8 +223,10 @@
     document.head.appendChild(style);
   }
 
-  function start() {\n    installGalleryStyles();
-    enhanceStatIcons(document);\n    enhanceGalleries(document);
+  function start() {
+    installGalleryStyles();
+    enhanceStatIcons(document);
+    enhanceGalleries(document);
     if (document.body && window.MutationObserver) {
       const observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
