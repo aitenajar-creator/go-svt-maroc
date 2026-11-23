@@ -1,0 +1,28 @@
+.gs-review-section{margin:24px 0;padding:clamp(16px,3vw,28px);border:1px solid #dce9df;border-radius:22px;background:linear-gradient(145deg,#fff,#f5fbf7);box-shadow:0 10px 28px rgba(20,75,48,.07);color:#294b37}
+.gs-review-header{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;padding-bottom:18px;border-bottom:2px solid #e0ece4}
+.gs-review-kicker{color:#28734b;font-size:.76rem;font-weight:850;letter-spacing:.04em}
+.gs-review-header h3{margin:8px 0;color:#174d35;font-size:clamp(1.35rem,3vw,1.8rem);font-weight:850}
+.gs-review-header p{margin:0;color:#63796b;line-height:1.7}
+.gs-review-summary{min-width:120px;padding:12px 18px;border:1px solid #e0ece4;border-radius:15px;background:white;text-align:center;display:grid;gap:3px}
+.gs-review-summary strong{font-size:2rem;color:#176b4b}.gs-review-summary span,.gs-review-stars{color:#e0ad35;letter-spacing:2px}.gs-review-summary small{color:#63796b}
+.gs-review-form-area{margin:18px 0}
+.gs-review-form{display:grid;gap:12px;padding:clamp(14px,3vw,22px);border:1px solid #e0ece4;border-radius:16px;background:#fff}
+.gs-review-form h4{margin:0;color:#174d35}.gs-review-form label{display:grid;gap:7px;color:#365c45;font-weight:750}
+.gs-review-form select,.gs-review-form textarea{width:100%;padding:11px;border:1px solid #cbd9cf;border-radius:10px;background:white;color:#294b37;font:inherit}
+.gs-review-form textarea{min-height:110px;resize:vertical;line-height:1.7}.gs-review-form small{color:#63796b}
+.gs-review-form button{padding:12px 18px;border:0;border-radius:11px;background:linear-gradient(135deg,#176b4b,#31966a);color:white;font:inherit;font-weight:800;cursor:pointer}
+.gs-review-login,.gs-review-empty{padding:18px;border:1px dashed #cbd9cf;border-radius:12px;background:#f8fbf9;color:#63796b;text-align:center}
+.gs-review-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0 12px}
+.gs-review-toolbar strong{color:#174d35}.gs-review-toolbar label{display:flex;align-items:center;gap:8px;color:#63796b}
+.gs-review-toolbar select{padding:8px;border:1px solid #cbd9cf;border-radius:9px;background:white;color:#294b37}
+.gs-review-list{display:grid;gap:12px}.gs-review-card{padding:16px;background:white;border:1px solid #e0ece4;border-radius:15px;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+.gs-review-card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.gs-review-card-top>div{display:grid;gap:3px}.gs-review-card-top b{color:#174d35}.gs-review-card-top small{color:#718477;font-size:.8rem}
+.gs-review-stars{font-style:normal;font-size:1.15rem;white-space:nowrap}.gs-review-stars i{font-style:normal;color:#d7ddd8}
+.gs-review-card>p{margin:12px 0;color:#365c45;line-height:1.85;overflow-wrap:anywhere}.gs-review-pending{color:#986b22}
+.gs-review-actions{display:flex;gap:8px;flex-wrap:wrap}.gs-review-actions button,.gs-review-reports button{padding:7px 11px;border:1px solid #d5e2d8;border-radius:9px;background:#f7fbf8;color:#365c45;font:inherit;font-size:.85rem;cursor:pointer}
+.gs-review-actions button:hover,.gs-review-reports button:hover{border-color:#176b4b;color:#176b4b;background:#eaf6ed}
+.gs-review-moderation{margin-top:18px;padding:14px;border:1px solid #d4eadb;border-radius:13px;background:#f5fbf7}.gs-review-moderation summary{cursor:pointer;color:#174d35;font-weight:800}
+.gs-review-reports{display:grid;gap:10px;margin-top:12px}.gs-review-reports article{padding:12px;background:white;border:1px solid #e0ece4;border-radius:10px}.gs-review-reports p{line-height:1.7}.gs-review-message{min-height:1.4em;margin:12px 0 0;text-align:center;font-weight:750;color:#267344}.gs-review-message[data-kind=error]{color:#b33b32}.gs-review-error{color:#b33b32}
+.gs-review-section button:focus-visible,.gs-review-section select:focus-visible,.gs-review-section textarea:focus-visible{outline:3px solid #80b88e;outline-offset:3px}
+@media(max-width:560px){.gs-review-header{align-items:flex-start}.gs-review-toolbar{align-items:flex-start;flex-direction:column}.gs-review-summary{width:100%}}
+@media(prefers-reduced-motion:reduce){.gs-review-section *{scroll-behavior:auto!important;transition:none!important}}
