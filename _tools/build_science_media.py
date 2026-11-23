@@ -38,6 +38,12 @@ QUERIES = [
     "DNA molecular structure physical model",
     "forest ecosystem biodiversity field photography",
     "geological rock outcrop field photograph",
+    "human lung alveoli histology microscope micrograph",
+    "animal tissue histology light microscopy micrograph",
+    "mitosis onion root tip microscope micrograph",
+    "human epithelial tissue histology microscope",
+    "human muscle tissue histology microscopy",
+    "human neuron histology microscopy micrograph",
 ]
 
 def api(params):
