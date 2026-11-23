@@ -34,3 +34,9 @@ html.gs-dark #student-space-content .gs-3d-organ-list button{background:#293e31;
 html.gs-dark #student-space-content .gs-3d-organ-list button.is-active{background:#285a3b;border-color:#72a982}
 @media(max-width:760px){#student-space-content .gs-3d-workspace{grid-template-columns:1fr}#student-space-content .gs-3d-view{min-height:390px}#student-space-content .gs-3d-canvas{height:390px}#student-space-content .gs-3d-info>p{min-height:0}}
 @media(prefers-reduced-motion:reduce){#student-space-content .gs-3d-lab *{scroll-behavior:auto!important}}
+
+#student-space-content .gs-3d-system-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+#student-space-content .gs-3d-system-nav button{padding:10px 14px;border:1px solid #cfdfd3;border-radius:12px;background:#fff;color:#294a36;font:inherit;font-size:.9rem;cursor:pointer;transition:background .18s,border-color .18s}
+#student-space-content .gs-3d-system-nav button.is-active{background:#dff0e4;border-color:#39845a;color:#155832;font-weight:800;box-shadow:inset 0 0 0 1px #39845a}
+html.gs-dark #student-space-content .gs-3d-system-nav button{background:#293e31;border-color:#49634f;color:#e2eee5}
+html.gs-dark #student-space-content .gs-3d-system-nav button.is-active{background:#285a3b;border-color:#72a982}

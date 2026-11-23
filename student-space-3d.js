@@ -30,18 +30,48 @@ blob('head',[0,2.18,0],[.52,.62,.48],skin);
 blob('neck',[0,1.48,0],[.24,.38,.25],skin);
 blob('shoulderL',[-1.12,1.05,0],[.28,.95,.3],skin);blob('shoulderR',[1.12,1.05,0],[.28,.95,.3],skin);
 blob('legL',[-.42,-2.05,0],[.34,1.25,.37],skin);blob('legR',[.42,-2.05,0],[.34,1.25,.37],skin);
+const systems={circulatory:new THREE.Group(),respiratory:new THREE.Group(),nervous:new THREE.Group(),digestive:new THREE.Group(),urinary:new THREE.Group()};
+Object.values(systems).forEach(group=>model.add(group));
+function blob(name,pos,scale,mat,seg=32,parent=model){const m=new THREE.Mesh(new THREE.SphereGeometry(1,seg,seg),mat);m.name=name;m.position.set(...pos);m.scale.set(...scale);parent.add(m);return m;}
+function tube(name,points,radius,mat,parent){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,48,radius,10,false),mat);mesh.name=name;parent.add(mesh);return mesh;}
+/* Translucent body outline keeps the internal anatomy visible. */
+blob('body',[0,-.05,0],[1.05,1.95,.48],skin,40);
+blob('head',[0,2.18,0],[.52,.62,.48],skin);
+blob('neck',[0,1.48,0],[.24,.38,.25],skin);
+blob('shoulderL',[-1.12,1.05,0],[.28,.95,.3],skin);blob('shoulderR',[1.12,1.05,0],[.28,.95,.3],skin);
+blob('legL',[-.42,-2.05,0],[.34,1.25,.37],skin);blob('legR',[.42,-2.05,0],[.34,1.25,.37],skin);
 const organs={};
-organs.brain=blob('brain',[0,2.27,.43],[.39,.34,.2],brainMat);
-organs.lungs=blob('lungs',[-.43,.65,.46],[.38,.68,.22],lungMat);blob('lungs',[.43,.65,.46],[.38,.68,.22],lungMat);
-organs.heart=blob('heart',[0,.43,.69],[.25,.36,.22],organRed);
-organs.liver=blob('liver',[-.38,-.18,.47],[.53,.25,.18],liverMat);
-organs.stomach=blob('stomach',[.38,-.27,.48],[.29,.43,.18],stomachMat);
-organs.kidneys=blob('kidneys',[-.53,-.72,.42],[.19,.3,.16],kidneyMat);blob('kidneys',[.53,-.72,.42],[.19,.3,.16],kidneyMat);
-const spine=blob('spine',[0,-.25,-.24],[.11,1.35,.1],bone);
+organs.brain=blob('brain',[0,2.27,.43],[.39,.34,.2],brainMat,32,systems.nervous);
+blob('spinal-cord',[0,.15,.17],[.09,1.42,.09],bone,24,systems.nervous);
+tube('nerves',[[-.03,1.25,.18],[-.55,.95,.16],[-.9,.5,.12]],.035,bone,systems.nervous);
+tube('nerves',[[.03,1.25,.18],[.55,.95,.16],[.9,.5,.12]],.035,bone,systems.nervous);
+organs.lungs=blob('lungs',[-.43,.65,.46],[.38,.68,.22],lungMat,32,systems.respiratory);
+blob('lungs',[.43,.65,.46],[.38,.68,.22],lungMat,32,systems.respiratory);
+tube('trachea',[[0,1.35,.47],[0,.98,.49],[0,.77,.49]],.085,bone,systems.respiratory);
+tube('bronchi',[[0,.78,.49],[-.28,.55,.5],[-.42,.35,.49]],.055,bone,systems.respiratory);
+tube('bronchi',[[0,.78,.49],[.28,.55,.5],[.42,.35,.49]],.055,bone,systems.respiratory);
+organs.heart=blob('heart',[0,.43,.69],[.25,.36,.22],organRed,32,systems.circulatory);
+const vessel=material(0xb93443),vein=material(0x3979bd);
+tube('arteries',[[0,.45,.7],[0,1.15,.55],[0,1.45,.2]],.045,vessel,systems.circulatory);
+tube('arteries',[[0,.8,.56],[-.5,.9,.3],[-.85,1.4,.12]],.035,vessel,systems.circulatory);
+tube('veins',[[.08,.2,.68],[.12,-.45,.35],[0,-1.05,.15]],.04,vein,systems.circulatory);
+organs.liver=blob('liver',[-.38,-.18,.47],[.53,.25,.18],liverMat,32,systems.digestive);
+organs.stomach=blob('stomach',[.38,-.27,.48],[.29,.43,.18],stomachMat,32,systems.digestive);
+tube('esophagus',[[0,1.25,.48],[.08,.75,.5],[.22,.1,.52],[.35,-.05,.5]],.07,bone,systems.digestive);
+const intestineMat=material(0xd7a36f);
+tube('intestines',[[-.28,-.55,.47],[.25,-.58,.5],[.28,-.88,.49],[-.2,-.9,.5],[-.27,-.68,.49],[.18,-.7,.5],[.22,-.98,.49]],.085,intestineMat,systems.digestive);
+organs.kidneys=blob('kidneys',[-.53,-.72,.42],[.19,.3,.16],kidneyMat,32,systems.urinary);
+blob('kidneys',[.53,-.72,.42],[.19,.3,.16],kidneyMat,32,systems.urinary);
+tube('ureters',[[-.53,-.85,.42],[-.3,-1.15,.45],[0,-1.35,.45]],.035,bone,systems.urinary);
+tube('ureters',[[.53,-.85,.42],[.3,-1.15,.45],[0,-1.35,.45]],.035,bone,systems.urinary);
+blob('bladder',[0,-1.45,.47],[.22,.2,.17],stomachMat,24,systems.urinary);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(2.7,64),new THREE.MeshBasicMaterial({color:0x234438,transparent:true,opacity:.48}));floor.rotation.x=-Math.PI/2;floor.position.y=-3.35;scene.add(floor);
-let selected='heart',rotY=0,rotX=0,drag=false,lastX=0,lastY=0,zoom=1;
+let selected='heart',activeSystem='circulatory',rotY=0,rotX=0,drag=false,lastX=0,lastY=0,zoom=1;
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 function select(id){if(!DATA[id])return;selected=id;const lang=isFr()?'fr':'ar',d=DATA[id][lang];root.querySelector('[data-3d-name]').textContent=d[0];root.querySelector('[data-3d-description]').textContent=d[1];root.querySelector('[data-3d-function]').textContent=d[2];root.querySelectorAll('[data-3d-organ]').forEach(b=>b.classList.toggle('is-active',b.dataset['3dOrgan']===id));}
+const SYSTEM_FOR={heart:'circulatory',lungs:'respiratory',brain:'nervous',liver:'digestive',stomach:'digestive',kidneys:'urinary'};
+function setSystem(id){if(!systems[id])return;activeSystem=id;Object.entries(systems).forEach(([key,group])=>group.visible=key===id);root.querySelectorAll('[data-3d-system]').forEach(b=>{const active=b.dataset['3dSystem']===id;b.classList.toggle('is-active',active);b.setAttribute('aria-pressed',active?'true':'false');});const first={circulatory:'heart',respiratory:'lungs',nervous:'brain',digestive:'stomach',urinary:'kidneys'}[id];select(first);}
+
 function resize(){const w=canvas.clientWidth||500,h=canvas.clientHeight||480;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 const ro=new ResizeObserver(()=>{if(root.getBoundingClientRect().width>0)resize();});ro.observe(root);
 function draw(){requestAnimationFrame(draw);model.rotation.y=rotY;model.rotation.x=rotX;camera.position.z=8.5/zoom;camera.lookAt(0,0,0);renderer.render(scene,camera);}
@@ -51,8 +81,8 @@ function pointerUp(){drag=false;}
 canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointermove',pointerMove);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',pointerUp);
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.72,Math.min(1.55,zoom+(e.deltaY>0?-.07:.07)));},{passive:false});
 canvas.addEventListener('click',e=>{const rect=canvas.getBoundingClientRect();pointer.x=((e.clientX-rect.left)/rect.width)*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(model.children,true);const hit=hits.find(h=>DATA[h.object.name]||h.object.name==='lungs'||h.object.name==='kidneys');if(hit){const name=hit.object.name;if(DATA[name])select(name);}});
-root.addEventListener('click',e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action]');if(!btn)return;if(btn.dataset['3dOrgan'])select(btn.dataset['3dOrgan']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);});
-select('heart');resize();loading.hidden=true;draw();
+root.addEventListener('click',e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=({heart:'circulatory',lungs:'respiratory',brain:'nervous',liver:'digestive',stomach:'digestive',kidneys:'urinary'})[btn.dataset['3dOrgan']];if(system)setSystem(system);select(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem'])setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);});
+setSystem('circulatory');resize();loading.hidden=true;draw();
 }
 window.GOSVT3DLab={mount};
 })();
