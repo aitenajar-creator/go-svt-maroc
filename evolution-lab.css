@@ -15,3 +15,7 @@
 @media(max-width:800px){.evo-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.evo-entry{align-items:flex-start;flex-direction:column}}
 @media(max-width:520px){.evo-controls{grid-template-columns:1fr}.evo-results{grid-template-columns:1fr}.evo-header{flex-direction:column}.evo-shell{padding:13px}}
 @media(prefers-reduced-motion:reduce){.evo-open{transition:none}}
+/* Simulation feedback state */
+.evo-explanation .evo-insight{margin:10px 0;padding:10px 12px;border-radius:10px;background:#e5f2e8;color:#245b3a;font-weight:800;line-height:1.7}
+.evo-shell button:focus-visible,.evo-shell select:focus-visible,.evo-shell input:focus-visible{outline:3px solid #80b88e;outline-offset:3px}
+.evo-mode-tabs button[aria-selected="true"]{box-shadow:0 0 0 2px #d5e9da}
