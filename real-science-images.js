@@ -118,6 +118,16 @@
     'respiratory/alveoli': { ar: 'اربط رقة جدار الحويصلات وقرب الشعيرات الدموية بانتقال الغازات بين الهواء والدم.', fr: 'Reliez la finesse de la paroi alvéolaire et la proximité des capillaires aux échanges gazeux entre l’air et le sang.', terms: ['حويصل', 'شعيرات', 'غازات', 'دم', 'alvéol', 'capillaires', 'échanges gazeux', 'sang'] }
   });
 
+  const SCIENCE_CHALLENGES = Object.freeze({
+    'cell/plant': { ar: { q: 'أي دليل يساعد أكثر على وصف تنظيم النسيج النباتي في صورة مجهرية؟', options: ['حدود الخلايا وترتيبها', 'لون خلفية الصورة فقط', 'حجم الصورة على الشاشة'], answer: 0, why: 'حدود الخلايا وترتيبها أدلة مباشرة على تنظيم النسيج، أما لون الخلفية وحجم العرض فلا يكفيان لتفسير البنية.' }, fr: { q: 'Quel indice aide le mieux à décrire l’organisation d’un tissu végétal ?', options: ['Les limites et l’agencement des cellules', 'La couleur du fond seulement', 'La taille de l’image à l’écran'], answer: 0, why: 'Les limites et l’agencement renseignent directement sur l’organisation du tissu.' } },
+    'genetics/dna': { ar: { q: 'ما الذي يمثله نموذج اللولب المزدوج عادة؟', options: ['بنية جزيء ADN', 'شكل خلية كاملة', 'نسيج نباتي'], answer: 0, why: 'اللولب المزدوج نموذج يوضح البنية الجزيئية للحمض النووي ADN.' }, fr: { q: 'Que représente généralement le modèle en double hélice ?', options: ['La structure de la molécule d’ADN', 'Une cellule entière', 'Un tissu végétal'], answer: 0, why: 'La double hélice représente la structure moléculaire de l’ADN.' } },
+    'ecology/ecosystem': { ar: { q: 'أي مثال يجمع عنصراً حياً وآخر غير حي؟', options: ['نبات وماء', 'صخرتان', 'حيوان ونبات'], answer: 0, why: 'النبات عنصر حي، والماء عنصر غير حي. أما الحيوان والنبات فكلاهما عنصران حيان.' }, fr: { q: 'Quel exemple associe un élément vivant et un élément non vivant ?', options: ['Une plante et de l’eau', 'Deux roches', 'Un animal et une plante'], answer: 0, why: 'La plante est vivante et l’eau est un élément non vivant.' } },
+    'geology/rock': { ar: { q: 'ما التصرف العلمي الأنسب عند تحديد نوع صخر من صورة فقط؟', options: ['وصف العلامات المرئية وطلب معطيات إضافية', 'الجزم بالنوع من اللون وحده', 'تجاهل بنية الصخر'], answer: 0, why: 'الوصف الدقيق أولاً، ثم الاستعانة بخصائص ومعطيات إضافية، أكثر موثوقية من الاعتماد على اللون وحده.' }, fr: { q: 'Quelle démarche est la plus rigoureuse pour identifier une roche à partir d’une photo ?', options: ['Décrire les indices visibles et demander d’autres données', 'Conclure à partir de la seule couleur', 'Ignorer la texture'], answer: 0, why: 'Une identification fiable demande plusieurs indices et parfois des analyses complémentaires.' } },
+    'cell/animal': { ar: { q: 'ما الذي ينبغي مقارنته لفهم تنظيم نسيج حيواني؟', options: ['أشكال الخلايا وترتيبها', 'إطار الصورة فقط', 'اسم ملف الصورة فقط'], answer: 0, why: 'شكل الخلايا وترتيبها يساعدان على وصف بنية النسيج، ثم يمكن مناقشة علاقتهما بالوظيفة.' }, fr: { q: 'Que faut-il comparer pour comprendre l’organisation d’un tissu animal ?', options: ['La forme et l’agencement des cellules', 'Le cadre de l’image seulement', 'Le nom du fichier seulement'], answer: 0, why: 'La forme et l’agencement des cellules aident à décrire le tissu.' } },
+    'cell/mitosis': { ar: { q: 'ما البنية التي تساعد على تتبع مراحل الانقسام الخلوي؟', options: ['الكروموسومات وتغير توزعها', 'لون الشريحة وحده', 'حجم المجهر'], answer: 0, why: 'تغير مظهر الكروموسومات وتوزعها من العلامات المهمة لمتابعة الانقسام.' }, fr: { q: 'Quelle structure aide à suivre les étapes de la division cellulaire ?', options: ['Les chromosomes et leur répartition', 'La seule couleur de la lame', 'La taille du microscope'], answer: 0, why: 'L’aspect et la répartition des chromosomes sont des indices importants de la division.' } },
+    'respiratory/alveoli': { ar: { q: 'ما الخاصية التي تسهل تبادل الغازات في الحويصلات الرئوية؟', options: ['جدار رقيق وقرب الشعيرات الدموية', 'جدار سميك وغياب الأوعية', 'الابتعاد عن الدم'], answer: 0, why: 'رقة الجدار وقرب الشعيرات الدموية يسهلان انتقال الغازات بين الهواء والدم.' }, fr: { q: 'Quelle caractéristique facilite les échanges gazeux dans les alvéoles ?', options: ['Une paroi fine et des capillaires proches', 'Une paroi épaisse sans vaisseaux', 'L’éloignement du sang'], answer: 0, why: 'La finesse de la paroi et la proximité des capillaires facilitent les échanges entre l’air et le sang.' } }
+  });
+
   const processedGalleries = new WeakSet();
 
   function renderImageContainer(container) {
@@ -215,8 +225,56 @@
     if (document.getElementById('ri-guided-reasoning-styles')) return;
     const style = document.createElement('style');
     style.id = 'ri-guided-reasoning-styles';
-    style.textContent = '.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
+    style.textContent = '.ri-science-challenge{display:grid;gap:10px;margin:16px 0;padding:15px;border:1px solid #94a3b8;border-radius:14px;background:rgba(2,132,199,.06)}.ri-science-challenge p{margin:0;line-height:1.7}.ri-science-challenge-select{width:100%;min-height:42px;padding:8px;border:1px solid #94a3b8;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-science-challenge-check{justify-self:start;padding:9px 15px;border:0;border-radius:9px;background:#0369a1;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-science-challenge-feedback{padding:10px;border-radius:8px;background:rgba(14,116,144,.1)}.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
     document.head.appendChild(style);
+  }
+
+  function createScienceChallenge(categoryKey) {
+    const isFrench = document.documentElement.lang === 'fr';
+    const challenge = SCIENCE_CHALLENGES[categoryKey];
+    if (!challenge) return null;
+    const data = isFrench ? challenge.fr : challenge.ar;
+    const section = document.createElement('section');
+    section.className = 'ri-science-challenge';
+    const heading = document.createElement('strong');
+    heading.textContent = isFrench ? 'Mini-défi scientifique' : 'تحدٍّ علمي قصير';
+    const question = document.createElement('p');
+    question.textContent = data.q;
+    const select = document.createElement('select');
+    select.className = 'ri-science-challenge-select';
+    select.setAttribute('aria-label', isFrench ? 'Choisir une réponse' : 'اختر إجابة');
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = isFrench ? 'Choisissez une réponse…' : 'اختر إجابتك…';
+    select.appendChild(placeholder);
+    data.options.forEach(function (option, index) {
+      const item = document.createElement('option');
+      item.value = String(index);
+      item.textContent = option;
+      select.appendChild(item);
+    });
+    const check = document.createElement('button');
+    check.type = 'button';
+    check.className = 'ri-science-challenge-check';
+    check.textContent = isFrench ? 'Vérifier' : 'تحقق من الإجابة';
+    const feedback = document.createElement('p');
+    feedback.className = 'ri-science-challenge-feedback';
+    feedback.setAttribute('role', 'status');
+    feedback.hidden = true;
+    check.addEventListener('click', function () {
+      feedback.hidden = false;
+      if (select.value === '') {
+        feedback.textContent = isFrench ? 'Choisissez une réponse avant de vérifier.' : 'اختر إجابة قبل التحقق.';
+        return;
+      }
+      const correct = Number(select.value) === data.answer;
+      feedback.textContent = (correct
+        ? (isFrench ? 'Bonne réponse ! ' : 'إجابة صحيحة! ')
+        : (isFrench ? 'Pas encore. La bonne réponse est : ' : 'ليست الإجابة المناسبة بعد. الإجابة الصحيحة هي: ') + data.options[data.answer] + '. ')
+        + data.why;
+    });
+    section.append(heading, question, select, check, feedback);
+    return section;
   }
 
   function createObservationActivity(categoryKey) {
@@ -356,7 +414,7 @@
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
-    activity.append(guidePanel, label, textarea, actions, review, feedback, status, privacy);
+    const challenge = createScienceChallenge(categoryKey);\n    if (challenge) activity.appendChild(challenge);\n    activity.append(guidePanel, label, textarea, actions, review, feedback, status, privacy);
     return activity;
   }
 
