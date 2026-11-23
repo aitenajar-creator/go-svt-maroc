@@ -15,3 +15,17 @@ desktop.ini
 # Temporary files
 *.tmp
 *.temp
+
+# Node.js backend (if added later)
+/server/node_modules/
+/server/.env
+/server/.env.*
+!/server/.env.example
+/server/npm-debug.log*
+/server/yarn-debug.log*
+/server/pnpm-debug.log*
+
+# Environment secrets
+.env
+.env.*
+!.env.example
