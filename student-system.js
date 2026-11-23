@@ -415,4 +415,27 @@
   else ui.showLoginButton();
 
   window.GoSVT = { auth, tracker, achievements, ui };
+  // التكامل مع المختبرات
+function integrateWithLabs(auth, tracker, achievements) {
+  // مراقبة إكمال الاختبارات
+  const originalAlert = window.alert;
+  window.alert = function(message) {
+    if (message.includes('ممتاز') || message.includes('Excellent') || 
+        message.includes('نتيجتك') || message.includes('Votre résultat')) {
+      const scoreMatch = message.match(/(\d+)\s*(?:\/|sur)\s*(\d+)/);
+      if (scoreMatch) {
+        const score = Math.round((parseInt(scoreMatch[1]) / parseInt(scoreMatch[2])) * 100);
+        const labId = getCurrentLabId();
+        tracker.saveLabProgress(labId, score, true);
+        const newAchievements = achievements.checkAchievements();
+        if (newAchievements.length > 0) {
+          showAchievementNotification(newAchievements);
+        }
+      }
+    }
+    return originalAlert.apply(this, arguments);
+  };
+}
+
+integrateWithLabs(auth, tracker, achievements);
 })();
