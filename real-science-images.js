@@ -77,10 +77,16 @@
     probe.src = imageData.url;
   }
 
-  async function enhanceStatIcons() {
-    const icons = Array.from(document.querySelectorAll('.stat-icon'));
+  const processedIcons = new WeakSet();
+  async function enhanceStatIcons(root) {
+    const scope = root && root.querySelectorAll ? root : document;
+    const icons = [];
+    if (scope.matches && scope.matches('.stat-icon')) icons.push(scope);
+    icons.push.apply(icons, Array.from(scope.querySelectorAll('.stat-icon')));
     const categories = ['cell/plant', 'genetics/dna', 'ecology/ecosystem', 'geology/rock'];
     await Promise.all(icons.map(async function (icon, index) {
+      if (processedIcons.has(icon)) return;
+      processedIcons.add(icon);
       const parts = (icon.getAttribute('data-image-category') || categories[index % categories.length]).split('/');
       try {
         const imageData = await getImage(parts[0], parts[1]);
@@ -99,7 +105,17 @@
   });
 
   function start() {
-    enhanceStatIcons();
+    enhanceStatIcons(document);
+    if (document.body && window.MutationObserver) {
+      const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          mutation.addedNodes.forEach(function (node) {
+            if (node.nodeType === 1) enhanceStatIcons(node);
+          });
+        });
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
   }
 
   if (document.readyState === 'loading') {
