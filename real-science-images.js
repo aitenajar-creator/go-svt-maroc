@@ -191,13 +191,13 @@
   async function enhanceStatIcons(root) {
     const scope = root && root.querySelectorAll ? root : document;
     const icons = [];
-    if (scope.matches && scope.matches('.stat-icon')) icons.push(scope);
-    icons.push.apply(icons, Array.from(scope.querySelectorAll('.stat-icon')));
+    if (scope.matches && scope.matches('.stat-icon[data-image-category]')) icons.push(scope);
+    icons.push.apply(icons, Array.from(scope.querySelectorAll('.stat-icon[data-image-category]')));
     const categories = ['cell/plant', 'genetics/dna', 'ecology/ecosystem', 'geology/rock'];
     await Promise.all(icons.map(async function (icon, index) {
       if (processedIcons.has(icon)) return;
       processedIcons.add(icon);
-      const parts = (icon.getAttribute('data-image-category') || categories[index % categories.length]).split('/');
+      const parts = icon.getAttribute('data-image-category').split('/');
       try {
         const imageData = await getImage(parts[0], parts[1]);
         if (imageData) applyImage(icon, imageData);
