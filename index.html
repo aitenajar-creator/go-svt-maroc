@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="file-cards.css?v=20261121-grid-fix-v2">
     <link rel="stylesheet" href="student-space-layout.css?v=20261122-rebuilt-shell-v1">
     <link rel="stylesheet" href="3d-lab.css?v=20261123-1">
+    <link rel="stylesheet" href="evolution-lab.css?v=20261123-v1">
 
     <!-- SEO + partage + PWA -->
     <meta name="description" content="Go SVT Maroc : plateforme éducative gratuite de SVT au Maroc. Cours, exercices corrigés, résumés et examens nationaux pour TC, 1BAC et 2BAC, en arabe et en français. دروس وتمارين وملخصات وامتحانات علوم الحياة والأرض لجميع المستويات.">
@@ -325,6 +326,14 @@
             <div class="container">
                 <h2 class="section-title" data-lang-ar="👤 مساحتي" data-lang-fr="👤 Mon espace">👤 مساحتي</h2>
                 <div id="student-space-content"></div>
+                <section class="evo-entry" aria-labelledby="evo-entry-title">
+                    <div>
+                        <h3 id="evo-entry-title" data-lang-ar="🧬 مختبر التطور التفاعلي" data-lang-fr="🧬 Laboratoire interactif de l’évolution">🧬 مختبر التطور التفاعلي</h3>
+                        <p data-lang-ar="أنجز محاكاة الانتقاء الطبيعي والانحراف الوراثي، واضبط البيئة وحجم الجماعة وتابع تغير تواتر الصفات عبر الأجيال." data-lang-fr="Simulez la sélection naturelle et la dérive génétique. Modifiez l’environnement et la taille de la population, puis suivez les fréquences au fil des générations.">أنجز محاكاة الانتقاء الطبيعي والانحراف الوراثي، واضبط البيئة وحجم الجماعة وتابع تغير تواتر الصفات عبر الأجيال.</p>
+                    </div>
+                    <button type="button" id="evo-open" class="evo-open" data-lang-ar="🧬 افتح مختبر التطور" data-lang-fr="🧬 Ouvrir le laboratoire">🧬 افتح مختبر التطور</button>
+                </section>
+                <div id="gs-evolution-lab" hidden></div>
             </div>
         </section>
 
@@ -427,6 +436,7 @@
     <script src="student-space-academic.js"></script>
     <script src="student-space-continue.js"></script>
     <script src="student-space-analytics.js"></script>
+    <script src="evolution-lab.js?v=20261123-v1"></script>
     <!-- Audit tests are intentionally excluded from production to protect student-local data. -->
 <script src="founder-profile.js?v=20261112-1"></script>
     <script src="private-student-lessons.js?v=1"></script>
