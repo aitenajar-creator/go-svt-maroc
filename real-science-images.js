@@ -55,9 +55,23 @@
     if (/licence non indiquée|auteur non indiqué/i.test(item.license + ' ' + item.author)) return null;
 
     const url = safeImageUrl(item.image_url);
-    if (!url) return null;
+    const sourceUrl = safeImageUrl(item.source_url);
+    if (!url || !sourceUrl) return null;
 
-    return Object.assign({}, item, { url: url });
+    const image = new URL(url);
+    const source = new URL(sourceUrl);
+    const localCached = image.origin === window.location.origin && image.pathname.includes('/science-media-cache/');
+    const commonsImage = image.hostname === 'upload.wikimedia.org';
+    if ((!localCached && !commonsImage) || source.hostname !== 'commons.wikimedia.org') return null;
+
+    if (key === 'cell/plant' && (item.is_micrograph !== true || item.metadata_screened !== true)) return null;
+
+    const originalUrl = item.original_url ? safeImageUrl(item.original_url) : url;
+    if (!originalUrl) return null;
+    const original = new URL(originalUrl);
+    if (original.hostname !== 'upload.wikimedia.org' && original.origin !== window.location.origin) return null;
+
+    return Object.assign({}, item, { url: url, source_url: source.href, original_url: original.href });
   }
 
   function applyImage(element, imageData) {
