@@ -34,6 +34,8 @@ QUERIES = [
     "human kidneys urinary system anatomy specimen",
     "human skeleton bones anatomy specimen",
     "DNA molecule model scientific photography",
+    "DNA double helix molecular model photograph",
+    "DNA molecular structure physical model",
     "forest ecosystem biodiversity field photography",
     "geological rock outcrop field photograph",
 ]
