@@ -211,10 +211,68 @@
     });
   }
 
+  function ensureGuidedReasoningStyles() {
+    if (document.getElementById('ri-guided-reasoning-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'ri-guided-reasoning-styles';
+    style.textContent = '.ri-guided-reasoning{display:grid;gap:12px;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:14px;background:rgba(14,116,144,.06)}.ri-guided-reasoning>strong{font-size:1.05rem}.ri-guided-reasoning p{margin:0;line-height:1.7}.ri-guided-step label{display:grid;gap:6px;font-weight:600}.ri-guided-step textarea{width:100%;min-height:64px;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:Canvas;color:CanvasText;font:inherit;resize:vertical}.ri-observation-compose{justify-self:start;padding:9px 16px;border:0;border-radius:9px;background:#0e7490;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-observation-compose-status{font-size:.9em;line-height:1.6}@media(max-width:600px){.ri-guided-reasoning{padding:12px}.ri-observation-compose{width:100%}}';
+    document.head.appendChild(style);
+  }
+
   function createObservationActivity(categoryKey) {
     const isFrench = document.documentElement.lang === 'fr';
     const activity = document.createElement('section');
     activity.className = 'ri-observation-activity';
+    const guidePanel = document.createElement('div');
+    guidePanel.className = 'ri-guided-reasoning';
+    const guideTitle = document.createElement('strong');
+    guideTitle.textContent = isFrench ? 'Construisez votre conclusion en 3 étapes' : 'ابنِ استنتاجك في ثلاث خطوات';
+    const guideIntro = document.createElement('p');
+    guideIntro.textContent = isFrench ? 'Décrivez d’abord, interprétez ensuite, puis formulez une conclusion.' : 'ابدأ بوصف ما تراه، ثم فسّر الملاحظة، وبعدها صغ استنتاجك.';
+    guidePanel.append(guideTitle, guideIntro);
+    const guidedFields = [
+      { key: 'evidence', ar: '1. ماذا ألاحظ؟', fr: '1. Que vois-je ?', placeholderAr: 'اذكر شكلاً أو بنية أو لوناً أو علاقة ظاهرة…', placeholderFr: 'Décrivez une forme, une structure, une couleur ou une relation visible…' },
+      { key: 'meaning', ar: '2. ماذا تعني ملاحظتي؟', fr: '2. Comment interpréter cette observation ?', placeholderAr: 'اربط الملاحظة بمفهوم علمي تعرفه…', placeholderFr: 'Reliez votre observation à une notion scientifique…' },
+      { key: 'conclusion', ar: '3. ما الاستنتاج الذي أصل إليه؟', fr: '3. Quelle conclusion en tirer ?', placeholderAr: 'اكتب خلاصة قصيرة تستند إلى ما سبق…', placeholderFr: 'Formulez une courte conclusion fondée sur les étapes précédentes…' }
+    ];
+    const guidedInputs = {};
+    guidedFields.forEach(function (step) {
+      const group = document.createElement('div');
+      group.className = 'ri-guided-step';
+      const stepLabel = document.createElement('label');
+      stepLabel.textContent = isFrench ? step.fr : step.ar;
+      const field = document.createElement('textarea');
+      field.rows = 2;
+      field.maxLength = 700;
+      field.placeholder = isFrench ? step.placeholderFr : step.placeholderAr;
+      stepLabel.appendChild(field);
+      group.appendChild(stepLabel);
+      guidePanel.appendChild(group);
+      guidedInputs[step.key] = field;
+    });
+    const compose = document.createElement('button');
+    compose.type = 'button';
+    compose.className = 'ri-observation-compose';
+    compose.textContent = isFrench ? 'Assembler ma réponse' : 'تجميع استنتاجي';
+    const composeStatus = document.createElement('span');
+    composeStatus.className = 'ri-observation-compose-status';
+    composeStatus.setAttribute('role', 'status');
+    compose.addEventListener('click', function () {
+      const values = guidedFields.map(function (step) { return guidedInputs[step.key].value.trim(); });
+      if (values.every(function (value) { return !value; })) {
+        composeStatus.textContent = isFrench ? 'Complétez au moins une étape.' : 'أكمل خطوة واحدة على الأقل أولاً.';
+        return;
+      }
+      const headings = isFrench
+        ? ['Observation : ', 'Interprétation : ', 'Conclusion : ']
+        : ['الملاحظة: ', 'التفسير: ', 'الاستنتاج: '];
+      textarea.value = guidedFields.map(function (step, index) {
+        return values[index] ? headings[index] + values[index] : '';
+      }).filter(Boolean).join('\\n');
+      composeStatus.textContent = isFrench ? 'Votre réponse structurée est prête. Vous pouvez la modifier puis l’enregistrer.' : 'أصبح استنتاجك منظماً في مساحة الإجابة. يمكنك تعديله ثم حفظه.';
+      textarea.focus();
+    });
+    guidePanel.append(compose, composeStatus);
     const label = document.createElement('label');
     const fieldId = 'ri-observation-answer-' + categoryKey.replace(/[^a-z0-9]+/gi, '-');
     label.htmlFor = fieldId;
@@ -297,7 +355,7 @@
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
-    activity.append(label, textarea, actions, review, feedback, status, privacy);
+    activity.append(guidePanel, label, textarea, actions, review, feedback, status, privacy);
     return activity;
   }
 
