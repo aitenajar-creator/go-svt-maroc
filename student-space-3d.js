@@ -22,7 +22,7 @@ const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(4,6,7);scene
 const fill=new THREE.DirectionalLight(0x75c6aa,1.2);fill.position.set(-5,2,-4);scene.add(fill);
 const model=new THREE.Group();scene.add(model);
 const material=(color,roughness=.58)=>new THREE.MeshStandardMaterial({color,roughness,metalness:.02});
-const skin=material(0xc98f70),organRed=material(0xb83f4b),lungMat=material(0xc76d78),brainMat=material(0xe4a2a0),liverMat=material(0x7f3e35),stomachMat=material(0xe0a05e),kidneyMat=material(0x93484c),bone=material(0xe4d7b8);
+const skin=material(0xc98f70);skin.transparent=true;skin.opacity=.16;skin.depthWrite=false;const organRed=material(0xb83f4b),lungMat=material(0xc76d78),brainMat=material(0xe4a2a0),liverMat=material(0x7f3e35),stomachMat=material(0xe0a05e),kidneyMat=material(0x93484c),bone=material(0xe4d7b8);
 function blob(name,pos,scale,mat,seg=32){const m=new THREE.Mesh(new THREE.SphereGeometry(1,seg,seg),mat);m.name=name;m.position.set(...pos);m.scale.set(...scale);model.add(m);return m;}
 /* Educational schematic body silhouette */
 blob('body',[0,-.05,0],[1.05,1.95,.48],skin,40);
