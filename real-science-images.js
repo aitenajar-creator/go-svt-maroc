@@ -52,6 +52,7 @@
     const items = await loadCatalogue();
     const item = items[query];
     if (!item || !item.image_url || !item.source_url || !item.license || !item.author) return null;
+    if (/licence non indiquée|auteur non indiqué/i.test(item.license + ' ' + item.author)) return null;
 
     const url = safeImageUrl(item.image_url);
     if (!url) return null;
