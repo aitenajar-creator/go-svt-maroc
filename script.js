@@ -722,13 +722,26 @@ function buildUI() {
     });
 
     const installBtn = document.getElementById('gs-install-btn');
-    installBtn.hidden = !deferredInstallPrompt;
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    installBtn.hidden = isInstalled;
     installBtn.addEventListener('click', async () => {
-        if (!deferredInstallPrompt) return;
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice;
-        deferredInstallPrompt = null;
-        installBtn.hidden = true;
+        if (deferredInstallPrompt) {
+            const promptEvent = deferredInstallPrompt;
+            deferredInstallPrompt = null;
+            promptEvent.prompt();
+            const choice = await promptEvent.userChoice;
+            if (choice && choice.outcome === 'accepted') installBtn.hidden = true;
+            return;
+        }
+
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const isSafari = isIOS && /safari/i.test(navigator.userAgent) && !/crios|fxios|edgios/i.test(navigator.userAgent);
+        const message = isIOS
+            ? (isSafari
+                ? t('لتثبيت Go SVT Maroc على جهازك: اضغط زر المشاركة في Safari، ثم اختر «إضافة إلى الشاشة الرئيسية»، وبعدها اضغط «إضافة».', 'Pour installer Go SVT Maroc : touchez Partager dans Safari, choisissez « Sur l’écran d’accueil », puis touchez « Ajouter ».')
+                : t('لتثبيت التطبيق على iPhone أو iPad: افتح الموقع في Safari، اضغط زر المشاركة، ثم اختر «إضافة إلى الشاشة الرئيسية».', 'Pour installer l’application sur iPhone ou iPad : ouvrez le site dans Safari, touchez Partager, puis « Sur l’écran d’accueil ».'))
+            : t('لتثبيت التطبيق: افتح قائمة المتصفح (⋮ أو …) وابحث عن «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». يمكنك أيضاً استخدام رمز التثبيت بجانب شريط العنوان إذا ظهر.', 'Pour installer l’application : ouvrez le menu du navigateur (⋮ ou …) et choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil ». Une icône d’installation peut aussi apparaître près de la barre d’adresse.');
+        window.alert(message);
     });
 
     document.getElementById('gs-search-input').addEventListener('input', function () {
