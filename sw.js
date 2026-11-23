@@ -73,7 +73,7 @@ self.addEventListener('fetch', event => {
   if (!isSameOrigin(url)) return;
 
   // PDFs are available offline only after the learner explicitly saves them.
-  if (/\\.pdf$/i.test(url.pathname)) {
+  if (/\.pdf$/i.test(url.pathname)) {
     event.respondWith((async () => {
       const saved = await caches.open(OFFLINE_CACHE);
       const cached = await saved.match(request, { ignoreSearch: true, ignoreVary: true });
@@ -93,7 +93,7 @@ self.addEventListener('fetch', event => {
   const isNavigation = request.mode === 'navigate';
   const isAppAsset = url.pathname === '/' ||
     url.pathname === '/index.html' ||
-    /\\.(html|css|js|json|webmanifest|png|svg|ico)$/i.test(url.pathname);
+    /\.(html|css|js|json|webmanifest|png|svg|ico)$/i.test(url.pathname);
 
   if (!isNavigation && !isAppAsset) return;
 
