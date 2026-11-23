@@ -220,6 +220,7 @@
   }
 
   function createObservationActivity(categoryKey) {
+    ensureGuidedReasoningStyles();
     const isFrench = document.documentElement.lang === 'fr';
     const activity = document.createElement('section');
     activity.className = 'ri-observation-activity';
