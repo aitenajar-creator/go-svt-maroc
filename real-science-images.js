@@ -229,17 +229,86 @@
     document.head.appendChild(style);
   }
 
+  const CHALLENGE_STAGES = Object.freeze({
+    'cell/plant': {
+      ar: [
+        { q: 'إذا لاحظت خلايا متجاورة ذات حدود واضحة، فما الاستنتاج الأكثر حذراً؟', options: ['أن النسيج يتكون من خلايا منظمة', 'أن كل خلية تقوم بالوظيفة نفسها حتماً', 'أن الصورة تثبت جميع العضيات'], answer: 0, why: 'الحدود والترتيب يدعمان وصف التنظيم الخلوي، لكنهما لا يكشفان وحدهما كل الوظائف أو العضيات.' },
+        { q: 'ما المعطى الإضافي الذي يساعد على تحديد وظيفة نسيج نباتي؟', options: ['موقع النسيج وبنيته ومعلومات عن العضو', 'درجة سطوع الشاشة', 'حجم ملف الصورة'], answer: 0, why: 'تفسير الوظيفة يحتاج ربط البنية بموقع النسيج ومعطيات أخرى، وليس خصائص عرض الصورة.' }
+      ],
+      fr: [
+        { q: 'Si des cellules voisines présentent des limites nettes, quelle conclusion est la plus prudente ?', options: ['Le tissu présente une organisation cellulaire', 'Toutes les cellules ont forcément la même fonction', 'L’image révèle tous les organites'], answer: 0, why: 'Les limites et l’agencement décrivent l’organisation, mais ne révèlent pas à eux seuls toutes les fonctions ou tous les organites.' },
+        { q: 'Quelle donnée supplémentaire aide à déterminer la fonction d’un tissu végétal ?', options: 'La position du tissu, sa structure et des informations sur l’organe|La luminosité de l’écran|La taille du fichier image'.split('|'), answer: 0, why: 'Il faut relier la structure à la position du tissu et à d’autres données, pas aux propriétés d’affichage.' }
+      ]
+    },
+    'genetics/dna': {
+      ar: [
+        { q: 'إذا كان المعروض نموذجاً للولب المزدوج، فما الذي لا يمكن استنتاجه من ألوانه وحدها؟', options: ['الألوان الحقيقية للجزيء داخل الخلية', 'وجود بنية جزيئية ممثلة', 'أن النموذج يوضح تنظيم ADN'], answer: 0, why: 'ألوان النماذج اصطلاحية غالباً، ولا تمثل بالضرورة ألوان الجزيئات الحقيقية.' },
+        { q: 'أي مستوى من التنظيم يمثله ADN مباشرة؟', options: ['المستوى الجزيئي', 'مستوى النظام البيئي', 'مستوى العضو'], answer: 0, why: 'ADN جزيء يحمل المعلومة الوراثية، لذلك نتحدث عن المستوى الجزيئي.' }
+      ],
+      fr: [
+        { q: 'Si l’image montre un modèle de double hélice, que ne peut-on pas déduire de ses couleurs seules ?', options: ['Les couleurs réelles de la molécule dans la cellule', 'La représentation d’une structure moléculaire', 'L’organisation de l’ADN'], answer: 0, why: 'Les couleurs des modèles sont souvent conventionnelles et ne représentent pas nécessairement les couleurs réelles des molécules.' },
+        { q: 'Quel niveau d’organisation l’ADN représente-t-il directement ?', options: ['Le niveau moléculaire', 'Le niveau de l’écosystème', 'Le niveau de l’organe'], answer: 0, why: 'L’ADN est une molécule qui porte l’information génétique : il relève du niveau moléculaire.' }
+      ]
+    },
+    'ecology/ecosystem': {
+      ar: [
+        { q: 'وجود نبات وماء في صورة واحدة يثبت أي علاقة؟', options: ['يثبت وجودهما معاً فقط؛ أما التفاعل فيحتاج أدلة إضافية', 'يثبت أن النبات امتص الماء لحظة التصوير', 'يثبت أن الماء هو العامل المحدد للنمو'], answer: 0, why: 'الصورة الثابتة تُظهر التواجد، لكنها لا تثبت وحدها حدوث عملية أو علاقة سببية.' },
+        { q: 'كيف نتحقق بشكل أفضل من فرضية تأثير الماء في نمو النبات؟', options: ['مقارنة نمو نباتات في شروط مائية مختلفة مع ضبط العوامل الأخرى', 'الاعتماد على صورة واحدة', 'مقارنة لون صورتين مختلفتي الإضاءة'], answer: 0, why: 'المقارنة المنهجية مع ضبط العوامل تساعد على اختبار الفرضية بدل الاكتفاء بالملاحظة.' }
+      ],
+      fr: [
+        { q: 'La présence d’une plante et d’eau dans une même photo prouve quelle relation ?', options: 'Elle prouve seulement leur présence simultanée ; l’interaction demande d’autres preuves|Elle prouve que la plante a absorbé l’eau au moment de la photo|Elle prouve que l’eau limite la croissance'.split('|'), answer: 0, why: 'Une image fixe montre une co-présence, mais ne prouve pas à elle seule un processus ou une causalité.' },
+        { q: 'Comment tester plus solidement l’hypothèse d’un effet de l’eau sur la croissance ?', options: 'Comparer des plantes avec des conditions hydriques différentes en contrôlant les autres facteurs|Utiliser une seule photo|Comparer deux images avec des éclairages différents'.split('|'), answer: 0, why: 'Une comparaison méthodique avec contrôle des facteurs permet de tester l’hypothèse.' }
+      ]
+    },
+    'geology/rock': {
+      ar: [
+        { q: 'لاحظت طبقات متوازية في تكوين صخري. ما الوصف المناسب قبل تحديد نوع الصخر؟', options: ['تكوين ذو بنية متطبقة', 'صخر ناري مؤكد', 'صخر من عصر جيولوجي محدد'], answer: 0, why: 'التطبق وصف بنيوي مرئي، لكنه لا يكفي وحده للجزم بالنوع أو العمر.' },
+        { q: 'أي دليل يساعد على تفسير أصل التكوين الصخري؟', options: ['التركيب المعدني والسياق الطبقي والعينات', 'اللون في صورة واحدة فقط', 'اسم المنطقة دون فحص'], answer: 0, why: 'تحديد الأصل يحتاج جمع أدلة ميدانية ومخبرية وسياقية.' }
+      ],
+      fr: [
+        { q: 'Vous observez des couches parallèles dans une formation rocheuse. Quelle description convient avant d’identifier la roche ?', options: ['Une formation à structure stratifiée', 'Une roche magmatique certaine', 'Une roche d’un âge géologique précis'], answer: 0, why: 'La stratification est une description visible, mais elle ne suffit pas à déterminer seule la nature ou l’âge.' },
+        { q: 'Quel indice aide à interpréter l’origine d’une formation rocheuse ?', options: 'La composition minérale, le contexte stratigraphique et les échantillons|La couleur d’une seule photo|Le nom de la région sans examen'.split('|'), answer: 0, why: 'L’interprétation de l’origine demande plusieurs indices de terrain, de laboratoire et de contexte.' }
+      ]
+    },
+    'cell/animal': {
+      ar: [
+        { q: 'إذا اختلف شكل الخلايا داخل نسيج، فما الفرضية العلمية الممكنة؟', options: ['قد يرتبط اختلاف الشكل بتخصص وظيفي', 'كل الخلايا تنتمي بالضرورة إلى أنسجة مختلفة', 'الشكل وحده يحدد الوظيفة بشكل قطعي'], answer: 0, why: 'قد يرتبط الشكل بالوظيفة، لكن يلزم فحص خصائص أخرى لتأكيد التخصص.' },
+        { q: 'ما أفضل طريقة لدعم الربط بين شكل الخلية ووظيفتها؟', options: ['مقارنة البنية والموقع ومعطيات وظيفة النسيج', 'الاعتماد على شكل خلية واحدة', 'تجاهل تنظيم الخلايا'], answer: 0, why: 'الاستدلال الأقوى يجمع الملاحظة المجهرية مع موقع الخلايا ووظيفة النسيج.' }
+      ],
+      fr: [
+        { q: 'Si les cellules d’un tissu ont des formes différentes, quelle hypothèse est possible ?', options: ['La forme peut être liée à une spécialisation fonctionnelle', 'Toutes les cellules appartiennent forcément à des tissus différents', 'La forme seule détermine définitivement la fonction'], answer: 0, why: 'La forme peut être liée à la fonction, mais d’autres caractéristiques sont nécessaires pour confirmer la spécialisation.' },
+        { q: 'Quelle démarche soutient le mieux le lien entre forme et fonction ?', options: 'Comparer la structure, la position et les données sur la fonction du tissu|Se baser sur une seule cellule|Ignorer l’organisation cellulaire'.split('|'), answer: 0, why: 'Un raisonnement solide associe l’observation microscopique à la position des cellules et à la fonction du tissu.' }
+      ]
+    },
+    'cell/mitosis': {
+      ar: [
+        { q: 'إذا ظهرت الكروموسومات مصطفة قرب وسط الخلية، فما المرحلة المحتملة؟', options: ['الطور الاستوائي', 'الطور النهائي', 'مرحلة السكون'], answer: 0, why: 'اصطفاف الكروموسومات في المستوى الاستوائي علامة مميزة للطور الاستوائي، مع ضرورة مراعاة جودة الصورة.' },
+        { q: 'ما الحدث الذي يلي انفصال الكروماتيدات الشقيقة؟', options: ['تتحرك نحو قطبي الخلية', 'تتحد لتكوين نواة واحدة جديدة فوراً', 'تختفي المادة الوراثية'], answer: 0, why: 'في الطور الانفصالي تتجه الكروماتيدات الشقيقة نحو قطبي الخلية.' }
+      ],
+      fr: [
+        { q: 'Si les chromosomes semblent alignés au centre de la cellule, quelle phase est probable ?', options: ['La métaphase', 'La télophase', 'L’interphase'], answer: 0, why: 'L’alignement des chromosomes sur le plan équatorial caractérise la métaphase, sous réserve de la qualité de l’image.' },
+        { q: 'Que se passe-t-il après la séparation des chromatides sœurs ?', options: ['Elles migrent vers les pôles de la cellule', 'Elles fusionnent immédiatement en un seul noyau', 'Le matériel génétique disparaît'], answer: 0, why: 'Pendant l’anaphase, les chromatides sœurs migrent vers les pôles opposés.' }
+      ]
+    },
+    'respiratory/alveoli': {
+      ar: [
+        { q: 'لماذا تعد رقة جدار الحويصلة مفيدة للتبادل الغازي؟', options: ['تقلل مسافة انتشار الغازات', 'تمنع وصول الدم', 'تزيد المسافة بين الهواء والشعيرات'], answer: 0, why: 'قصر مسافة الانتشار يسهل انتقال الأكسجين وثاني أكسيد الكربون بين الهواء والدم.' },
+        { q: 'ما الذي قد يضعف كفاءة التبادل الغازي؟', options: ['زيادة سماكة الحاجز بين الهواء والدم', 'قرب الشعيرات الدموية', 'اتساع مساحة التبادل'], answer: 0, why: 'زيادة سماكة الحاجز تطيل مسافة الانتشار، وقد تعيق انتقال الغازات.' }
+      ],
+      fr: [
+        { q: 'Pourquoi la finesse de la paroi alvéolaire favorise-t-elle les échanges ?', options: ['Elle réduit la distance de diffusion des gaz', 'Elle empêche l’arrivée du sang', 'Elle éloigne l’air des capillaires'], answer: 0, why: 'Une faible distance de diffusion facilite le passage de l’oxygène et du dioxyde de carbone entre l’air et le sang.' },
+        { q: 'Quel changement pourrait réduire l’efficacité des échanges gazeux ?', options: ['Un épaississement de la barrière entre l’air et le sang', 'La proximité des capillaires', 'Une grande surface d’échange'], answer: 0, why: 'Une barrière plus épaisse augmente la distance de diffusion et peut freiner le transfert des gaz.' }
+      ]
+    }
+  });
+
   function createScienceChallenge(categoryKey) {
     const isFrench = document.documentElement.lang === 'fr';
     const challenge = SCIENCE_CHALLENGES[categoryKey];
-    if (!challenge) return null;
-    const data = isFrench ? challenge.fr : challenge.ar;
-    const section = document.createElement('section');
-    section.className = 'ri-science-challenge';
-    const heading = document.createElement('strong');
-    heading.textContent = isFrench ? 'Mini-défi scientifique' : 'تحدٍّ علمي قصير';
-    const question = document.createElement('p');
-    question.textContent = data.q;
+    const stages = CHALLENGE_STAGES[categoryKey];
+    if (!challenge || !stages) return null;
+    const base = isFrench ? challenge.fr : challenge.ar;
+    const stageData = stages[isFrench ? 'fr' : 'ar'];
     const hints = {
       'cell/plant': { ar: 'ركّز على الحدود الفاصلة بين الخلايا وكيفية انتظامها.', fr: 'Concentrez-vous sur les limites entre les cellules et leur agencement.' },
       'genetics/dna': { ar: 'تذكّر الفرق بين تمثيل جزيء وبين صورة مجهرية لخلية.', fr: 'Rappelez-vous la différence entre un modèle moléculaire et une micrographie de cellule.' },
@@ -249,56 +318,123 @@
       'cell/mitosis': { ar: 'تتبّع البنية التي يتغير شكلها وموقعها أثناء الانقسام.', fr: 'Suivez la structure dont l’aspect et la position changent pendant la division.' },
       'respiratory/alveoli': { ar: 'فكّر في المسافة التي ينبغي أن تعبرها الغازات بين الهواء والدم.', fr: 'Pensez à la distance que les gaz doivent parcourir entre l’air et le sang.' }
     };
+    const section = document.createElement('section');
+    section.className = 'ri-science-challenge';
+    const heading = document.createElement('strong');
+    const progress = document.createElement('p');
+    const question = document.createElement('p');
     const hintButton = document.createElement('button');
     hintButton.type = 'button';
     hintButton.className = 'ri-science-challenge-hint';
-    hintButton.textContent = isFrench ? 'Afficher un indice' : 'إظهار تلميح';
     const hintText = document.createElement('p');
     hintText.className = 'ri-science-challenge-hint-text';
-    hintText.textContent = hints[categoryKey][isFrench ? 'fr' : 'ar'];
     hintText.hidden = true;
-    hintButton.setAttribute('aria-expanded', 'false');
+    const select = document.createElement('select');
+    select.className = 'ri-science-challenge-select';
+    select.setAttribute('aria-label', isFrench ? 'Choisir une réponse' : 'اختر إجابة');
+    const check = document.createElement('button');
+    check.type = 'button';
+    check.className = 'ri-science-challenge-check';
+    const feedback = document.createElement('p');
+    feedback.className = 'ri-science-challenge-feedback';
+    feedback.setAttribute('role', 'status');
+    feedback.hidden = true;
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.className = 'ri-science-challenge-check';
+    next.hidden = true;
+    let step = -1;
+    let score = 0;
+    let verified = false;
+
+    function renderStep() {
+      verified = false;
+      feedback.hidden = true;
+      next.hidden = true;
+      hintText.hidden = true;
+      hintButton.setAttribute('aria-expanded', 'false');
+      hintButton.textContent = isFrench ? 'Afficher un indice' : 'إظهار تلميح';
+      select.replaceChildren();
+      const data = step === -1 ? base : stageData[step];
+      heading.textContent = isFrench ? 'Défi scientifique progressif' : 'تحدٍّ علمي متدرّج';
+      progress.textContent = step === -1
+        ? (isFrench ? 'Étape de départ · 1 / 3' : 'مرحلة الانطلاق · 1 / 3')
+        : (isFrench ? 'Étape d’analyse · ' + (step + 2) + ' / 3' : 'مرحلة التحليل · ' + (step + 2) + ' / 3');
+      question.textContent = data.q;
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = isFrench ? 'Choisissez une réponse…' : 'اختر إجابتك…';
+      select.appendChild(placeholder);
+      data.options.forEach(function (option, index) {
+        const item = document.createElement('option');
+        item.value = String(index);
+        item.textContent = option;
+        select.appendChild(item);
+      });
+      check.textContent = isFrench ? 'Vérifier' : 'تحقق من الإجابة';
+      next.textContent = step < 1
+        ? (isFrench ? 'Étape suivante' : 'المرحلة التالية')
+        : (isFrench ? 'Terminer le défi' : 'إنهاء التحدي');
+    }
+
     hintButton.addEventListener('click', function () {
       hintText.hidden = !hintText.hidden;
+      hintText.textContent = hints[categoryKey][isFrench ? 'fr' : 'ar'];
       hintButton.setAttribute('aria-expanded', String(!hintText.hidden));
       hintButton.textContent = isFrench
         ? (hintText.hidden ? 'Afficher un indice' : 'Masquer l’indice')
         : (hintText.hidden ? 'إظهار تلميح' : 'إخفاء التلميح');
     });
-    const select = document.createElement('select');
-    select.className = 'ri-science-challenge-select';
-    select.setAttribute('aria-label', isFrench ? 'Choisir une réponse' : 'اختر إجابة');
-    const placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = isFrench ? 'Choisissez une réponse…' : 'اختر إجابتك…';
-    select.appendChild(placeholder);
-    data.options.forEach(function (option, index) {
-      const item = document.createElement('option');
-      item.value = String(index);
-      item.textContent = option;
-      select.appendChild(item);
-    });
-    const check = document.createElement('button');
-    check.type = 'button';
-    check.className = 'ri-science-challenge-check';
-    check.textContent = isFrench ? 'Vérifier' : 'تحقق من الإجابة';
-    const feedback = document.createElement('p');
-    feedback.className = 'ri-science-challenge-feedback';
-    feedback.setAttribute('role', 'status');
-    feedback.hidden = true;
     check.addEventListener('click', function () {
-      feedback.hidden = false;
+      if (verified) return;
       if (select.value === '') {
+        feedback.hidden = false;
         feedback.textContent = isFrench ? 'Choisissez une réponse avant de vérifier.' : 'اختر إجابة قبل التحقق.';
         return;
       }
+      const data = step === -1 ? base : stageData[step];
       const correct = Number(select.value) === data.answer;
+      if (correct) score += 1;
+      verified = true;
+      feedback.hidden = false;
       feedback.textContent = (correct
         ? (isFrench ? 'Bonne réponse ! ' : 'إجابة صحيحة! ')
-        : (isFrench ? 'Pas encore. La bonne réponse est : ' : 'ليست الإجابة المناسبة بعد. الإجابة الصحيحة هي: ') + data.options[data.answer] + '. ')
+        : (isFrench ? 'Réponse à revoir. ' : 'تحتاج الإجابة إلى مراجعة. '))
         + data.why;
+      select.disabled = true;
+      check.disabled = true;
+      next.hidden = false;
     });
-    section.append(heading, question, hintButton, hintText, select, check, feedback);
+    next.addEventListener('click', function () {
+      if (step < 1) {
+        step += 1;
+        select.disabled = false;
+        check.disabled = false;
+        renderStep();
+        return;
+      }
+      section.replaceChildren(heading, progress, feedback, next);
+      heading.textContent = isFrench ? 'Défi terminé' : 'اكتمل التحدي';
+      progress.textContent = isFrench
+        ? 'Résultat indicatif : ' + score + ' / 3 bonnes réponses.'
+        : 'نتيجتك التدريبية: ' + score + ' من 3 إجابات صحيحة.';
+      feedback.textContent = isFrench
+        ? 'Relisez les explications et comparez-les à vos observations. Ce résultat est un entraînement, pas une note scolaire.'
+        : 'راجع التفسيرات وقارنها بملاحظاتك. هذه نتيجة تدريبية وليست نقطة مدرسية.';
+      next.textContent = isFrench ? 'Recommencer' : 'إعادة التحدي';
+      next.hidden = false;
+      next.onclick = function () {
+        step = -1;
+        score = 0;
+        select.disabled = false;
+        check.disabled = false;
+        section.replaceChildren(heading, progress, question, hintButton, hintText, select, check, feedback, next);
+        renderStep();
+        next.onclick = null;
+      };
+    });
+    section.append(heading, progress, question, hintButton, hintText, select, check, feedback, next);
+    renderStep();
     return section;
   }
 
