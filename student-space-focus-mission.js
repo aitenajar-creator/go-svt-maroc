@@ -14,7 +14,7 @@
   function render(){
     const panel=document.getElementById('panel-dashboard'),welcome=panel&&panel.querySelector('.gs-student-welcome');
     if(!welcome)return;
-    const p=profile();let card=document.getElementById(ID);
+    const p=profile();let card=document.getElementById(ID);const previous=card;
     if(!p||['admin','teacher'].includes(String(p.role||'').toLowerCase())){if(card)card.remove();clearInterval(interval);interval=null;return;}
     const lang=language(),t=TXT[lang],track=String(p.study_track||'').toUpperCase(),level=String(p.study_level||'').toUpperCase(),name=TRACKS[track]?TRACKS[track][lang]:track;
     const sig=String(p.id||p.user_id||p.email||'student')+'|'+lang;
@@ -27,8 +27,7 @@
     controls.addEventListener('click',()=>{if(seconds<=0)return;running=!running;if(running&&!interval)interval=setInterval(tick,1000);if(!running){clearInterval(interval);interval=null;}update();});
     reset.addEventListener('click',()=>{clearInterval(interval);interval=null;running=false;seconds=900;checked=[false,false,false];card.querySelectorAll('[data-step]').forEach(c=>c.checked=false);update();});
     card.querySelectorAll('[data-step]').forEach(input=>input.addEventListener('change',()=>{checked[Number(input.dataset.step)]=input.checked;card.classList.toggle('is-complete',checked.every(Boolean));}));
-    if(card)card.replaceWith(card); else welcome.insertAdjacentElement('afterend',card);
-    if(!document.getElementById(ID))welcome.insertAdjacentElement('afterend',card);
+    if(previous)previous.replaceWith(card);else welcome.insertAdjacentElement('afterend',card);
     update();
   }
   function tick(){if(seconds>0){seconds--;update();}if(seconds<=0){running=false;clearInterval(interval);interval=null;update();}}
