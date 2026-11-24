@@ -86,7 +86,7 @@ function isContentFile(path) {
 
 function loadManifest() {
     if (!manifestPromise) {
-        manifestPromise = fetch(`${CONFIG.MANIFEST_URL}?v=${Date.now()}`, { cache: 'no-store' })
+        manifestPromise = fetch(CONFIG.MANIFEST_URL, { cache: 'no-cache' })
             .then(response => {
                 if (!response.ok) throw new Error(`content.json introuvable (${response.status})`);
                 return response.json();
