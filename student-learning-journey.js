@@ -68,7 +68,7 @@
       const list = Array.isArray(files) ? files : [];
       const counts = {};
       TYPES.forEach(type => {
-        counts[type] = list.filter(path => matches(path, type, context)).length;
+        counts[type] = list.filter(path => matches(path, type, context) && !(type === 'exercices' && matches(path, 'examens', context))).length;
       });
       // Exam material may also be stored in the exercises tree; the same
       // matching rules used by the public library determine its visibility.
@@ -150,6 +150,13 @@
       refresh();
     }
   });
+  const languageObserver = new MutationObserver(records => {
+    if (records.some(record => record.attributeName === 'lang')) {
+      snapshot = null;
+      refresh();
+    }
+  });
+  languageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refresh, { once: true });
   else refresh();
 })();
