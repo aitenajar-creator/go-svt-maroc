@@ -2,30 +2,39 @@
    This is additive only and does not touch student records or authentication. */
 (() => {
   'use strict';
-  const cardId = 'gs-physiology-lab-card';
+  const cards = [
+    { id: 'gs-physiology-lab-card', href: 'student-physiology-lab.html', icon: '🫁',
+      ar: ['مختبر وظائف الأعضاء', 'مسارات تفاعلية لفهم الجهازين الهضمي والتنفسي', 'افتح المختبر ←'],
+      fr: ['Physiologie interactive', 'Parcours guidés des appareils digestif et respiratoire', 'Ouvrir le laboratoire ←'] },
+    { id: 'gs-molecular-lab-card', href: 'student-molecular-lab.html', icon: '🧬',
+      ar: ['مختبر الخلية والوراثة 3D', 'استكشف الخلايا النباتية والحيوانية وبنية ADN ثلاثية الأبعاد', 'اكتشف المختبر ←'],
+      fr: ['Laboratoire cellule & ADN 3D', 'Explorez les cellules végétales, animales et la structure de l’ADN', 'Explorer le laboratoire ←'] }
+  ];
   function addCard() {
     const grids = document.querySelectorAll('#student-space-content .gs-student-category-grid');
     grids.forEach(grid => {
-      if (grid.querySelector('#' + cardId)) return;
-      const link = document.createElement('a');
-      link.id = cardId;
-      link.className = 'gs-student-category-card';
-      link.href = 'student-physiology-lab.html';
-      const icon = document.createElement('span');
-      icon.className = 'gs-student-category-icon';
-      icon.setAttribute('aria-hidden', 'true');
-      icon.textContent = '🫁';
-      const title = document.createElement('strong');
-      title.textContent = document.documentElement.lang === 'fr' ? 'Physiologie interactive' : 'مختبر وظائف الأعضاء';
-      const description = document.createElement('small');
-      description.textContent = document.documentElement.lang === 'fr'
-        ? 'Parcours guidés des appareils digestif et respiratoire'
-        : 'مسارات تفاعلية لفهم الجهازين الهضمي والتنفسي';
-      const action = document.createElement('span');
-      action.className = 'gs-student-category-link';
-      action.textContent = document.documentElement.lang === 'fr' ? 'Ouvrir le laboratoire ←' : 'افتح المختبر ←';
-      link.append(icon, title, description, action);
-      grid.append(link);
+      cards.forEach(config => {
+        if (grid.querySelector('#' + config.id)) return;
+        const link = document.createElement('a');
+        link.id = config.id;
+        link.className = 'gs-student-category-card';
+        link.href = config.href;
+        const icon = document.createElement('span');
+        icon.className = 'gs-student-category-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = config.icon;
+        const lang = document.documentElement.lang === 'fr' ? 'fr' : 'ar';
+        const content = config[lang];
+        const title = document.createElement('strong');
+        title.textContent = content[0];
+        const description = document.createElement('small');
+        description.textContent = content[1];
+        const action = document.createElement('span');
+        action.className = 'gs-student-category-link';
+        action.textContent = content[2];
+        link.append(icon, title, description, action);
+        grid.append(link);
+      });
     });
   }
   const start = () => {
