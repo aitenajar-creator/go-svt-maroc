@@ -70,8 +70,8 @@
         const files = Array.isArray(paths) ? paths : [];
         const quizFiles = Array.from(new Set(files.filter(path =>
           typeof path === 'string' &&
-          /^\\/?quiz\\//i.test(path) &&
-          /\\.json$/i.test(path)
+          (path.charAt(0) === '/' ? path.slice(1) : path).split('/')[0] === 'quiz' &&
+          path.toLowerCase().endsWith('.json')
         )));
         return Object.fromEntries(LANGUAGES.map(language => [
           language, quizFiles.filter(path => matches(path, 'quiz', context, language))
