@@ -193,6 +193,14 @@
     function syncFavorites() {
         // StudentSpace lit la clé commune au moment du rendu. Écoute aussi les
         // changements provenant d'un autre onglet, sans polling permanent.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'gosvt-favs' && window.StudentSpace) {
+                window.StudentSpace.refresh();
+            }
+        });
+        document.addEventListener('gosvt:favorites-updated', function () {
+            if (window.StudentSpace) window.StudentSpace.refresh();
+        });
     }
 
     // ============================================
