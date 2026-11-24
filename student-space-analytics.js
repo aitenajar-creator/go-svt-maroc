@@ -384,9 +384,16 @@
   function init() {
     const root = document.getElementById('student-space-content');
     if (!root) return;
-    new MutationObserver(schedule).observe(root, {
-      childList: true, subtree: true, attributes: true, attributeFilter: ['class']
-    });
+    new MutationObserver(function (records) {
+      const relevant = records.some(function (record) {
+        const target = record.target.nodeType === 1 ? record.target : record.target.parentElement;
+        if (target && target.closest('#' + ROOT_ID)) return false;
+        return Array.from(record.addedNodes).concat(Array.from(record.removedNodes)).some(function (node) {
+          return node.nodeType === 1 && node.id !== ROOT_ID && !node.closest('#' + ROOT_ID);
+        });
+      });
+      if (relevant) schedule();
+    }).observe(root, { childList: true, subtree: true });
     document.addEventListener('gosvt:auth-changed', schedule);
     document.addEventListener('click', function (event) {
       if (event.target.closest && event.target.closest('.lang-switcher')) schedule();
