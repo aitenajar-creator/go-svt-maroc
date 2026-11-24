@@ -59,8 +59,9 @@
     // quizzes to selected courses, but it is not the complete quiz inventory;
     // counting it would silently omit standalone quizzes and could count stale
     // mappings. content.json is the authoritative published-file manifest.
-    const manifestUrl = window.CONFIG && window.CONFIG.MANIFEST_URL;
-    if (!manifestUrl) return Promise.resolve({ arabe: [], francais: [] });
+    // CONFIG is a top-level lexical constant in script.js, not a window property.
+    // The site publishes its canonical inventory at the root content.json path.
+    const manifestUrl = 'content.json';
     const separator = manifestUrl.includes('?') ? '&' : '?';
     return fetch(manifestUrl + separator + 'pw=' + Date.now(), {
       cache: 'no-store',
