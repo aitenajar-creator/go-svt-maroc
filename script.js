@@ -511,6 +511,23 @@ function startPdfThumbnailAutoObserver() {
 
     pdfThumbnailDomObserver = new MutationObserver(records => {
         records.forEach(record => {
+            // Release visibility-observer references to removed cards and remove
+            // queued tasks for content that is no longer in the document.
+            record.removedNodes.forEach(removed => {
+                if (removed.nodeType !== 1) return;
+                const detached = [];
+                if (removed.matches && removed.matches('[data-pdf-thumbnail]')) detached.push(removed);
+                if (removed.querySelectorAll) detached.push(...removed.querySelectorAll('[data-pdf-thumbnail]'));
+                detached.forEach(node => {
+                    if (pdfThumbnailVisibilityObserver && node.dataset.visibilityObserved === 'true') {
+                        pdfThumbnailVisibilityObserver.unobserve(node);
+                        delete node.dataset.visibilityObserved;
+                    }
+                    if (node.dataset.queued === 'true') {
+                        node.dataset.queued = 'false';
+                    }
+                });
+            });
             record.addedNodes.forEach(added => {
                 if (added.nodeType !== 1) return;
                 if (added.matches && added.matches('[data-pdf-thumbnail]')) {
@@ -521,6 +538,14 @@ function startPdfThumbnailAutoObserver() {
                 }
             });
         });
+        // Remove detached queue records without touching active renders.
+        for (let i = pdfThumbnailQueue.length - 1; i >= 0; i--) {
+            const node = pdfThumbnailQueue[i].container;
+            if (!node || !node.isConnected) {
+                if (node && node.dataset) delete node.dataset.queued;
+                pdfThumbnailQueue.splice(i, 1);
+            }
+        }
     });
 
     libraryContainers.forEach(container => {
