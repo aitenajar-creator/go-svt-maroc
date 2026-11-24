@@ -196,8 +196,14 @@ function finishChallenge(){
   report.appendChild(heading);
   members.forEach(item=>{
    const stat=organStats[item.id],line=document.createElement('p');
-   const mastered=stat.attempts===3&&stat.correct>=2;\n   line.textContent=(mastered?'✓ ':'↻ ')+DATA[item.id][langKey()][0]+' — '+stat.correct+'/'+stat.attempts+' / 3 · '+(mastered?(isFr()?'Acquis':'متقن'):(stat.attempts<3?(isFr()?'Incomplet':'غير مكتمل'):(isFr()?'À revoir':'يحتاج إلى مراجعة')));
+   const mastered=stat.attempts===3&&stat.correct>=2;
+   line.textContent=(mastered?'✓ ':'↻ ')+DATA[item.id][langKey()][0]+' — '+stat.correct+'/'+stat.attempts+' / 3 · '+(mastered?(isFr()?'Acquis':'متقن'):(stat.attempts<3?(isFr()?'Incomplet':'غير مكتمل'):(isFr()?'À revoir':'يحتاج إلى مراجعة')));
    line.className=mastered?'is-mastered':'needs-review';report.appendChild(line);
+   if(!mastered){
+    const advice=document.createElement('small');advice.className='gs-3d-review-tip';
+    advice.textContent=isFr()?'À revoir : relisez la description et la fonction dans la fiche de cet organe, puis réessayez le niveau correspondant.':'مراجعة مقترحة: اقرأ وصف العضو ووظيفته في بطاقته، ثم أعد محاولة المستوى المرتبط به.';
+    report.appendChild(advice);
+   }
   });
  });
  const previous=quizPanel.querySelector('.gs-3d-quiz-report');if(previous)previous.remove();
