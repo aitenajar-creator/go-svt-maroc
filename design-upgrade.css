@@ -1,11 +1,21 @@
-/* GO SVT Maroc — design upgrade (loaded last) */
+/* GO SVT Maroc — design upgrade (à charger EN DERNIER, après visual-refresh.css) */
 :root{--gs-ink:#06251d;--gs-em:#0b5d43;--gs-mint:#34d399;--gs-gold:#f3c969;--gs-card:#fff;--gs-line:#e2eee6}
 html.gs-dark{--gs-card:#16231d;--gs-line:#26382f}
-.hero.gs-hero{position:relative;isolation:isolate;overflow:visible;text-align:start;padding:clamp(2.5rem,6vw,4.5rem) 0 0;min-height:0;display:block;background-image:radial-gradient(900px 480px at 88% -8%,rgba(243,201,105,.22),transparent 62%),radial-gradient(800px 520px at 6% 112%,rgba(52,211,153,.26),transparent 60%),linear-gradient(135deg,#041f18 0%,#0b5d43 58%,#127a55 100%);background-size:auto}
-#accueil.section{padding-top:0}
+
+/* ---------- Hero ---------- */
+.hero.gs-hero{position:relative;isolation:isolate;overflow:visible;text-align:start;padding:clamp(2.5rem,6vw,4.5rem) 0 0;min-height:0;display:block;
+  background-image:radial-gradient(900px 480px at 88% -8%,rgba(243,201,105,.22),transparent 62%),
+  radial-gradient(800px 520px at 6% 112%,rgba(52,211,153,.26),transparent 60%),
+  linear-gradient(135deg,#041f18 0%,#0b5d43 58%,#127a55 100%);background-size:auto}
 .gs-hero-bg{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+#accueil.section{padding-top:0}
 .gs-hero-bg i{position:absolute;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.28),rgba(255,255,255,.04) 70%);border:1px solid rgba(255,255,255,.14);animation:gs-float 14s ease-in-out infinite}
-.gs-hero-bg i:nth-child(1){width:90px;height:90px;inset:12% auto auto 6%}.gs-hero-bg i:nth-child(2){width:46px;height:46px;inset:62% auto auto 14%;animation-delay:-4s}.gs-hero-bg i:nth-child(3){width:130px;height:130px;inset:8% 42% auto auto;animation-delay:-8s;opacity:.6}.gs-hero-bg i:nth-child(4){width:32px;height:32px;inset:30% 8% auto auto;animation-delay:-2s}.gs-hero-bg i:nth-child(5){width:70px;height:70px;inset:70% 36% auto auto;animation-delay:-6s;opacity:.7}.gs-hero-bg i:nth-child(6){width:22px;height:22px;inset:48% auto auto 46%;animation-delay:-10s}
+.gs-hero-bg i:nth-child(1){width:90px;height:90px;inset:12% auto auto 6%}
+.gs-hero-bg i:nth-child(2){width:46px;height:46px;inset:62% auto auto 14%;animation-delay:-4s}
+.gs-hero-bg i:nth-child(3){width:130px;height:130px;inset:8% 42% auto auto;animation-delay:-8s;opacity:.6}
+.gs-hero-bg i:nth-child(4){width:32px;height:32px;inset:30% 8% auto auto;animation-delay:-2s}
+.gs-hero-bg i:nth-child(5){width:70px;height:70px;inset:70% 36% auto auto;animation-delay:-6s;opacity:.7}
+.gs-hero-bg i:nth-child(6){width:22px;height:22px;inset:48% auto auto 46%;animation-delay:-10s}
 @keyframes gs-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-26px) scale(1.07)}}
 .gs-hero-inner{display:grid;grid-template-columns:1.25fr .75fr;gap:2rem;align-items:center}
 .gs-pill{display:inline-block;padding:.4rem 1rem;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(6px);font-weight:700;font-size:.92rem;margin-bottom:1.1rem}
@@ -17,24 +27,133 @@ html.gs-dark{--gs-card:#16231d;--gs-line:#26382f}
 .hero.gs-hero .btn-primary:hover{transform:translateY(-3px);box-shadow:0 16px 38px rgba(243,169,61,.55)}
 .hero.gs-hero .btn-secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(6px)}
 .hero.gs-hero .btn-secondary:hover{background:rgba(255,255,255,.2);transform:translateY(-3px)}
-.gs-hero-visual{display:flex;justify-content:center}.gs-helix{width:min(100%,290px);height:auto;filter:drop-shadow(0 0 22px rgba(52,211,153,.45))}
+
+/* ---------- ADN animé ---------- */
+.gs-hero-visual{display:flex;justify-content:center}
+.gs-helix{width:min(100%,290px);height:auto;filter:drop-shadow(0 0 22px rgba(52,211,153,.45))}
 .gs-helix .r line{stroke:rgba(255,255,255,.45);stroke-width:2.4;stroke-linecap:round;transform-box:fill-box;transform-origin:center;animation:gs-rung 4s ease-in-out infinite alternate;animation-delay:calc(var(--i)*-.3s)}
-.gs-helix .r circle{animation:gs-a 4s ease-in-out infinite alternate;animation-delay:calc(var(--i)*-.3s)}.gs-helix .r .a{fill:#ffd36b}.gs-helix .r .b{fill:#34d399;animation-name:gs-b}
-@keyframes gs-rung{from{transform:scaleX(-1)}to{transform:scaleX(1)}}@keyframes gs-a{from{transform:translateX(-86px) scale(.65);opacity:.55}to{transform:translateX(86px) scale(1.2);opacity:1}}@keyframes gs-b{from{transform:translateX(86px) scale(1.2);opacity:1}to{transform:translateX(-86px) scale(.65);opacity:.55}}
+.gs-helix .r circle{animation:gs-a 4s ease-in-out infinite alternate;animation-delay:calc(var(--i)*-.3s)}
+.gs-helix .r .a{fill:#ffd36b}.gs-helix .r .b{fill:#34d399;animation-name:gs-b}
+@keyframes gs-rung{from{transform:scaleX(-1)}to{transform:scaleX(1)}}
+@keyframes gs-a{from{transform:translateX(-86px) scale(.65);opacity:.55}to{transform:translateX(86px) scale(1.2);opacity:1}}
+@keyframes gs-b{from{transform:translateX(86px) scale(1.2);opacity:1}to{transform:translateX(-86px) scale(.65);opacity:.55}}
+
+/* ---------- Cartes de niveau ---------- */
 .gs-levels-title{margin:2.4rem 0 .9rem!important;font-weight:700;font-size:1rem!important;opacity:.85!important;max-width:none!important}
 .gs-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;transform:translateY(46px)}
-.gs-level-card{position:relative;display:grid;gap:.15rem;padding:1.2rem 1.3rem;border-radius:20px;color:var(--gs-ink);text-decoration:none;background:var(--gs-card);border:1px solid var(--gs-line);box-shadow:0 14px 36px rgba(3,30,22,.28);transition:transform .25s,box-shadow .25s}
-html.gs-dark .gs-level-card{color:#e8f5ee}.gs-level-card:hover,.gs-level-card:focus-visible{transform:translateY(-6px);box-shadow:0 22px 48px rgba(3,30,22,.38);outline:0}.gs-level-card:focus-visible{box-shadow:0 0 0 3px var(--gs-gold),0 22px 48px rgba(3,30,22,.38)}
-.gs-level-code{justify-self:start;padding:.2rem .7rem;border-radius:999px;font-weight:800;font-size:.85rem;color:#fff;background:linear-gradient(135deg,var(--gs-em),#1fa774)}.gs-level-card:nth-child(2) .gs-level-code{background:linear-gradient(135deg,#b7791f,#f3a93d)}.gs-level-card:nth-child(3) .gs-level-code{background:linear-gradient(135deg,#9b2c5a,#e0568f)}
-.gs-level-card strong{font-size:1.2rem;margin-top:.35rem}.gs-level-card small{opacity:.72;font-size:.88rem;line-height:1.5;padding-inline-end:2rem}
-.gs-level-go{position:absolute;inset-inline-end:1.1rem;bottom:1rem;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--gs-em);color:#fff;transition:transform .25s}html[dir=ltr] .gs-level-go{transform:scaleX(-1)}.gs-level-card:hover .gs-level-go{transform:translateX(-4px)}html[dir=ltr] .gs-level-card:hover .gs-level-go{transform:scaleX(-1) translateX(-4px)}
-.gs-stats{padding:calc(46px + 1.4rem) 0 .5rem;background:linear-gradient(180deg,#f4f8f5,#fff)}html.gs-dark .gs-stats{background:transparent}
+.gs-level-card{position:relative;display:grid;gap:.15rem;padding:1.2rem 1.3rem;border-radius:20px;color:var(--gs-ink);text-decoration:none;
+  background:var(--gs-card);border:1px solid var(--gs-line);box-shadow:0 14px 36px rgba(3,30,22,.28);transition:transform .25s,box-shadow .25s}
+html.gs-dark .gs-level-card{color:#e8f5ee}
+.gs-level-card:hover,.gs-level-card:focus-visible{transform:translateY(-6px);box-shadow:0 22px 48px rgba(3,30,22,.38);outline:0}
+.gs-level-card:focus-visible{box-shadow:0 0 0 3px var(--gs-gold),0 22px 48px rgba(3,30,22,.38)}
+.gs-level-code{justify-self:start;padding:.2rem .7rem;border-radius:999px;font-weight:800;font-size:.85rem;color:#fff;background:linear-gradient(135deg,var(--gs-em),#1fa774)}
+.gs-level-card:nth-child(2) .gs-level-code{background:linear-gradient(135deg,#b7791f,#f3a93d)}
+.gs-level-card:nth-child(3) .gs-level-code{background:linear-gradient(135deg,#9b2c5a,#e0568f)}
+.gs-level-card strong{font-size:1.2rem;margin-top:.35rem}
+.gs-level-card small{opacity:.72;font-size:.88rem;line-height:1.5;padding-inline-end:2rem}
+.gs-level-go{position:absolute;inset-inline-end:1.1rem;bottom:1rem;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--gs-em);color:#fff;transition:transform .25s}
+html[dir=ltr] .gs-level-go{transform:scaleX(-1)}
+.gs-level-card:hover .gs-level-go{transform:translateX(-4px)}
+html[dir=ltr] .gs-level-card:hover .gs-level-go{transform:scaleX(-1) translateX(-4px)}
+
+/* ---------- Statistiques ---------- */
+.gs-stats{padding:calc(46px + 1.4rem) 0 .5rem;background:linear-gradient(180deg,#f4f8f5,#fff)}
+html.gs-dark .gs-stats{background:transparent}
 .gs-stats-card{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:1.4rem;border-radius:22px;background:var(--gs-card);border:1px solid var(--gs-line);box-shadow:0 10px 30px rgba(27,76,51,.08)}
-.gs-stat{text-align:center;display:grid;gap:.1rem}.gs-stat-num{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;line-height:1.1;background:linear-gradient(135deg,var(--gs-em),#1fa774);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}.gs-stat-label{font-size:.92rem;opacity:.75;font-weight:600}
-.features{background:transparent;padding-top:2rem}.feature-card{transition:transform .25s,box-shadow .25s,border-color .25s}.feature-card:hover{transform:translateY(-6px);border-color:#9ad5b6;box-shadow:0 18px 40px rgba(27,76,51,.14)}.feature-icon{transition:transform .3s}.feature-card:hover .feature-icon{transform:rotate(-8deg) scale(1.08)}
-.section-title{position:relative;padding-bottom:.7rem}.section-title:after{content:"";display:block;width:64px;height:5px;margin-top:.55rem;border-radius:9px;background:linear-gradient(90deg,var(--gs-em),var(--gs-gold))}.section-title[style*="center"]:after,.hero .section-title:after{margin-inline:auto}
-.content-card{transition:transform .25s,box-shadow .25s}.level-tab-btn,.tab-btn{transition:transform .2s,background .2s,box-shadow .2s}.level-tab-btn:hover,.tab-btn:hover{transform:translateY(-2px)}.level-tab-btn.active,.tab-btn.active{box-shadow:0 6px 16px rgba(23,107,75,.28)}
-.gs-reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;transition-delay:var(--d,0s)}.gs-reveal.in{opacity:1;transform:none}
+.gs-stat{text-align:center;display:grid;gap:.1rem}
+.gs-stat-num{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;line-height:1.1;background:linear-gradient(135deg,var(--gs-em),#1fa774);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.gs-stat-label{font-size:.92rem;opacity:.75;font-weight:600}
+
+/* ---------- Cartes & titres ---------- */
+.features{background:transparent;padding-top:2rem}
+.feature-card{transition:transform .25s,box-shadow .25s,border-color .25s}
+.feature-card:hover{transform:translateY(-6px);border-color:#9ad5b6;box-shadow:0 18px 40px rgba(27,76,51,.14)}
+.feature-icon{transition:transform .3s}.feature-card:hover .feature-icon{transform:rotate(-8deg) scale(1.08)}
+.section-title{position:relative;padding-bottom:.7rem}
+.section-title:after{content:"";display:block;width:64px;height:5px;margin-top:.55rem;border-radius:9px;background:linear-gradient(90deg,var(--gs-em),var(--gs-gold))}
+.section-title[style*="center"]:after,.hero .section-title:after{margin-inline:auto}
+.content-card{transition:transform .25s,box-shadow .25s}
+.level-tab-btn,.tab-btn{transition:transform .2s,background .2s,box-shadow .2s}
+.level-tab-btn:hover,.tab-btn:hover{transform:translateY(-2px)}
+.level-tab-btn.active,.tab-btn.active{box-shadow:0 6px 16px rgba(23,107,75,.28)}
+
+/* ---------- Apparition au défilement ---------- */
+.gs-reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;transition-delay:var(--d,0s)}
+.gs-reveal.in{opacity:1;transform:none}
+
 html.gs-dark .hero.gs-hero{background-image:radial-gradient(900px 480px at 88% -8%,rgba(243,201,105,.12),transparent 62%),radial-gradient(800px 520px at 6% 112%,rgba(52,211,153,.14),transparent 60%),linear-gradient(135deg,#02130e 0%,#07382a 58%,#0b5238 100%)}
-@media(max-width:860px){.gs-hero-inner{grid-template-columns:1fr;text-align:center}.gs-hero-visual{order:-1}.gs-helix{width:110px}.gs-levels-title{text-align:center}.hero.gs-hero p{margin-inline:auto}.hero.gs-hero .hero-buttons{justify-content:center}.gs-levels{grid-template-columns:1fr;transform:translateY(30px)}.gs-stats{padding-top:calc(30px + 1.2rem)}.gs-stats-card{grid-template-columns:repeat(2,1fr)}}
-@media(prefers-reduced-motion:reduce){.gs-hero-bg i,.gs-helix .r line,.gs-helix .r circle{animation:none}.gs-reveal{opacity:1;transform:none;transition:none}.gs-level-card,.feature-card,.btn{transition:none}}
+
+/* ---------- Mobile ---------- */
+@media(max-width:860px){
+  .gs-hero-inner{grid-template-columns:1fr;text-align:center}
+  .gs-hero-visual{order:-1}.gs-helix{width:110px}
+  .gs-levels-title{text-align:center}
+  .hero.gs-hero p{margin-inline:auto}.hero.gs-hero .hero-buttons{justify-content:center}
+  .gs-levels{grid-template-columns:1fr;transform:translateY(30px)}
+  .gs-stats{padding-top:calc(30px + 1.2rem)}
+  .gs-stats-card{grid-template-columns:repeat(2,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  .gs-hero-bg i,.gs-helix .r line,.gs-helix .r circle{animation:none}
+  .gs-reveal{opacity:1;transform:none;transition:none}
+  .gs-level-card,.feature-card,.btn{transition:none}
+}
+
+/* =====================================================================
+   PHASE 2 — cartes de ressources, titres de groupes, état « vide »
+   (garde la mise en page de file-cards.css ; ne change que l'apparence)
+   ===================================================================== */
+body .content-card.file-resource-card{border:1px solid var(--gs-line)!important;border-radius:24px!important;background:var(--gs-card)!important;
+  box-shadow:0 8px 26px rgba(27,76,51,.08)!important;transition:transform .25s,box-shadow .25s,border-color .25s!important}
+body .content-card.file-resource-card:hover{transform:translateY(-5px)!important;border-color:#8fd0ad!important;box-shadow:0 20px 44px rgba(27,76,51,.16)!important}
+body .content-card.file-resource-card::before{content:"";position:absolute;inset:0 26px auto 26px;height:4px;border-radius:0 0 8px 8px;background:linear-gradient(90deg,var(--gs-em),var(--gs-gold))}
+body .content-card.file-resource-card>.level-badge{padding:.28rem .85rem!important;border-radius:999px!important;border:0!important;font-size:.8rem!important;font-weight:800!important;color:#fff!important;background:linear-gradient(135deg,var(--gs-em),#1fa774)!important}
+body .content-card.file-resource-card>.new-badge{border-radius:999px!important;padding:.22rem .75rem!important;font-weight:800!important;background:linear-gradient(135deg,#ffd36b,#f3a93d)!important;color:#3a2800!important;box-shadow:0 4px 12px rgba(243,169,61,.45)}
+body .content-card.file-resource-card>.file-card-layout>.file-preview-panel{border:0!important;border-radius:18px!important;background:linear-gradient(145deg,#e8f4ec,#fff)!important;box-shadow:inset 0 0 0 1px rgba(23,107,75,.08)!important}
+body .content-card.file-resource-card .file-preview-panel .pdf-thumbnail canvas{transition:transform .5s}
+body .content-card.file-resource-card:hover .file-preview-panel .pdf-thumbnail canvas{transform:scale(1.03)!important}
+body .content-card.file-resource-card>.file-card-layout>.file-info-panel{border:0!important;border-radius:18px!important;background:transparent!important}
+body .content-card.file-resource-card .file-info-panel>h3{color:var(--gs-ink)!important;font-size:clamp(1.02rem,1.3vw,1.2rem)!important}
+html.gs-dark body .content-card.file-resource-card .file-info-panel>h3{color:#d9f2e4!important}
+body .content-card.file-resource-card .file-info-panel>.file-name{opacity:.75}
+body .content-card.file-resource-card .file-info-panel>.card-actions a.download-btn,
+body .content-card.file-resource-card .file-info-panel>.card-actions button.preview-btn{border-radius:999px!important;font-weight:800!important;transition:transform .2s,box-shadow .2s,background .2s!important}
+body .content-card.file-resource-card .file-info-panel>.card-actions a.download-btn{border:0!important;color:#fff!important;background:linear-gradient(135deg,var(--gs-em),#1fa774)!important;box-shadow:0 8px 20px rgba(23,107,75,.28)!important}
+body .content-card.file-resource-card .file-info-panel>.card-actions a.download-btn:hover{transform:translateY(-2px)!important;box-shadow:0 12px 26px rgba(23,107,75,.4)!important}
+body .content-card.file-resource-card .file-info-panel>.card-actions button.preview-btn{background:transparent!important;color:var(--gs-em)!important;border:2px solid var(--gs-em)!important}
+body .content-card.file-resource-card .file-info-panel>.card-actions button.preview-btn:hover{background:var(--gs-em)!important;color:#fff!important;transform:translateY(-2px)!important}
+html.gs-dark body .content-card.file-resource-card .file-info-panel>.card-actions button.preview-btn{color:#7be0b4!important;border-color:#7be0b4!important}
+body .track-content-heading{display:flex;align-items:center;gap:.7rem;margin:1.6rem 0 .9rem;font-weight:800;font-size:1.25rem}
+body .track-content-heading::before{content:"";width:6px;height:1.5em;border-radius:6px;background:linear-gradient(180deg,var(--gs-gold),var(--gs-em))}
+
+/* État vide */
+.gs-empty{grid-column:1/-1;display:grid;justify-items:center;gap:.7rem;text-align:center;padding:2.4rem 1.2rem;border:2px dashed #b8dcc7;border-radius:26px;
+  background:linear-gradient(145deg,rgba(233,246,239,.7),rgba(255,255,255,.4))}
+html.gs-dark .gs-empty{background:rgba(255,255,255,.03);border-color:#2f4a3d}
+.gs-empty svg{width:84px;height:84px;color:var(--gs-em);animation:gs-bob 3.4s ease-in-out infinite}
+@keyframes gs-bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+.gs-empty h4{margin:0;font-size:1.3rem;font-weight:800}
+.gs-empty p{margin:0;max-width:480px;opacity:.78;line-height:1.8}
+.gs-empty-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-top:.4rem}
+.gs-empty-actions a{padding:.6rem 1.2rem;border-radius:999px;font-weight:800;text-decoration:none;border:2px solid var(--gs-em);color:var(--gs-em);transition:transform .2s,background .2s}
+.gs-empty-actions a:first-child{background:linear-gradient(135deg,var(--gs-em),#1fa774);color:#fff;border-color:transparent}
+.gs-empty-actions a:hover{transform:translateY(-2px)}
+@media(prefers-reduced-motion:reduce){.gs-empty svg{animation:none}body .content-card.file-resource-card,body .content-card.file-resource-card:hover{transition:none!important;transform:none!important}}
+
+/* ---- Correctif de grille : file-cards.css force 1/-1 (spécificité 5 classes) sur les cartes d'un groupe de filière,
+        ce qui annule sa propre règle « auto-fit » plus bas. On rétablit 2–3 cartes par ligne, preview au-dessus. ---- */
+body .content-grid>.track-content-group>.content-grid>.content-card.file-resource-card,
+body .content-grid>.content-card.file-resource-card,
+body #latest-content>.content-card.file-resource-card{grid-column:auto!important}
+body .content-card.file-resource-card>.file-card-layout,
+html[dir="rtl"] body .content-card.file-resource-card>.file-card-layout{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto!important;grid-template-areas:"preview" "details"!important;direction:ltr!important;gap:.8rem!important}
+html[dir="rtl"] body .content-card.file-resource-card .file-info-panel{direction:rtl!important}
+body .content-card.file-resource-card .file-preview-panel>.pdf-thumbnail{aspect-ratio:4/3!important;max-height:290px!important;overflow:hidden!important;border-radius:14px!important}
+body .content-card.file-resource-card .file-preview-panel>.file-thumbnail{min-height:170px!important}
+body .content-card.file-resource-card .file-info-panel>.card-actions{flex-direction:row!important;flex-wrap:wrap!important}
+body .content-card.file-resource-card .file-info-panel>.card-actions a,
+body .content-card.file-resource-card .file-info-panel>.card-actions button{flex:1 1 120px!important;height:auto!important;min-height:44px!important}
+
+/* Titre réel du cours (unité au-dessus du titre) */
+body .content-card.file-resource-card .file-info-panel>.gs-kicker{display:block;font-size:.78rem;font-weight:800;line-height:1.5;color:var(--gs-em);margin:0 0 -.3rem}
+html.gs-dark body .content-card.file-resource-card .file-info-panel>.gs-kicker{color:#7be0b4}
