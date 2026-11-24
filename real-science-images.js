@@ -984,6 +984,12 @@
     const model = models[categoryKey];
     if (!model) return null;
     const copy = model[isFrench ? 'fr' : 'ar'];
+    if (!document.getElementById('ri-virtual-microscope-styles')) {
+      const style = document.createElement('style');
+      style.id = 'ri-virtual-microscope-styles';
+      style.textContent = '.ri-virtual-microscope{display:grid;gap:11px;margin:14px 0;padding:15px;border:1px solid #9bb8c5;border-radius:15px;background:rgba(14,116,144,.045)}.ri-virtual-microscope p{margin:0;line-height:1.65}.ri-microscope-viewport{position:relative;width:100%;height:clamp(220px,42vw,430px);overflow:hidden;display:grid;place-items:center;border-radius:12px;background:#101b20}.ri-microscope-viewport img{max-width:100%;max-height:100%;object-fit:contain;transform-origin:center;transition:transform .12s ease}.ri-microscope-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}.ri-microscope-controls label{display:grid;gap:6px;font-size:.86rem;font-weight:650}.ri-microscope-controls input{width:100%;accent-color:#1683a0}.ri-microscope-reset{justify-self:start;padding:8px 12px;border:1px solid #6e9eac;border-radius:9px;background:#fff;color:#24505b;font:inherit;cursor:pointer}.ri-microscope-credit{display:grid;gap:4px;overflow-wrap:anywhere;font-size:.8rem;line-height:1.5}.ri-microscope-credit a{color:#087b98;text-decoration:underline}html.gs-dark .ri-virtual-microscope{background:rgba(14,116,144,.09);border-color:#416b78}html.gs-dark .ri-microscope-reset{background:#20363d;color:#e4f4f5}';
+      document.head.appendChild(style);
+    }
     if (!document.getElementById('ri-experiment-design-styles')) {
       const style = document.createElement('style');
       style.id = 'ri-experiment-design-styles';
@@ -1119,6 +1125,99 @@
     note.textContent=isFrench?'Activité pédagogique sans manipulation de matériel : les réponses ne sont ni notées ni enregistrées.':'نشاط تعليمي للتخطيط فقط، دون استعمال مواد مخبرية؛ لا تُمنح عنه نقاط ولا تُحفظ الإجابات.';
     panel.prepend(title,intro,scenario,hypothesisLabel,hypothesis);
     panel.append(check,feedback,note);
+    return panel;
+  }
+
+  function createVirtualMicroscope(categoryKey, isFrench) {
+    const panel = document.createElement('section');
+    panel.className = 'ri-virtual-microscope';
+    const title = document.createElement('strong');
+    title.textContent = isFrench ? 'Microscope virtuel : explorer une image scientifique' : 'المجهر الافتراضي: استكشف صورة علمية';
+    const intro = document.createElement('p');
+    intro.textContent = isFrench ? 'Zoomez et déplacez la zone observée. L’image reste authentique ; le zoom ne révèle pas de détails absents du fichier original.' : 'كبّر الصورة وحرّك مجال الرؤية. الصورة أصلية وموثقة؛ التكبير لا يكشف تفاصيل غير موجودة في الملف الأصلي.';
+    const status = document.createElement('p');
+    status.className = 'ri-microscope-status';
+    status.setAttribute('role','status');
+    status.textContent = isFrench ? 'Chargement de l’image vérifiée…' : 'جارٍ تحميل الصورة العلمية الموثقة…';
+    const viewport = document.createElement('div');
+    viewport.className = 'ri-microscope-viewport';
+    const image = document.createElement('img');
+    image.alt = isFrench ? 'Image scientifique vérifiée à explorer' : 'صورة علمية موثقة للاستكشاف';
+    image.hidden = true;
+    viewport.appendChild(image);
+    const controls = document.createElement('div');
+    controls.className = 'ri-microscope-controls';
+    const zoomLabel = document.createElement('label');
+    zoomLabel.textContent = isFrench ? 'Grossissement' : 'مستوى التكبير';
+    const zoom = document.createElement('input');
+    zoom.type = 'range'; zoom.min = '1'; zoom.max = '4'; zoom.step = '0.25'; zoom.value = '1';
+    const zoomValue = document.createElement('output');
+    zoomValue.textContent = '1×';
+    zoomLabel.append(zoom,zoomValue);
+    const xLabel = document.createElement('label');
+    xLabel.textContent = isFrench ? 'Déplacement horizontal' : 'التحريك الأفقي';
+    const xRange = document.createElement('input');
+    xRange.type = 'range'; xRange.min = '0'; xRange.max = '100'; xRange.value = '50';
+    xLabel.appendChild(xRange);
+    const yLabel = document.createElement('label');
+    yLabel.textContent = isFrench ? 'Déplacement vertical' : 'التحريك العمودي';
+    const yRange = document.createElement('input');
+    yRange.type = 'range'; yRange.min = '0'; yRange.max = '100'; yRange.value = '50';
+    yLabel.appendChild(yRange);
+    const reset = document.createElement('button');
+    reset.type = 'button';
+    reset.className = 'ri-microscope-reset';
+    reset.textContent = isFrench ? 'Réinitialiser la vue' : 'إعادة ضبط العرض';
+    const credit = document.createElement('div');
+    credit.className = 'ri-microscope-credit';
+    function updateView() {
+      const scale = Number(zoom.value);
+      image.style.transform = 'scale(' + scale + ')';
+      image.style.transformOrigin = xRange.value + '% ' + yRange.value + '%';
+      zoomValue.textContent = scale.toFixed(2).replace(/0+$/,'').replace(/\.$/,'') + '×';
+    }
+    zoom.addEventListener('input',updateView);
+    xRange.addEventListener('input',updateView);
+    yRange.addEventListener('input',updateView);
+    reset.addEventListener('click',function(){
+      zoom.value='1'; xRange.value='50'; yRange.value='50'; updateView();
+    });
+    controls.append(zoomLabel,xLabel,yLabel,reset);
+    panel.append(title,intro,status,viewport,controls,credit);
+    getImage.apply(null,categoryKey.split('/')).then(function(data){
+      if(!data){
+        status.textContent=isFrench ? 'Aucune image vérifiée disponible pour cette catégorie. Aucune image de remplacement n’est affichée.' : 'لا تتوفر حالياً صورة موثقة لهذه الفئة؛ لن نعرض صورة بديلة غير حقيقية.';
+        controls.hidden=true;
+        return;
+      }
+      image.src=data.url;
+      image.alt=data.title || (isFrench?'Image scientifique vérifiée':'صورة علمية موثقة');
+      image.hidden=false;
+      image.addEventListener('load',function(){
+        status.textContent=isFrench ? 'Image chargée. Utilisez les curseurs pour explorer le champ visuel.' : 'تم تحميل الصورة. استخدم المؤشرات لاستكشاف مجال الرؤية.';
+      },{once:true});
+      image.addEventListener('error',function(){
+        image.hidden=true;
+        status.textContent=isFrench ? 'Impossible de charger cette image vérifiée pour le moment.' : 'تعذر تحميل الصورة الموثقة حالياً.';
+        controls.hidden=true;
+      },{once:true});
+      const name=document.createElement('strong');
+      name.textContent=data.title || (isFrench?'Image scientifique':'صورة علمية');
+      const author=document.createElement('span');
+      author.textContent=(isFrench?'Auteur : ':'المؤلف: ')+(data.author || (isFrench?'non indiqué':'غير محدد'));
+      const license=document.createElement('span');
+      license.textContent=(isFrench?'Licence : ':'الترخيص: ')+(data.license || (isFrench?'non indiquée':'غير محدد'));
+      const source=document.createElement('a');
+      source.href=data.source_url;
+      source.target='_blank';
+      source.rel='noopener noreferrer';
+      source.textContent=isFrench?'Voir la source Wikimedia Commons':'عرض المصدر على ويكيميديا كومنز';
+      credit.append(name,author,license,source);
+      updateView();
+    }).catch(function(){
+      status.textContent=isFrench ? 'Le catalogue scientifique est momentanément inaccessible.' : 'تعذر الوصول إلى فهرس الصور العلمية حالياً.';
+      controls.hidden=true;
+    });
     return panel;
   }
 
@@ -1325,7 +1424,9 @@
     const repairActivity = createReasoningRepairActivity(categoryKey, isFrench);
     const hypothesisWorkshop = createHypothesisWorkshop(categoryKey, isFrench);
     const dataAnalysisWorkshop = createDataAnalysisWorkshop(categoryKey, isFrench);
-    const simulationWorkshop = createScienceSimulationWorkshop(categoryKey, isFrench);\n    const experimentDesignWorkshop = createExperimentDesignWorkshop(categoryKey, isFrench);
+    const simulationWorkshop = createScienceSimulationWorkshop(categoryKey, isFrench);
+    const experimentDesignWorkshop = createExperimentDesignWorkshop(categoryKey, isFrench);
+    const virtualMicroscope = createVirtualMicroscope(categoryKey, isFrench);
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
@@ -1346,7 +1447,7 @@
     stageThree.className = 'ri-learning-stage';
     stageThree.textContent = isFrench ? 'ÉTAPE 3 · SUIVRE SA PROGRESSION' : 'المرحلة 3 · تتبع التقدم والإنجازات';
 
-    activity.append(guidePanel, label, textarea, actions, review, feedback, compareButton, comparison, repairActivity, hypothesisWorkshop, dataAnalysisWorkshop, simulationWorkshop, experimentDesignWorkshop, status, privacy);
+    activity.append(guidePanel, label, textarea, actions, review, feedback, compareButton, comparison, repairActivity, hypothesisWorkshop, dataAnalysisWorkshop, simulationWorkshop, experimentDesignWorkshop, virtualMicroscope, status, privacy);
     if (challenge) {
       challenge.insertBefore(stageTwo, challenge.firstChild);
       activity.appendChild(challenge);
