@@ -3883,18 +3883,21 @@ function openScientificPhotoPreview(card){
         }
 
         // Also observe document for lang attribute changes
-        const langObserver = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'lang') {
-                    const container = document.getElementById('student-space-content');
-                    if (container && container.children.length > 0) {
-                        renderStudentSpace();
-                    }
-                }
-            });
+        const langObserver = new MutationObserver(function() {
+            const container = document.getElementById('student-space-content');
+            const section = document.getElementById('student-space');
+            if (container && container.children.length > 0 &&
+                section && section.classList.contains('active')) {
+                // Route language changes through the same debounce as navigation.
+                scheduleStudentSpaceRender();
+            }
         });
 
-        langObserver.observe(document.documentElement, { attributes: true });
+        // Observe only the language attribute; unrelated root attributes are irrelevant.
+        langObserver.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['lang']
+        });
 
         // Avoid constructing the full learning workspace on ordinary page load.
         const container = document.getElementById('student-space-content');
