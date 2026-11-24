@@ -1729,7 +1729,7 @@
 
     async function loadScientificMediaImages(root) {
         const selector = '.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search], .gs-real-science-photo[data-science-search]';
-        const cards = Array.from(root.querySelectorAll(selector));
+        const cards = Array.from(root.querySelectorAll(selector)).filter(card => !card.closest('details:not([open])'));
         if (!cards.length) return;
         const fr = lang() === 'fr';
         // Display self-contained diagrams immediately, then upgrade to cached photos.
@@ -2830,6 +2830,16 @@ function openScientificPhotoPreview(card){
             }
             const hubNode = container.querySelector('.gs-student-category-hub');
             if (hubNode && studentTaskKey) hubNode.hidden = true;
+        }
+        // Scientific media inside collapsed activities is upgraded only when that activity opens.
+        if (container.dataset.gsLazyScienceMediaBound !== 'true') {
+            container.dataset.gsLazyScienceMediaBound = 'true';
+            container.addEventListener('toggle', function(event) {
+                const disclosure = event.target;
+                if (disclosure && disclosure.tagName === 'DETAILS' && disclosure.open) {
+                    loadScientificMediaImages(disclosure);
+                }
+            }, true);
         }
         loadScientificMediaImages(container);
         if (container.dataset.gsStudyJumpsBound !== 'true') {
