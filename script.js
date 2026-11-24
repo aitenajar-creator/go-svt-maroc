@@ -488,7 +488,16 @@ function observePdfThumbnails(root = document) {
 
 let pdfThumbnailDomObserver = null;
 function startPdfThumbnailAutoObserver() {
-    if (pdfThumbnailDomObserver || !document.documentElement) return;
+    if (pdfThumbnailDomObserver || !document.querySelector('main')) return;
+
+    // PDF previews exist in the library content grids, not in the whole page.
+    // Observing documentElement also woke this callback for unrelated changes
+    // in the student workspace, navigation, dialogs and account UI.
+    const libraryContainers = document.querySelectorAll(
+        'main .content-grid[id$="-content"]'
+    );
+    if (!libraryContainers.length) return;
+
     pdfThumbnailDomObserver = new MutationObserver(records => {
         records.forEach(record => {
             record.addedNodes.forEach(added => {
@@ -502,12 +511,15 @@ function startPdfThumbnailAutoObserver() {
             });
         });
     });
-    pdfThumbnailDomObserver.observe(document.documentElement, {
-        childList: true,
-        subtree: true
+
+    libraryContainers.forEach(container => {
+        pdfThumbnailDomObserver.observe(container, {
+            childList: true,
+            subtree: true
+        });
+        // Pick up previews already present before observation began.
+        container.querySelectorAll('[data-pdf-thumbnail]').forEach(queuePdfThumbnail);
     });
-    // Pick up previews that were inserted before the observer was attached.
-    document.querySelectorAll('[data-pdf-thumbnail]').forEach(queuePdfThumbnail);
 }
 
 // تحديد الشعبة من بنية مسار الملف، بما في ذلك مجلدات الامتحانات.
