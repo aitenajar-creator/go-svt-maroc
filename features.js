@@ -99,10 +99,10 @@ async function renderBatchedInto(container, buildChunks, afterRender) {
         const chunks = result.chunks;
         for (let i = 0; i < chunks.length; i++) {
             if (container.dataset.requestId !== requestId) return;
-            container.insertAdjacentHTML('beforeend', chunks[i]);
-            if ((i + 1) % 3 === 0 && i + 1 < chunks.length) {
-                await new Promise(resolve => setTimeout(resolve, 0));
-            }
+            const chunkHtml = typeof chunks[i] === 'function' ? chunks[i]() : chunks[i];
+            container.insertAdjacentHTML('beforeend', chunkHtml);
+            // Yield after every chunk to keep user interaction responsive.
+            if (i + 1 < chunks.length) await new Promise(resolve => setTimeout(resolve, 0));
         }
         if (container.dataset.requestId !== requestId) return;
         if (afterRender) afterRender(files);
@@ -155,35 +155,38 @@ function loadExams(container, subject, level) {
             other: t('موارد امتحانية أخرى', 'Autres ressources d’examen')
         };
         const chunks = [];
-        let pending = '', cardCount = 0;
+        let pendingHeaders = '', pendingItems = [];
+        const flushChunk = () => {
+            if (!pendingHeaders && !pendingItems.length) return;
+            const headers = pendingHeaders;
+            const items = pendingItems;
+            chunks.push(() => headers + items.map(item => renderCard(item.path, item.badge)).join(''));
+            pendingHeaders = '';
+            pendingItems = [];
+        };
         const addCard = (item) => {
-            pending += renderCard(item.path, item.badge);
-            cardCount++;
-            if (cardCount >= 32) {
-                chunks.push(pending);
-                pending = '';
-                cardCount = 0;
-            }
+            pendingItems.push(item);
+            if (pendingItems.length >= 32) flushChunk();
         };
         years.forEach(year => {
             const title = year || t('سنوات أخرى', 'Autres années');
-            pending += `<h3 class="gs-group-title">📅 ${escapeHtml(title)}</h3>`;
+            pendingHeaders += `<h3 class="gs-group-title">📅 ${escapeHtml(title)}</h3>`;
             ['normal', 'rattrapage', 'other'].forEach(key => {
                 const items = groups[year][key];
                 if (!items.length) return;
-                pending += `<h4 class="gs-exam-session-title">${sessionLabels[key]}</h4>`;
+                pendingHeaders += `<h4 class="gs-exam-session-title">${sessionLabels[key]}</h4>`;
                 const kinds = { subject: [], correction: [], other: [] };
                 items.forEach(item => kinds[item.kindKey || 'other'].push(item));
                 const populatedKinds = ['subject', 'correction', 'other'].filter(kind => kinds[kind].length);
                 const showKindTitles = populatedKinds.length > 1;
                 populatedKinds.forEach(kind => {
-                    if (showKindTitles) pending += `<h5 class="gs-exam-kind-title">${kindLabels[kind]}</h5>`;
+                    if (showKindTitles) pendingHeaders += `<h5 class="gs-exam-kind-title">${kindLabels[kind]}</h5>`;
                     kinds[kind].sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
                         .forEach(addCard);
                 });
             });
         });
-        if (pending) chunks.push(pending);
+        flushChunk();
         return { prefix: `<p class="files-count">${exams.length} ${t('امتحان', 'examen(s)')}</p>`, chunks };
     }, files => {
         let prefixes = [];
@@ -202,7 +205,8 @@ function loadFolderSection(container, type) {
         if (!list.length) return { chunks: [], emptyHtml: emptyHtml() };
         const chunks = [];
         for (let i = 0; i < list.length; i += 32) {
-            chunks.push(list.slice(i, i + 32).map(p => {
+            const paths = list.slice(i, i + 32);
+            chunks.push(() => paths.map(p => {
                 const sub = p.slice(prefix.length).split('/').slice(0, -1)
                     .map(s => SUBJECT_NAMES[s] || s).join(' · ');
                 return renderCard(p, sub || SECTION_NAMES[type][currentLang]);
