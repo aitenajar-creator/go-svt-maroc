@@ -224,7 +224,14 @@
     const refresh = document.createElement('button');
     refresh.type = 'button';
     refresh.textContent = t.refresh;
-    refresh.addEventListener('click', render);
+    refresh.addEventListener('click', () => {
+      const journey = window.StudentLearningJourney;
+      if (journey && typeof journey.refresh === 'function') {
+        journey.refresh(true).then(render);
+      } else {
+        render();
+      }
+    });
     footer.append(tip, refresh);
     card.append(footer);
 
