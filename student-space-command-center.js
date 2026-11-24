@@ -16,7 +16,7 @@
       library: 'مكتبة الدروس', lab: 'المختبرات والتجارب', exams: 'الامتحانات', progress: 'تتبع التقدم',
       libraryDesc: 'الدروس والملخصات حسب مسارك الدراسي', labDesc: 'نماذج وصور وتجارب علمية تفاعلية',
       examsDesc: 'تدرب على الفروض والامتحانات', progressDesc: 'راجع إنجازاتك ونتائجك المسجلة',
-      level: 'مستواك', refresh: 'تحديث المؤشرات', tip: 'طريقة فعالة للتعلم',
+      level: 'مستواك', refresh: 'تحديث المؤشرات', tip: 'طريقة فعالة للتعلم', resources: 'الموارد المتاحة لمسارك', resourceNote: 'أعداد الملفات الفعلية المتاحة حسب مستواك ومسلكك ولغة التعلم.', courses: 'دروس', exercises: 'تمارين', quizzes: 'اختبارات', exams: 'امتحانات',
       tipText: 'اقرأ الوثيقة، استخرج المعطيات، فسّرها علمياً، ثم تحقق من فهمك بسؤال أو تمرين.'
     },
     fr: {
@@ -29,7 +29,7 @@
       library: 'Bibliothèque', lab: 'Laboratoires et expériences', exams: 'Examens', progress: 'Suivi des progrès',
       libraryDesc: 'Cours et résumés selon votre parcours', labDesc: 'Modèles, images et expériences interactives',
       examsDesc: 'Entraînez-vous aux devoirs et examens', progressDesc: 'Consultez vos activités et résultats',
-      level: 'Votre niveau', refresh: 'Actualiser les indicateurs', tip: 'Une méthode efficace',
+      level: 'Votre niveau', refresh: 'Actualiser les indicateurs', tip: 'Une méthode efficace', resources: 'Ressources de votre parcours', resourceNote: 'Nombre réel de fichiers disponibles selon votre niveau, filière et langue.', courses: 'Cours', exercises: 'Exercices', quizzes: 'Quiz', exams: 'Examens',
       tipText: 'Lisez le document, relevez les données, interprétez-les puis vérifiez votre compréhension.'
     }
   };
@@ -86,9 +86,13 @@
     const exercises = number(stats.exercisesDone);
     const attempts = number(stats.testsTaken);
     const average = number(stats.averageScore);
+    const journey = window.StudentLearningJourney;
+    if (journey && typeof journey.refresh === 'function') journey.refresh();
+    const inventory = journey && typeof journey.getSnapshot === 'function' ? journey.getSnapshot() : null;
     const signature = [
       profile.id || profile.user_id || profile.email || 'student', L, level, track,
-      seen, completed, exercises, attempts, average
+      seen, completed, exercises, attempts, average,
+      inventory ? [inventory.counts.cours, inventory.counts.exercices, inventory.quizzes, inventory.counts.examens].join(',') : 'inventory-pending'
     ].join('|');
     if (existing && existing.dataset.signature === signature) return;
 
@@ -136,6 +140,38 @@
       stepBox.append(link);
     });
     card.append(stepBox);
+
+    if (inventory) {
+      const inventoryBox = document.createElement('section');
+      inventoryBox.className = 'gs-cc-inventory';
+      inventoryBox.setAttribute('aria-label', t.resources);
+      const inventoryHeading = document.createElement('div');
+      inventoryHeading.className = 'gs-cc-inventory-heading';
+      const inventoryTitle = document.createElement('strong');
+      inventoryTitle.textContent = t.resources;
+      const inventoryNote = document.createElement('small');
+      inventoryNote.textContent = t.resourceNote;
+      inventoryHeading.append(inventoryTitle, inventoryNote);
+      const inventoryGrid = document.createElement('div');
+      inventoryGrid.className = 'gs-cc-inventory-grid';
+      [
+        [t.courses, inventory.counts.cours],
+        [t.exercises, inventory.counts.exercices],
+        [t.quizzes, inventory.quizzes],
+        [t.exams, inventory.counts.examens]
+      ].forEach(([label, count]) => {
+        const item = document.createElement('div');
+        item.className = 'gs-cc-inventory-item';
+        const value = document.createElement('strong');
+        value.textContent = String(number(count));
+        const caption = document.createElement('span');
+        caption.textContent = label;
+        item.append(value, caption);
+        inventoryGrid.append(item);
+      });
+      inventoryBox.append(inventoryHeading, inventoryGrid);
+      card.append(inventoryBox);
+    }
 
     const actions = [
       { href: '#cours', icon: '📚', title: t.library, desc: t.libraryDesc },
@@ -202,6 +238,7 @@
     }).observe(root, { subtree: true, childList: true });
     document.addEventListener('gosvt:auth-changed', schedule);
     document.addEventListener('gosvt:progress-updated', schedule);
+    document.addEventListener('gosvt:journey-ready', schedule);
     document.addEventListener('click', event => {
       const target = event.target.closest && event.target.closest('.lang-switcher, [data-student-tab]');
       if (!target) return;
