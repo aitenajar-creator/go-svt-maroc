@@ -61,3 +61,105 @@ html.gs-dark #student-space #student-space-content .gs-student-category-card sma
  #student-space #student-space-content .gs-student-quick-actions a,
  #student-space #student-space-content .gs-student-category-card{transition:none!important}
 }
+
+
+/* Level-aware discovery paths */
+#student-space #student-space-content .gs-level-paths{
+  margin:1.35rem 0;padding:clamp(1rem,2.4vw,1.5rem);
+  border:1px solid #dce9dd;border-radius:22px;
+  background:linear-gradient(145deg,#fbfefb,#f1f7f1);
+}
+#student-space #student-space-content .gs-level-paths-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;
+}
+#student-space #student-space-content .gs-level-paths-heading h3{
+  margin:.35rem 0;color:#214f35;font-size:clamp(1.1rem,2vw,1.4rem);line-height:1.55;
+}
+#student-space #student-space-content .gs-level-paths-heading p{
+  margin:.25rem 0;color:#607466;line-height:1.8;
+}
+#student-space #student-space-content .gs-level-paths-heading>span{
+  display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;
+  border-radius:15px;background:#e2f0e3;font-size:1.55rem;
+}
+#student-space #student-space-content .gs-level-paths-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:.9rem;
+}
+#student-space #student-space-content .gs-level-path-card{
+  display:flex;flex-direction:column;min-width:0;padding:1rem;
+  border:1px solid #dce8dd;border-radius:17px;background:#fff;
+  box-shadow:0 5px 16px rgba(27,69,43,.05);
+}
+#student-space #student-space-content .gs-level-path-card.is-current{
+  border-color:#78ad83;box-shadow:0 0 0 2px rgba(73,139,88,.12),0 8px 20px rgba(27,69,43,.07);
+}
+#student-space #student-space-content .gs-level-path-top{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;
+}
+#student-space #student-space-content .gs-level-path-top>span{
+  display:inline-flex;align-items:center;padding:.28rem .65rem;border-radius:9px;
+  background:#e8f3e8;color:#285c3b;font-weight:850;font-size:.82rem;
+}
+#student-space #student-space-content .gs-level-path-top small{
+  color:#39734a;font-size:.78rem;font-weight:750;line-height:1.6;
+}
+#student-space #student-space-content .gs-level-path-card h4{
+  margin:.8rem 0 .25rem;color:#244f35;font-size:1.05rem;line-height:1.6;
+}
+#student-space #student-space-content .gs-level-path-card>p{
+  margin:.2rem 0 .85rem;color:#647568;line-height:1.8;font-size:.9rem;
+}
+#student-space #student-space-content .gs-level-path-links{
+  display:grid;gap:.5rem;margin-top:auto;
+}
+#student-space #student-space-content .gs-level-path-links button{
+  display:flex;align-items:center;gap:.55rem;width:100%;min-height:42px;padding:.55rem .7rem;
+  border:1px solid #e1ebe2;border-radius:10px;background:#f8fbf8;color:#28583b;
+  text-align:start;font:inherit;font-size:.88rem;cursor:pointer;
+}
+#student-space #student-space-content .gs-level-path-links button:hover{
+  border-color:#a8c9a9;background:#edf6ee;
+}
+#student-space #student-space-content .gs-level-path-links button>span{
+  flex:0 0 auto;color:#43875a;font-weight:900;
+}
+#student-space #student-space-content .gs-level-paths-note{
+  margin:.95rem 0 0;padding-top:.85rem;border-top:1px solid #dce8dd;
+  color:#596e5e;font-size:.86rem;line-height:1.9;
+}
+#student-space #student-space-content .gs-level-paths-note a{
+  color:#216b40;font-weight:800;text-underline-offset:3px;
+}
+#student-space #student-space-content .gs-level-path-links button:focus-visible,
+#student-space #student-space-content .gs-level-paths-note a:focus-visible{
+  outline:3px solid #397fca;outline-offset:3px;
+}
+html.gs-dark #student-space #student-space-content .gs-level-paths{
+  background:linear-gradient(145deg,#24352a,#1e2d23);border-color:#405846;
+}
+html.gs-dark #student-space #student-space-content .gs-level-paths-heading h3,
+html.gs-dark #student-space #student-space-content .gs-level-path-card h4{color:#e5f1e8}
+html.gs-dark #student-space #student-space-content .gs-level-paths-heading p,
+html.gs-dark #student-space #student-space-content .gs-level-path-card>p,
+html.gs-dark #student-space #student-space-content .gs-level-paths-note{color:#c0d0c4}
+html.gs-dark #student-space #student-space-content .gs-level-path-card{
+  background:#26382c;border-color:#405846;
+}
+html.gs-dark #student-space #student-space-content .gs-level-path-card.is-current{border-color:#79ad83}
+html.gs-dark #student-space #student-space-content .gs-level-path-top>span,
+html.gs-dark #student-space #student-space-content .gs-level-paths-heading>span{background:#344d3a;color:#e5f1e8}
+html.gs-dark #student-space #student-space-content .gs-level-path-top small,
+html.gs-dark #student-space #student-space-content .gs-level-paths-note a{color:#a9d6b2}
+html.gs-dark #student-space #student-space-content .gs-level-path-links button{
+  background:#202e26;border-color:#405846;color:#e5f1e8;
+}
+html.gs-dark #student-space #student-space-content .gs-level-path-links button:hover{background:#304a37}
+html.gs-dark #student-space #student-space-content .gs-level-paths-note{border-color:#405846}
+@media(max-width:520px){
+  #student-space #student-space-content .gs-level-paths-heading{align-items:flex-start}
+  #student-space #student-space-content .gs-level-paths-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  #student-space #student-space-content .gs-level-path-card,
+  #student-space #student-space-content .gs-level-path-links button{transition:none!important}
+}
