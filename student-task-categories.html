@@ -111,12 +111,13 @@
       ? (fr ? 'Choisissez une activité pour l’ouvrir dans votre espace élève.' : 'اختر مهمة لفتحها داخل مساحتي.')
       : (fr ? 'Choisissez une catégorie pour découvrir les activités disponibles dans votre espace élève.' : 'اختر صنفاً لاكتشاف المهام المرتبطة به، ثم افتح المهمة داخل مساحتي.');
     back.textContent = fr ? 'Retour à mon espace' : 'العودة إلى مساحتي';
+    back.href = 'index.html?lang=' + language + '#student-space';
     grid.replaceChildren();
     if (chosen && tasks[chosen]) {
       tasks[chosen].forEach(task => {
         grid.append(makeCard({
           label:task[fr?2:1],
-          href:'index.html?studentCategory='+encodeURIComponent(chosen)+'&studentTask='+encodeURIComponent(task[0])+'#student-space',
+          href:'index.html?studentCategory='+encodeURIComponent(chosen)+'&studentTask='+encodeURIComponent(task[0])+'&lang='+language+'#student-space',
           action:fr?'Ouvrir l’activité →':'فتح المهمة ←'
         }));
       });
