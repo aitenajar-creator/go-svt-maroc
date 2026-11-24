@@ -82,6 +82,18 @@ html.gs-dark img, html.gs-dark video, html.gs-dark iframe { filter: invert(1) hu
     margin: 1.5rem 0 .5rem; padding-bottom: .4rem;
     border-bottom: 2px solid var(--gs-green); color: var(--gs-green);
 }
+.gs-exam-session-title {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: .65rem 0 .25rem;
+    padding: .45rem .75rem;
+    border-inline-start: 3px solid var(--gs-green);
+    border-radius: 0 6px 6px 0;
+    background: color-mix(in srgb, var(--gs-green) 8%, transparent);
+    color: var(--gs-text, inherit);
+    font-size: .95rem;
+    font-weight: 700;
+}
 .gs-latest { padding: 2rem 0 3rem; }
 .gs-latest[hidden] { display: none; }
 .section-intro { text-align: center; opacity: .8; margin: 0 0 1.5rem; }
