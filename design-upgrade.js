@@ -161,15 +161,22 @@
     clear.setAttribute('aria-label', clear.textContent);
     panel.append(label,input,clear,status);
     course.before(panel);
+    function normalizeSearch(value) {
+      return String(value || '').toLocaleLowerCase()
+        .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+        .replace(/[\\u064B-\\u065F\\u0670]/g, '')
+        .replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي');
+    }
     function apply() {
-      var term = input.value.trim().toLocaleLowerCase();
+      var term = normalizeSearch(input.value.trim());
       var cards = Array.prototype.slice.call(document.querySelectorAll('.file-resource-card'));
       var shown = 0;
       cards.forEach(function(card) {
-        var text = (card.textContent + ' ' + (card.getAttribute('data-resource-path') || '')).toLocaleLowerCase();
+        var text = normalizeSearch(card.textContent + ' ' + (card.getAttribute('data-resource-path') || ''));
         var match = !term || text.indexOf(term) !== -1;
         card.classList.toggle('gs-search-hidden', !match);
-        if (match && !card.hidden) shown++;
+        var hiddenAncestor = card.closest('[hidden]');
+        if (match && !card.hidden && !hiddenAncestor) shown++;
       });
       document.querySelectorAll('.track-content-group').forEach(function(group) {
         var visible = group.querySelector('.file-resource-card:not([hidden]):not(.gs-search-hidden)');
