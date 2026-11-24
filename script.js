@@ -225,13 +225,16 @@ function addExamLibraryFilters(container, files) {
         '<button type="button" class="gs-exam-reset">' + t('إعادة ضبط', 'Réinitialiser') + '</button>';
     const count = container.querySelector('.files-count');
     if (count) count.after(bar); else container.prepend(bar);
+    const cardsByPath = new Map(
+        [...container.querySelectorAll('.file-resource-card')]
+            .map(card => [card.dataset.resourcePath, card])
+    );
     const apply = () => {
         const chosen = {};
         bar.querySelectorAll('select').forEach(item => { chosen[item.dataset.filter] = item.value; });
         let visible = 0;
         rows.forEach(row => {
-            const card = [...container.querySelectorAll('.file-resource-card')]
-                .find(item => item.dataset.resourcePath === row.path);
+            const card = cardsByPath.get(row.path);
             if (!card) return;
             const show = (!chosen.year || row.year === chosen.year) &&
                 (!chosen.session || row.session === chosen.session) &&
@@ -239,6 +242,29 @@ function addExamLibraryFilters(container, files) {
             card.hidden = !show;
             if (show) visible++;
         });
+
+        // إخفاء عناوين السنة والدورة ونوع الوثيقة عندما لا يبقى تحتها أي ملف ظاهر.
+        const headingRank = heading => heading.classList.contains('gs-group-title') ? 1
+            : heading.classList.contains('gs-exam-session-title') ? 2 : 3;
+        const headings = [...container.querySelectorAll(
+            '.gs-group-title, .gs-exam-session-title, .gs-exam-kind-title'
+        )];
+        headings.forEach(heading => {
+            const rank = headingRank(heading);
+            let hasVisibleCard = false;
+            let sibling = heading.nextElementSibling;
+            while (sibling) {
+                const nextHeadingRank = headingRank(sibling);
+                if (nextHeadingRank && nextHeadingRank <= rank) break;
+                if (sibling.matches('.file-resource-card') && !sibling.hidden) hasVisibleCard = true;
+                if (sibling.querySelector && sibling.querySelector('.file-resource-card:not([hidden])')) {
+                    hasVisibleCard = true;
+                }
+                sibling = sibling.nextElementSibling;
+            }
+            heading.hidden = !hasVisibleCard;
+        });
+
         container.querySelectorAll('.track-content-group').forEach(group => {
             group.hidden = !group.querySelector('.file-resource-card:not([hidden])');
         });
