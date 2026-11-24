@@ -460,11 +460,11 @@ async function loadContentFromManifest(type, subject, level) {
         // explicitly assigned to a different track; this also handles the
         // spaced track-folder names used by national exams (e.g. "2BAC SVT").
         if (effectiveStudentTrack && ['cours', 'exercices', 'examens'].includes(type)) {
-            const selectedTrack = String(effectiveStudentTrack).replace(/\\s+/g, '').toUpperCase();
+            const selectedTrack = String(effectiveStudentTrack).replace(/\s+/g, '').toUpperCase();
             files = files.filter(path => {
                 const info = getTrackInfo(path);
                 if (!info) return true; // shared resource at the level root
-                return info.key.replace(/\\s+/g, '').toUpperCase() === selectedTrack;
+                return info.key.replace(/\s+/g, '').toUpperCase() === selectedTrack;
             });
         }
         files = files.sort((a, b) => {
