@@ -82,3 +82,7 @@ html.gs-dark #student-space-content .gs-3d-quiz-report h6{color:#bce4c8}
 html.gs-dark #student-space-content .gs-3d-quiz-report .is-mastered{background:#294d36;color:#d8f0df}
 html.gs-dark #student-space-content .gs-3d-quiz-report .needs-review{background:#51402c;color:#ffe1b7}
 @media(max-width:760px){#student-space-content .gs-3d-quiz-finish{width:100%;justify-self:stretch}}
+
+
+#student-space-content .gs-3d-review-tip{display:block;margin:0 0 7px;padding:6px 9px;border-inline-start:3px solid #c28a45;border-radius:6px;background:#fff7ec;color:#704b27;font-size:.78rem;line-height:1.65}
+html.gs-dark #student-space-content .gs-3d-review-tip{background:#493b2c;color:#ffe4c2;border-inline-start-color:#d5a66c}
