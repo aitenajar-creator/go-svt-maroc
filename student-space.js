@@ -3813,37 +3813,40 @@ function openScientificPhotoPreview(card){
             }
         });
 
-        // Listen for hash changes to render student space when navigated to
+        // Coalesce navigation signals: the hash and active-class observers can
+        // fire for the same click. Building the full learning workspace is
+        // expensive, so render it once after navigation settles.
+        let studentSpaceRenderTimer = null;
+        function scheduleStudentSpaceRender() {
+            if (studentSpaceRenderTimer !== null) clearTimeout(studentSpaceRenderTimer);
+            studentSpaceRenderTimer = setTimeout(function() {
+                studentSpaceRenderTimer = null;
+                renderStudentSpace();
+            }, 90);
+        }
+
+        // Render only when the learner actually opens this section.
         window.addEventListener('hashchange', function() {
-            const hash = window.location.hash.substring(1);
-            if (hash === 'student-space') {
-                setTimeout(function() {
-                    renderStudentSpace();
-                }, 100);
+            if (window.location.hash.substring(1) === 'student-space') {
+                scheduleStudentSpaceRender();
             }
         });
 
-        // Check hash on initial load
         const initialHash = window.location.hash.substring(1);
-        if (initialHash === 'student-space') {
-            setTimeout(function() {
-                renderStudentSpace();
-            }, 100);
+        const studentSpaceSection = document.getElementById('student-space');
+        if (initialHash === 'student-space' ||
+            (studentSpaceSection && studentSpaceSection.classList.contains('active'))) {
+            scheduleStudentSpaceRender();
         }
 
-        // Observe the student-space section for class changes (when it becomes active)
+        // Fallback for navigation systems that activate the section without a hash.
         const sectionObserver = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.target.id === 'student-space' && 
-                    mutation.target.classList.contains('active')) {
-                    setTimeout(function() {
-                        renderStudentSpace();
-                    }, 50);
-                }
-            });
+            if (mutations.some(function(mutation) {
+                return mutation.target.id === 'student-space' &&
+                    mutation.target.classList.contains('active');
+            })) scheduleStudentSpaceRender();
         });
 
-        const studentSpaceSection = document.getElementById('student-space');
         if (studentSpaceSection) {
             sectionObserver.observe(studentSpaceSection, { attributes: true, attributeFilter: ['class'] });
         }
@@ -3854,8 +3857,9 @@ function openScientificPhotoPreview(card){
             langBtn.addEventListener('click', function() {
                 setTimeout(function() {
                     const container = document.getElementById('student-space-content');
-                    if (container && container.children.length > 0) {
-                        renderStudentSpace();
+                    if (container && container.children.length > 0 &&
+                        document.getElementById('student-space')?.classList.contains('active')) {
+                        scheduleStudentSpaceRender();
                     }
                 }, 100);
             });
@@ -3875,10 +3879,10 @@ function openScientificPhotoPreview(card){
 
         langObserver.observe(document.documentElement, { attributes: true });
 
-        // Render immediately if section exists
+        // Avoid constructing the full learning workspace on ordinary page load.
         const container = document.getElementById('student-space-content');
-        if (container) {
-            renderStudentSpace();
+        if (container && studentSpaceSection && studentSpaceSection.classList.contains('active')) {
+            scheduleStudentSpaceRender();
         }
     }
 
