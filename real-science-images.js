@@ -971,6 +971,65 @@
     return section;
   }
 
+  function createScienceSimulationWorkshop(categoryKey, isFrench) {
+    const models = {
+      'cell/plant': { ar:['مدة الإضاءة','ساعة/يوم','النمو النسبي','يزداد النمو مع الإضاءة ثم يقترب من حدّ التشبع؛ لا يعني ذلك أن الإضاءة غير المحدودة مفيدة.'], fr:['Durée d’éclairage','h/jour','Croissance relative','La croissance augmente puis tend vers un plateau ; un éclairage illimité n’est pas nécessairement bénéfique.'], calc:v=>Math.round(100*(1-Math.exp(-v/38))) },
+      'genetics/dna': { ar:['كمية ADN في العينة','وحدة نسبية','إشارة القياس','تزداد الإشارة مع كمية ADN عند ثبات طريقة القياس وعدم تشبع الجهاز.'], fr:['Quantité d’ADN','unité relative','Signal mesuré','Le signal augmente avec la quantité d’ADN si la méthode reste constante et sans saturation.'], calc:v=>v },
+      'ecology/ecosystem': { ar:['توفر الماء','% من المستوى المرجعي','نمو النباتات','يكون النمو أفضل قرب مستوى ملائم؛ النقص أو الزيادة الكبيرة قد يحدّان منه.'], fr:['Disponibilité en eau','% du niveau de référence','Croissance végétale','La croissance est meilleure près d’un niveau adapté ; déficit ou excès peuvent la limiter.'], calc:v=>Math.max(0,Math.round(100-Math.abs(v-60)*1.35)) },
+      'geology/rock': { ar:['سرعة التبريد','وحدة نسبية','حجم البلورات النسبي','التبريد الأسرع يرتبط عادة ببلورات أصغر، والأبطأ يسمح بنمو أكبر.'], fr:['Vitesse de refroidissement','unité relative','Taille relative des cristaux','Un refroidissement rapide est généralement associé à de petits cristaux ; un refroidissement lent favorise leur croissance.'], calc:v=>Math.max(5,Math.round(100/(1+v/12))) },
+      'cell/animal': { ar:['مساحة سطح التبادل','وحدة نسبية','كفاءة التبادل النموذجية','زيادة سطح التبادل ترفع القدرة على التبادل عند ثبات بقية العوامل.'], fr:['Surface d’échange','unité relative','Capacité relative d’échange','Une surface plus grande augmente la capacité d’échange si les autres facteurs restent constants.'], calc:v=>v },
+      'cell/mitosis': { ar:['مدة الملاحظة','وحدة زمنية','الخلايا المرصودة في الانقسام','تتغير النسبة المرصودة مع توقيت أخذ العينة؛ ولا تمثل سرعة انقسام خلية بعينها.'], fr:['Moment de l’observation','unité de temps','Cellules observées en division','La proportion dépend du moment du prélèvement et ne représente pas la vitesse d’une cellule.'], calc:v=>Math.round(8+22*Math.abs(Math.sin(v/16))) },
+      'respiratory/alveoli': { ar:['سماكة حاجز التبادل','وحدة نسبية','معدل الانتشار النسبي','تقل قيمة الانتشار كلما زادت السماكة، مع ثبات مساحة السطح وفرق التركيز.'], fr:['Épaisseur de la barrière','unité relative','Diffusion relative','La diffusion diminue lorsque l’épaisseur augmente, à surface et gradient constants.'], calc:v=>Math.round(100/(1+v/18)) }
+    };
+    const model = models[categoryKey];
+    if (!model) return null;
+    const copy = model[isFrench ? 'fr' : 'ar'];
+    if (!document.getElementById('ri-science-simulation-styles')) {
+      const style = document.createElement('style');
+      style.id = 'ri-science-simulation-styles';
+      style.textContent = '.ri-science-simulation{display:grid;gap:10px;margin:14px 0;padding:15px;border:1px solid #8db6a0;border-radius:14px;background:rgba(16,120,75,.055)}.ri-science-simulation p{margin:0;line-height:1.65}.ri-science-simulation label{font-weight:700}.ri-simulation-slider{width:100%;accent-color:#16835d;cursor:pointer}.ri-simulation-value{font-size:.88rem;font-weight:700}.ri-simulation-meter{height:13px;overflow:hidden;border-radius:99px;background:rgba(100,116,139,.2)}.ri-simulation-meter span{display:block;height:100%;border-radius:inherit;background:#16835d;transition:width .15s ease}.ri-simulation-result{font-weight:800;color:#24613b}html.gs-dark .ri-science-simulation{background:rgba(34,197,94,.07);border-color:#456b50}html.gs-dark .ri-simulation-result{color:#9ed8ad}';
+      document.head.appendChild(style);
+    }
+    const panel = document.createElement('section');
+    panel.className = 'ri-science-simulation';
+    const heading = document.createElement('strong');
+    heading.textContent = isFrench ? 'Laboratoire de simulation : faites varier un paramètre' : 'مختبر المحاكاة: غيّر عاملاً ولاحظ النتيجة';
+    const intro = document.createElement('p');
+    intro.textContent = isFrench ? 'Modèle pédagogique simplifié : faites glisser le curseur. Les autres facteurs sont supposés constants.' : 'نموذج تعليمي مبسط: حرّك المؤشر ولاحظ النتيجة. نفترض ثبات العوامل الأخرى.';
+    const label = document.createElement('label');
+    const slider = document.createElement('input');
+    slider.type = 'range'; slider.min = '0'; slider.max = '100'; slider.step = '5'; slider.value = '50';
+    slider.className = 'ri-simulation-slider';
+    slider.id = 'ri-simulation-' + categoryKey.replace(/[^a-z0-9]+/gi, '-');
+    label.htmlFor = slider.id;
+    label.textContent = copy[0] + ' (' + copy[1] + ')';
+    const output = document.createElement('output');
+    output.setAttribute('aria-live', 'polite');
+    const valueText = document.createElement('span');
+    valueText.className = 'ri-simulation-value';
+    const meter = document.createElement('div');
+    meter.className = 'ri-simulation-meter';
+    meter.setAttribute('role', 'meter'); meter.setAttribute('aria-valuemin','0'); meter.setAttribute('aria-valuemax','100');
+    const fill = document.createElement('span'); meter.appendChild(fill);
+    const result = document.createElement('p');
+    result.className = 'ri-simulation-result'; result.setAttribute('aria-live','polite');
+    const explanation = document.createElement('p');
+    explanation.textContent = copy[3];
+    function update() {
+      const value = Number(slider.value);
+      const score = Math.max(0, Math.min(100, model.calc(value)));
+      output.textContent = value + ' ' + copy[1];
+      valueText.textContent = copy[2] + ': ' + score + ' / 100';
+      fill.style.width = score + '%';
+      meter.setAttribute('aria-valuenow', String(score));
+      result.textContent = isFrench ? 'Résultat simulé : ' + score + ' / 100' : 'النتيجة المحاكاة: ' + score + ' من 100';
+    }
+    slider.addEventListener('input', update);
+    panel.append(heading, intro, label, slider, output, valueText, meter, result, explanation);
+    update();
+    return panel;
+  }
+
   function createObservationActivity(categoryKey) {
     ensureGuidedReasoningStyles();
     const isFrench = document.documentElement.lang === 'fr';
@@ -1174,6 +1233,7 @@
     const repairActivity = createReasoningRepairActivity(categoryKey, isFrench);
     const hypothesisWorkshop = createHypothesisWorkshop(categoryKey, isFrench);
     const dataAnalysisWorkshop = createDataAnalysisWorkshop(categoryKey, isFrench);
+    const simulationWorkshop = createScienceSimulationWorkshop(categoryKey, isFrench);
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
@@ -1194,7 +1254,7 @@
     stageThree.className = 'ri-learning-stage';
     stageThree.textContent = isFrench ? 'ÉTAPE 3 · SUIVRE SA PROGRESSION' : 'المرحلة 3 · تتبع التقدم والإنجازات';
 
-    activity.append(guidePanel, label, textarea, actions, review, feedback, compareButton, comparison, repairActivity, hypothesisWorkshop, dataAnalysisWorkshop, status, privacy);
+    activity.append(guidePanel, label, textarea, actions, review, feedback, compareButton, comparison, repairActivity, hypothesisWorkshop, dataAnalysisWorkshop, simulationWorkshop, status, privacy);
     if (challenge) {
       challenge.insertBefore(stageTwo, challenge.firstChild);
       activity.appendChild(challenge);
