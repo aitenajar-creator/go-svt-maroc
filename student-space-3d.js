@@ -110,7 +110,8 @@ labelDefinitions.forEach(def=>{
  button.addEventListener('click',()=>{if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
  labelLayer.appendChild(button);labelNodes.set(def.id,{button,def});
 });
-labelCheck.addEventListener('change',()=>{labelLayer.hidden=!labelCheck.checked;});
+const handleLabelToggle=()=>{labelLayer.hidden=!labelCheck.checked;};
+labelCheck.addEventListener('change',handleLabelToggle);
 function updateOrganLabels(){
  const width=canvas.clientWidth,height=canvas.clientHeight;
  labelNodes.forEach(({button,def})=>{
@@ -144,7 +145,7 @@ const handleCanvasClick=e=>{if(moved){moved=false;return;}const rect=canvas.getB
 canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointermove',pointerMove);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',pointerUp);
 canvas.addEventListener('wheel',handleWheel,{passive:false});
 canvas.addEventListener('click',handleCanvasClick);
-const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=({heart:'circulatory',lungs:'respiratory',brain:'nervous',liver:'digestive',stomach:'digestive',kidneys:'urinary'})[btn.dataset['3dOrgan']];if(system)setSystem(system);select(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem'])setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
+const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(system)setSystem(system);select(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem'])setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
 root.addEventListener('click',handleRootClick);
 activeCleanup=()=>{
 disposed=true;
@@ -156,7 +157,7 @@ document.removeEventListener('visibilitychange',handleDocVisibility);
 canvas.removeEventListener('pointerdown',pointerDown);canvas.removeEventListener('pointermove',pointerMove);canvas.removeEventListener('pointerup',pointerUp);canvas.removeEventListener('pointercancel',pointerUp);
 canvas.removeEventListener('wheel',handleWheel);canvas.removeEventListener('click',handleCanvasClick);
 root.removeEventListener('click',handleRootClick);
-labelCheck.removeEventListener('change',()=>{labelLayer.hidden=!labelCheck.checked;});labelLayer.remove();labelToggle.remove();
+labelCheck.removeEventListener('change',handleLabelToggle);labelLayer.remove();labelToggle.remove();
 scene.traverse(object=>{if(object.geometry)object.geometry.dispose();if(object.material){const materials=Array.isArray(object.material)?object.material:[object.material];materials.forEach(material=>material.dispose());}});
 renderer.dispose();
 };
