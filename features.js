@@ -53,6 +53,12 @@ async function renderInto(container, buildHtml) {
         const files = await loadManifest();
         if (container.dataset.requestId !== requestId) return;
         container.innerHTML = buildHtml(files);
+        if (container.id === 'examens-content' && typeof addExamLibraryFilters === 'function') {
+            const inExamens = container.dataset.examPathPrefix || '';
+            const subjectLevelFiles = files.filter(path =>
+                path.startsWith('/examens/') || path.startsWith('/exercices/'));
+            addExamLibraryFilters(container, subjectLevelFiles);
+        }
     } catch (error) {
         console.error('Error loading content:', error);
         if (container.dataset.requestId === requestId) {
@@ -89,6 +95,8 @@ function loadExams(container, subject, level) {
             const { year, session, kind } = examInfo(rel);
             const sessionKey = /rattrapage|استدراكية/i.test(session) ? 'rattrapage'
                 : /normale|عادية/i.test(session) ? 'normal' : 'other';
+            const kindKey = /corrig|correction|تصحيح/i.test(normalizeText(rel)) ? 'correction'
+                : /sujet|موضوع/i.test(normalizeText(rel)) ? 'subject' : 'other';
             const parts = rel.split('/');
             const detectedTrack = window.GoSVTPathways &&
                 typeof window.GoSVTPathways.trackOfPath === 'function'
@@ -97,7 +105,7 @@ function loadExams(container, subject, level) {
             // نُبقي الشارة مختصرة لتمييز المسلك فقط دون تكرار المعلومات.
             const badge = detectedTrack || (parts.length > 1 ? parts[0] : level);
             groups[year] = groups[year] || { normal: [], rattrapage: [], other: [] };
-            groups[year][sessionKey].push({ path: p, badge });
+            groups[year][sessionKey].push({ path: p, badge, kindKey });
         });
 
         const years = Object.keys(groups).sort((a, b) => (b || '0').localeCompare(a || '0'));
@@ -114,9 +122,7 @@ function loadExams(container, subject, level) {
                 const items = groups[year][key];
                 if (!items.length) return '';
 
-                const kindOf = item => /corrig|correction|تصحيح/i.test(item.badge)
-                    ? 'correction'
-                    : /sujet|موضوع/i.test(item.badge) ? 'subject' : 'other';
+                const kindOf = item => item.kindKey || 'other';
                 const kindLabels = {
                     subject: t('مواضيع الامتحان', 'Sujets d’examen'),
                     correction: t('التصحيحات وعناصر الإجابة', 'Corrigés et éléments de réponse'),
