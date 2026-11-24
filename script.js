@@ -968,12 +968,9 @@ function navigateTo(sectionId, options = {}) {
     // Populate only the destination section; hidden sections stay idle.
     loadSection(target);
 
-    // Render student space content if navigating to student-space section
-    if (sectionId === 'student-space' && window.renderStudentSpaceContent) {
-        setTimeout(function() {
-            window.renderStudentSpaceContent();
-        }, 50);
-    }
+    // Student-space.js owns its debounced activation observer.
+    // Do not call renderStudentSpaceContent() here: that caused a second
+    // full workspace render alongside the hash/class observers.
 }
 
 function toggleMobileMenu() {
