@@ -81,20 +81,53 @@ function examInfo(relPath) {
     return { year: yearMatch ? yearMatch[1] : '', session, kind };
 }
 
+// إدراج بطاقات المكتبات على دفعات لتجنب تجميد الواجهة عند القوائم الكبيرة.
+async function renderBatchedInto(container, buildChunks, afterRender) {
+    const requestId = String(++requestCounter);
+    container.dataset.requestId = requestId;
+    container.innerHTML = `<p class="loading">${t('جاري التحميل...', 'Chargement...')}</p>`;
+    try {
+        const files = await loadManifest();
+        if (container.dataset.requestId !== requestId) return;
+        const result = buildChunks(files);
+        if (!result || !result.chunks.length) {
+            container.innerHTML = result && result.emptyHtml !== undefined ? result.emptyHtml : emptyHtml();
+            if (afterRender) afterRender(files);
+            return;
+        }
+        container.innerHTML = result.prefix || '';
+        const chunks = result.chunks;
+        for (let i = 0; i < chunks.length; i++) {
+            if (container.dataset.requestId !== requestId) return;
+            container.insertAdjacentHTML('beforeend', chunks[i]);
+            if ((i + 1) % 3 === 0 && i + 1 < chunks.length) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+        if (container.dataset.requestId !== requestId) return;
+        if (afterRender) afterRender(files);
+    } catch (error) {
+        console.error('Error loading content:', error);
+        if (container.dataset.requestId === requestId) {
+            container.innerHTML = `<p class="error">${t('حدث خطأ أثناء تحميل المحتوى. حاول لاحقاً.', 'Erreur lors du chargement du contenu. Veuillez réessayer plus tard.')}<br><small style="opacity:.6">(${escapeHtml(error.message)})</small></p>`;
+        }
+    }
+}
+
 function loadExams(container, subject, level) {
     const inExamens = `/examens/${subject}/${level}/`;
     const inExercices = `/exercices/${subject}/${level}/`;
     container.dataset.examPathPrefixes = JSON.stringify([inExamens, inExercices]);
 
-    renderInto(container, files => {
+    renderBatchedInto(container, files => {
         const exams = files.filter(p => p.startsWith(inExamens) ||
             (p.startsWith(inExercices) && EXAM_KEYWORDS.test(normalizeText(p.slice(inExercices.length)))));
-        if (!exams.length) return emptyHtml();
+        if (!exams.length) return { chunks: [], emptyHtml: emptyHtml() };
 
         const groups = {};
         exams.forEach(p => {
             const rel = p.startsWith(inExamens) ? p.slice(inExamens.length) : p.slice(inExercices.length);
-            const { year, session, kind } = examInfo(rel);
+            const { session } = examInfo(rel);
             const sessionKey = /rattrapage|استدراكية/i.test(session) ? 'rattrapage'
                 : /normale|عادية/i.test(session) ? 'normal' : 'other';
             const kindKey = /corrig|correction|تصحيح|عناصر الاجابة|اجوبة|اجابات/i.test(normalizeText(rel)) ? 'correction'
@@ -103,9 +136,9 @@ function loadExams(container, subject, level) {
             const detectedTrack = window.GoSVTPathways &&
                 typeof window.GoSVTPathways.trackOfPath === 'function'
                 ? window.GoSVTPathways.trackOfPath(p, level) : null;
-            // السنة والدورة ونوع الوثيقة معروضة في عناوين المجموعات؛
-            // نُبقي الشارة مختصرة لتمييز المسلك فقط دون تكرار المعلومات.
             const badge = detectedTrack || (parts.length > 1 ? parts[0] : level);
+            const yearMatch = /(?:^|\\D)((?:19|20)\\d{2})(?!\\d)/.exec(normalizeText(rel));
+            const year = yearMatch ? yearMatch[1] : '';
             groups[year] = groups[year] || { normal: [], rattrapage: [], other: [] };
             groups[year][sessionKey].push({ path: p, badge, kindKey });
         });
@@ -116,35 +149,48 @@ function loadExams(container, subject, level) {
             rattrapage: t('الدورة الاستدراكية', 'Session de rattrapage'),
             other: t('دورة غير محددة', 'Session non précisée')
         };
-        const count = `<p class="files-count">${exams.length} ${t('امتحان', 'examen(s)')}</p>`;
-
-        return count + years.map(year => {
+        const kindLabels = {
+            subject: t('مواضيع الامتحان', 'Sujets d’examen'),
+            correction: t('التصحيحات وعناصر الإجابة', 'Corrigés et éléments de réponse'),
+            other: t('موارد امتحانية أخرى', 'Autres ressources d’examen')
+        };
+        const chunks = [];
+        let pending = '', cardCount = 0;
+        const addCard = (item) => {
+            pending += renderCard(item.path, item.badge);
+            cardCount++;
+            if (cardCount >= 32) {
+                chunks.push(pending);
+                pending = '';
+                cardCount = 0;
+            }
+        };
+        years.forEach(year => {
             const title = year || t('سنوات أخرى', 'Autres années');
-            const sessions = ['normal', 'rattrapage', 'other'].map(key => {
+            pending += `<h3 class="gs-group-title">📅 ${escapeHtml(title)}</h3>`;
+            ['normal', 'rattrapage', 'other'].forEach(key => {
                 const items = groups[year][key];
-                if (!items.length) return '';
-
-                const kindOf = item => item.kindKey || 'other';
-                const kindLabels = {
-                    subject: t('مواضيع الامتحان', 'Sujets d’examen'),
-                    correction: t('التصحيحات وعناصر الإجابة', 'Corrigés et éléments de réponse'),
-                    other: t('موارد امتحانية أخرى', 'Autres ressources d’examen')
-                };
+                if (!items.length) return;
+                pending += `<h4 class="gs-exam-session-title">${sessionLabels[key]}</h4>`;
                 const kinds = { subject: [], correction: [], other: [] };
-                items.forEach(item => kinds[kindOf(item)].push(item));
+                items.forEach(item => kinds[item.kindKey || 'other'].push(item));
                 const populatedKinds = ['subject', 'correction', 'other'].filter(kind => kinds[kind].length);
                 const showKindTitles = populatedKinds.length > 1;
-                const content = populatedKinds.map(kind => {
-                    const cards = kinds[kind]
-                        .sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
-                        .map(item => renderCard(item.path, item.badge)).join('');
-                    return (showKindTitles
-                        ? `<h5 class="gs-exam-kind-title">${kindLabels[kind]}</h5>` : '') + cards;
-                }).join('');
-                return `<h4 class="gs-exam-session-title">${sessionLabels[key]}</h4>${content}`;
-            }).join('');
-            return `<h3 class="gs-group-title">📅 ${escapeHtml(title)}</h3>${sessions}`;
-        }).join('');
+                populatedKinds.forEach(kind => {
+                    if (showKindTitles) pending += `<h5 class="gs-exam-kind-title">${kindLabels[kind]}</h5>`;
+                    kinds[kind].sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
+                        .forEach(addCard);
+                });
+            });
+        });
+        if (pending) chunks.push(pending);
+        return { prefix: `<p class="files-count">${exams.length} ${t('امتحان', 'examen(s)')}</p>`, chunks };
+    }, files => {
+        let prefixes = [];
+        try { prefixes = JSON.parse(container.dataset.examPathPrefixes || '[]'); } catch (_) {}
+        const subjectLevelFiles = files.filter(path => prefixes.some(prefix => path.startsWith(prefix)) &&
+            (path.startsWith(prefixes[0]) || EXAM_KEYWORDS.test(normalizeText(path.slice(prefixes[1].length)))));
+        if (typeof addExamLibraryFilters === 'function') addExamLibraryFilters(container, subjectLevelFiles);
     });
 }
 
