@@ -71,10 +71,10 @@ async function renderInto(container, buildHtml) {
 // ---------- الامتحانات ----------
 function examInfo(relPath) {
     const text = normalizeText(relPath);
-    const yearMatch = /(?:^|\D)(20\d{2})(?!\d)/.exec(text);
+    const yearMatch = /(?:^|\D)((?:19|20)\d{2})(?!\d)/.exec(text);
     let session = '';
     if (/rattrapage|استدراك/.test(text)) session = t('استدراكية', 'Rattrapage');
-    else if (/normal|عادي/.test(text)) session = t('عادية', 'Normale');
+    else if (/normale|normal|ordinaire|عادي/.test(text)) session = t('عادية', 'Normale');
         let kind = '';
     if (/corrig|correction|تصحيح/.test(text)) kind = t('التصحيح', 'Corrigé');
     else if (/sujet|موضوع/.test(text)) kind = t('الموضوع', 'Sujet');
