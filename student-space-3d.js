@@ -108,10 +108,10 @@ labelDefinitions.forEach(def=>{
  button.type='button';button.className='gs-3d-organ-label';
  button.textContent=isFr()?def.fr:def.ar;
  button.setAttribute('aria-label',(isFr()?'Sélectionner ':'اختيار ')+(isFr()?def.fr:def.ar));
- button.addEventListener('click',()=>{if(quizState.active){answerQuiz(def.id);return;}if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
+ button.addEventListener('click',()=>{if(challenge.active){acceptChallengeAnswer(def.id);return;}if(quizState.active){answerQuiz(def.id);return;}if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
  labelLayer.appendChild(button);labelNodes.set(def.id,{button,def});
 });
-const handleLabelToggle=()=>{if(quizState.active){labelCheck.checked=false;labelLayer.hidden=true;return;}labelLayer.hidden=!labelCheck.checked;};
+const handleLabelToggle=()=>{if(challenge.active||quizState.active){labelCheck.checked=false;labelLayer.hidden=true;return;}labelLayer.hidden=!labelCheck.checked;};
 labelCheck.addEventListener('change',handleLabelToggle);
 function updateOrganLabels(){
  const width=canvas.clientWidth,height=canvas.clientHeight;
@@ -126,49 +126,93 @@ const info=root.querySelector('.gs-3d-info');
 const quizPanel=document.createElement('section');
 quizPanel.className='gs-3d-quiz';
 quizPanel.setAttribute('aria-labelledby','gs-3d-quiz-title');
-const quizTitle=document.createElement('h5');quizTitle.id='gs-3d-quiz-title';quizTitle.textContent=isFr()?'Défi anatomique':'تحدي تشريحي';
-const quizDescription=document.createElement('p');quizDescription.textContent=isFr()?'Identifiez l’organe demandé sur le modèle ou dans la liste.':'حدّد العضو المطلوب على النموذج أو من القائمة.';
+const quizTitle=document.createElement('h5');quizTitle.id='gs-3d-quiz-title';quizTitle.textContent=isFr()?'Défi anatomique progressif':'التحدي التشريحي المتدرج';
+const quizDescription=document.createElement('p');quizDescription.textContent=isFr()?'Un parcours en trois niveaux couvrant les cinq systèmes et les dix organes.':'مسار من ثلاثة مستويات يشمل الأجهزة الخمسة والأعضاء العشرة.';
 const quizPrompt=document.createElement('p');quizPrompt.className='gs-3d-quiz-prompt';quizPrompt.setAttribute('aria-live','polite');quizPrompt.textContent=isFr()?'Prêt à commencer ?':'هل أنت مستعد للبدء؟';
 const quizFeedback=document.createElement('p');quizFeedback.className='gs-3d-quiz-feedback';quizFeedback.setAttribute('aria-live','polite');
-const quizStart=document.createElement('button');quizStart.type='button';quizStart.className='gs-3d-quiz-start';quizStart.textContent=isFr()?'Commencer le défi':'ابدأ التحدي';
-quizPanel.append(quizTitle,quizDescription,quizPrompt,quizFeedback,quizStart);
+const quizProgress=document.createElement('p');quizProgress.className='gs-3d-quiz-progress';quizProgress.textContent=isFr()?'30 questions · 3 niveaux':'30 سؤالاً · 3 مستويات';
+const quizStart=document.createElement('button');quizStart.type='button';quizStart.className='gs-3d-quiz-start';quizStart.textContent=isFr()?'Commencer le défi complet':'ابدأ التحدي الشامل';
+const quizFinish=document.createElement('button');quizFinish.type='button';quizFinish.className='gs-3d-quiz-finish';quizFinish.textContent=isFr()?'Terminer et voir le bilan':'إنهاء التحدي وعرض التقرير';quizFinish.hidden=true;
+quizPanel.append(quizTitle,quizDescription,quizProgress,quizPrompt,quizFeedback,quizStart,quizFinish);
 const organList=info&&info.querySelector('.gs-3d-organ-list');if(organList)organList.insertAdjacentElement('afterend',quizPanel);
-function beginQuiz(){
- labelCheck.disabled=true;
- const pool=labelDefinitions.filter(item=>item.system===activeSystem);
- if(!pool.length)return;
- quizState.active=true;
- const chosen=pool[Math.floor(Math.random()*pool.length)];
- quizState.target=chosen.id;
- quizState.mode=Math.random()<.5?'function':'name';
- labelCheck.checked=false;handleLabelToggle();
- quizStart.textContent=isFr()?'Terminer le défi':'إنهاء التحدي';
+const SYSTEM_NAMES={circulatory:{ar:'الجهاز الدوراني',fr:'Système circulatoire'},respiratory:{ar:'الجهاز التنفسي',fr:'Système respiratoire'},nervous:{ar:'الجهاز العصبي',fr:'Système nerveux'},digestive:{ar:'الجهاز الهضمي',fr:'Système digestif'},urinary:{ar:'الجهاز البولي',fr:'Système urinaire'}};
+const LEVEL_NAMES=[{ar:'المستوى الأساسي',fr:'Niveau 1 · Essentiel'},{ar:'المستوى المتوسط',fr:'Niveau 2 · Fonctions'},{ar:'المستوى المتقدم',fr:'Niveau 3 · Raisonnement'}];
+const organStats={};
+let challenge={active:false,finished:false,queue:[],index:0,score:0,answered:0,level:0,current:null};
+function shuffle(items){const result=items.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
+function setQuizSystem(system){activeSystem=system;Object.entries(systems).forEach(([key,group])=>group.visible=key===system);root.querySelectorAll('[data-3d-system]').forEach(button=>{const active=button.dataset['3dSystem']===system;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',active?'true':'false');});}
+function buildChallenge(){
+ challenge={active:true,finished:false,queue:[],index:0,score:0,answered:0,level:0,current:null};
+ Object.keys(DATA).forEach(id=>organStats[id]={attempts:0,correct:0});
+ for(let level=0;level<3;level++){
+  const round=shuffle(labelDefinitions);
+  round.forEach(item=>challenge.queue.push({id:item.id,system:item.system,level}));
+ }
+ labelCheck.checked=false;labelCheck.disabled=true;handleLabelToggle();
+ quizFinish.hidden=false;quizStart.hidden=false;quizStart.textContent=isFr()?'Question suivante':'السؤال التالي';
+ showChallengeQuestion();
+}
+function showChallengeQuestion(){
+ if(!challenge.active)return;
+ if(challenge.index>=challenge.queue.length){finishChallenge();return;}
+ const question=challenge.queue[challenge.index];challenge.current=question;challenge.level=question.level;
+ setQuizSystem(question.system);select(question.id);
+ const d=DATA[question.id][isFr()?'fr':'ar'];
+ const levelName=LEVEL_NAMES[question.level][isFr()?'fr':'ar'];
+ const systemName=SYSTEM_NAMES[question.system][isFr()?'fr':'ar'];
+ quizProgress.textContent=(isFr()?'Question ':'السؤال ')+(challenge.index+1)+'/30 · '+levelName+' · '+systemName;
+ if(question.level===0)quizPrompt.textContent=isFr()?'Niveau 1 — Repérez sur le modèle : '+d[0]:'المستوى الأساسي — حدّد على النموذج: '+d[0];
+ else if(question.level===1)quizPrompt.textContent=isFr()?'Niveau 2 — Quel organe assure cette fonction ? '+d[2]:'المستوى المتوسط — أي عضو يقوم بهذه الوظيفة؟ '+d[2];
+ else quizPrompt.textContent=isFr()?'Niveau 3 — Quel organe correspond à cette description ? '+d[1]:'المستوى المتقدم — ما العضو الذي تنطبق عليه هذه الخصائص؟ '+d[1];
  quizFeedback.textContent='';
- quizPrompt.textContent=quizState.mode==='function'
-  ?(isFr()?'Quel organe assure cette fonction ? ':'أي عضو يقوم بهذه الوظيفة؟ ')+(isFr()?DATA[chosen.id].fr[2]:DATA[chosen.id].ar[2])
-  :(isFr()?'Repérez sur le modèle : ':'حدّد على النموذج: ')+(isFr()?DATA[chosen.id].fr[0]:DATA[chosen.id].ar[0]);
+ quizStart.disabled=true;
 }
-function endQuiz(){
- quizState.active=false;labelCheck.disabled=false;quizState.target=null;
- quizStart.textContent=isFr()?'Recommencer':'إعادة التحدي';
- quizPrompt.textContent=(isFr()?'Résultat : ':'النتيجة: ')+quizState.score+'/'+quizState.answered;
- quizFeedback.textContent=isFr()?'Défi terminé. Aucun point de progression scolaire n’a été modifié.':'انتهى التحدي. لم تتغير نقاط التقدم الدراسي.';
-}
-function answerQuiz(id){
- if(!quizState.active||!quizState.target)return;
- const target=quizState.target,correct=id===target;quizState.answered++;if(correct)quizState.score++;
+function acceptChallengeAnswer(id){
+ if(!challenge.active||!challenge.current)return;
+ const q=challenge.current,target=q.id,correct=id===target,stats=organStats[target];
+ challenge.answered++;stats.attempts++;if(correct){challenge.score++;stats.correct++;}
+ const lang=isFr()?'fr':'ar',d=DATA[target][lang],chosen=DATA[id][lang];
  quizFeedback.textContent=correct
-  ?(isFr()?'Bonne réponse ! ':'إجابة صحيحة! ')+(isFr()?DATA[id].fr[1]:DATA[id].ar[1])
-  :(isFr()?'Réponse attendue : ':'الإجابة الصحيحة: ')+(isFr()?DATA[target].fr[0]:DATA[target].ar[0])+' — '+(isFr()?DATA[target].fr[2]:DATA[target].ar[2]);
- quizState.target=null;
- quizPrompt.textContent=(isFr()?'Score : ':'النتيجة الحالية: ')+quizState.score+'/'+quizState.answered;
- quizStart.textContent=isFr()?'Question suivante':'السؤال التالي';
+  ?(isFr()?'Correct ! ':'إجابة صحيحة! ')+d[0]+' — '+d[2]
+  :(isFr()?'Pas tout à fait. Organe attendu : ':'ليست الإجابة الصحيحة. العضو المطلوب: ')+d[0]+' — '+d[2]+(id&&DATA[id]?(isFr()?' Votre choix : ':' اختيارك: ')+chosen[0]:'');
+ challenge.current=null;challenge.index++;
+ quizProgress.textContent=(isFr()?'Progression : ':'التقدم: ')+challenge.answered+'/30 · '+(isFr()?'Score : ':'النتيجة: ')+challenge.score;
+ quizPrompt.textContent=isFr()?'Réponse enregistrée. Passez à la question suivante.':'تم تسجيل الإجابة. انتقل إلى السؤال التالي.';
+ quizStart.disabled=false;
+}
+function finishChallenge(){
+ challenge.active=false;challenge.finished=true;challenge.current=null;
+ labelCheck.disabled=false;labelCheck.checked=true;handleLabelToggle();
+ quizStart.hidden=true;quizFinish.hidden=true;
+ const accuracy=challenge.answered?Math.round(challenge.score/challenge.answered*100):0;
+ quizProgress.textContent=(isFr()?'Bilan final · ':'التقرير النهائي · ')+challenge.score+'/'+challenge.answered+' ('+accuracy+'%)';
+ quizPrompt.textContent=isFr()?'Votre bilan par système :':'حصيلتك حسب كل جهاز:';
+ const report=document.createElement('div');report.className='gs-3d-quiz-report';
+ Object.entries(SYSTEM_NAMES).forEach(([system,names])=>{
+  const members=labelDefinitions.filter(item=>item.system===system);
+  const total=members.reduce((sum,item)=>sum+organStats[item.id].correct,0);
+  const attempts=members.reduce((sum,item)=>sum+organStats[item.id].attempts,0);
+  const heading=document.createElement('h6');heading.textContent=names[langKey()]+' · '+total+'/'+attempts;
+  report.appendChild(heading);
+  members.forEach(item=>{
+   const stat=organStats[item.id],line=document.createElement('p');
+   line.textContent=(stat.correct>=2?'✓ ':'↻ ')+DATA[item.id][langKey()][0]+' — '+stat.correct+'/3 · '+(stat.correct>=2?(isFr()?'Acquis':'متقن'):(isFr()?'À revoir':'يحتاج إلى مراجعة'));
+   line.className=stat.correct>=2?'is-mastered':'needs-review';report.appendChild(line);
+  });
+ });
+ const previous=quizPanel.querySelector('.gs-3d-quiz-report');if(previous)previous.remove();
+ quizPanel.appendChild(report);
+ quizFeedback.textContent=isFr()?'Organe maîtrisé : au moins 2 bonnes réponses sur 3. Ce bilan reste dans cette session et ne modifie ni XP ni progression scolaire.':'يُعد العضو متقناً عند الحصول على إجابتين صحيحتين على الأقل من أصل 3. يبقى التقرير ضمن هذه الجلسة ولا يغيّر XP أو التقدم الدراسي.';
+}
+function langKey(){return isFr()?'fr':'ar';}
+function endQuiz(){
+ if(challenge.active)finishChallenge();
 }
 quizStart.addEventListener('click',()=>{
- if(quizState.active&&quizState.target){endQuiz();return;}
- if(quizState.active){beginQuiz();return;}
- quizState={active:true,target:null,mode:'name',score:0,answered:0};beginQuiz();
+ if(challenge.active&&challenge.current===null){showChallengeQuestion();return;}
+ if(!challenge.active)buildChallenge();
 });
+quizFinish.addEventListener('click',endQuiz);
 
 function clearHighlight(){highlighted.forEach(item=>{item.mesh.material=item.original;});highlighted=[];}
 function select(id){if(!DATA[id])return;selected=id;clearHighlight();model.traverse(object=>{if(!object.isMesh||object.name!==id)return;const original=object.material;const glow=original.clone();if(glow.emissive){glow.emissive.set(0xffc247);glow.emissiveIntensity=.72;}object.material=glow;highlighted.push({mesh:object,original});});const lang=isFr()?'fr':'ar',d=DATA[id][lang];root.querySelector('[data-3d-name]').textContent=d[0];root.querySelector('[data-3d-description]').textContent=d[1];root.querySelector('[data-3d-function]').textContent=d[2];root.querySelectorAll('[data-3d-organ]').forEach(b=>b.classList.toggle('is-active',b.dataset['3dOrgan']===id));}
@@ -194,7 +238,7 @@ const handleCanvasClick=e=>{if(moved){moved=false;return;}const rect=canvas.getB
 canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointermove',pointerMove);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',pointerUp);
 canvas.addEventListener('wheel',handleWheel,{passive:false});
 canvas.addEventListener('click',handleCanvasClick);
-const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(system&&!quizState.active)setSystem(system);select(btn.dataset['3dOrgan']);answerQuiz(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem']&&!quizState.active)setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
+const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(challenge.active){select(btn.dataset['3dOrgan']);acceptChallengeAnswer(btn.dataset['3dOrgan']);return;}if(system&&!quizState.active)setSystem(system);select(btn.dataset['3dOrgan']);answerQuiz(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem']&&!quizState.active&&!challenge.active)setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
 root.addEventListener('click',handleRootClick);
 activeCleanup=()=>{
 disposed=true;
@@ -206,7 +250,7 @@ document.removeEventListener('visibilitychange',handleDocVisibility);
 canvas.removeEventListener('pointerdown',pointerDown);canvas.removeEventListener('pointermove',pointerMove);canvas.removeEventListener('pointerup',pointerUp);canvas.removeEventListener('pointercancel',pointerUp);
 canvas.removeEventListener('wheel',handleWheel);canvas.removeEventListener('click',handleCanvasClick);
 root.removeEventListener('click',handleRootClick);
-quizStart.removeEventListener('click',beginQuiz);
+quizPanel.remove();
 labelCheck.removeEventListener('change',handleLabelToggle);labelLayer.remove();labelToggle.remove();
 scene.traverse(object=>{if(object.geometry)object.geometry.dispose();if(object.material){const materials=Array.isArray(object.material)?object.material:[object.material];materials.forEach(material=>material.dispose());}});
 renderer.dispose();
