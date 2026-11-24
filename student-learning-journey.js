@@ -29,8 +29,9 @@
     } catch (_) { return null; }
   }
 
-  function activeContentLanguage() {
-    const section = document.getElementById('cours');
+  function activeContentLanguage(sectionId) {
+    const section = document.getElementById(sectionId || 'cours') ||
+      document.getElementById('cours');
     const active = section && section.querySelector('.tab-btn.active[data-subject]');
     const value = active && active.dataset.subject;
     return LANGUAGES.includes(value) ? value : 'francais';
@@ -169,8 +170,8 @@
     return snapshot.profileKey === key ? snapshot : null;
   }
 
-  function chooseLanguage(data, type) {
-    const preferred = activeContentLanguage();
+  function chooseLanguage(data, type, sectionId) {
+    const preferred = activeContentLanguage(sectionId);
     // Quiz inventories are stored separately from manifest-backed resources.
     // Read that per-language map explicitly so recommendations never route a
     // learner to a language with zero quizzes when the other language has them.
@@ -191,11 +192,11 @@
     const hasQuizzes = data.quizzes > 0;
     const summaryCount = Number(data.counts.fiches) + Number(data.counts.resumes);
     const hasAny = has('cours') || has('exercices') || has('examens') || hasQuizzes || summaryCount > 0;
-    if (!hasAny) return { key: 'none', section: 'cours', href: '#cours', subject: activeContentLanguage(), available: false };
+    if (!hasAny) return { key: 'none', section: 'cours', href: '#cours', subject: activeContentLanguage('cours'), available: false };
 
     const step = (key, section, type) => ({
       key, section, href: '#' + section,
-      subject: type ? chooseLanguage(data, type) : activeContentLanguage(),
+      subject: type ? chooseLanguage(data, type, section) : activeContentLanguage(section),
       available: true
     });
 
