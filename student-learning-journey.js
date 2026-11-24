@@ -145,7 +145,12 @@
 
   function chooseLanguage(data, type) {
     const preferred = activeContentLanguage();
-    const available = data.byLanguage[type] || {};
+    // Quiz inventories are stored separately from manifest-backed resources.
+    // Read that per-language map explicitly so recommendations never route a
+    // learner to a language with zero quizzes when the other language has them.
+    const available = type === 'quiz'
+      ? (data.quizzesByLanguage || {})
+      : (data.byLanguage[type] || {});
     if (Number(available[preferred]) > 0) return preferred;
     const alternate = preferred === 'francais' ? 'arabe' : 'francais';
     if (Number(available[alternate]) > 0) return alternate;
