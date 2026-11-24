@@ -2,13 +2,20 @@
 (function () {
     'use strict';
 
-    // Attendre que StudentSpace soit chargé
-    function waitForStudentSpace(callback) {
+    // Attendre brièvement StudentSpace, sans polling infini si son script échoue.
+    function waitForStudentSpace(callback, attempt) {
         if (window.StudentSpace) {
             callback();
-        } else {
-            setTimeout(() => waitForStudentSpace(callback), 100);
+            return;
         }
+        const currentAttempt = Number.isInteger(attempt) ? attempt : 0;
+        if (currentAttempt >= 40) {
+            console.warn('[GoSVT] StudentSpace n’a pas été initialisé après plusieurs tentatives. Vérifiez le chargement de student-space.js.');
+            return;
+        }
+        window.setTimeout(function () {
+            waitForStudentSpace(callback, currentAttempt + 1);
+        }, Math.min(150 + currentAttempt * 25, 500));
     }
 
     // ============================================
