@@ -3300,8 +3300,10 @@ function openScientificPhotoPreview(card){
         container.querySelectorAll('.btn-complete').forEach(btn => {
             btn.addEventListener('click', function() {
                 const lessonId = this.dataset.lesson;
-                markLessonComplete(lessonId);
-                renderStudentSpace(); // Re-render
+                if (markLessonComplete(lessonId)) {
+                    // Preserve the active tab and expanded learning tasks after completion.
+                    refreshStudentSpaceView();
+                }
             });
         });
 
