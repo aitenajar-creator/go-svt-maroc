@@ -1,0 +1,1944 @@
+#!/usr/bin/env python3
+"""
+Go SVT Maroc - Student Space Complete Setup
+ينشئ جميع ملفات تطوير مساحة التلميذ دفعة واحدة
+"""
+
+import os
+import json
+
+def create_file(path, content):
+    os.makedirs(os.path.dirname(path) if os.path.dirname(path) else '.', exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"✅ {path}")
+
+# ============================================
+# 1. student-space.html - صفحة مساحة التلميذ الرئيسية
+# ============================================
+student_space_html = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مساحة التلميذ - Go SVT Maroc</title>
+  <link rel="stylesheet" href="visual-refresh.css">
+  <link rel="stylesheet" href="student-space.css">
+  <link rel="stylesheet" href="student-system.css">
+  <link rel="stylesheet" href="video-system.css">
+  <link rel="stylesheet" href="review-system.css">
+  <link rel="stylesheet" href="real-images.css">
+  <link rel="stylesheet" href="evolution-lab.css">
+  <link rel="stylesheet" href="physiology-lab.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#176b4b">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="logo">
+        <h1>Go SVT Maroc</h1>
+        <p>مساحة التلميذ</p>
+      </div>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="index.html">الرئيسية</a></li>
+          <li><a href="#dashboard" class="active">لوحتي</a></li>
+          <li><a href="#labs">المختبرات</a></li>
+          <li><a href="#videos">الفيديوهات</a></li>
+          <li><a href="#reviews">المراجعات</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions" id="header-actions"></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- لوحة التحكم الشخصية -->
+    <section id="dashboard" class="ss-dashboard">
+      <div class="container">
+        <div class="ss-welcome-card">
+          <div class="ss-welcome-content">
+            <span class="ss-eyebrow">👋 مرحباً بك</span>
+            <h2 id="ss-welcome-name">تلميذ Go SVT</h2>
+            <p id="ss-welcome-message">تابع تقدمك في علوم الحياة والأرض</p>
+            <div class="ss-welcome-tags" id="ss-welcome-tags"></div>
+          </div>
+          <div class="ss-welcome-stats">
+            <div class="ss-mini-stat">
+              <span class="ss-mini-value" id="ss-stat-labs">0</span>
+              <span class="ss-mini-label">مختبر</span>
+            </div>
+            <div class="ss-mini-stat">
+              <span class="ss-mini-value" id="ss-stat-score">0%</span>
+              <span class="ss-mini-label">متوسط</span>
+            </div>
+            <div class="ss-mini-stat">
+              <span class="ss-mini-value" id="ss-stat-streak">0</span>
+              <span class="ss-mini-label">يوم متتالي</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- شريط التقدم العام -->
+        <div class="ss-progress-overview">
+          <div class="ss-progress-header">
+            <h3>تقدمك العام</h3>
+            <span id="ss-progress-percent">0%</span>
+          </div>
+          <div class="ss-progress-bar">
+            <div class="ss-progress-fill" id="ss-progress-fill" style="width: 0%"></div>
+          </div>
+          <p id="ss-progress-text">أكمل المختبرات لرفع نسبة تقدمك</p>
+        </div>
+
+        <!-- الإحصائيات التفصيلية -->
+        <div class="ss-stats-grid">
+          <div class="ss-stat-card">
+            <div class="ss-stat-icon">📚</div>
+            <div class="ss-stat-value" id="ss-completed-labs">0</div>
+            <div class="ss-stat-label">مختبر مكتمل</div>
+          </div>
+          <div class="ss-stat-card">
+            <div class="ss-stat-icon">🎯</div>
+            <div class="ss-stat-value" id="ss-avg-score">0%</div>
+            <div class="ss-stat-label">متوسط النتائج</div>
+          </div>
+          <div class="ss-stat-card">
+            <div class="ss-stat-icon">🏆</div>
+            <div class="ss-stat-value" id="ss-achievements">0</div>
+            <div class="ss-stat-label">إنجاز</div>
+          </div>
+          <div class="ss-stat-card">
+            <div class="ss-stat-icon">🔥</div>
+            <div class="ss-stat-value" id="ss-streak">0</div>
+            <div class="ss-stat-label">يوم متتالي</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- المختبرات التفاعلية -->
+    <section id="labs" class="ss-section">
+      <div class="container">
+        <h2 class="ss-section-title">🧪 المختبرات التفاعلية</h2>
+        <div class="ss-labs-grid">
+          <a href="#cell-lab" class="ss-lab-card" data-lab="cell">
+            <div class="ss-lab-icon">🔬</div>
+            <h3>مختبر الخلية</h3>
+            <p>استكشف مكونات الخلية النباتية والحيوانية</p>
+            <span class="ss-lab-level">TC</span>
+          </a>
+          <a href="#genetics-lab" class="ss-lab-card" data-lab="genetics">
+            <div class="ss-lab-icon">🧬</div>
+            <h3>مختبر الوراثة</h3>
+            <p>تجارب التهجين وقوانين مندل</p>
+            <span class="ss-lab-level">1BAC</span>
+          </a>
+          <a href="#photosynthesis-lab" class="ss-lab-card" data-lab="photosynthesis">
+            <div class="ss-lab-icon">🌿</div>
+            <h3>مختبر التركيب الضوئي</h3>
+            <p>تجربة عوامل التأثير على التركيب الضوئي</p>
+            <span class="ss-lab-level">TC</span>
+          </a>
+          <a href="#evolution-lab" class="ss-lab-card" data-lab="evolution">
+            <div class="ss-lab-icon">🦎</div>
+            <h3>مختبر التطور</h3>
+            <p>محاكاة الانتقاء الطبيعي والانحراف الوراثي</p>
+            <span class="ss-lab-level">2BAC</span>
+          </a>
+          <a href="#ecology-lab" class="ss-lab-card" data-lab="ecology">
+            <div class="ss-lab-icon">🌍</div>
+            <h3>مختبر البيئة</h3>
+            <p>الشبكات الغذائية والتوازن البيئي</p>
+            <span class="ss-lab-level">1BAC</span>
+          </a>
+          <a href="#physiology-lab" class="ss-lab-card" data-lab="physiology">
+            <div class="ss-lab-icon">🫀</div>
+            <h3>مختبر فسيولوجيا الإنسان</h3>
+            <p>الجهاز الهضمي والتنفسى والدوري</p>
+            <span class="ss-lab-level">2BAC</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- مكتبة الفيديوهات -->
+    <section id="videos" class="ss-section">
+      <div class="container">
+        <h2 class="ss-section-title">📹 مكتبة الفيديوهات التعليمية</h2>
+        <div id="video-library"></div>
+      </div>
+    </section>
+
+    <!-- المراجعات والتقييمات -->
+    <section id="reviews" class="ss-section">
+      <div class="container">
+        <h2 class="ss-section-title">💬 آراء الطلاب</h2>
+        <div id="review-container"></div>
+      </div>
+    </section>
+
+    <!-- الإنجازات -->
+    <section id="achievements" class="ss-section">
+      <div class="container">
+        <h2 class="ss-section-title">🏆 إنجازاتي</h2>
+        <div id="achievements-grid" class="ss-achievements-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2026 Go SVT Maroc - جميع الحقوق محفوظة</p>
+    </div>
+  </footer>
+
+  <!-- الأنظمة -->
+  <script src="student-system.js"></script>
+  <script src="video-system.js"></script>
+  <script src="review-system.js"></script>
+  <script src="real-images-system.js"></script>
+  <script src="evolution-lab.js"></script>
+  <script src="physiology-lab.js"></script>
+  <script src="student-space.js"></script>
+
+  <!-- PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('[PWA] SW registered:', reg.scope))
+          .catch(err => console.warn('[PWA] SW failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
+"""
+
+create_file('student-space.html', student_space_html)
+
+# ============================================
+# 2. student-space.css - تنسيقات مساحة التلميذ
+# ============================================
+student_space_css = """/* Student Space Styles */
+.ss-dashboard { padding: 2rem 0; background: linear-gradient(135deg, #f0f8f3, #fff); }
+.ss-welcome-card {
+  display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;
+  padding: 2rem; border-radius: 24px;
+  background: linear-gradient(135deg, #176b4b, #31966a);
+  color: white; box-shadow: 0 15px 40px rgba(23, 107, 75, 0.2);
+  margin-bottom: 2rem;
+}
+.ss-welcome-content .ss-eyebrow { font-size: 0.9rem; opacity: 0.9; }
+.ss-welcome-content h2 { font-size: 2rem; margin: 0.5rem 0; }
+.ss-welcome-content p { opacity: 0.9; line-height: 1.6; }
+.ss-welcome-tags { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+.ss-welcome-tags span {
+  padding: 0.4rem 0.8rem; background: rgba(255,255,255,0.2);
+  border-radius: 20px; font-size: 0.85rem; backdrop-filter: blur(10px);
+}
+.ss-welcome-stats { display: flex; flex-direction: column; gap: 1rem; }
+.ss-mini-stat {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 1rem; background: rgba(255,255,255,0.15);
+  border-radius: 16px; backdrop-filter: blur(10px);
+}
+.ss-mini-value { font-size: 2rem; font-weight: 900; }
+.ss-mini-label { font-size: 0.85rem; opacity: 0.9; }
+
+.ss-progress-overview {
+  padding: 1.5rem; background: white; border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06); margin-bottom: 2rem;
+}
+.ss-progress-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+.ss-progress-header h3 { margin: 0; color: #174d35; }
+.ss-progress-header span { color: #176b4b; font-weight: 800; font-size: 1.2rem; }
+.ss-progress-bar { height: 12px; background: #e0ece4; border-radius: 6px; overflow: hidden; }
+.ss-progress-fill {
+  height: 100%; background: linear-gradient(90deg, #176b4b, #31966a);
+  transition: width 0.5s ease;
+}
+.ss-progress-overview p { margin: 0.5rem 0 0; color: #63796b; font-size: 0.9rem; }
+
+.ss-stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem; margin-bottom: 2rem;
+}
+.ss-stat-card {
+  padding: 1.5rem; background: white; border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06); text-align: center;
+  transition: transform 0.2s;
+}
+.ss-stat-card:hover { transform: translateY(-5px); }
+.ss-stat-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.ss-stat-value { font-size: 2.5rem; font-weight: 900; color: #176b4b; margin: 0.5rem 0; }
+.ss-stat-label { color: #63796b; font-size: 0.9rem; }
+
+.ss-section { padding: 2rem 0; }
+.ss-section-title {
+  color: #174d35; font-size: 1.8rem; margin-bottom: 1.5rem;
+  font-weight: 850;
+}
+.ss-labs-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.ss-lab-card {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 1.5rem; background: white; border-radius: 18px;
+  border: 1px solid #e0ece4; text-decoration: none;
+  color: #204f38; transition: all 0.2s; position: relative;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.ss-lab-card:hover {
+  transform: translateY(-5px); border-color: #176b4b;
+  box-shadow: 0 15px 35px rgba(23, 107, 75, 0.15);
+}
+.ss-lab-icon { font-size: 2.5rem; }
+.ss-lab-card h3 { margin: 0; font-size: 1.2rem; color: #174d35; }
+.ss-lab-card p { margin: 0; color: #63796b; font-size: 0.9rem; line-height: 1.6; }
+.ss-lab-level {
+  position: absolute; top: 1rem; right: 1rem;
+  padding: 0.3rem 0.7rem; background: #eaf6ed;
+  color: #176b4b; border-radius: 20px; font-size: 0.75rem; font-weight: 750;
+}
+
+.ss-achievements-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.footer {
+  padding: 2rem 0; text-align: center;
+  background: #174d35; color: white; margin-top: 3rem;
+}
+
+@media (max-width: 768px) {
+  .ss-welcome-card { grid-template-columns: 1fr; }
+  .ss-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .ss-labs-grid { grid-template-columns: 1fr; }
+}
+"""
+
+create_file('student-space.css', student_space_css)
+
+# ============================================
+# 3. student-space.js - منطق مساحة التلميذ
+# ============================================
+student_space_js = """(() => {
+  'use strict';
+
+  class StudentSpace {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      this.loadUserData();
+      this.setupNavigation();
+      this.renderAchievements();
+    }
+
+    loadUserData() {
+      if (!window.GoSVT || !window.GoSVT.auth || !window.GoSVT.auth.isLoggedIn()) {
+        this.showGuestMode();
+        return;
+      }
+
+      const user = window.GoSVT.auth.getCurrentUser();
+      const stats = window.GoSVT.tracker.getStats();
+
+      document.getElementById('ss-welcome-name').textContent = `مرحباً ${user.name}! 👋`;
+      document.getElementById('ss-welcome-message').textContent = 
+        `مستواك: ${user.level} | واصل التعلم لتحقيق أهدافك`;
+      
+      document.getElementById('ss-stat-labs').textContent = stats.completedLabs;
+      document.getElementById('ss-stat-score').textContent = stats.averageScore + '%';
+      document.getElementById('ss-stat-streak').textContent = stats.studyStreak;
+
+      document.getElementById('ss-completed-labs').textContent = stats.completedLabs;
+      document.getElementById('ss-avg-score').textContent = stats.averageScore + '%';
+      document.getElementById('ss-achievements').textContent = stats.achievements;
+      document.getElementById('ss-streak').textContent = stats.studyStreak;
+
+      document.getElementById('ss-progress-percent').textContent = stats.completionRate + '%';
+      document.getElementById('ss-progress-fill').style.width = stats.completionRate + '%';
+      document.getElementById('ss-progress-text').textContent = 
+        `أنت في مستوى ${user.level} - أكمل ${stats.completedLabs} من 25 مختبر`;
+
+      // Tags
+      const tags = document.getElementById('ss-welcome-tags');
+      tags.innerHTML = `
+        <span>📊 ${stats.completionRate}% مكتمل</span>
+        <span>🎯 ${stats.averageScore}% متوسط</span>
+        <span>🔥 ${stats.studyStreak} يوم متتالي</span>
+      `;
+    }
+
+    showGuestMode() {
+      document.getElementById('ss-welcome-name').textContent = 'مرحباً بك في Go SVT! 👋';
+      document.getElementById('ss-welcome-message').textContent = 
+        'سجل دخولك لتتبع تقدمك وحفظ إنجازاتك';
+    }
+
+    setupNavigation() {
+      document.querySelectorAll('.main-nav a').forEach(link => {
+        link.addEventListener('click', (e) => {
+          const href = link.getAttribute('href');
+          if (href.startsWith('#')) {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+        });
+      });
+    }
+
+    renderAchievements() {
+      if (!window.GoSVT || !window.GoSVT.achievements) return;
+      
+      const achievements = window.GoSVT.achievements.getAllAchievements();
+      const grid = document.getElementById('achievements-grid');
+      
+      if (!grid || achievements.length === 0) return;
+
+      grid.innerHTML = achievements.map(a => `
+        <div class="ss-achievement-card ${a.earned ? 'earned' : 'locked'}">
+          <div class="ss-achievement-icon">${a.icon}</div>
+          <div class="ss-achievement-info">
+            <strong>${a.title.ar}</strong>
+            <small>${a.description.ar}</small>
+          </div>
+          ${a.earned ? '<span class="ss-earned-badge">✓</span>' : ''}
+        </div>
+      `).join('');
+    }
+  }
+
+  // Initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      window.StudentSpace = new StudentSpace();
+    });
+  } else {
+    window.StudentSpace = new StudentSpace();
+  }
+})();
+"""
+
+create_file('student-space.js', student_space_js)
+
+# ============================================
+# 4. videos.json - محتوى الفيديوهات
+# ============================================
+videos_data = {
+  "tc": {
+    "cellule": [
+      {
+        "id": "tc_cell_01",
+        "title": {"ar": "مقدمة في دراسة الخلية", "fr": "Introduction à la cellule"},
+        "url": "https://www.youtube.com/embed/3nF3Q5c1X3k",
+        "duration": "12:30",
+        "description": {"ar": "تعرف على المكونات الأساسية للخلية", "fr": "Découvrez les composants de la cellule"},
+        "thumbnail": "https://img.youtube.com/vi/3nF3Q5c1X3k/mqdefault.jpg"
+      }
+    ],
+    "photosynthese": [
+      {
+        "id": "tc_photo_01",
+        "title": {"ar": "عملية التركيب الضوئي", "fr": "La photosynthèse"},
+        "url": "https://www.youtube.com/embed/sQeZaJW8z2M",
+        "duration": "18:20",
+        "description": {"ar": "فهم آلية تحويل الطاقة الضوئية", "fr": "Comprendre la conversion de l'énergie"},
+        "thumbnail": "https://img.youtube.com/vi/sQeZaJW8z2M/mqdefault.jpg"
+      }
+    ]
+  },
+  "1bac": {
+    "genetique": [
+      {
+        "id": "1bac_gen_01",
+        "title": {"ar": "مبادئ الوراثة المندلية", "fr": "L'hérédité mendélienne"},
+        "url": "https://www.youtube.com/embed/Mehz7tCxjSE",
+        "duration": "22:15",
+        "description": {"ar": "تعلم قوانين مندل", "fr": "Apprenez les lois de Mendel"},
+        "thumbnail": "https://img.youtube.com/vi/Mehz7tCxjSE/mqdefault.jpg"
+      }
+    ]
+  },
+  "2bac": {
+    "immunite": [
+      {
+        "id": "2bac_imm_01",
+        "title": {"ar": "الاستجابة المناعية", "fr": "La réponse immunitaire"},
+        "url": "https://www.youtube.com/embed/6fOlXrjZ5VU",
+        "duration": "28:30",
+        "description": {"ar": "فهم آليات الدفاع المناعي", "fr": "Comprendre les mécanismes de défense"},
+        "thumbnail": "https://img.youtube.com/vi/6fOlXrjZ5VU/mqdefault.jpg"
+      }
+    ]
+  }
+}
+
+create_file('videos.json', json.dumps(videos_data, ensure_ascii=False, indent=2))
+
+# ============================================
+# 5. manifest.json - PWA
+# ============================================
+manifest = {
+  "name": "Go SVT Maroc - مختبر علوم الحياة والأرض",
+  "short_name": "Go SVT",
+  "description": "منصة تعليمية تفاعلية لعلوم الحياة والأرض",
+  "start_url": "/student-space.html",
+  "display": "standalone",
+  "background_color": "#176b4b",
+  "theme_color": "#176b4b",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["education", "science"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
+
+create_file('manifest.json', json.dumps(manifest, ensure_ascii=False, indent=2))
+
+# ============================================
+# 6. service-worker.js
+# ============================================
+service_worker = """const CACHE_NAME = 'gsvt-student-v1';
+const ASSETS = [
+  '/', '/student-space.html', '/index.html',
+  '/student-system.js', '/student-system.css',
+  '/video-system.js', '/video-system.css',
+  '/review-system.js', '/review-system.css',
+  '/real-images-system.js', '/real-images.css',
+  '/evolution-lab.js', '/evolution-lab.css',
+  '/physiology-lab.js', '/physiology-lab.css',
+  '/student-space.js', '/student-space.css',
+  '/laboratory.js', '/visual-refresh.css',
+  '/videos.json', '/manifest.json'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    ))
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  if (e.request.url.includes('youtube.com') || e.request.url.includes('wikimedia.org')) return;
+  
+  e.respondWith(
+    fetch(e.request).then(res => {
+      const clone = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+      return res;
+    }).catch(() => caches.match(e.request))
+  );
+});
+"""
+
+create_file('service-worker.js', service_worker)
+
+# ============================================
+# 7. offline.html
+# ============================================
+offline_html = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بدون اتصال - Go SVT</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #176b4b, #31966a);
+      color: white; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 2rem; text-align: center;
+    }
+    .offline-container { max-width: 500px; }
+    .offline-icon { font-size: 5rem; margin-bottom: 1rem; }
+    h1 { font-size: 2rem; margin-bottom: 1rem; }
+    p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem; opacity: 0.9; }
+    .retry-btn {
+      padding: 1rem 2rem; background: white; color: #176b4b;
+      border: none; border-radius: 12px; font-size: 1rem;
+      font-weight: 700; cursor: pointer;
+    }
+    .retry-btn:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">📡</div>
+    <h1>لا يوجد اتصال بالإنترنت</h1>
+    <p>يمكنك الوصول إلى المحتوى المحفوظ مسبقاً</p>
+    <button class="retry-btn" onclick="window.location.reload()">إعادة المحاولة</button>
+  </div>
+</body>
+</html>
+"""
+
+create_file('offline.html', offline_html)
+
+# ============================================
+# 8. student-system.js (نسخة محدثة)
+# ============================================
+student_system_js = """(() => {
+  'use strict';
+
+  const Storage = {
+    get(key, def = null) {
+      try { const d = localStorage.getItem(`gsvt_${key}`); return d ? JSON.parse(d) : def; }
+      catch (e) { return def; }
+    },
+    set(key, val) {
+      try { localStorage.setItem(`gsvt_${key}`, JSON.stringify(val)); return true; }
+      catch (e) { return false; }
+    },
+    remove(key) { localStorage.removeItem(`gsvt_${key}`); }
+  };
+
+  class StudentAuth {
+    constructor() {
+      this.currentUser = Storage.get('current_user', null);
+      this.students = Storage.get('students', []);
+    }
+    register(name, email, level, password) {
+      if (this.students.find(s => s.email === email)) {
+        return { success: false, message: 'البريد مسجل مسبقاً' };
+      }
+      const student = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        name: name.trim(), email: email.trim().toLowerCase(), level,
+        password: btoa(password),
+        createdAt: new Date().toISOString(),
+        lastActive: new Date().toISOString(),
+        progress: {
+          completedLabs: [], quizScores: {}, achievements: [],
+          studyStreak: 0, lastStudyDate: null
+        }
+      };
+      this.students.push(student);
+      Storage.set('students', this.students);
+      this.currentUser = student;
+      Storage.set('current_user', student);
+      return { success: true, student };
+    }
+    login(email, password) {
+      const student = this.students.find(
+        s => s.email === email.toLowerCase() && s.password === btoa(password)
+      );
+      if (!student) return { success: false, message: 'بيانات غير صحيحة' };
+      student.lastActive = new Date().toISOString();
+      Storage.set('students', this.students);
+      this.currentUser = student;
+      Storage.set('current_user', student);
+      return { success: true, student };
+    }
+    logout() { this.currentUser = null; Storage.remove('current_user'); }
+    updateProfile(updates) {
+      if (!this.currentUser) return false;
+      Object.assign(this.currentUser, updates);
+      const idx = this.students.findIndex(s => s.id === this.currentUser.id);
+      if (idx !== -1) {
+        this.students[idx] = this.currentUser;
+        Storage.set('students', this.students);
+        Storage.set('current_user', this.currentUser);
+      }
+      return true;
+    }
+    isLoggedIn() { return this.currentUser !== null; }
+    getCurrentUser() { return this.currentUser; }
+  }
+
+  class ProgressTracker {
+    constructor(auth) { this.auth = auth; }
+    saveLabProgress(labId, score, completed = true) {
+      if (!this.auth.isLoggedIn()) return false;
+      const s = this.auth.getCurrentUser();
+      s.progress.quizScores[labId] = {
+        labId, score, completed,
+        completedAt: new Date().toISOString(),
+        attempts: (s.progress.quizScores[labId]?.attempts || 0) + 1
+      };
+      if (completed && !s.progress.completedLabs.includes(labId)) {
+        s.progress.completedLabs.push(labId);
+      }
+      this.updateStudyStreak(s);
+      this.auth.updateProfile({ progress: s.progress });
+      return true;
+    }
+    updateStudyStreak(s) {
+      const today = new Date().toDateString();
+      const last = s.progress.lastStudyDate ? new Date(s.progress.lastStudyDate).toDateString() : null;
+      if (last !== today) {
+        const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+        s.progress.studyStreak = last === yesterday.toDateString() ? s.progress.studyStreak + 1 : 1;
+        s.progress.lastStudyDate = new Date().toISOString();
+      }
+    }
+    getStats() {
+      if (!this.auth.isLoggedIn()) return null;
+      const s = this.auth.getCurrentUser();
+      const p = s.progress;
+      const scores = Object.values(p.quizScores).filter(x => x.completed).map(x => x.score);
+      const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      return {
+        completedLabs: p.completedLabs.length, totalLabs: 25,
+        completionRate: Math.round((p.completedLabs.length / 25) * 100),
+        averageScore: avg, studyStreak: p.studyStreak,
+        achievements: p.achievements.length, level: s.level
+      };
+    }
+  }
+
+  class AchievementSystem {
+    constructor(auth, tracker) {
+      this.auth = auth; this.tracker = tracker;
+      this.achievements = [
+        { id: 'first_lab', title: { ar: 'أول خطوة', fr: 'Premier pas' }, description: { ar: 'أكمل أول مختبر', fr: 'Compléter le premier laboratoire' }, icon: '🔬', condition: s => s.completedLabs >= 1 },
+        { id: 'five_labs', title: { ar: 'مستكشف', fr: 'Explorateur' }, description: { ar: 'أكمل 5 مختبرات', fr: 'Compléter 5 laboratoires' }, icon: '🧪', condition: s => s.completedLabs >= 5 },
+        { id: 'perfect_score', title: { ar: 'علامة كاملة', fr: 'Score parfait' }, description: { ar: 'احصل على 100%', fr: 'Obtenir 100%' }, icon: '🏆', condition: s => s.averageScore === 100 },
+        { id: 'streak_7', title: { ar: 'ملتزم', fr: 'Régulier' }, description: { ar: '7 أيام متتالية', fr: '7 jours consécutifs' }, icon: '🔥', condition: s => s.studyStreak >= 7 },
+        { id: 'half_way', title: { ar: 'نصف الطريق', fr: 'Mi-chemin' }, description: { ar: 'أكمل نصف المختبرات', fr: 'Compléter la moitié' }, icon: '⭐', condition: s => s.completionRate >= 50 },
+        { id: 'master', title: { ar: 'خبير SVT', fr: 'Expert SVT' }, description: { ar: 'أكمل جميع المختبرات', fr: 'Compléter tous les laboratoires' }, icon: '🎓', condition: s => s.completionRate === 100 }
+      ];
+    }
+    checkAchievements() {
+      if (!this.auth.isLoggedIn()) return [];
+      const s = this.auth.getCurrentUser();
+      const stats = this.tracker.getStats();
+      const newA = [];
+      this.achievements.forEach(a => {
+        if (!s.progress.achievements.includes(a.id) && a.condition(stats)) {
+          s.progress.achievements.push(a.id);
+          newA.push(a);
+        }
+      });
+      if (newA.length > 0) this.auth.updateProfile({ progress: s.progress });
+      return newA;
+    }
+    getAllAchievements() {
+      if (!this.auth.isLoggedIn()) return [];
+      const s = this.auth.getCurrentUser();
+      return this.achievements.map(a => ({ ...a, earned: s.progress.achievements.includes(a.id) }));
+    }
+  }
+
+  class StudentUI {
+    constructor(auth, tracker, achievements) {
+      this.auth = auth; this.tracker = tracker; this.achievements = achievements;
+    }
+    createAuthModal() {
+      const modal = document.createElement('div');
+      modal.className = 'gsvt-auth-modal';
+      modal.innerHTML = `
+        <div class="gsvt-auth-container">
+          <button class="gsvt-auth-close" aria-label="إغلاق">×</button>
+          <div class="gsvt-auth-header"><h2>Go SVT Maroc</h2><p>مختبر علوم الحياة والأرض</p></div>
+          <div class="gsvt-auth-tabs">
+            <button class="gsvt-auth-tab active" data-tab="login">تسجيل الدخول</button>
+            <button class="gsvt-auth-tab" data-tab="register">حساب جديد</button>
+          </div>
+          <form class="gsvt-auth-form" id="gsvt-login-form">
+            <div class="gsvt-form-group"><label>البريد الإلكتروني</label><input type="email" name="email" required placeholder="example@email.com"></div>
+            <div class="gsvt-form-group"><label>كلمة المرور</label><input type="password" name="password" required placeholder="••••••••"></div>
+            <button type="submit" class="gsvt-btn-primary">دخول</button>
+            <div class="gsvt-auth-message"></div>
+          </form>
+          <form class="gsvt-auth-form hidden" id="gsvt-register-form">
+            <div class="gsvt-form-group"><label>الاسم الكامل</label><input type="text" name="name" required placeholder="محمد العلوي"></div>
+            <div class="gsvt-form-group"><label>البريد الإلكتروني</label><input type="email" name="email" required placeholder="example@email.com"></div>
+            <div class="gsvt-form-group"><label>المستوى</label><select name="level" required><option value="">اختر المستوى</option><option value="TC">جذع مشترك</option><option value="1BAC">أولى باكالوريا</option><option value="2BAC">ثانية باكالوريا</option></select></div>
+            <div class="gsvt-form-group"><label>كلمة المرور</label><input type="password" name="password" required placeholder="••••••••" minlength="6"></div>
+            <button type="submit" class="gsvt-btn-primary">إنشاء حساب</button>
+            <div class="gsvt-auth-message"></div>
+          </form>
+        </div>`;
+      document.body.appendChild(modal);
+      this.setupAuthEvents(modal);
+      return modal;
+    }
+    setupAuthEvents(modal) {
+      modal.querySelectorAll('.gsvt-auth-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          modal.querySelectorAll('.gsvt-auth-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const tabName = tab.dataset.tab;
+          modal.querySelectorAll('.gsvt-auth-form').forEach(form => {
+            form.classList.toggle('hidden', form.id !== `gsvt-${tabName}-form`);
+          });
+        });
+      });
+      modal.querySelector('.gsvt-auth-close').addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+      document.getElementById('gsvt-login-form').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const result = this.auth.login(fd.get('email'), fd.get('password'));
+        const msg = e.target.querySelector('.gsvt-auth-message');
+        if (result.success) {
+          msg.textContent = 'تم تسجيل الدخول!'; msg.className = 'gsvt-auth-message success';
+          setTimeout(() => { modal.remove(); this.updateUI(); window.location.reload(); }, 1000);
+        } else { msg.textContent = result.message; msg.className = 'gsvt-auth-message error'; }
+      });
+      document.getElementById('gsvt-register-form').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const result = this.auth.register(fd.get('name'), fd.get('email'), fd.get('level'), fd.get('password'));
+        const msg = e.target.querySelector('.gsvt-auth-message');
+        if (result.success) {
+          msg.textContent = 'تم إنشاء الحساب!'; msg.className = 'gsvt-auth-message success';
+          setTimeout(() => { modal.remove(); this.updateUI(); window.location.reload(); }, 1000);
+        } else { msg.textContent = result.message; msg.className = 'gsvt-auth-message error'; }
+      });
+    }
+    updateUI() {
+      const actions = document.getElementById('header-actions');
+      if (!actions) return;
+      actions.innerHTML = '';
+      if (this.auth.isLoggedIn()) {
+        const user = this.auth.getCurrentUser();
+        const btn = document.createElement('button');
+        btn.className = 'gsvt-user-btn';
+        btn.textContent = `👤 ${user.name}`;
+        btn.addEventListener('click', () => {
+          if (confirm('هل تريد تسجيل الخروج؟')) {
+            this.auth.logout();
+            this.updateUI();
+            window.location.reload();
+          }
+        });
+        actions.appendChild(btn);
+      } else {
+        const btn = document.createElement('button');
+        btn.className = 'gsvt-auth-btn';
+        btn.textContent = 'تسجيل الدخول';
+        btn.addEventListener('click', () => this.createAuthModal());
+        actions.appendChild(btn);
+      }
+    }
+  }
+
+  const auth = new StudentAuth();
+  const tracker = new ProgressTracker(auth);
+  const achievements = new AchievementSystem(auth, tracker);
+  const ui = new StudentUI(auth, tracker, achievements);
+
+  ui.updateUI();
+  window.GoSVT = { auth, tracker, achievements, ui };
+})();
+"""
+
+create_file('student-system.js', student_system_js)
+
+# ============================================
+# 9. student-system.css
+# ============================================
+student_system_css = """/* Student System Styles */
+.gsvt-auth-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10000; animation: gsvtFadeIn 0.3s ease;
+}
+@keyframes gsvtFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.gsvt-auth-container {
+  background: linear-gradient(145deg, #fff, #f5fbf7);
+  border-radius: 24px; padding: 2rem; max-width: 450px; width: 90%;
+  position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: gsvtSlideUp 0.3s ease;
+}
+@keyframes gsvtSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.gsvt-auth-close {
+  position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none; font-size: 1.5rem; cursor: pointer;
+  color: #666; width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.gsvt-auth-close:hover { background: #f0f0f0; }
+.gsvt-auth-header { text-align: center; margin-bottom: 1.5rem; }
+.gsvt-auth-header h2 { color: #176b4b; font-size: 1.8rem; margin: 0 0 0.5rem; }
+.gsvt-auth-header p { color: #666; font-size: 0.9rem; margin: 0; }
+.gsvt-auth-tabs {
+  display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+.gsvt-auth-tab {
+  flex: 1; padding: 0.75rem; background: none; border: none;
+  border-bottom: 3px solid transparent; cursor: pointer;
+  font-size: 1rem; font-weight: 600; color: #666;
+}
+.gsvt-auth-tab.active { color: #176b4b; border-bottom-color: #176b4b; }
+.gsvt-auth-form { display: flex; flex-direction: column; gap: 1rem; }
+.gsvt-auth-form.hidden { display: none; }
+.gsvt-form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.gsvt-form-group label { font-size: 0.9rem; font-weight: 600; color: #333; }
+.gsvt-form-group input, .gsvt-form-group select {
+  padding: 0.75rem; border: 2px solid #e0e0e0;
+  border-radius: 10px; font-size: 1rem;
+}
+.gsvt-form-group input:focus, .gsvt-form-group select:focus {
+  outline: none; border-color: #176b4b;
+}
+.gsvt-btn-primary {
+  padding: 0.9rem; background: linear-gradient(135deg, #176b4b, #31966a);
+  color: white; border: none; border-radius: 10px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+}
+.gsvt-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(23,107,75,0.3); }
+.gsvt-auth-message {
+  padding: 0.75rem; border-radius: 8px; font-size: 0.9rem;
+  text-align: center; display: none;
+}
+.gsvt-auth-message.success { display: block; background: #e8f5e9; color: #2e7d32; }
+.gsvt-auth-message.error { display: block; background: #ffebee; color: #c62828; }
+.gsvt-auth-btn, .gsvt-user-btn {
+  padding: 0.6rem 1.2rem; background: linear-gradient(135deg, #176b4b, #31966a);
+  color: white; border: none; border-radius: 10px;
+  font-weight: 600; cursor: pointer;
+}
+.gsvt-auth-btn:hover, .gsvt-user-btn:hover {
+  transform: translateY(-2px); box-shadow: 0 8px 20px rgba(23,107,75,0.3);
+}
+"""
+
+create_file('student-system.css', student_system_css)
+
+# ============================================
+# 10. video-system.js
+# ============================================
+video_system_js = """(() => {
+  'use strict';
+  class VideoSystem {
+    constructor() {
+      this.videos = {};
+      this.watched = JSON.parse(localStorage.getItem('gsvt_watched') || '[]');
+      this.load();
+    }
+    async load() {
+      try {
+        const res = await fetch('videos.json');
+        this.videos = await res.json();
+        this.render();
+      } catch (e) { console.error('Video load error:', e); }
+    }
+    getAll() {
+      return Object.values(this.videos).flatMap(l => Object.values(l).flat());
+    }
+    isWatched(id) { return this.watched.includes(id); }
+    markWatched(id) {
+      if (!this.watched.includes(id)) {
+        this.watched.push(id);
+        localStorage.setItem('gsvt_watched', JSON.stringify(this.watched));
+      }
+    }
+    render() {
+      const container = document.getElementById('video-library');
+      if (!container) return;
+      const all = this.getAll();
+      container.innerHTML = `
+        <div class="vl-header">
+          <h2>📹 مكتبة الفيديوهات التعليمية</h2>
+          <p>${all.length} فيديو في علوم الحياة والأرض</p>
+        </div>
+        <div class="vl-filters">
+          <select id="vl-level">
+            <option value="">جميع المستويات</option>
+            <option value="tc">جذع مشترك</option>
+            <option value="1bac">أولى باكالوريا</option>
+            <option value="2bac">ثانية باكالوريا</option>
+          </select>
+          <select id="vl-subject">
+            <option value="">جميع المواضيع</option>
+            <option value="cellule">الخلية</option>
+            <option value="genetique">الوراثة</option>
+            <option value="photosynthese">التركيب الضوئي</option>
+            <option value="immunite">المناعة</option>
+          </select>
+        </div>
+        <div class="vl-grid">${all.map(v => this.card(v)).join('')}</div>
+      `;
+      document.getElementById('vl-level').addEventListener('change', e => this.filter(e.target.value, document.getElementById('vl-subject').value));
+      document.getElementById('vl-subject').addEventListener('change', e => this.filter(document.getElementById('vl-level').value, e.target.value));
+      this.bindPlay();
+    }
+    card(v) {
+      const w = this.isWatched(v.id);
+      return `
+        <div class="vl-card ${w ? 'watched' : ''}" data-id="${v.id}">
+          <div class="vl-thumb">
+            <img src="${v.thumbnail}" alt="${v.title.ar}" loading="lazy">
+            <span class="vl-dur">${v.duration}</span>
+            ${w ? '<span class="vl-badge">✓ تمت المشاهدة</span>' : ''}
+          </div>
+          <div class="vl-info">
+            <h3>${v.title.ar}</h3>
+            <p>${v.description.ar}</p>
+            <button class="vl-play" data-url="${v.url}" data-id="${v.id}">▶ مشاهدة</button>
+          </div>
+        </div>`;
+    }
+    filter(level, subject) {
+      const grid = document.querySelector('.vl-grid');
+      let list = level ? (this.videos[level] || []) : this.getAll();
+      list = level ? Object.values(list).flat() : list;
+      if (subject) list = list.filter(v => v.id.includes(subject));
+      grid.innerHTML = list.map(v => this.card(v)).join('');
+      this.bindPlay();
+    }
+    bindPlay() {
+      document.querySelectorAll('.vl-play').forEach(btn => {
+        btn.addEventListener('click', () => this.play(btn.dataset.url, btn.dataset.id));
+      });
+    }
+    play(url, id) {
+      const m = document.createElement('div');
+      m.className = 'vl-modal';
+      m.innerHTML = `
+        <div class="vl-player">
+          <button class="vl-close">×</button>
+          <iframe src="${url}?autoplay=1" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>`;
+      document.body.appendChild(m);
+      const close = () => { m.remove(); this.markWatched(id); this.render(); };
+      m.querySelector('.vl-close').addEventListener('click', close);
+      m.addEventListener('click', e => { if (e.target === m) close(); });
+    }
+  }
+  window.GoSVTVideos = new VideoSystem();
+})();
+"""
+
+create_file('video-system.js', video_system_js)
+
+# ============================================
+# 11. video-system.css
+# ============================================
+video_system_css = """/* Video Library */
+.vl-header{text-align:center;margin:2rem 0;padding:2rem;background:linear-gradient(135deg,#176b4b,#31966a);border-radius:20px;color:#fff;box-shadow:0 10px 30px rgba(23,107,75,.2)}
+.vl-header h2{margin:0 0 .5rem;font-size:2rem}
+.vl-header p{margin:0;opacity:.9}
+.vl-filters{display:flex;gap:1rem;margin:1.5rem 0;flex-wrap:wrap}
+.vl-filters select{flex:1;min-width:200px;padding:.75rem;border:2px solid #e0e0e0;border-radius:10px;font-size:1rem;background:#fff;cursor:pointer}
+.vl-filters select:focus{outline:none;border-color:#176b4b}
+.vl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;margin:2rem 0}
+.vl-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.08);transition:transform .2s,box-shadow .2s}
+.vl-card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+.vl-card.watched{opacity:.85}
+.vl-thumb{position:relative;width:100%;height:180px;background:#f0f0f0}
+.vl-thumb img{width:100%;height:100%;object-fit:cover}
+.vl-dur{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.8);color:#fff;padding:.3rem .6rem;border-radius:6px;font-size:.85rem;font-weight:700}
+.vl-badge{position:absolute;top:10px;left:10px;background:#176b4b;color:#fff;padding:.4rem .8rem;border-radius:20px;font-size:.8rem;font-weight:700}
+.vl-info{padding:1.2rem}
+.vl-info h3{margin:0 0 .5rem;color:#176b4b;font-size:1.1rem}
+.vl-info p{margin:0 0 1rem;color:#666;font-size:.9rem;line-height:1.6}
+.vl-play{width:100%;padding:.8rem;background:linear-gradient(135deg,#176b4b,#31966a);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:transform .2s}
+.vl-play:hover{transform:translateY(-2px);box-shadow:0 6px 15px rgba(23,107,75,.3)}
+.vl-modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:10000;animation:vlFade .3s}
+@keyframes vlFade{from{opacity:0}to{opacity:1}}
+.vl-player{position:relative;width:90%;max-width:1000px;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}
+.vl-player iframe{width:100%;height:100%;border:none}
+.vl-close{position:absolute;top:-50px;right:0;background:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:1.5rem;cursor:pointer}
+@media(max-width:768px){.vl-grid{grid-template-columns:1fr}.vl-filters{flex-direction:column}.vl-filters select{width:100%}.vl-close{top:10px;right:10px}}
+"""
+
+create_file('video-system.css', video_system_css)
+
+# ============================================
+# 12. review-system.js
+# ============================================
+review_system_js = """(() => {
+  'use strict';
+  const reviewData = {
+    ar: {
+      title: 'آراء الطلاب', subtitle: 'شارك تجربتك مع المختبرات التفاعلية',
+      rating: 'التقييم', review: 'المراجعة', submit: 'إرسال',
+      helpful: 'مفيد', report: 'إبلاغ', sortBy: 'ترتيب حسب',
+      newest: 'الأحدث', highest: 'الأعلى تقييماً', mostHelpful: 'الأكثر فائدة',
+      noReviews: 'لا توجد مراجعات بعد. كن أول من يشارك!',
+      yourRating: 'تقييمك', yourReview: 'مراجعتك',
+      writeReview: 'اكتب مراجعتك هنا...', minChars: '10 أحرف على الأقل',
+      success: 'تم إرسال مراجعتك بنجاح!', error: 'حدث خطأ. حاول مرة أخرى.',
+      confirmDelete: 'هل أنت متأكد من حذف هذه المراجعة؟', deleted: 'تم حذف المراجعة.',
+      reportSubmitted: 'تم إرسال البلاغ. شكراً لمساعدتنا!',
+      leaderboard: 'لوحة المتصدرين', topReviewers: 'أفضل المراجعين',
+      reviews: 'مراجعة', avgRating: 'متوسط التقييم', totalReviews: 'إجمالي المراجعات',
+      helpfulCount: 'مفيد', daysAgo: 'منذ {{days}} يوم', hoursAgo: 'منذ {{hours}} ساعة',
+      minutesAgo: 'منذ {{minutes}} دقيقة', justNow: 'الآن'
+    }
+  };
+  let currentLang = 'ar';
+
+  class ReviewSystem {
+    constructor() {
+      this.reviews = JSON.parse(localStorage.getItem('gsvt_reviews') || '{}');
+      this.ratings = JSON.parse(localStorage.getItem('gsvt_ratings') || '{}');
+      this.helpful = JSON.parse(localStorage.getItem('gsvt_helpful') || '[]');
+      this.currentUser = this.getCurrentUser();
+    }
+    getCurrentUser() {
+      if (window.GoSVT && window.GoSVT.auth && window.GoSVT.auth.isLoggedIn()) {
+        return window.GoSVT.auth.getCurrentUser();
+      }
+      return null;
+    }
+    getLabReviews(labId) { return this.reviews[labId] || []; }
+    getLabRating(labId) {
+      const ratings = this.ratings[labId] || [];
+      if (ratings.length === 0) return 0;
+      const sum = ratings.reduce((acc, r) => acc + r.rating, 0);
+      return (sum / ratings.length).toFixed(1);
+    }
+    getLabRatingCount(labId) { return (this.ratings[labId] || []).length; }
+    addReview(labId, rating, text) {
+      if (!this.currentUser) return { success: false, message: 'يجب تسجيل الدخول أولاً' };
+      if (text.length < 10) return { success: false, message: 'المراجعة قصيرة جداً (10 أحرف على الأقل)' };
+      if (rating < 1 || rating > 5) return { success: false, message: 'التقييم يجب أن يكون بين 1 و 5' };
+      const review = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        labId, userId: this.currentUser.id, userName: this.currentUser.name,
+        userLevel: this.currentUser.level, rating, text: text.trim(),
+        createdAt: new Date().toISOString(), helpfulCount: 0, reports: 0
+      };
+      if (!this.reviews[labId]) this.reviews[labId] = [];
+      this.reviews[labId].unshift(review);
+      if (!this.ratings[labId]) this.ratings[labId] = [];
+      this.ratings[labId].push({ userId: this.currentUser.id, rating });
+      localStorage.setItem('gsvt_reviews', JSON.stringify(this.reviews));
+      localStorage.setItem('gsvt_ratings', JSON.stringify(this.ratings));
+      return { success: true, review };
+    }
+    deleteReview(labId, reviewId) {
+      if (!this.currentUser) return false;
+      const reviews = this.reviews[labId] || [];
+      const index = reviews.findIndex(r => r.id === reviewId);
+      if (index === -1 || reviews[index].userId !== this.currentUser.id) return false;
+      reviews.splice(index, 1);
+      this.reviews[labId] = reviews;
+      localStorage.setItem('gsvt_reviews', JSON.stringify(this.reviews));
+      return true;
+    }
+    markHelpful(reviewId) {
+      if (!this.currentUser || this.helpful.includes(reviewId)) return false;
+      this.helpful.push(reviewId);
+      Object.keys(this.reviews).forEach(labId => {
+        const review = this.reviews[labId].find(r => r.id === reviewId);
+        if (review) review.helpfulCount++;
+      });
+      localStorage.setItem('gsvt_helpful', JSON.stringify(this.helpful));
+      localStorage.setItem('gsvt_reviews', JSON.stringify(this.reviews));
+      return true;
+    }
+    reportReview(reviewId) {
+      if (this.reports && this.reports.includes(reviewId)) return false;
+      if (!this.reports) this.reports = [];
+      this.reports.push(reviewId);
+      localStorage.setItem('gsvt_reports', JSON.stringify(this.reports));
+      return true;
+    }
+    getLeaderboard() {
+      const userStats = {};
+      Object.keys(this.reviews).forEach(labId => {
+        this.reviews[labId].forEach(review => {
+          if (!userStats[review.userId]) {
+            userStats[review.userId] = {
+              userId: review.userId, userName: review.userName,
+              userLevel: review.userLevel, reviewCount: 0,
+              totalRating: 0, helpfulCount: 0
+            };
+          }
+          userStats[review.userId].reviewCount++;
+          userStats[review.userId].totalRating += review.rating;
+          userStats[review.userId].helpfulCount += review.helpfulCount;
+        });
+      });
+      return Object.values(userStats)
+        .sort((a, b) => (b.reviewCount * 10 + b.helpfulCount) - (a.reviewCount * 10 + a.helpfulCount))
+        .slice(0, 10);
+    }
+    getTimeAgo(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      const texts = reviewData[currentLang];
+      if (diffMins < 1) return texts.justNow;
+      if (diffMins < 60) return texts.minutesAgo.replace('{{minutes}}', diffMins);
+      if (diffHours < 24) return texts.hoursAgo.replace('{{hours}}', diffHours);
+      return texts.daysAgo.replace('{{days}}', diffDays);
+    }
+  }
+
+  class ReviewUI {
+    constructor(reviewSystem) {
+      this.reviewSystem = reviewSystem;
+      this.currentLabId = 'general';
+      this.sortBy = 'newest';
+    }
+    renderReviewSection(labId, containerId) {
+      this.currentLabId = labId;
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const data = reviewData[currentLang];
+      const reviews = this.reviewSystem.getLabReviews(labId);
+      const avgRating = this.reviewSystem.getLabRating(labId);
+      const ratingCount = this.reviewSystem.getLabRatingCount(labId);
+      container.innerHTML = `
+        <div class="review-section">
+          <div class="review-header"><h3>${data.title}</h3><p>${data.subtitle}</p></div>
+          <div class="review-stats">
+            <div class="review-stat-card">
+              <div class="review-stat-value">${avgRating}</div>
+              <div class="review-stat-label">⭐ ${data.avgRating}</div>
+              <div class="review-stat-sub">${ratingCount} ${data.reviews}</div>
+            </div>
+            <div class="review-stat-card">
+              <div class="review-stat-value">${reviews.length}</div>
+              <div class="review-stat-label">📝 ${data.totalReviews}</div>
+            </div>
+          </div>
+          ${this.reviewSystem.currentUser ? this.renderReviewForm() : '<p class="review-login-prompt">سجل دخولك لمشاركة مراجعتك</p>'}
+          <div class="review-sort">
+            <label>${data.sortBy}:</label>
+            <select id="review-sort-select">
+              <option value="newest">${data.newest}</option>
+              <option value="highest">${data.highest}</option>
+              <option value="helpful">${data.mostHelpful}</option>
+            </select>
+          </div>
+          <div class="review-list" id="review-list">
+            ${reviews.length === 0 ? `<p class="no-reviews">${data.noReviews}</p>` : this.renderReviews(reviews)}
+          </div>
+          <div class="review-leaderboard">
+            <h4>🏆 ${data.leaderboard}</h4>
+            <p>${data.topReviewers}</p>
+            ${this.renderLeaderboard()}
+          </div>
+        </div>
+      `;
+      this.setupEventListeners();
+    }
+    renderReviewForm() {
+      const data = reviewData[currentLang];
+      return `
+        <div class="review-form">
+          <h4>${data.yourRating}</h4>
+          <div class="star-rating" id="star-rating">
+            ${[1,2,3,4,5].map(i => `<span class="star" data-rating="${i}">★</span>`).join('')}
+          </div>
+          <input type="hidden" id="review-rating" value="0">
+          <h4>${data.yourReview}</h4>
+          <textarea id="review-text" placeholder="${data.writeReview}" rows="4"></textarea>
+          <small class="review-hint">${data.minChars}</small>
+          <button id="review-submit" class="review-submit-btn">${data.submit}</button>
+          <div id="review-message" class="review-message"></div>
+        </div>
+      `;
+    }
+    renderReviews(reviews) {
+      const data = reviewData[currentLang];
+      const sorted = this.sortReviews(reviews);
+      return sorted.map(review => {
+        const isHelpful = this.reviewSystem.helpful.includes(review.id);
+        const isOwner = this.reviewSystem.currentUser && this.reviewSystem.currentUser.id === review.userId;
+        return `
+          <div class="review-card" data-review-id="${review.id}">
+            <div class="review-card-header">
+              <div class="review-user-info">
+                <div class="review-user-avatar">${review.userName.charAt(0).toUpperCase()}</div>
+                <div><strong>${review.userName}</strong><span class="review-user-level">${review.userLevel}</span></div>
+              </div>
+              <div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+            </div>
+            <div class="review-text">${review.text}</div>
+            <div class="review-card-footer">
+              <span class="review-time">${this.reviewSystem.getTimeAgo(review.createdAt)}</span>
+              <div class="review-actions">
+                <button class="review-helpful-btn ${isHelpful ? 'is-helpful' : ''}" data-review-id="${review.id}">👍 ${data.helpful} (${review.helpfulCount})</button>
+                <button class="review-report-btn" data-review-id="${review.id}">🚩 ${data.report}</button>
+                ${isOwner ? `<button class="review-delete-btn" data-review-id="${review.id}">🗑️ حذف</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    renderLeaderboard() {
+      const leaderboard = this.reviewSystem.getLeaderboard();
+      const data = reviewData[currentLang];
+      if (leaderboard.length === 0) return '<p>لا يوجد مراجعون بعد</p>';
+      return `
+        <div class="leaderboard-list">
+          ${leaderboard.map((user, index) => `
+            <div class="leaderboard-item">
+              <div class="leaderboard-rank">${index + 1}</div>
+              <div class="leaderboard-avatar">${user.userName.charAt(0).toUpperCase()}</div>
+              <div class="leaderboard-info"><strong>${user.userName}</strong><span>${user.userLevel}</span></div>
+              <div class="leaderboard-stats"><span>${user.reviewCount} ${data.reviews}</span><span>👍 ${user.helpfulCount}</span></div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    sortReviews(reviews) {
+      const sorted = [...reviews];
+      switch (this.sortBy) {
+        case 'highest': return sorted.sort((a, b) => b.rating - a.rating);
+        case 'helpful': return sorted.sort((a, b) => b.helpfulCount - a.helpfulCount);
+        case 'newest':
+        default: return sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+    }
+    setupEventListeners() {
+      document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', () => {
+          const rating = parseInt(star.dataset.rating);
+          document.getElementById('review-rating').value = rating;
+          document.querySelectorAll('.star').forEach((s, index) => {
+            s.classList.toggle('is-selected', index < rating);
+          });
+        });
+      });
+      const submitBtn = document.getElementById('review-submit');
+      if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+          const rating = parseInt(document.getElementById('review-rating').value);
+          const text = document.getElementById('review-text').value.trim();
+          const messageEl = document.getElementById('review-message');
+          if (rating === 0) { messageEl.textContent = 'اختر تقييماً أولاً'; messageEl.className = 'review-message error'; return; }
+          const result = this.reviewSystem.addReview(this.currentLabId, rating, text);
+          if (result.success) {
+            messageEl.textContent = reviewData[currentLang].success;
+            messageEl.className = 'review-message success';
+            setTimeout(() => { this.renderReviewSection(this.currentLabId, 'review-container'); }, 1500);
+          } else { messageEl.textContent = result.message; messageEl.className = 'review-message error'; }
+        });
+      }
+      const sortSelect = document.getElementById('review-sort-select');
+      if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+          this.sortBy = e.target.value;
+          const reviews = this.reviewSystem.getLabReviews(this.currentLabId);
+          document.getElementById('review-list').innerHTML =
+            reviews.length === 0 ? `<p class="no-reviews">${reviewData[currentLang].noReviews}</p>` : this.renderReviews(reviews);
+          this.setupReviewActions();
+        });
+      }
+      this.setupReviewActions();
+    }
+    setupReviewActions() {
+      const data = reviewData[currentLang];
+      document.querySelectorAll('.review-helpful-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const reviewId = btn.dataset.reviewId;
+          if (this.reviewSystem.markHelpful(reviewId)) {
+            btn.classList.add('is-helpful');
+            const review = Object.values(this.reviewSystem.reviews).flat().find(r => r.id === reviewId);
+            if (review) btn.textContent = `👍 ${data.helpful} (${review.helpfulCount})`;
+          }
+        });
+      });
+      document.querySelectorAll('.review-report-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const reviewId = btn.dataset.reviewId;
+          if (this.reviewSystem.reportReview(reviewId)) alert(data.reportSubmitted);
+        });
+      });
+      document.querySelectorAll('.review-delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const reviewId = btn.dataset.reviewId;
+          if (confirm(data.confirmDelete)) {
+            if (this.reviewSystem.deleteReview(this.currentLabId, reviewId)) {
+              alert(data.deleted);
+              this.renderReviewSection(this.currentLabId, 'review-container');
+            }
+          }
+        });
+      });
+    }
+  }
+
+  const reviewSystem = new ReviewSystem();
+  const reviewUI = new ReviewUI(reviewSystem);
+  window.GoSVTReview = { reviewSystem, reviewUI };
+})();
+"""
+
+create_file('review-system.js', review_system_js)
+
+# ============================================
+# 13. review-system.css
+# ============================================
+review_system_css = """/* Review System Styles */
+.review-section{margin:2rem 0;padding:2rem;background:linear-gradient(145deg,#fff,#f5fbf7);border:1px solid #e0ece4;border-radius:22px;box-shadow:0 10px 28px rgba(20,75,48,.07)}
+.review-header{margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e0ece4}
+.review-header h3{margin:0 0 .5rem;color:#174d35;font-size:1.8rem;font-weight:850}
+.review-header p{margin:0;color:#63796b;font-size:1rem;line-height:1.6}
+.review-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.review-stat-card{padding:1.5rem;background:#fff;border:1px solid #e0ece4;border-radius:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.05)}
+.review-stat-value{font-size:2.5rem;font-weight:900;color:#176b4b;margin-bottom:.5rem}
+.review-stat-label{color:#365c45;font-size:.9rem;font-weight:750;margin-bottom:.25rem}
+.review-stat-sub{color:#63796b;font-size:.8rem}
+.review-login-prompt{padding:1rem;background:#fff3d8;border:1px solid #f3c969;border-radius:12px;color:#93631c;text-align:center;margin-bottom:1.5rem}
+.review-form{padding:1.5rem;background:#fff;border:1px solid #e0ece4;border-radius:16px;margin-bottom:2rem}
+.review-form h4{margin:0 0 .75rem;color:#174d35;font-size:1.1rem;font-weight:800}
+.star-rating{display:flex;gap:.5rem;margin-bottom:1.5rem}
+.star{font-size:2.5rem;color:#e0e0e0;cursor:pointer;transition:color .2s,transform .2s}
+.star:hover{transform:scale(1.2)}
+.star.is-selected{color:#f3c969}
+.review-form textarea{width:100%;padding:.75rem;border:2px solid #e0e0e0;border-radius:12px;font-size:1rem;font-family:inherit;resize:vertical;transition:border-color .2s}
+.review-form textarea:focus{outline:none;border-color:#176b4b}
+.review-hint{display:block;margin:.5rem 0 1rem;color:#63796b;font-size:.85rem}
+.review-submit-btn{width:100%;padding:1rem;background:linear-gradient(135deg,#176b4b,#31966a);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:750;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.review-submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(23,107,75,.3)}
+.review-message{margin-top:1rem;padding:.75rem;border-radius:10px;text-align:center;font-size:.9rem;display:none}
+.review-message.success{display:block;background:#e8f5e9;color:#2e7d32}
+.review-message.error{display:block;background:#ffebee;color:#c62828}
+.review-sort{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:#f8fbf9;border-radius:12px}
+.review-sort label{color:#365c45;font-weight:750}
+.review-sort select{flex:1;padding:.6rem;border:2px solid #e0e0e0;border-radius:10px;font-size:.95rem;background:#fff;cursor:pointer}
+.review-sort select:focus{outline:none;border-color:#176b4b}
+.review-list{display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem}
+.no-reviews{padding:2rem;text-align:center;color:#63796b;background:#f8fbf9;border-radius:12px;border:2px dashed #e0ece4}
+.review-card{padding:1.5rem;background:#fff;border:1px solid #e0ece4;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.05);transition:transform .2s,box-shadow .2s}
+.review-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.review-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.review-user-info{display:flex;align-items:center;gap:1rem}
+.review-user-avatar{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#176b4b,#31966a);color:#fff;font-size:1.2rem;font-weight:800}
+.review-user-info strong{display:block;color:#174d35;font-size:1rem}
+.review-user-level{display:inline-block;padding:.2rem .6rem;background:#eaf6ed;color:#176b4b;border-radius:20px;font-size:.75rem;font-weight:750;margin-top:.25rem}
+.review-rating{color:#f3c969;font-size:1.3rem;letter-spacing:2px}
+.review-text{color:#365c45;line-height:1.8;margin-bottom:1rem;font-size:.95rem}
+.review-card-footer{display:flex;justify-content:space-between;align-items:center;padding-top:1rem;border-top:1px solid #e0ece4}
+.review-time{color:#63796b;font-size:.85rem}
+.review-actions{display:flex;gap:.5rem}
+.review-helpful-btn,.review-report-btn,.review-delete-btn{padding:.5rem .8rem;border:1px solid #e0e0e0;border-radius:8px;background:#fff;color:#63796b;font-size:.85rem;cursor:pointer;transition:all .2s}
+.review-helpful-btn:hover{background:#eaf6ed;border-color:#176b4b;color:#176b4b}
+.review-helpful-btn.is-helpful{background:#176b4b;color:#fff;border-color:#176b4b}
+.review-report-btn:hover,.review-delete-btn:hover{background:#ffebee;border-color:#c62828;color:#c62828}
+.review-leaderboard{padding:1.5rem;background:linear-gradient(135deg,#eaf6ed,#f5fbf7);border:1px solid #d4eadb;border-radius:16px}
+.review-leaderboard h4{margin:0 0 .5rem;color:#174d35;font-size:1.3rem;font-weight:850}
+.review-leaderboard p{margin:0 0 1rem;color:#63796b;font-size:.9rem}
+.leaderboard-list{display:flex;flex-direction:column;gap:.75rem}
+.leaderboard-item{display:flex;align-items:center;gap:1rem;padding:1rem;background:#fff;border:1px solid #e0ece4;border-radius:12px;transition:transform .2s}
+.leaderboard-item:hover{transform:translateX(5px)}
+.leaderboard-rank{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f3c969,#e6b84d);color:#fff;font-weight:900;font-size:1rem}
+.leaderboard-item:nth-child(2) .leaderboard-rank{background:linear-gradient(135deg,#c0c0c0,#a0a0a0)}
+.leaderboard-item:nth-child(3) .leaderboard-rank{background:linear-gradient(135deg,#cd7f32,#b87333)}
+.leaderboard-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#176b4b,#31966a);color:#fff;font-weight:800;font-size:1.1rem}
+.leaderboard-info{flex:1;display:flex;flex-direction:column}
+.leaderboard-info strong{color:#174d35;font-size:.95rem}
+.leaderboard-info span{color:#63796b;font-size:.8rem}
+.leaderboard-stats{display:flex;gap:1rem;color:#63796b;font-size:.85rem;font-weight:750}
+@media(max-width:768px){.review-section{padding:1rem}.review-stats{grid-template-columns:1fr}.review-card-header{flex-direction:column;align-items:flex-start;gap:.75rem}.review-card-footer{flex-direction:column;align-items:flex-start;gap:.75rem}.review-actions{flex-wrap:wrap}.leaderboard-item{flex-wrap:wrap}.leaderboard-stats{width:100%;justify-content:flex-end}}
+@media(max-width:480px){.star{font-size:2rem}.review-user-avatar{width:40px;height:40px;font-size:1rem}}
+"""
+
+create_file('review-system.css', review_system_css)
+
+# ============================================
+# 14. real-images-system.js
+# ============================================
+real_images_js = """(() => {
+  'use strict';
+  const imageDatabase = {
+    cell: { commonsQuery: 'plant cell diagram', alternatives: ['https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Plant_cell_structure_svg-en.svg/800px-Plant_cell_structure_svg-en.svg.png'] },
+    genetics: { commonsQuery: 'DNA double helix', alternatives: ['https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/DNA_Structure%2BKey%2BLabel%2Bpno1%2BSeven%2BFrame_Small.png/800px-DNA_Structure%2BKey%2BLabel%2Bpno1%2BSeven%2BFrame_Small.png'] },
+    ecology: { commonsQuery: 'ecosystem forest', alternatives: ['https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Rainforest_Daintree_Australia.jpg/800px-Rainforest_Daintree_Australia.jpg'] },
+    geology: { commonsQuery: 'igneous rock sample', alternatives: ['https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Granite_granitic_rock.jpg/800px-Granite_granitic_rock.jpg'] },
+    photosynthesis: { commonsQuery: 'photosynthesis leaf', alternatives: ['https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Photosynthesis_en.svg/800px-Photosynthesis_en.svg.png'] },
+    anatomy: { commonsQuery: 'human digestive system', alternatives: ['https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Digestive_system_diagram_en.svg/800px-Digestive_system_diagram_en.svg.png'] }
+  };
+
+  class RealImagesSystem {
+    constructor() {
+      this.imageCache = JSON.parse(localStorage.getItem('gsvt_image_cache') || '{}');
+    }
+    async fetchCommonsImage(query, width = 800) {
+      const cacheKey = `${query}_${width}`;
+      if (this.imageCache[cacheKey]) return this.imageCache[cacheKey];
+      try {
+        const params = new URLSearchParams({
+          action: 'query', format: 'json', origin: '*',
+          generator: 'search', gsrnamespace: '6',
+          gsrsearch: `${query} filetype:bitmap`, gsrlimit: '3',
+          prop: 'imageinfo', iiprop: 'url|extmetadata|size|mime',
+          iiurlwidth: String(width)
+        });
+        const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params.toString()}`, { headers: { 'Accept': 'application/json' } });
+        if (!response.ok) throw new Error('Commons API error');
+        const payload = await response.json();
+        const candidates = payload?.query?.pages ? Object.values(payload.query.pages).map(page => ({ page, info: page?.imageinfo?.[0] })).filter(item => item.info?.thumburl && /^image\\/(jpeg|png|webp)$/i.test(item.info.mime || '') && Number(item.info.width) >= 320).sort((a, b) => (Number(b.info.width) * Number(b.info.height)) - (Number(a.info.width) * Number(a.info.height))) : [];
+        if (candidates.length === 0) return null;
+        const selected = candidates[0];
+        const result = {
+          url: selected.info.thumburl,
+          sourceUrl: selected.info.descriptionurl,
+          author: this.extractMetadata(selected.info.extmetadata?.Artist),
+          license: this.extractMetadata(selected.info.extmetadata?.LicenseShortName),
+          title: selected.page.title
+        };
+        this.imageCache[cacheKey] = result;
+        localStorage.setItem('gsvt_image_cache', JSON.stringify(this.imageCache));
+        return result;
+      } catch (error) { console.warn('[RealImages] Commons fetch failed:', error); return null; }
+    }
+    extractMetadata(value) {
+      if (!value) return 'Unknown';
+      const str = String(value.value || value);
+      return str.replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim() || 'Unknown';
+    }
+    async getImage(category) {
+      const config = imageDatabase[category];
+      if (!config) return null;
+      const commonsResult = await this.fetchCommonsImage(config.commonsQuery);
+      if (commonsResult) return commonsResult;
+      if (config.alternatives && config.alternatives.length > 0) {
+        return { url: config.alternatives[0], sourceUrl: config.alternatives[0], author: 'Wikimedia Commons', license: 'CC License', title: category };
+      }
+      return null;
+    }
+    createImageCard(imageData, alt = '') {
+      if (!imageData) return '<div class="ri-placeholder">صورة غير متاحة</div>';
+      return `
+        <div class="ri-image-card">
+          <div class="ri-image-frame">
+            <img src="${imageData.url}" alt="${alt}" loading="lazy" class="ri-image" onerror="this.parentElement.innerHTML='<div class=\\'ri-error\\'>تعذر تحميل الصورة</div>'">
+            <div class="ri-image-overlay"><button class="ri-expand-btn" aria-label="تكبير">🔍</button></div>
+          </div>
+          <div class="ri-image-info">
+            <a href="${imageData.sourceUrl}" target="_blank" rel="noopener" class="ri-source-link">📷 ${imageData.author}</a>
+            <span class="ri-license">📜 ${imageData.license}</span>
+          </div>
+        </div>
+      `;
+    }
+    async populateLabImages() {
+      const containers = document.querySelectorAll('[data-real-images]');
+      for (const container of containers) {
+        const category = container.dataset.realImages;
+        const imageData = await this.getImage(category);
+        if (imageData) container.innerHTML = this.createImageCard(imageData, category);
+      }
+    }
+  }
+
+  const realImages = new RealImagesSystem();
+  window.GoSVTImages = realImages;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => realImages.populateLabImages());
+  } else { realImages.populateLabImages(); }
+})();
+"""
+
+create_file('real-images-system.js', real_images_js)
+
+# ============================================
+# 15. real-images.css
+# ============================================
+real_images_css = """/* Real Scientific Images System */
+.ri-image-card{position:relative;border:1px solid #e0ece4;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 4px 15px rgba(20,75,48,.08);transition:transform .2s,box-shadow .2s}
+.ri-image-card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(20,75,48,.15)}
+.ri-image-frame{position:relative;width:100%;height:220px;overflow:hidden;background:linear-gradient(135deg,#f5fbf7,#e8f5e9)}
+.ri-image{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.ri-image-card:hover .ri-image{transform:scale(1.05)}
+.ri-image-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.ri-image-card:hover .ri-image-overlay{background:rgba(0,0,0,.3)}
+.ri-expand-btn{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.95);border:none;font-size:1.5rem;cursor:pointer;opacity:0;transform:scale(.8);transition:opacity .2s,transform .2s}
+.ri-image-card:hover .ri-expand-btn{opacity:1;transform:scale(1)}
+.ri-expand-btn:hover{background:#fff;transform:scale(1.1)!important}
+.ri-image-info{padding:.75rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem;background:#f8fbf9;border-top:1px solid #e0ece4}
+.ri-source-link{flex:1;color:#176b4b;text-decoration:none;font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-source-link:hover{text-decoration:underline}
+.ri-license{flex:0 0 auto;padding:.25rem .5rem;background:#eaf6ed;color:#176b4b;border-radius:8px;font-size:.7rem;font-weight:750}
+.ri-placeholder,.ri-error{display:grid;place-items:center;height:220px;color:#63796b;font-size:.9rem;background:#f5fbf7}
+@media(max-width:768px){.ri-image-frame{height:180px}.ri-image-info{flex-direction:column;align-items:flex-start}}
+@media(max-width:480px){.ri-image-frame{height:200px}}
+"""
+
+create_file('real-images.css', real_images_css)
+
+# ============================================
+# 16. evolution-lab.js
+# ============================================
+evolution_lab_js = """(() => {
+  'use strict';
+  const evolutionData = {
+    naturalSelection: {
+      ar: { title: 'الانتقاء الطبيعي', description: 'محاكاة تطور لون الفراء في الأرانب عبر الأجيال', instructions: 'اضبط نسبة الافتراس وشاهد كيف يتغير توزيع الألوان', generations: 'الأجيال', population: 'الجماعة', trait: 'الصفة', frequency: 'التكرار', light: 'فاتح', dark: 'داكن', predation: 'ضغط الافتراس', reset: 'إعادة', start: 'بدء المحاكاة', stop: 'إيقاف', explanation: 'الانتقاء الطبيعي يفضل الأفراد المتكيفين مع بيئتهم. في بيئة داكنة، الأرانب ذات الفراء الداكن أقل عرضة للافتراس.' }
+    }
+  };
+  let currentLang = 'ar';
+  let simulationRunning = false;
+  let simulationInterval = null;
+
+  class EvolutionLab {
+    constructor() {
+      this.generations = 0;
+      this.population = [];
+      this.lightFrequency = 0.5;
+      this.darkFrequency = 0.5;
+      this.predationPressure = 0.3;
+      this.init();
+    }
+    init() { this.renderLab(); this.setupEventListeners(); this.initializePopulation(); }
+    renderLab() {
+      const container = document.getElementById('evolution-lab');
+      if (!container) return;
+      const data = evolutionData.naturalSelection[currentLang];
+      container.innerHTML = `
+        <div class="evo-lab-container">
+          <div class="evo-lab-header"><h2>${data.title}</h2><p>${data.description}</p></div>
+          <div class="evo-lab-controls">
+            <div class="evo-control-group">
+              <label>${data.predationPressure}</label>
+              <input type="range" id="evo-predation" min="0" max="100" value="30">
+              <span id="evo-predation-value">30%</span>
+            </div>
+            <div class="evo-buttons">
+              <button id="evo-start" class="evo-btn-primary">${data.start}</button>
+              <button id="evo-reset" class="evo-btn-secondary">${data.reset}</button>
+            </div>
+          </div>
+          <div class="evo-lab-visualization">
+            <div class="evo-population-display">
+              <div class="evo-generation-counter"><span>${data.generations}:</span><strong id="evo-generation-count">0</strong></div>
+              <div id="evo-rabbits-container" class="evo-rabbits-grid"></div>
+            </div>
+            <div class="evo-frequency-chart">
+              <h3>${data.frequency}</h3>
+              <div class="evo-chart-bars">
+                <div class="evo-bar-group">
+                  <div class="evo-bar-label">${data.light}</div>
+                  <div class="evo-bar-container"><div id="evo-light-bar" class="evo-bar evo-bar-light" style="width: 50%"></div></div>
+                  <div id="evo-light-freq" class="evo-bar-value">50%</div>
+                </div>
+                <div class="evo-bar-group">
+                  <div class="evo-bar-label">${data.dark}</div>
+                  <div class="evo-bar-container"><div id="evo-dark-bar" class="evo-bar evo-bar-dark" style="width: 50%"></div></div>
+                  <div id="evo-dark-freq" class="evo-bar-value">50%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="evo-lab-explanation"><p>${data.explanation}</p></div>
+        </div>
+      `;
+    }
+    initializePopulation() {
+      this.population = [];
+      for (let i = 0; i < 100; i++) {
+        this.population.push({ color: Math.random() < 0.5 ? 'light' : 'dark', fitness: 1 });
+      }
+      this.updateDisplay();
+    }
+    setupEventListeners() {
+      const predationSlider = document.getElementById('evo-predation');
+      const startBtn = document.getElementById('evo-start');
+      const resetBtn = document.getElementById('evo-reset');
+      if (predationSlider) {
+        predationSlider.addEventListener('input', (e) => {
+          this.predationPressure = e.target.value / 100;
+          document.getElementById('evo-predation-value').textContent = e.target.value + '%';
+        });
+      }
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          if (simulationRunning) this.stopSimulation();
+          else this.startSimulation();
+        });
+      }
+      if (resetBtn) { resetBtn.addEventListener('click', () => this.resetSimulation()); }
+    }
+    startSimulation() {
+      simulationRunning = true;
+      const startBtn = document.getElementById('evo-start');
+      const data = evolutionData.naturalSelection[currentLang];
+      if (startBtn) startBtn.textContent = data.stop;
+      simulationInterval = setInterval(() => this.nextGeneration(), 1000);
+    }
+    stopSimulation() {
+      simulationRunning = false;
+      clearInterval(simulationInterval);
+      const startBtn = document.getElementById('evo-start');
+      const data = evolutionData.naturalSelection[currentLang];
+      if (startBtn) startBtn.textContent = data.start;
+    }
+    resetSimulation() {
+      this.stopSimulation();
+      this.generations = 0;
+      this.lightFrequency = 0.5;
+      this.darkFrequency = 0.5;
+      this.initializePopulation();
+    }
+    nextGeneration() {
+      this.generations++;
+      const newPopulation = [];
+      this.population.forEach(individual => {
+        let survivalChance = 1;
+        if (individual.color === 'light') survivalChance = 1 - this.predationPressure;
+        else survivalChance = 1 - (this.predationPressure * 0.3);
+        if (Math.random() < survivalChance) {
+          newPopulation.push({ color: individual.color, fitness: individual.fitness * 1.1 });
+          if (newPopulation.length < 100) newPopulation.push({ color: individual.color, fitness: individual.fitness });
+        }
+      });
+      while (newPopulation.length < 100) {
+        const parent = this.population[Math.floor(Math.random() * this.population.length)];
+        newPopulation.push({ color: parent.color, fitness: parent.fitness });
+      }
+      this.population = newPopulation.slice(0, 100);
+      this.updateFrequencies();
+      this.updateDisplay();
+    }
+    updateFrequencies() {
+      const lightCount = this.population.filter(i => i.color === 'light').length;
+      const darkCount = this.population.filter(i => i.color === 'dark').length;
+      const total = this.population.length;
+      this.lightFrequency = lightCount / total;
+      this.darkFrequency = darkCount / total;
+    }
+    updateDisplay() {
+      const container = document.getElementById('evo-rabbits-container');
+      const generationCount = document.getElementById('evo-generation-count');
+      const lightBar = document.getElementById('evo-light-bar');
+      const darkBar = document.getElementById('evo-dark-bar');
+      const lightFreq = document.getElementById('evo-light-freq');
+      const darkFreq = document.getElementById('evo-dark-freq');
+      if (container) {
+        container.innerHTML = '';
+        this.population.forEach((individual, index) => {
+          const rabbit = document.createElement('div');
+          rabbit.className = `evo-rabbit evo-rabbit-${individual.color}`;
+          rabbit.style.animationDelay = `${index * 0.01}s`;
+          container.appendChild(rabbit);
+        });
+      }
+      if (generationCount) generationCount.textContent = this.generations;
+      if (lightBar) lightBar.style.width = `${this.lightFrequency * 100}%`;
+      if (darkBar) darkBar.style.width = `${this.darkFrequency * 100}%`;
+      if (lightFreq) lightFreq.textContent = `${Math.round(this.lightFrequency * 100)}%`;
+      if (darkFreq) darkFreq.textContent = `${Math.round(this.darkFrequency * 100)}%`;
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { window.evolutionLab = new EvolutionLab(); });
+  } else { window.evolutionLab = new EvolutionLab(); }
+})();
+"""
+
+create_file('evolution-lab.js', evolution_lab_js)
+
+# ============================================
+# 17. evolution-lab.css
+# ============================================
+evolution_lab_css = """/* Evolution Laboratory Styles */
+.evo-lab-container{margin:2rem 0;padding:2rem;background:linear-gradient(145deg,#fff,#f5fbf7);border:1px solid #e0ece4;border-radius:22px;box-shadow:0 10px 28px rgba(20,75,48,.07)}
+.evo-lab-header{margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e0ece4}
+.evo-lab-header h2{margin:0 0 .5rem;color:#174d35;font-size:1.8rem;font-weight:850}
+.evo-lab-header p{margin:0;color:#63796b;font-size:1rem;line-height:1.6}
+.evo-lab-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem;padding:1.5rem;background:#f8fbf9;border-radius:16px;border:1px solid #e0ece4}
+.evo-control-group{display:flex;flex-direction:column;gap:.5rem}
+.evo-control-group label{color:#365c45;font-size:.9rem;font-weight:750}
+.evo-control-group input[type="range"]{width:100%;height:8px;border-radius:4px;background:#e0ece4;outline:none;-webkit-appearance:none}
+.evo-control-group input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#176b4b;cursor:pointer;box-shadow:0 2px 6px rgba(23,107,75,.3)}
+#evo-predation-value{color:#176b4b;font-weight:800;font-size:1.1rem}
+.evo-buttons{display:flex;gap:.75rem;align-items:end}
+.evo-btn-primary,.evo-btn-secondary{padding:.75rem 1.5rem;border:none;border-radius:12px;font-size:1rem;font-weight:750;cursor:pointer;transition:all .2s ease;min-height:44px}
+.evo-btn-primary{background:linear-gradient(135deg,#176b4b,#31966a);color:#fff;box-shadow:0 5px 14px rgba(23,107,75,.2)}
+.evo-btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(23,107,75,.3)}
+.evo-btn-secondary{background:#fff;color:#176b4b;border:2px solid #176b4b}
+.evo-btn-secondary:hover{background:#f0f8f2}
+.evo-lab-visualization{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem}
+.evo-population-display{padding:1.5rem;background:#fff;border:1px solid #e0ece4;border-radius:16px}
+.evo-generation-counter{display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:2px solid #e0ece4}
+.evo-generation-counter span{color:#63796b;font-size:.9rem;font-weight:700}
+.evo-generation-counter strong{color:#176b4b;font-size:1.5rem;font-weight:850}
+.evo-rabbits-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:.5rem;min-height:200px}
+.evo-rabbit{width:100%;aspect-ratio:1;border-radius:50%;animation:evoAppear .3s ease;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+.evo-rabbit-light{background:linear-gradient(145deg,#f5f5f5,#e8e8e8);border:2px solid #d0d0d0}
+.evo-rabbit-dark{background:linear-gradient(145deg,#4a4a4a,#2a2a2a);border:2px solid #1a1a1a}
+@keyframes evoAppear{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+.evo-frequency-chart{padding:1.5rem;background:#fff;border:1px solid #e0ece4;border-radius:16px}
+.evo-frequency-chart h3{margin:0 0 1.5rem;color:#174d35;font-size:1.2rem;font-weight:800}
+.evo-chart-bars{display:flex;flex-direction:column;gap:1.5rem}
+.evo-bar-group{display:flex;align-items:center;gap:1rem}
+.evo-bar-label{flex:0 0 80px;color:#365c45;font-size:.9rem;font-weight:750}
+.evo-bar-container{flex:1;height:32px;background:#f0f4f1;border-radius:16px;overflow:hidden;position:relative}
+.evo-bar{height:100%;transition:width .5s ease;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.85rem}
+.evo-bar-light{background:linear-gradient(90deg,#e8e8e8,#f5f5f5);color:#666}
+.evo-bar-dark{background:linear-gradient(90deg,#2a2a2a,#4a4a4a)}
+.evo-bar-value{flex:0 0 60px;text-align:end;color:#176b4b;font-size:1.1rem;font-weight:850}
+.evo-lab-explanation{padding:1.5rem;background:linear-gradient(135deg,#eaf6ed,#f5fbf7);border-inline-start:4px solid #176b4b;border-radius:12px}
+.evo-lab-explanation p{margin:0;color:#365c45;font-size:.95rem;line-height:1.8}
+@media(max-width:768px){.evo-lab-visualization{grid-template-columns:1fr}.evo-rabbits-grid{grid-template-columns:repeat(10,1fr);gap:.3rem}.evo-bar-group{flex-wrap:wrap}.evo-bar-label{flex:0 0 100%;margin-bottom:.5rem}}
+@media(max-width:480px){.evo-lab-container{padding:1rem}.evo-lab-controls{grid-template-columns:1fr}.evo-buttons{flex-direction:column}.evo-btn-primary,.evo-btn-secondary{width:100%}}
+"""
+
+create_file('evolution-lab.css', evolution_lab_css)
+
+# ============================================
+# 18. physiology-lab.js
+# ============================================
+physiology_lab_js = """(() => {
+  'use strict';
+  const physiologyData = {
+    digestive: {
+      ar: { title: 'الجهاز الهضمي', description: 'رحلة الطعام عبر الجهاز الهضمي', stages: ['الفم', 'المريء', 'المعدة', 'الأمعاء الدقيقة', 'الأمعاء الغليظة'], functions: ['تقطيع الطعام وخلطه باللعاب', 'نقل الطعام إلى المعدة', 'هضم البروتينات بواسطة العصارة المعدية', 'امتصاص المغذيات الرئيسية', 'امتصاص الماء وتكوين الفضلات'] }
+    },
+    respiratory: {
+      ar: { title: 'الجهاز التنفسي', description: 'تبادل الغازات في الرئتين', stages: ['الأنف', 'القصبة الهوائية', 'الشعب الهوائية', 'الحويصلات الهوائية'], functions: ['تصفية وترطيب الهواء', 'نقل الهواء إلى الرئتين', 'توزيع الهواء على الرئتين', 'تبادل O₂ و CO₂ مع الدم'] }
+    }
+  };
+  let currentLang = 'ar';
+  let currentSystem = 'digestive';
+  let currentStage = 0;
+
+  class PhysiologyLab {
+    constructor() { this.init(); }
+    init() { this.renderLab(); this.setupEventListeners(); }
+    renderLab() {
+      const container = document.getElementById('physiology-lab');
+      if (!container) return;
+      const data = physiologyData[currentSystem][currentLang];
+      container.innerHTML = `
+        <div class="physio-lab-container">
+          <div class="physio-lab-header"><h2>${data.title}</h2><p>${data.description}</p></div>
+          <div class="physio-system-selector">
+            <button class="physio-system-btn ${currentSystem === 'digestive' ? 'active' : ''}" data-system="digestive">🍽️ الجهاز الهضمي</button>
+            <button class="physio-system-btn ${currentSystem === 'respiratory' ? 'active' : ''}" data-system="respiratory">🫁 الجهاز التنفسي</button>
+          </div>
+          <div class="physio-lab-visualization">
+            <div class="physio-diagram">
+              <div class="physio-stage-indicator"><span>المرحلة:</span><strong>${currentStage + 1} / ${data.stages.length}</strong></div>
+              <div class="physio-organ-display">
+                <div class="physio-organ-icon">${this.getOrganIcon()}</div>
+                <h3>${data.stages[currentStage]}</h3>
+                <p>${data.functions[currentStage]}</p>
+              </div>
+            </div>
+            <div class="physio-progress">
+              <div class="physio-progress-bar"><div class="physio-progress-fill" style="width: ${((currentStage + 1) / data.stages.length) * 100}%"></div></div>
+              <div class="physio-stages-list">
+                ${data.stages.map((stage, index) => `
+                  <div class="physio-stage-item ${index === currentStage ? 'active' : ''} ${index < currentStage ? 'completed' : ''}">
+                    <div class="physio-stage-number">${index + 1}</div>
+                    <div class="physio-stage-name">${stage}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="physio-controls">
+            <button id="physio-prev" class="physio-btn" ${currentStage === 0 ? 'disabled' : ''}>← السابق</button>
+            <button id="physio-next" class="physio-btn physio-btn-primary" ${currentStage === data.stages.length - 1 ? 'disabled' : ''}>التالي →</button>
+          </div>
+        </div>
+      `;
+    }
+    getOrganIcon() {
+      const icons = { digestive: ['👄', '📏', '🫙', '🌀', '♻️'], respiratory: ['👃', '🎋', '🌿', '🫧'] };
+      return icons[currentSystem][currentStage] || '🔬';
+    }
+    setupEventListeners() {
+      document.querySelectorAll('.physio-system-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          currentSystem = e.target.dataset.system;
+          currentStage = 0;
+          this.renderLab();
+        });
+      });
+      const prevBtn = document.getElementById('physio-prev');
+      const nextBtn = document.getElementById('physio-next');
+      if (prevBtn) { prevBtn.addEventListener('click', () => { if (currentStage > 0) { currentStage--; this.renderLab(); } }); }
+      if (nextBtn) { nextBtn.addEventListener('click', () => { const data = physiologyData[currentSystem][currentLang]; if (currentStage < data.stages.length - 1) { currentStage++; this.renderLab(); } }); }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { window.physiologyLab = new PhysiologyLab(); });
+  } else { window.physiologyLab = new PhysiologyLab(); }
+})();
+"""
+
+create_file('physiology-lab.js', physiology_lab_js)
+
+# ============================================
+# 19. physiology-lab.css
+# ============================================
+physiology_lab_css = """/* Physiology Laboratory Styles */
+.physio-lab-container{margin:2rem 0;padding:2rem;background:linear-gradient(145deg,#fff,#f5fbf7);border:1px solid #e0ece4;border-radius:22px;box-shadow:0 10px 28px rgba(20,75,48,.07)}
+.physio-lab-header{margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e0ece4}
+.physio-lab-header h2{margin:0 0 .5rem;color:#174d35;font-size:1.8rem;font-weight:850}
+.physio-lab-header p{margin:0;color:#63796b;font-size:1rem;line-height:1.6}
+.physio-system-selector{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.physio-system-btn{flex:1;min-width:200px;padding:1rem 1.5rem;border:2px solid #e0ece4;border-radius:12px;background:#fff;color:#365c45;font-size:1rem;font-weight:750;cursor:pointer;transition:all .2s ease}
+.physio-system-btn:hover{border-color:#176b4b;background:#f0f8f2}
+.physio-system-btn.active{border-color:#176b4b;background:linear-gradient(135deg,#176b4b,#31966a);color:#fff;box-shadow:0 5px 14px rgba(23,107,75,.2)}
+.physio-lab-visualization{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem}
+.physio-diagram{padding:2rem;background:#fff;border:1px solid #e0ece4;border-radius:16px;text-align:center}
+.physio-stage-indicator{display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e0ece4}
+.physio-stage-indicator span{color:#63796b;font-size:.9rem;font-weight:700}
+.physio-stage-indicator strong{color:#176b4b;font-size:1.3rem;font-weight:850}
+.physio-organ-display{display:flex;flex-direction:column;align-items:center;gap:1rem}
+.physio-organ-icon{font-size:5rem;animation:physioPulse 2s ease-in-out infinite}
+@keyframes physioPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.physio-organ-display h3{margin:0;color:#174d35;font-size:1.5rem;font-weight:800}
+.physio-organ-display p{margin:0;color:#63796b;font-size:1rem;line-height:1.6;max-width:400px}
+.physio-progress{padding:2rem;background:#fff;border:1px solid #e0ece4;border-radius:16px}
+.physio-progress-bar{height:12px;background:#f0f4f1;border-radius:6px;overflow:hidden;margin-bottom:1.5rem}
+.physio-progress-fill{height:100%;background:linear-gradient(90deg,#176b4b,#31966a);transition:width .5s ease;border-radius:6px}
+.physio-stages-list{display:flex;flex-direction:column;gap:.75rem}
+.physio-stage-item{display:flex;align-items:center;gap:1rem;padding:.75rem;border-radius:10px;transition:all .2s ease}
+.physio-stage-item.active{background:#eaf6ed;border:2px solid #176b4b}
+.physio-stage-item.completed{opacity:.6}
+.physio-stage-number{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#f0f4f1;color:#63796b;font-weight:800;font-size:.9rem}
+.physio-stage-item.active .physio-stage-number{background:#176b4b;color:#fff}
+.physio-stage-item.completed .physio-stage-number{background:#31966a;color:#fff}
+.physio-stage-name{flex:1;color:#365c45;font-weight:700;font-size:.95rem}
+.physio-controls{display:flex;justify-content:space-between;gap:1rem}
+.physio-btn{flex:1;padding:1rem;border:2px solid #e0ece4;border-radius:12px;background:#fff;color:#365c45;font-size:1rem;font-weight:750;cursor:pointer;transition:all .2s ease;min-height:48px}
+.physio-btn:hover:not(:disabled){border-color:#176b4b;background:#f0f8f2}
+.physio-btn:disabled{opacity:.4;cursor:not-allowed}
+.physio-btn-primary{background:linear-gradient(135deg,#176b4b,#31966a);color:#fff;border-color:#176b4b;box-shadow:0 5px 14px rgba(23,107,75,.2)}
+.physio-btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(23,107,75,.3)}
+@media(max-width:768px){.physio-lab-visualization{grid-template-columns:1fr}.physio-organ-icon{font-size:4rem}}
+@media(max-width:480px){.physio-lab-container{padding:1rem}.physio-system-selector{flex-direction:column}.physio-system-btn{min-width:100%}.physio-controls{flex-direction:column}}
+"""
+
+create_file('physiology-lab.css', physiology_lab_css)
+
+# ============================================
+# 20. README.md - دليل التثبيت
+# ============================================
+readme = """# 🎓 Go SVT Maroc - مساحة التلميذ المتطورة
+
+## 📦 التثبيت السريع
+
+### الخطوة 1: تشغيل السكريبت
+
+```bash
+python setup_student_space.py
