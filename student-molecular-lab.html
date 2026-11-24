@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#174d36">
+<title>مختبر الخلية والوراثة ثلاثي الأبعاد | Go SVT Maroc</title>
+<link rel="stylesheet" href="student-molecular-lab.css?v=20261124-v1">
+</head>
+<body>
+<header class="ml-header"><a href="index.html#student-space" class="ml-back" data-ar="مساحة التلميذ" data-fr="Espace élève">مساحة التلميذ</a><div><strong>🔬 Go SVT Maroc</strong><span data-ar="مختبر الخلية والوراثة" data-fr="Laboratoire de la cellule et de la génétique">مختبر الخلية والوراثة</span></div><button id="ml-language" type="button">Français</button></header>
+<main class="ml-main">
+<section class="ml-intro"><p class="ml-kicker" data-ar="استكشف البنية العلمية من زوايا مختلفة" data-fr="Explorez les structures scientifiques sous différents angles">استكشف البنية العلمية من زوايا مختلفة</p><h1 data-ar="مختبر الخلية والوراثة ثلاثي الأبعاد" data-fr="Laboratoire 3D de la cellule et de la génétique">مختبر الخلية والوراثة ثلاثي الأبعاد</h1><p data-ar="دوّر النموذج، اختر البنية، واقرأ دورها. النماذج تمثيلات تعليمية مبسطة وليست صوراً مجهرية." data-fr="Faites tourner le modèle, choisissez une structure et découvrez son rôle. Les modèles sont des représentations pédagogiques simplifiées, pas des microphotographies.">دوّر النموذج، اختر البنية، واقرأ دورها. النماذج تمثيلات تعليمية مبسطة وليست صوراً مجهرية.</p></section>
+<section class="ml-lab" aria-labelledby="ml-model-title"><div class="ml-tabs" role="group" aria-label="اختيار النموذج"><button type="button" class="is-active" data-model="plant" data-ar="🌿 الخلية النباتية" data-fr="🌿 Cellule végétale">🌿 الخلية النباتية</button><button type="button" data-model="animal" data-ar="🔬 الخلية الحيوانية" data-fr="🔬 Cellule animale">🔬 الخلية الحيوانية</button><button type="button" data-model="dna" data-ar="🧬 ADN" data-fr="🧬 ADN">🧬 ADN</button></div>
+<div class="ml-view-wrap"><div id="ml-view" class="ml-view"><canvas id="ml-canvas" aria-label="نموذج علمي ثلاثي الأبعاد"></canvas><div id="ml-loading" class="ml-loading" role="status">جارٍ إعداد النموذج ثلاثي الأبعاد…</div><div class="ml-hint" data-ar="اسحب للتدوير · عجلة الفأرة للتقريب" data-fr="Glisser pour tourner · molette pour zoomer">اسحب للتدوير · عجلة الفأرة للتقريب</div></div></div>
+<div class="ml-details"><div><h2 id="ml-model-title">الخلية النباتية</h2><p id="ml-model-description">خلية حقيقية النواة تتميز بجدار خلوي وفجوة عصارية كبيرة وبلاستيدات خضراء.</p></div><div class="ml-parts" id="ml-parts" aria-label="مكونات النموذج"></div><p id="ml-part-description" class="ml-part-description" aria-live="polite">اختر أحد المكونات للتعرف على دوره.</p></div>
+</section>
+<section class="ml-gallery-section"><div class="ml-section-heading"><div><p class="ml-kicker" data-ar="من المجهر إلى النموذج" data-fr="Du microscope au modèle">من المجهر إلى النموذج</p><h2 data-ar="صور علمية حقيقية موثّقة" data-fr="Photographies scientifiques vérifiées">صور علمية حقيقية موثّقة</h2></div><p data-ar="تعرض الصور عند توفر مصدر وترخيص ومؤلف موثقين." data-fr="Les images ne sont affichées que si la source, la licence et l’auteur sont documentés.">تعرض الصور عند توفر مصدر وترخيص ومؤلف موثقين.</p></div><div id="ml-gallery" class="ml-gallery" aria-live="polite"><p>جارٍ تحميل فهرس الصور…</p></div></section>
+</main>
+<footer class="ml-footer"><a href="index.html#student-space" data-ar="العودة إلى مساحة التلميذ" data-fr="Retour à l’espace élève">العودة إلى مساحة التلميذ</a><span data-ar="Go SVT Maroc · تعلم بالاستكشاف" data-fr="Go SVT Maroc · apprendre en explorant">Go SVT Maroc · تعلم بالاستكشاف</span></footer>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
+<script src="real-science-images.js?v=20261123-1"></script>
+<script src="student-molecular-lab.js?v=20261124-v1"></script>
+</body></html>
