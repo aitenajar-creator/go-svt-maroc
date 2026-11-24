@@ -228,9 +228,10 @@ function buildSmartReview(){
  section.append(title,intro,progress,prompt,feedback,next);quizPanel.appendChild(section);
  review={active:false,queue:[],index:0,current:null,results:{},section,progress,prompt,feedback,next,targets:targets.map(item=>item.id)};
  targets.forEach(item=>{
-  review.results[item.id]={correct:0,answered:0};
-  review.queue.push({id:item.id,mode:'name'});
-  review.queue.push({id:item.id,mode:'function'});
+  const original=organStats[item.id];
+  review.results[item.id]={correct:0,answered:0,followupAdded:false,startingCorrect:original.correct};
+  const startingMode=original.correct===0?'name':(original.correct===1?'function':'description');
+  review.queue.push({id:item.id,mode:startingMode,adaptive:true});
  });
  review.queue=shuffle(review.queue);
  next.addEventListener('click',()=>{
@@ -244,9 +245,13 @@ function showReviewQuestion(){
  const q=review.queue[review.index];review.current=q;setQuizSystem(SYSTEM_FOR[q.id]);select(q.id);
  const d=DATA[q.id][langKey()];
  review.progress.textContent=(isFr()?'Révision · Question ':'المراجعة · السؤال ')+(review.index+1)+'/'+review.queue.length;
+ const difficulty=q.mode==='name'?(isFr()?'Repérage guidé':'تحديد أساسي'):q.mode==='function'?(isFr()?'Fonction':'ربط الوظيفة'): (isFr()?'Description scientifique':'وصف علمي');
+ review.progress.textContent+=' · '+difficulty;
  review.prompt.textContent=q.mode==='name'
-  ?(isFr()?'Repérez cet organe sur le modèle : ':'حدّد هذا العضو على النموذج: ')+d[0]
-  :(isFr()?'Quel organe assure cette fonction ? ':'أي عضو يقوم بهذه الوظيفة؟ ')+d[2];
+  ?(isFr()?'Niveau essentiel — Repérez cet organe sur le modèle : ':'المستوى الأساسي — حدّد هذا العضو على النموذج: ')+d[0]
+  :q.mode==='function'
+   ?(isFr()?'Niveau intermédiaire — Quel organe assure cette fonction ? ':'المستوى المتوسط — أي عضو يقوم بهذه الوظيفة؟ ')+d[2]
+   :(isFr()?'Niveau avancé — Quel organe correspond à cette description ? ':'المستوى المتقدم — ما العضو الذي تنطبق عليه هذه الخصائص؟ ')+d[1];
  review.feedback.textContent='';review.next.disabled=true;
 }
 function acceptReviewAnswer(id){
@@ -256,6 +261,16 @@ function acceptReviewAnswer(id){
  review.feedback.textContent=correct
   ?(isFr()?'Correct ! ':'إجابة صحيحة! ')+d[0]+' — '+d[2]
   :(isFr()?'À revoir : ':'تحتاج إلى تثبيت: ')+d[0]+' — '+d[2]+(DATA[id]?(isFr()?' Votre choix : ':' اختيارك: ')+chosen[0]:'');
+ if(!result.followupAdded){
+  result.followupAdded=true;
+  const nextMode=correct
+   ?(q.mode==='name'?'function':q.mode==='function'?'description':'description')
+   :(q.mode==='description'?'function':'name');
+  review.queue.push({id:q.id,mode:nextMode,adaptive:true});
+  review.feedback.textContent+=(isFr()
+   ?(correct?' Niveau suivant débloqué.':' Une question de consolidation est ajoutée.')
+   :(correct?' تم الانتقال إلى مستوى أصعب.':' أُضيف سؤال لتثبيت الأساسيات.'));
+ }
  review.current=null;review.index++;review.next.disabled=false;
  review.progress.textContent=(isFr()?'Progression : ':'التقدم: ')+review.index+'/'+review.queue.length;
  review.prompt.textContent=isFr()?'Réponse enregistrée. Continuez.':'تم تسجيل الإجابة. تابع إلى السؤال التالي.';
