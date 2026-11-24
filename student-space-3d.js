@@ -75,7 +75,7 @@ tube('ureters',[[.53,-.85,.42],[.3,-1.15,.45],[0,-1.35,.45]],.035,bone,systems.u
 blob('bladder',[0,-1.45,.47],[.22,.2,.17],stomachMat,24,systems.urinary);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(2.7,64),new THREE.MeshBasicMaterial({color:0x234438,transparent:true,opacity:.48}));floor.rotation.x=-Math.PI/2;floor.position.y=-3.35;scene.add(floor);
 let selected='heart',activeSystem='circulatory',rotY=0,rotX=0,drag=false,moved=false,lastX=0,lastY=0,zoom=1;
-let quizState={active:false,target:null,score:0,answered:0};
+let quizState={active:false,target:null,mode:'name',score:0,answered:0};
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let highlighted=[];
 const labelDefinitions=[
@@ -137,11 +137,16 @@ function beginQuiz(){
  labelCheck.disabled=true;
  const pool=labelDefinitions.filter(item=>item.system===activeSystem);
  if(!pool.length)return;
- quizState.active=true;quizState.target=pool[Math.floor(Math.random()*pool.length)].id;
+ quizState.active=true;
+ const chosen=pool[Math.floor(Math.random()*pool.length)];
+ quizState.target=chosen.id;
+ quizState.mode=Math.random()<.5?'function':'name';
  labelCheck.checked=false;handleLabelToggle();
  quizStart.textContent=isFr()?'Terminer le défi':'إنهاء التحدي';
  quizFeedback.textContent='';
- quizPrompt.textContent=(isFr()?'Trouvez : ':'ابحث عن العضو: ')+(isFr()?DATA[quizState.target].fr[0]:DATA[quizState.target].ar[0]);
+ quizPrompt.textContent=quizState.mode==='function'
+  ?(isFr()?'Quel organe assure cette fonction ? ':'أي عضو يقوم بهذه الوظيفة؟ ')+(isFr()?DATA[chosen.id].fr[2]:DATA[chosen.id].ar[2])
+  :(isFr()?'Repérez sur le modèle : ':'حدّد على النموذج: ')+(isFr()?DATA[chosen.id].fr[0]:DATA[chosen.id].ar[0]);
 }
 function endQuiz(){
  quizState.active=false;labelCheck.disabled=false;quizState.target=null;
@@ -151,10 +156,10 @@ function endQuiz(){
 }
 function answerQuiz(id){
  if(!quizState.active||!quizState.target)return;
- const correct=id===quizState.target;quizState.answered++;if(correct)quizState.score++;
+ const target=quizState.target,correct=id===target;quizState.answered++;if(correct)quizState.score++;
  quizFeedback.textContent=correct
   ?(isFr()?'Bonne réponse ! ':'إجابة صحيحة! ')+(isFr()?DATA[id].fr[1]:DATA[id].ar[1])
-  :(isFr()?'Pas tout à fait. La bonne réponse était : ':'ليست الإجابة الصحيحة. العضو المطلوب هو: ')+(isFr()?DATA[quizState.target].fr[0]:DATA[quizState.target].ar[0]);
+  :(isFr()?'Réponse attendue : ':'الإجابة الصحيحة: ')+(isFr()?DATA[target].fr[0]:DATA[target].ar[0])+' — '+(isFr()?DATA[target].fr[2]:DATA[target].ar[2]);
  quizState.target=null;
  quizPrompt.textContent=(isFr()?'Score : ':'النتيجة الحالية: ')+quizState.score+'/'+quizState.answered;
  quizStart.textContent=isFr()?'Question suivante':'السؤال التالي';
@@ -162,7 +167,7 @@ function answerQuiz(id){
 quizStart.addEventListener('click',()=>{
  if(quizState.active&&quizState.target){endQuiz();return;}
  if(quizState.active){beginQuiz();return;}
- quizState={active:true,target:null,score:0,answered:0};beginQuiz();
+ quizState={active:true,target:null,mode:'name',score:0,answered:0};beginQuiz();
 });
 
 function clearHighlight(){highlighted.forEach(item=>{item.mesh.material=item.original;});highlighted=[];}
