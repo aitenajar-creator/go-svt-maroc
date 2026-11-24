@@ -453,11 +453,19 @@ async function loadContentFromManifest(type, subject, level) {
         const allFiles = await loadManifest();
         if (container.dataset.requestId !== requestId) return;
 
-        let files = allFiles.filter(p => p.startsWith(prefix) && !isHiddenDuplicateCourseCopy(p));
-        if (effectiveStudentTrack && type === 'examens') {
-            const examTrackNames = { '2BACSVT': '2BAC SVT', '2BACSP': '2BAC SP', '2BACSM': '2BAC SM' };
-            const examTrackName = examTrackNames[effectiveStudentTrack];
-            if (examTrackName) files = files.filter(p => p.includes('/' + examTrackName + '/'));
+        const levelPrefix = `/${type}/${subject}/${level}/`;
+        let files = allFiles.filter(p => p.startsWith(levelPrefix) && !isHiddenDuplicateCourseCopy(p));
+
+        // Keep level-wide resources visible to every track. Only exclude files
+        // explicitly assigned to a different track; this also handles the
+        // spaced track-folder names used by national exams (e.g. "2BAC SVT").
+        if (effectiveStudentTrack && ['cours', 'exercices', 'examens'].includes(type)) {
+            const selectedTrack = String(effectiveStudentTrack).replace(/\\s+/g, '').toUpperCase();
+            files = files.filter(path => {
+                const info = getTrackInfo(path);
+                if (!info) return true; // shared resource at the level root
+                return info.key.replace(/\\s+/g, '').toUpperCase() === selectedTrack;
+            });
         }
         files = files.sort((a, b) => {
             if (type === 'examens') {
