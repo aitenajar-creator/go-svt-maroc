@@ -883,3 +883,39 @@ html.gs-dark .gs-next-step-copy a{color:#bce5bd}
     line-height:1.5;
 }
 html.gs-dark .gs-exam-kind-title{color:#b9dfbd;border-inline-start-color:#78ad7e}
+
+
+/* البحث بالكلمات المفتاحية داخل مكتبة الامتحانات */
+.gs-exam-filters {
+    display: flex; align-items: end; flex-wrap: wrap; gap: .75rem;
+    grid-column: 1 / -1; margin: 0 0 1rem; padding: 1rem;
+    border: 1px solid rgba(45,90,39,.2); border-radius: 12px;
+    background: rgba(45,90,39,.045);
+}
+.gs-exam-search {
+    display: flex; flex: 1 1 260px; flex-direction: column; gap: .35rem;
+    min-width: min(100%, 220px); font-weight: 600;
+}
+.gs-exam-search input, .gs-exam-filter select {
+    min-height: 42px; width: 100%; padding: .55rem .7rem;
+    border: 1px solid #9aaa96; border-radius: 8px;
+    background: #fff; color: #222; font: inherit;
+}
+.gs-exam-filter { display: flex; flex: 0 1 150px; flex-direction: column; gap: .35rem; }
+.gs-exam-filter span { font-weight: 600; }
+.gs-exam-reset {
+    min-height: 42px; padding: .55rem .9rem; border: 1px solid var(--gs-green);
+    border-radius: 8px; background: var(--gs-green); color: #fff;
+    font: inherit; font-weight: 600; cursor: pointer;
+}
+.gs-exam-reset:hover { filter: brightness(.92); }
+.gs-exam-filter-empty { grid-column: 1 / -1; padding: 1rem; text-align: center; opacity: .75; }
+html.gs-dark .gs-exam-filters { background: #17271b; border-color: #35583a; }
+html.gs-dark .gs-exam-search input, html.gs-dark .gs-exam-filter select {
+    background: #0f1a12; color: #e4ece5; border-color: #426348;
+}
+@media (max-width: 600px) {
+    .gs-exam-filters { align-items: stretch; }
+    .gs-exam-search, .gs-exam-filter { flex: 1 1 100%; }
+    .gs-exam-reset { width: 100%; }
+}
