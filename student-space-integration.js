@@ -249,8 +249,8 @@
             // Synchroniser favoris
             syncFavorites();
             
-            // Intégrer notes
-            integrateNotesSystem();
+            // Lesson-completion clicks are owned by student-space.js.
+            // Avoid registering a second delegated handler for the same action.
             
             // Détection de session
             setupSessionDetection();
