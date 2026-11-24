@@ -626,36 +626,58 @@ async function loadContentFromManifest(type, subject, level) {
             grouped.get(key).files.push(path);
         });
 
+        // Build only a small batch of cards per task so large libraries do not
+        // monopolize the main thread and freeze navigation or input handling.
+        const BATCH_SIZE = 32;
+        const appendCardsInBatches = async (target, paths) => {
+            for (let offset = 0; offset < paths.length; offset += BATCH_SIZE) {
+                if (container.dataset.requestId !== requestId) return false;
+                const batch = paths.slice(offset, offset + BATCH_SIZE).map(path => {
+                    const track = getTrackInfo(path);
+                    const relativeParts = path.slice(prefix.length).split('/').slice(0, -1);
+                    if (track && relativeParts.includes(track.key)) {
+                        relativeParts.splice(relativeParts.indexOf(track.key), 1);
+                    }
+                    const sub = relativeParts.filter(part => part && !isCloudInternalSegment(part)).join(' / ');
+                    return renderCard(path, sub ? `${level} - ${sub}` : level);
+                }).join('');
+                target.insertAdjacentHTML('beforeend', batch);
+                if (offset + BATCH_SIZE < paths.length) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+            }
+            return container.dataset.requestId === requestId;
+        };
+
         // عند وجود أكثر من شعبة، نعرض كل شعبة في مجموعة مستقلة بدلاً من خلط الملفات.
         const hasTrackGroups = [...grouped.values()].some(group => group.track);
-        const renderFiles = paths => paths.map(path => {
-            const track = getTrackInfo(path);
-            const relativeParts = path.slice(prefix.length).split('/').slice(0, -1);
-            if (track && relativeParts.includes(track.key)) {
-                relativeParts.splice(relativeParts.indexOf(track.key), 1);
-            }
-            const sub = relativeParts.filter(part => part && !isCloudInternalSegment(part)).join(' / ');
-            return renderCard(path, sub ? `${level} - ${sub}` : level);
-        }).join('');
-
         if (!hasTrackGroups) {
-            container.innerHTML = count + renderFiles(files);
-            if (type === 'examens') addExamLibraryFilters(container, files);
-            observePdfThumbnails(container);
-            return;
+            container.innerHTML = count;
+            const completed = await appendCardsInBatches(container, files);
+            if (!completed) return;
+        } else {
+            const orderedGroups = [...grouped.values()].sort((a, b) => {
+                if (!a.track) return 1;
+                if (!b.track) return -1;
+                return a.track.label.localeCompare(b.track.label, currentLang === 'fr' ? 'fr' : 'ar');
+            });
+            container.innerHTML = count;
+            for (const group of orderedGroups) {
+                if (container.dataset.requestId !== requestId) return;
+                const heading = group.track
+                    ? group.track.label
+                    : t('ملفات مشتركة بين الشعب', 'Ressources communes');
+                const section = document.createElement('section');
+                section.className = 'track-content-group';
+                section.innerHTML = `<h3 class="track-content-heading">${escapeHtml(heading)}</h3><div class="content-grid"></div>`;
+                container.appendChild(section);
+                const grid = section.querySelector('.content-grid');
+                const completed = await appendCardsInBatches(grid, group.files);
+                if (!completed) return;
+            }
         }
 
-        const orderedGroups = [...grouped.values()].sort((a, b) => {
-            if (!a.track) return 1;
-            if (!b.track) return -1;
-            return a.track.label.localeCompare(b.track.label, currentLang === 'fr' ? 'fr' : 'ar');
-        });
-        container.innerHTML = count + orderedGroups.map(group => {
-            const heading = group.track
-                ? group.track.label
-                : t('ملفات مشتركة بين الشعب', 'Ressources communes');
-            return `<section class="track-content-group"><h3 class="track-content-heading">${escapeHtml(heading)}</h3><div class="content-grid">${renderFiles(group.files)}</div></section>`;
-        }).join('');
+        if (container.dataset.requestId !== requestId) return;
         if (type === 'examens') addExamLibraryFilters(container, files);
         observePdfThumbnails(container);
     } catch (error) {
