@@ -16,7 +16,7 @@
       library: 'مكتبة الدروس', lab: 'المختبرات والتجارب', exams: 'الامتحانات', progress: 'تتبع التقدم',
       libraryDesc: 'الدروس والملخصات حسب مسارك الدراسي', labDesc: 'نماذج وصور وتجارب علمية تفاعلية',
       examsDesc: 'تدرب على الفروض والامتحانات', progressDesc: 'راجع إنجازاتك ونتائجك المسجلة',
-      level: 'مستواك', refresh: 'تحديث المؤشرات', tip: 'طريقة فعالة للتعلم', resources: 'الموارد المتاحة لمسارك', resourceNote: 'أعداد الملفات الفعلية المتاحة حسب مستواك ومسلكك ولغة التعلم.', courses: 'دروس', exercises: 'تمارين', quizzes: 'اختبارات', exams: 'امتحانات',
+      level: 'مستواك', refresh: 'تحديث المؤشرات', tip: 'طريقة فعالة للتعلم', resources: 'الموارد المتاحة لمسارك', resourceNote: 'أعداد الملفات الفعلية المتاحة حسب مستواك ومسلكك، مع فصل اللغتين.', courses: 'دروس', exercises: 'تمارين', quizzes: 'اختبارات', exams: 'امتحانات', arabic: 'العربية', french: 'الفرنسية',
       tipText: 'اقرأ الوثيقة، استخرج المعطيات، فسّرها علمياً، ثم تحقق من فهمك بسؤال أو تمرين.'
     },
     fr: {
@@ -29,7 +29,7 @@
       library: 'Bibliothèque', lab: 'Laboratoires et expériences', exams: 'Examens', progress: 'Suivi des progrès',
       libraryDesc: 'Cours et résumés selon votre parcours', labDesc: 'Modèles, images et expériences interactives',
       examsDesc: 'Entraînez-vous aux devoirs et examens', progressDesc: 'Consultez vos activités et résultats',
-      level: 'Votre niveau', refresh: 'Actualiser les indicateurs', tip: 'Une méthode efficace', resources: 'Ressources de votre parcours', resourceNote: 'Nombre réel de fichiers disponibles selon votre niveau, filière et langue.', courses: 'Cours', exercises: 'Exercices', quizzes: 'Quiz', exams: 'Examens',
+      level: 'Votre niveau', refresh: 'Actualiser les indicateurs', tip: 'Une méthode efficace', resources: 'Ressources de votre parcours', resourceNote: 'Nombre réel de fichiers selon votre niveau et filière, langues séparées.', courses: 'Cours', exercises: 'Exercices', quizzes: 'Quiz', exams: 'Examens', arabic: 'Arabe', french: 'Français',
       tipText: 'Lisez le document, relevez les données, interprétez-les puis vérifiez votre compréhension.'
     }
   };
@@ -159,14 +159,19 @@
         [t.exercises, inventory.counts.exercices],
         [t.quizzes, inventory.quizzes],
         [t.exams, inventory.counts.examens]
-      ].forEach(([label, count]) => {
+      ].forEach(([label, count], index) => {
         const item = document.createElement('div');
         item.className = 'gs-cc-inventory-item';
         const value = document.createElement('strong');
         value.textContent = String(number(count));
         const caption = document.createElement('span');
         caption.textContent = label;
-        item.append(value, caption);
+        const details = document.createElement('small');
+        const type = ['cours', 'exercices', 'quiz', 'examens'][index];
+        const arabicCount = type === 'quiz' ? inventory.quizzesByLanguage.arabe : inventory.byLanguage.arabe[type];
+        const frenchCount = type === 'quiz' ? inventory.quizzesByLanguage.francais : inventory.byLanguage.francais[type];
+        details.textContent = t.arabic + ': ' + number(arabicCount) + ' · ' + t.french + ': ' + number(frenchCount);
+        item.append(value, caption, details);
         inventoryGrid.append(item);
       });
       inventoryBox.append(inventoryHeading, inventoryGrid);
