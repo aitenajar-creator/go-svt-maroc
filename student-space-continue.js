@@ -126,13 +126,28 @@
         Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
         Number.isFinite(date) && date > 0 && hasReviewableMistake;
     }).sort(function (a, b) { return Number(b.date) - Number(a.date); })[0];
+    const stats = window.StudentSpace && typeof window.StudentSpace.getDashboardStats === 'function'
+      ? window.StudentSpace.getDashboardStats() : {};
+    const guidedStep = window.StudentLearningJourney &&
+      typeof window.StudentLearningJourney.getNextStep === 'function'
+      ? window.StudentLearningJourney.getNextStep(stats) : null;
+    const guidedLabels = {
+      cours: { icon: '📖', title: isFrench ? 'Commencez par un cours de votre parcours' : 'ابدأ بدرس من مسارك الدراسي', label: isFrench ? 'Ouvrir les cours' : 'فتح الدروس' },
+      continue: { icon: '📘', title: isFrench ? 'Poursuivez les cours déjà consultés' : 'أكمل الدروس التي بدأت بها', label: isFrench ? 'Continuer' : 'متابعة التعلم' },
+      exercices: { icon: '🧩', title: isFrench ? 'Appliquez vos acquis dans un exercice' : 'طبّق مكتسباتك في تمرين', label: isFrench ? 'Voir les exercices' : 'فتح التمارين' },
+      quiz: { icon: '⚡', title: isFrench ? 'Vérifiez votre compréhension avec un quiz' : 'تحقق من فهمك باختبار قصير', label: isFrench ? 'Lancer un quiz' : 'بدء اختبار' },
+      'quiz-review': { icon: '🎯', title: isFrench ? 'Consolidez les notions à retravailler' : 'عزّز المفاهيم التي تحتاج إلى مراجعة', label: isFrench ? 'Revoir les quiz' : 'مراجعة الاختبارات' },
+      examens: { icon: '🏆', title: isFrench ? 'Mobilisez vos acquis dans un examen' : 'وظّف مكتسباتك في امتحان', label: isFrench ? 'Voir les examens' : 'فتح الامتحانات' }
+    };
+    const guidedRecommendation = guidedStep && guidedStep.available && guidedLabels[guidedStep.key]
+      ? { ...guidedLabels[guidedStep.key], href: guidedStep.href } : null;
     const recommendation = latestWithMistakes
       ? { icon: '🧠', title: isFrench ? 'Revoir les erreurs de votre dernier quiz' : 'راجع أخطاء آخر اختبار أنجزته', href: '#gs-performance-analytics', label: isFrench ? 'Voir mon analyse' : 'عرض تحليل أدائي' }
       : pendingTask
         ? { icon: '🎯', title: escapeHtml(pendingTask.title || t.plan), detail: escapeHtml(pendingTask.date || '') + ' · ' + (pendingTask.duration || 30) + (isFrench ? ' min' : ' دقيقة'), href: '#student-space', label: isFrench ? 'Voir le planning' : 'عرض الخطة', planner: true }
         : recent
           ? { icon: '📖', title: isFrench ? 'Continuez votre apprentissage' : 'واصل التعلم انطلاقاً من آخر درس', href: safeLessonPath || '#cours', label: isFrench ? 'Reprendre' : 'استكمال التعلم' }
-          : { icon: '🧪', title: isFrench ? 'Commencez par un exercice adapté à votre niveau' : 'ابدأ بتمرين مناسب لمستواك الدراسي', href: '#exercices', label: isFrench ? 'Voir les exercices' : 'استكشف التمارين' };
+          : guidedRecommendation || { icon: '🧪', title: isFrench ? 'Commencez par un exercice adapté à votre niveau' : 'ابدأ بتمرين مناسب لمستواك الدراسي', href: '#exercices', label: isFrench ? 'Voir les exercices' : 'استكشف التمارين' };
     const nextBlock = '<div class="gs-continue-next"><span>' + recommendation.icon + '</span><div><small>' + t.next + '</small><strong>' + recommendation.title + '</strong>' + (recommendation.detail ? '<span>' + recommendation.detail + '</span>' : '') + '</div><a href="' + escapeHtml(recommendation.href) + '"' + (recommendation.planner ? ' data-open-planner="true"' : '') + '>' + recommendation.label + ' ←</a></div>';
 
     card.innerHTML =
@@ -171,6 +186,7 @@
     document.addEventListener('gosvt:favorites-updated', schedule);
     // Refresh immediately when Supabase changes the active student or signs out.
     document.addEventListener('gosvt:auth-changed', schedule);
+    document.addEventListener('gosvt:journey-ready', schedule);
     document.addEventListener('click', function (event) {
       if (event.target.closest && event.target.closest('.lang-switcher')) window.setTimeout(schedule, 120);
     });
