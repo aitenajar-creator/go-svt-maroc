@@ -1501,7 +1501,7 @@
             <h4>${path.title}</h4><p>${path.desc}</p>
             <div class="gs-level-path-links">${path.steps.map(step=>`<button type="button" data-study-anchor="${step[0]}"><span>↗</span>${step[1]}</button>`).join('')}</div>
           </article>`).join('')}</div>
-          <p class="gs-level-paths-note">${fr?'Parcours de découverte complémentaires : consultez aussi les cours, exercices et examens officiels de votre niveau.':'هذه مسارات استكشاف مساعدة؛ احرص أيضاً على مراجعة الدروس والتمارين والامتحانات الخاصة بمستواك.'} <a href="#cours">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
+          <p class="gs-level-paths-note">${fr?'Ces parcours d’exploration sont complémentaires et ne remplacent pas le programme officiel. Pour les apprentissages évalués, consultez la bibliothèque et choisissez les cours, exercices et examens correspondant à votre niveau et à votre filière.':'هذه المسارات مخصصة للاستكشاف والتعلم المساعد، ولا تعوض البرنامج الرسمي. وللتعلم والتقويم، راجع مكتبة المحتوى واختر الدروس والتمارين والامتحانات المطابقة لمستواك ومسلكك الدراسي.'} <a href="#cours">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
           ${track?`<span class="gs-level-path-track">${fr?'Filière de votre profil : ':'المسلك المسجل في ملفك: '}${escapeHtml(trackLabel)}</span>`:''}
         </section>`;
     }
