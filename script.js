@@ -219,7 +219,8 @@ function addExamLibraryFilters(container, files) {
         : '';
     const bar = document.createElement('div');
     bar.className = 'gs-exam-filters';
-    bar.innerHTML = select('year', t('السنة', 'Année'), years) +
+    bar.innerHTML = '<label class="gs-exam-search"><span>' + t('بحث داخل الامتحانات', 'Rechercher dans les examens') + '</span><input type="search" data-exam-search autocomplete="off" placeholder="' + t('عنوان الملف أو السنة أو كلمة مفتاحية...', 'Titre, année ou mot-clé...') + '" /></label>' +
+        select('year', t('السنة', 'Année'), years) +
         select('session', t('الدورة', 'Session'), sessions) +
         select('kind', t('نوع الملف', 'Type'), kinds) +
         '<button type="button" class="gs-exam-reset">' + t('إعادة ضبط', 'Réinitialiser') + '</button>';
@@ -232,11 +233,15 @@ function addExamLibraryFilters(container, files) {
     const apply = () => {
         const chosen = {};
         bar.querySelectorAll('select').forEach(item => { chosen[item.dataset.filter] = item.value; });
+        const query = normalizeText(bar.querySelector('[data-exam-search]')?.value || '').trim();
         let visible = 0;
         rows.forEach(row => {
             const card = cardsByPath.get(row.path);
             if (!card) return;
-            const show = (!chosen.year || row.year === chosen.year) &&
+            const searchableText = normalizeText(row.path + ' ' + (card.textContent || ''));
+            const matchesQuery = !query || query.split(/\\s+/).every(term => searchableText.includes(term));
+            const show = matchesQuery &&
+                (!chosen.year || row.year === chosen.year) &&
                 (!chosen.session || row.session === chosen.session) &&
                 (!chosen.kind || row.kind === chosen.kind);
             card.hidden = !show;
@@ -280,8 +285,11 @@ function addExamLibraryFilters(container, files) {
         empty.textContent = t('لا توجد ملفات مطابقة.', 'Aucun fichier correspondant.');
     };
     bar.querySelectorAll('select').forEach(item => item.addEventListener('change', apply));
+    bar.querySelector('[data-exam-search]')?.addEventListener('input', apply);
     bar.querySelector('.gs-exam-reset').addEventListener('click', () => {
         bar.querySelectorAll('select').forEach(item => { item.value = ''; });
+        const searchInput = bar.querySelector('[data-exam-search]');
+        if (searchInput) searchInput.value = '';
         apply();
     });
 }
