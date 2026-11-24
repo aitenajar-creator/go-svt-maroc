@@ -118,6 +118,16 @@
     'respiratory/alveoli': { ar: 'اربط رقة جدار الحويصلات وقرب الشعيرات الدموية بانتقال الغازات بين الهواء والدم.', fr: 'Reliez la finesse de la paroi alvéolaire et la proximité des capillaires aux échanges gazeux entre l’air et le sang.', terms: ['حويصل', 'شعيرات', 'غازات', 'دم', 'alvéol', 'capillaires', 'échanges gazeux', 'sang'] }
   });
 
+  const SCIENCE_CONCLUSION_MODELS = Object.freeze({
+    'cell/plant': { ar: 'تُظهر الصورة خلايا متجاورة ذات حدود واضحة ومنظمة. تدعم هذه الملاحظة وصف النسيج بأنه مكوّن من خلايا، لكنها لا تكفي وحدها لتحديد وظيفة كل خلية أو جميع عضياتها.', fr: 'L’image montre des cellules voisines aux limites nettes et organisées. Cette observation permet de décrire un tissu constitué de cellules, sans déterminer à elle seule la fonction de chaque cellule ni tous ses organites.' },
+    'genetics/dna': { ar: 'يمثل النموذج بنية ADN على شكل لولب مزدوج. يوضح ذلك التنظيم الجزيئي للمادة الوراثية، مع الانتباه إلى أن ألوان النموذج تمثيلية وليست بالضرورة ألوان الجزيء الحقيقي.', fr: 'Le modèle représente l’ADN sous la forme d’une double hélice. Il illustre l’organisation moléculaire du matériel génétique ; les couleurs du modèle sont conventionnelles et ne sont pas nécessairement celles de la molécule réelle.' },
+    'ecology/ecosystem': { ar: 'تُظهر الصورة وجود نبات وماء في الوسط نفسه. يمكن وصفهما كعنصرين من الوسط، لكن إثبات تأثير الماء في نمو النبات يتطلب ملاحظات أو مقارنة تجريبية إضافية.', fr: 'L’image montre une plante et de l’eau dans un même milieu. On peut décrire leur présence, mais démontrer l’effet de l’eau sur la croissance nécessite des observations ou une comparaison expérimentale complémentaire.' },
+    'geology/rock': { ar: 'تُلاحظ في التكوين الصخري علامات بنيوية مثل التطبق أو التشققات. تسمح هذه العلامات بوصف مظهره، أما تحديد نوع الصخر أو عمره فيحتاج إلى معطيات ميدانية ومعدنية إضافية.', fr: 'La formation rocheuse présente des indices structuraux comme la stratification ou des fissures. Ils permettent de décrire son aspect, tandis que l’identification de la roche ou de son âge demande des données de terrain et minéralogiques complémentaires.' },
+    'cell/animal': { ar: 'تُظهر الصورة خلايا تختلف في الشكل أو الترتيب داخل النسيج. قد يرتبط هذا الاختلاف بتخصص الخلايا، لكن تفسير الوظيفة يتطلب معرفة موقع النسيج ومعطيات أخرى.', fr: 'L’image montre des cellules dont la forme ou l’agencement varie dans le tissu. Cette variation peut être liée à une spécialisation, mais l’interprétation fonctionnelle demande de connaître la localisation du tissu et d’autres données.' },
+    'cell/mitosis': { ar: 'يُظهر المشهد توزعاً معيناً للكروموسومات داخل الخلية، وقد يساعد ذلك على اقتراح مرحلة من الانقسام. ينبغي الاستناد إلى شكل الكروموسومات وموقعها، لا إلى صورة واحدة لتعميم جميع مراحل الانقسام.', fr: 'La scène montre une répartition particulière des chromosomes dans la cellule, ce qui peut aider à proposer une phase de division. Il faut s’appuyer sur leur forme et leur position, sans généraliser toutes les étapes à partir d’une seule image.' },
+    'respiratory/alveoli': { ar: 'تتميز الحويصلات الرئوية بجدار رقيق وتجاور الشعيرات الدموية، ما يقلل مسافة انتشار الغازات بين الهواء والدم ويسهل التبادلات الغازية.', fr: 'Les alvéoles pulmonaires possèdent une paroi fine et sont proches des capillaires. Cette organisation réduit la distance de diffusion entre l’air et le sang et facilite les échanges gazeux.' }
+  });
+
   const SCIENCE_CHALLENGES = Object.freeze({
     'cell/plant': { ar: { q: 'أي دليل يساعد أكثر على وصف تنظيم النسيج النباتي في صورة مجهرية؟', options: ['حدود الخلايا وترتيبها', 'لون خلفية الصورة فقط', 'حجم الصورة على الشاشة'], answer: 0, why: 'حدود الخلايا وترتيبها أدلة مباشرة على تنظيم النسيج، أما لون الخلفية وحجم العرض فلا يكفيان لتفسير البنية.' }, fr: { q: 'Quel indice aide le mieux à décrire l’organisation d’un tissu végétal ?', options: ['Les limites et l’agencement des cellules', 'La couleur du fond seulement', 'La taille de l’image à l’écran'], answer: 0, why: 'Les limites et l’agencement renseignent directement sur l’organisation du tissu.' } },
     'genetics/dna': { ar: { q: 'ما الذي يمثله نموذج اللولب المزدوج عادة؟', options: ['بنية جزيء ADN', 'شكل خلية كاملة', 'نسيج نباتي'], answer: 0, why: 'اللولب المزدوج نموذج يوضح البنية الجزيئية للحمض النووي ADN.' }, fr: { q: 'Que représente généralement le modèle en double hélice ?', options: ['La structure de la molécule d’ADN', 'Une cellule entière', 'Un tissu végétal'], answer: 0, why: 'La double hélice représente la structure moléculaire de l’ADN.' } },
@@ -865,6 +875,48 @@
       feedback.textContent = opening + prompt
         + (isFrench ? ' Cet accompagnement est indicatif et ne remplace pas la correction de votre enseignant.' : ' هذه المراجعة إرشادية فقط ولا تعوّض تصحيح الأستاذ.');
     });
+    const compareButton = document.createElement('button');
+    compareButton.type = 'button';
+    compareButton.className = 'ri-conclusion-compare';
+    compareButton.setAttribute('aria-expanded', 'false');
+    compareButton.textContent = isFrench ? 'Comparer avec un modèle scientifique' : 'قارن استنتاجك بنموذج علمي';
+    const comparison = document.createElement('section');
+    comparison.className = 'ri-conclusion-comparison';
+    comparison.hidden = true;
+    const comparisonTitle = document.createElement('strong');
+    comparisonTitle.textContent = isFrench ? 'Exemple de conclusion scientifique' : 'مثال على استنتاج علمي';
+    const modelText = document.createElement('p');
+    const model = SCIENCE_CONCLUSION_MODELS[categoryKey];
+    modelText.textContent = model ? model[isFrench ? 'fr' : 'ar'] : '';
+    const checklistTitle = document.createElement('strong');
+    checklistTitle.textContent = isFrench ? 'Ma vérification personnelle' : 'قائمة التحقق الذاتية';
+    const checklistItems = isFrench
+      ? ['Ai-je décrit un indice réellement visible ?', 'Ai-je relié cet indice à une notion scientifique ?', 'Ma conclusion répond-elle à la question posée ?', 'Ai-je évité une affirmation que l’image ne permet pas de prouver ?']
+      : ['هل وصفت دليلاً ظاهراً فعلاً في الصورة؟', 'هل ربطت هذا الدليل بمفهوم علمي؟', 'هل يجيب استنتاجي عن السؤال المطروح؟', 'هل تجنبت الجزم بما لا تثبته الصورة؟'];
+    const checklist = document.createElement('div');
+    checklist.className = 'ri-conclusion-checklist';
+    checklistItems.forEach(function (itemText) {
+      const itemLabel = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      const itemTextNode = document.createElement('span');
+      itemTextNode.textContent = itemText;
+      itemLabel.append(checkbox, itemTextNode);
+      checklist.appendChild(itemLabel);
+    });
+    const comparisonNote = document.createElement('p');
+    comparisonNote.className = 'ri-conclusion-note';
+    comparisonNote.textContent = isFrench
+      ? 'Ce modèle est un exemple à adapter à l’image étudiée. Les cases servent à votre autoévaluation ; elles ne constituent pas une correction automatique.'
+      : 'هذا نموذج توضيحي ينبغي تكييفه مع الصورة المدروسة. خانات التأشير للتقييم الذاتي فقط ولا تمثل تصحيحاً آلياً لإجابتك.';
+    comparison.append(comparisonTitle, modelText, checklistTitle, checklist, comparisonNote);
+    compareButton.addEventListener('click', function () {
+      comparison.hidden = !comparison.hidden;
+      compareButton.setAttribute('aria-expanded', String(!comparison.hidden));
+      compareButton.textContent = comparison.hidden
+        ? (isFrench ? 'Comparer avec un modèle scientifique' : 'قارن استنتاجك بنموذج علمي')
+        : (isFrench ? 'Masquer le modèle' : 'إخفاء النموذج');
+    });
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
@@ -885,7 +937,7 @@
     stageThree.className = 'ri-learning-stage';
     stageThree.textContent = isFrench ? 'ÉTAPE 3 · SUIVRE SA PROGRESSION' : 'المرحلة 3 · تتبع التقدم والإنجازات';
 
-    activity.append(guidePanel, label, textarea, actions, review, feedback, status, privacy);
+    activity.append(guidePanel, label, textarea, actions, review, feedback, compareButton, comparison, status, privacy);
     if (challenge) {
       challenge.insertBefore(stageTwo, challenge.firstChild);
       activity.appendChild(challenge);
