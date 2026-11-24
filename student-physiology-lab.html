@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#176b4b">
+<title>مختبر وظائف الأعضاء | Go SVT Maroc</title>
+<style>
+:root{color-scheme:light;--green:#176b4b;--mint:#eaf5ed;--ink:#203b2b;--muted:#607366;--line:#dce9df}
+*{box-sizing:border-box}body{margin:0;background:#f5f8f5;color:var(--ink);font-family:system-ui,"Segoe UI",sans-serif;line-height:1.75}
+.wrap{width:min(1100px,calc(100% - 28px));margin:28px auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+a.back,.lang button,.system button,.controls button{border:1px solid var(--line);border-radius:12px;padding:10px 15px;background:white;color:var(--green);font:inherit;font-weight:750;text-decoration:none;cursor:pointer}
+.hero{margin:18px 0;padding:28px;border-radius:22px;background:linear-gradient(125deg,#174d36,#39845a);color:white}
+.hero h1{margin:4px 0;font-size:clamp(1.5rem,4vw,2.2rem)}.hero p{margin:0;color:#e6f3e8}
+.lang{display:flex;gap:8px}.lang button[aria-pressed=true],.system button[aria-pressed=true],.controls .primary{background:var(--green);color:white;border-color:var(--green)}
+.system{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}.system button{padding:16px;font-size:1rem}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 22px #173f2510}
+.stage-no{color:var(--green);font-weight:850}.organ{font-size:3.4rem;text-align:center;margin:8px}.panel h2{margin:4px 0;color:#174d36}.panel p{color:var(--muted)}
+.steps{display:grid;gap:8px}.step{display:flex;align-items:center;gap:10px;text-align:start;width:100%;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:inherit;cursor:pointer}.step[aria-current=step]{background:var(--mint);border-color:#80b895;font-weight:800}.step span{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:50%;background:#edf3ee;color:var(--green);font-weight:800}
+.progress{height:10px;background:#e8efe9;border-radius:99px;overflow:hidden;margin:12px 0 18px}.progress>span{display:block;height:100%;background:linear-gradient(90deg,#176b4b,#62a879);width:0;transition:width .2s}
+.controls{display:flex;justify-content:space-between;gap:10px;margin-top:18px}.controls button:disabled{opacity:.45;cursor:not-allowed}
+.fact{margin-top:14px;padding:13px;border-radius:12px;background:#f0f7f1;border-inline-start:4px solid #58a276;color:#345b40}
+@media(max-width:700px){.layout{grid-template-columns:1fr}.hero{padding:20px}.wrap{margin:14px auto}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+html.dark body{background:#15221a;color:#e7f0e9}html.dark .panel,html.dark .step,html.dark .system button,html.dark .lang button,html.dark a.back,html.dark .controls button{background:#213329;color:#e7f0e9;border-color:#405b49}html.dark .step[aria-current=step],html.dark .fact{background:#293f30;color:#e7f0e9}html.dark .panel p{color:#bdcfc1}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top"><a class="back" href="index.html#student-space">← <span data-t="back">العودة إلى مساحة التلميذ</span></a><div class="lang"><button type="button" data-lang="ar" aria-pressed="true">العربية</button><button type="button" data-lang="fr" aria-pressed="false">Français</button></div></div>
+<header class="hero"><div>🫁 · 🧬 GO SVT MAROC</div><h1 data-t="title">مختبر وظائف الأعضاء</h1><p data-t="subtitle">اكتشف مسار الغذاء وتبادل الغازات خطوة بخطوة.</p></header>
+<div class="system" role="group" aria-label="اختيار الجهاز"><button type="button" data-system="digestive" aria-pressed="true">🍽️ <span data-t="digestive">الجهاز الهضمي</span></button><button type="button" data-system="respiratory" aria-pressed="false">🫁 <span data-t="respiratory">الجهاز التنفسي</span></button></div>
+<div class="layout">
+<section class="panel" aria-live="polite">
+<div class="stage-no"><span data-t="stage">المرحلة</span> <strong id="stage-count">1 / 5</strong></div>
+<div class="organ" id="organ-icon" aria-hidden="true">👄</div>
+<h2 id="organ-title">الفم</h2><p id="organ-description">يُقطّع الطعام ويُمزج باللعاب لتبدأ عملية الهضم.</p>
+<div class="fact"><strong data-t="remember">تذكّر:</strong> <span id="organ-fact">الهضم يبدأ في الفم، وليس في المعدة.</span></div>
+<div class="progress" role="progressbar" aria-label="تقدم المراحل" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" id="progress"><span id="progress-fill" style="width:20%"></span></div>
+<div class="controls"><button type="button" id="prev" disabled>→ <span data-t="prev">السابق</span></button><button type="button" class="primary" id="next"><span data-t="next">التالي</span> ←</button></div>
+</section>
+<aside class="panel"><h2 data-t="journey">مراحل الرحلة</h2><p data-t="choose">اختر مرحلة لقراءة دورها، أو استخدم زري السابق والتالي.</p><div class="steps" id="steps"></div></aside>
+</div>
+</main>
+<script>
+(()=>{
+'use strict';
+const data={
+ar:{
+digestive:{title:'الجهاز الهضمي',stages:[
+['الفم','👄','يُقطّع الطعام ويُمزج باللعاب لتبدأ عملية الهضم.','الهضم يبدأ في الفم، وليس في المعدة.'],
+['المريء','〰️','ينقل اللقمة نحو المعدة بواسطة حركات عضلية متناسقة.','الحركة الدودية تساعد على دفع الطعام.'],
+['المعدة','🫙','تخلط الطعام بالعصارة المعدية وتساهم في هضم البروتينات.','العصارة المعدية ذات وسط حمضي.'],
+['الأمعاء الدقيقة','🌀','يكتمل معظم الهضم الكيميائي وتُمتص المغذيات عبر جدارها.','الزغابات تزيد مساحة الامتصاص.'],
+['الأمعاء الغليظة','♻️','يُمتص جزء كبير من الماء وتتشكل الفضلات.','تساهم بكتيريا الأمعاء في توازن الوسط المعوي.']]},
+respiratory:{title:'الجهاز التنفسي',stages:[
+['الأنف','👃','يدخل الهواء ويُرشّح ويُدفّأ ويُرطّب قبل وصوله إلى الرئتين.','التنفس عبر الأنف يساعد على تهيئة الهواء.'],
+['القصبة الهوائية','〰️','تنقل الهواء نحو الشعب الهوائية، وتساهم الأهداب والمخاط في تنقيته.','الأهداب تحرك المخاط نحو البلعوم.'],
+['الشعب والقصيبات','🌿','توزع الهواء داخل الرئتين وصولاً إلى المناطق التنفسية.','تتفرع القصيبات إلى قنوات دقيقة.'],
+['الحويصلات الهوائية','🫧','يحدث تبادل O₂ وCO₂ بين الهواء والدم عبر جدار رقيق.','الانتشار يتم وفق فرق الضغط الجزئي للغازات.']]}
+},
+fr:{
+digestive:{title:'Appareil digestif',stages:[
+['Bouche','👄','Les aliments sont broyés et mélangés à la salive : la digestion commence.','La digestion commence dans la bouche, pas dans l’estomac.'],
+['Œsophage','〰️','Il conduit le bol alimentaire vers l’estomac grâce aux mouvements péristaltiques.','Le péristaltisme propulse les aliments.'],
+['Estomac','🫙','Il brasse les aliments et le suc gastrique participe notamment à la digestion des protéines.','Le suc gastrique est acide.'],
+['Intestin grêle','🌀','La digestion se poursuit et la majorité des nutriments y sont absorbés.','Les villosités augmentent la surface d’absorption.'],
+['Gros intestin','♻️','Une partie importante de l’eau est absorbée et les matières fécales se forment.','Le microbiote intestinal participe à l’équilibre digestif.']]},
+respiratory:{title:'Appareil respiratoire',stages:[
+['Nez','👃','L’air est filtré, réchauffé et humidifié avant d’atteindre les poumons.','La respiration nasale prépare l’air inspiré.'],
+['Trachée','〰️','Elle conduit l’air vers les bronches ; le mucus et les cils contribuent à le filtrer.','Les cils déplacent le mucus vers le pharynx.'],
+['Bronches et bronchioles','🌿','Elles distribuent l’air dans les poumons jusqu’aux zones respiratoires.','Les bronchioles se ramifient en conduits fins.'],
+['Alvéoles pulmonaires','🫧','Les échanges d’O₂ et de CO₂ entre l’air et le sang se réalisent à travers une paroi fine.','La diffusion dépend des gradients de pression partielle.']]}
+}
+};
+const labels={ar:{back:'العودة إلى مساحة التلميذ',title:'مختبر وظائف الأعضاء',subtitle:'اكتشف مسار الغذاء وتبادل الغازات خطوة بخطوة.',digestive:'الجهاز الهضمي',respiratory:'الجهاز التنفسي',stage:'المرحلة',remember:'تذكّر:',journey:'مراحل الرحلة',choose:'اختر مرحلة لقراءة دورها، أو استخدم زري السابق والتالي.',prev:'السابق',next:'التالي',done:'اكتملت الرحلة'},fr:{back:'Retour à l’espace élève',title:'Laboratoire de physiologie',subtitle:'Découvrez le trajet des aliments et les échanges gazeux étape par étape.',digestive:'Appareil digestif',respiratory:'Appareil respiratoire',stage:'Étape',remember:'À retenir :',journey:'Étapes du parcours',choose:'Choisissez une étape ou utilisez les boutons précédent et suivant.',prev:'Précédent',next:'Suivant',done:'Parcours terminé'}};
+let lang='ar',system='digestive',index=0;
+const $=id=>document.getElementById(id);
+function t(k){return labels[lang][k]}
+function render(){
+ const stages=data[lang][system].stages, current=stages[index],pct=Math.round((index+1)/stages.length*100);
+ document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+ document.querySelectorAll('[data-t]').forEach(el=>el.textContent=t(el.dataset.t));
+ document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));
+ document.querySelectorAll('[data-system]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.system===system)));
+ $('stage-count').textContent=(index+1)+' / '+stages.length;$('organ-icon').textContent=current[1];$('organ-title').textContent=current[0];$('organ-description').textContent=current[2];$('organ-fact').textContent=current[3];
+ $('progress-fill').style.width=pct+'%';$('progress').setAttribute('aria-valuenow',String(pct));
+ $('prev').disabled=index===0;$('next').disabled=index===stages.length-1;
+ $('steps').replaceChildren(...stages.map((s,i)=>{const b=document.createElement('button');b.type='button';b.className='step';b.setAttribute('aria-current',i===index?'step':'false');const n=document.createElement('span');n.textContent=String(i+1);const label=document.createElement('strong');label.textContent=s[0];b.append(n,label);b.addEventListener('click',()=>{index=i;render()});return b}));
+}
+document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>{lang=b.dataset.lang;render()}));
+document.querySelectorAll('[data-system]').forEach(b=>b.addEventListener('click',()=>{system=b.dataset.system;index=0;render()}));
+$('prev').addEventListener('click',()=>{if(index>0){index--;render()}});
+$('next').addEventListener('click',()=>{const max=data[lang][system].stages.length-1;if(index<max){index++;render()}});
+try{if(localStorage.getItem('gosvt-theme')==='dark')document.documentElement.classList.add('dark')}catch(_){}
+render();
+})();
+</script>
+</body></html>
