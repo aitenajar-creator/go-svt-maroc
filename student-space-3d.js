@@ -77,6 +77,49 @@ const floor=new THREE.Mesh(new THREE.CircleGeometry(2.7,64),new THREE.MeshBasicM
 let selected='heart',activeSystem='circulatory',rotY=0,rotX=0,drag=false,moved=false,lastX=0,lastY=0,zoom=1;
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let highlighted=[];
+const labelDefinitions=[
+{ id:'brain',pos:[0,2.27,.68],ar:'الدماغ',fr:'Cerveau',system:'nervous'},
+{ id:'spinal-cord',pos:[0,.2,.34],ar:'النخاع الشوكي',fr:'Moelle épinière',system:'nervous'},
+{ id:'trachea',pos:[0,1.1,.6],ar:'القصبة الهوائية',fr:'Trachée',system:'respiratory'},
+{ id:'lungs',pos:[-.43,.65,.72],ar:'الرئتان',fr:'Poumons',system:'respiratory'},
+{ id:'heart',pos:[0,.43,.93],ar:'القلب',fr:'Cœur',system:'circulatory'},
+{ id:'liver',pos:[-.38,-.18,.66],ar:'الكبد',fr:'Foie',system:'digestive'},
+{ id:'stomach',pos:[.38,-.27,.68],ar:'المعدة',fr:'Estomac',system:'digestive'},
+{ id:'intestines',pos:[0,-.76,.64],ar:'الأمعاء',fr:'Intestins',system:'digestive'},
+{ id:'kidneys',pos:[-.53,-.72,.59],ar:'الكليتان',fr:'Reins',system:'urinary'},
+{ id:'bladder',pos:[0,-1.45,.66],ar:'المثانة',fr:'Vessie',system:'urinary'}
+];
+const view=root.querySelector('.gs-3d-view');
+const labelLayer=document.createElement('div');
+labelLayer.className='gs-3d-label-layer';
+labelLayer.setAttribute('aria-label',isFr()?'Étiquettes des organes':'تسميات الأعضاء');
+const labelToggle=document.createElement('label');
+labelToggle.className='gs-3d-label-toggle';
+const labelCheck=document.createElement('input');
+labelCheck.type='checkbox';labelCheck.checked=true;
+const labelToggleText=document.createElement('span');
+labelToggleText.textContent=isFr()?'Afficher les étiquettes':'إظهار تسميات الأعضاء';
+labelToggle.append(labelCheck,labelToggleText);
+view.append(labelLayer,labelToggle);
+const labelNodes=new Map();
+labelDefinitions.forEach(def=>{
+ const button=document.createElement('button');
+ button.type='button';button.className='gs-3d-organ-label';
+ button.textContent=isFr()?def.fr:def.ar;
+ button.setAttribute('aria-label',(isFr()?'Sélectionner ':'اختيار ')+(isFr()?def.fr:def.ar));
+ button.addEventListener('click',()=>{if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
+ labelLayer.appendChild(button);labelNodes.set(def.id,{button,def});
+});
+labelCheck.addEventListener('change',()=>{labelLayer.hidden=!labelCheck.checked;});
+function updateOrganLabels(){
+ const width=canvas.clientWidth,height=canvas.clientHeight;
+ labelNodes.forEach(({button,def})=>{
+   const point=new THREE.Vector3(...def.pos);model.localToWorld(point);point.project(camera);
+   const visible=systems[def.system].visible&&point.z>-1&&point.z<1&&point.x>=-1.12&&point.x<=1.12&&point.y>=-1.12&&point.y<=1.12;
+   button.hidden=!visible;
+   if(visible){button.style.left=((point.x+1)*.5*width)+'px';button.style.top=((1-point.y)*.5*height)+'px';}
+ });
+}
 function clearHighlight(){highlighted.forEach(item=>{item.mesh.material=item.original;});highlighted=[];}
 function select(id){if(!DATA[id])return;selected=id;clearHighlight();model.traverse(object=>{if(!object.isMesh||object.name!==id)return;const original=object.material;const glow=original.clone();if(glow.emissive){glow.emissive.set(0xffc247);glow.emissiveIntensity=.72;}object.material=glow;highlighted.push({mesh:object,original});});const lang=isFr()?'fr':'ar',d=DATA[id][lang];root.querySelector('[data-3d-name]').textContent=d[0];root.querySelector('[data-3d-description]').textContent=d[1];root.querySelector('[data-3d-function]').textContent=d[2];root.querySelectorAll('[data-3d-organ]').forEach(b=>b.classList.toggle('is-active',b.dataset['3dOrgan']===id));}
 const SYSTEM_FOR={heart:'circulatory',lungs:'respiratory',brain:'nervous',liver:'digestive',stomach:'digestive',kidneys:'urinary',intestines:'digestive','spinal-cord':'nervous',trachea:'respiratory',bladder:'urinary'};
@@ -87,7 +130,7 @@ const ro=typeof ResizeObserver!=='undefined'?new ResizeObserver(()=>{if(root.get
 if(ro)ro.observe(root);
 let rafId=0,disposed=false,inViewport=true;
 function canRender(){const rect=root.getBoundingClientRect();return !disposed&&root.isConnected&&document.visibilityState!=='hidden'&&inViewport&&rect.width>0&&rect.height>0;}
-function draw(){rafId=0;if(!canRender())return;model.rotation.y=rotY;model.rotation.x=rotX;camera.position.z=8.5/zoom;camera.lookAt(0,0,0);renderer.render(scene,camera);rafId=requestAnimationFrame(draw);}
+function draw(){rafId=0;if(!canRender())return;model.rotation.y=rotY;model.rotation.x=rotX;camera.position.z=8.5/zoom;camera.lookAt(0,0,0);camera.updateMatrixWorld();updateOrganLabels();renderer.render(scene,camera);rafId=requestAnimationFrame(draw);}
 function startLoop(){if(!rafId&&canRender())rafId=requestAnimationFrame(draw);}
 const handleDocVisibility=()=>{if(document.visibilityState==='hidden'){if(rafId)cancelAnimationFrame(rafId);rafId=0;}else{resize();startLoop();}};
 document.addEventListener('visibilitychange',handleDocVisibility);
@@ -113,6 +156,7 @@ document.removeEventListener('visibilitychange',handleDocVisibility);
 canvas.removeEventListener('pointerdown',pointerDown);canvas.removeEventListener('pointermove',pointerMove);canvas.removeEventListener('pointerup',pointerUp);canvas.removeEventListener('pointercancel',pointerUp);
 canvas.removeEventListener('wheel',handleWheel);canvas.removeEventListener('click',handleCanvasClick);
 root.removeEventListener('click',handleRootClick);
+labelCheck.removeEventListener('change',()=>{labelLayer.hidden=!labelCheck.checked;});labelLayer.remove();labelToggle.remove();
 scene.traverse(object=>{if(object.geometry)object.geometry.dispose();if(object.material){const materials=Array.isArray(object.material)?object.material:[object.material];materials.forEach(material=>material.dispose());}});
 renderer.dispose();
 };
