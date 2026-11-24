@@ -208,6 +208,7 @@ freeStart.addEventListener('click',()=>{if(!freeTest.active){const old=freeSecti
 
 function setQuizSystem(system){activeSystem=system;Object.entries(systems).forEach(([key,group])=>group.visible=key===system);root.querySelectorAll('[data-3d-system]').forEach(button=>{const active=button.dataset['3dSystem']===system;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',active?'true':'false');});}
 function buildChallenge(){
+ if(freeTest.active||review.active)return;
  const previousReport=quizPanel.querySelector('.gs-3d-quiz-report');if(previousReport)previousReport.remove();
  const previousReview=quizPanel.querySelector('.gs-3d-smart-review');if(previousReview)previousReview.remove();
  review={active:false,queue:[],index:0,current:null,results:{}};
@@ -362,6 +363,7 @@ function endQuiz(){
  if(challenge.active)finishChallenge();
 }
 quizStart.addEventListener('click',()=>{
+ if(freeTest.active||review.active)return;
  if(challenge.active&&challenge.current===null){showChallengeQuestion();return;}
  if(!challenge.active)buildChallenge();
 });
