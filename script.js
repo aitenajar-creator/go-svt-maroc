@@ -426,7 +426,9 @@ async function renderFirstPdfPage(container) {
 const pdfThumbnailQueue = [];
 let pdfThumbnailActive = 0;
 const PDF_THUMBNAIL_CONCURRENCY = 2;
-function queuePdfThumbnail(container) {
+let pdfThumbnailVisibilityObserver = null;
+
+function enqueuePdfThumbnail(container) {
     if (!container || container.dataset.rendered === 'true' || container.dataset.queued === 'true') return;
     container.dataset.queued = 'true';
     const rect = container.getBoundingClientRect();
@@ -434,6 +436,32 @@ function queuePdfThumbnail(container) {
     pdfThumbnailQueue.push({ container, distance });
     pdfThumbnailQueue.sort((a, b) => a.distance - b.distance);
     processPdfThumbnailQueue();
+}
+
+function queuePdfThumbnail(container, alreadyVisible = false) {
+    if (!container || container.dataset.rendered === 'true' || container.dataset.queued === 'true') return;
+
+    // PDF.js and canvas rendering are expensive. Wait until a preview is near
+    // the viewport instead of rendering every PDF in a newly loaded section.
+    if (!alreadyVisible && 'IntersectionObserver' in window) {
+        if (!pdfThumbnailVisibilityObserver) {
+            pdfThumbnailVisibilityObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const node = entry.target;
+                    pdfThumbnailVisibilityObserver.unobserve(node);
+                    delete node.dataset.visibilityObserved;
+                    enqueuePdfThumbnail(node);
+                });
+            }, { rootMargin: '450px 0px', threshold: 0.01 });
+        }
+        if (container.dataset.visibilityObserved !== 'true') {
+            container.dataset.visibilityObserved = 'true';
+            pdfThumbnailVisibilityObserver.observe(container);
+        }
+        return;
+    }
+    enqueuePdfThumbnail(container);
 }
 function processPdfThumbnailQueue() {
     while (pdfThumbnailActive < PDF_THUMBNAIL_CONCURRENCY && pdfThumbnailQueue.length) {
@@ -451,9 +479,9 @@ function processPdfThumbnailQueue() {
 function observePdfThumbnails(root = document) {
     const nodes = root.querySelectorAll('[data-pdf-thumbnail]');
     if (!nodes.length) return;
-    // Do not rely on IntersectionObserver: content tabs can be hidden when
-    // inserted, which may prevent their preview callbacks from firing.
-    loadPdfJs().catch(error => console.warn('PDF preview engine unavailable:', error));
+    // The PDF.js library is loaded by renderFirstPdfPage only after a card
+    // approaches the viewport. Browsers without IntersectionObserver retain
+    // the bounded-concurrency fallback queue.
     nodes.forEach(queuePdfThumbnail);
 }
 
