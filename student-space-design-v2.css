@@ -1,0 +1,63 @@
+/* Go SVT Maroc — Student Space visual layer inspired by design-upgrade-v2.
+   Presentation only: no storage, authentication, progress, or Supabase behavior is changed. */
+#student-space #student-space-content .gs-student-welcome{
+  display:flex;align-items:center;justify-content:space-between;gap:clamp(1rem,3vw,2.2rem);
+  padding:clamp(1.25rem,3vw,2.2rem);margin:0 0 1.15rem;border:1px solid rgba(255,255,255,.18);
+  border-radius:22px;background:radial-gradient(circle at 12% 15%,rgba(173,220,155,.22),transparent 34%),linear-gradient(125deg,#174d36,#28744c 62%,#438d5c);
+  color:#fff;box-shadow:0 14px 34px rgba(25,83,51,.16);overflow:hidden;
+}
+#student-space #student-space-content .gs-welcome-copy{min-width:0}
+#student-space #student-space-content .gs-student-welcome .gs-eyebrow{color:#d9f0d8;letter-spacing:.08em;font-weight:800}
+#student-space #student-space-content .gs-student-welcome h2{margin:.55rem 0;color:#fff;font-size:clamp(1.25rem,2.5vw,1.9rem);line-height:1.5}
+#student-space #student-space-content .gs-student-welcome p{max-width:720px;margin:.4rem 0;color:rgba(255,255,255,.9);line-height:1.9}
+#student-space #student-space-content .gs-welcome-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+#student-space #student-space-content .gs-welcome-tags span{padding:.38rem .75rem;border:1px solid rgba(255,255,255,.28);border-radius:99px;background:rgba(255,255,255,.12);font-size:.86rem}
+#student-space #student-space-content .gs-student-welcome .gs-primary-link{
+  display:inline-flex;align-items:center;justify-content:center;gap:.55rem;flex:0 0 auto;min-height:46px;
+  padding:.75rem 1.1rem;border-radius:12px;background:#fff;color:#205b3b;text-decoration:none;font-weight:850;
+  box-shadow:0 5px 16px rgba(0,0,0,.12);transition:transform .18s ease,box-shadow .18s ease;
+}
+#student-space #student-space-content .gs-student-welcome .gs-primary-link:hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(0,0,0,.17)}
+#student-space #student-space-content .gs-student-quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;margin:0 0 1.4rem}
+#student-space #student-space-content .gs-student-quick-actions a{
+  display:flex;align-items:center;justify-content:flex-start;gap:.75rem;min-width:0;min-height:62px;
+  padding:.85rem 1rem;border:1px solid #e0eae1;border-radius:15px;background:linear-gradient(145deg,#fff,#f7faf7);
+  color:#28583b;text-decoration:none;box-shadow:0 5px 15px rgba(27,69,43,.055);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+#student-space #student-space-content .gs-student-quick-actions a:hover{transform:translateY(-3px);border-color:#9fc5a5;box-shadow:0 10px 22px rgba(27,69,43,.1)}
+#student-space #student-space-content .gs-student-quick-actions a>span{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border-radius:11px;background:#eaf4e9;font-size:1.2rem}
+#student-space #student-space-content .gs-student-quick-actions strong{font-size:.94rem}
+#student-space #student-space-content .gs-student-category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:1rem}
+#student-space #student-space-content .gs-student-category-card{
+  display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;min-width:0;min-height:205px;
+  padding:1.25rem;border:1px solid #e0eae1;border-radius:18px;background:linear-gradient(150deg,#fff,#f7faf7);
+  color:#28583b;text-decoration:none;box-shadow:0 7px 20px rgba(27,69,43,.06);
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+#student-space #student-space-content .gs-student-category-card:hover{transform:translateY(-4px);border-color:#a8c9a9;box-shadow:0 13px 28px rgba(27,69,43,.11)}
+#student-space #student-space-content .gs-student-category-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:#eaf4e9;font-size:1.65rem}
+#student-space #student-space-content .gs-student-category-card strong{font-size:1.05rem;line-height:1.6;color:#214f35}
+#student-space #student-space-content .gs-student-category-card small{color:#647568;line-height:1.8;font-size:.88rem}
+#student-space #student-space-content .gs-student-category-link{margin-top:auto;color:#28744c;font-weight:800;font-size:.88rem}
+html.gs-dark #student-space #student-space-content .gs-student-quick-actions a,
+html.gs-dark #student-space #student-space-content .gs-student-category-card{background:linear-gradient(145deg,#26382c,#202e26);border-color:#405846;color:#e5f1e8}
+html.gs-dark #student-space #student-space-content .gs-student-quick-actions strong,
+html.gs-dark #student-space #student-space-content .gs-student-category-card strong{color:#e5f1e8}
+html.gs-dark #student-space #student-space-content .gs-student-quick-actions a>span,
+html.gs-dark #student-space #student-space-content .gs-student-category-icon{background:#344d3a}
+html.gs-dark #student-space #student-space-content .gs-student-category-card small{color:#c0d0c4}
+@media(max-width:760px){
+ #student-space #student-space-content .gs-student-welcome{align-items:flex-start;flex-direction:column}
+ #student-space #student-space-content .gs-student-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+ #student-space #student-space-content .gs-student-quick-actions a{padding:.7rem;min-height:56px}
+}
+@media(max-width:420px){
+ #student-space #student-space-content .gs-student-quick-actions{grid-template-columns:1fr}
+ #student-space #student-space-content .gs-student-category-card{min-height:0}
+}
+@media(prefers-reduced-motion:reduce){
+ #student-space #student-space-content .gs-student-welcome *,
+ #student-space #student-space-content .gs-student-quick-actions a,
+ #student-space #student-space-content .gs-student-category-card{transition:none!important}
+}
