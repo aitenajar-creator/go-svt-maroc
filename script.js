@@ -175,10 +175,10 @@ function getExamFileMetadata(path) {
     // بعض الموارد تضع السنة أو الدورة أو نوع الوثيقة في اسم المجلد لا الملف.
     const text = normalizeText(normalizedPath.replace(/\.[^/.]+$/, '').replace(/\//g, ' '));
     const yearMatch = /(?:^|\D)((?:19|20)\d{2})(?!\d)/.exec(text);
-    const isNormal = /normale|normal|عادي/.test(text);
+    const isNormal = /normale|normal|ordinaire|عادي/.test(text);
     const isRattrapage = /rattrapage|استدراك/.test(text);
     const isSubject = /sujet|موضوع/.test(text);
-    const isCorrection = /corrige|correction|تصحيح/.test(text);
+    const isCorrection = /corrige|correction|تصحيح|عناصر الاجابة|اجوبة|اجابات/.test(text);
     if (!yearMatch && !isNormal && !isRattrapage && !isSubject && !isCorrection) return null;
     const labels = [];
     if (yearMatch) labels.push({ ar: yearMatch[1], fr: yearMatch[1], className: 'exam-year' });
@@ -200,8 +200,8 @@ function addExamLibraryFilters(container, files) {
         const normalized = normalizeText(String(path).replace(/\.[^/.]+$/, '').replace(/\//g, ' '));
         const yearMatch = /(?:^|\D)((?:19|20)\d{2})(?!\d)/.exec(normalized);
         const session = /rattrapage|استدراك/.test(normalized) ? 'rattrapage'
-            : /normale|normal|عادي/.test(normalized) ? 'normale' : '';
-        const kind = /corrige|correction|تصحيح/.test(normalized) ? 'corrige'
+            : /normale|normal|ordinaire|عادي/.test(normalized) ? 'normale' : '';
+        const kind = /corrige|correction|تصحيح|عناصر الاجابة|اجوبة|اجابات/.test(normalized) ? 'corrige'
             : /sujet|موضوع/.test(normalized) ? 'sujet' : '';
         return { path, year: yearMatch ? yearMatch[1] : '', session, kind };
     });
