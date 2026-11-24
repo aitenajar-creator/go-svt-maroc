@@ -1,9 +1,149 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#21633f"><title>تصنيفات مهام التلميذ | GO SVT Maroc</title><link rel="stylesheet" href="styles.css"><style>.gs-cat-page{max-width:1000px;margin:0 auto;padding:24px 16px 60px}.gs-cat-head{padding:28px;border-radius:24px;background:linear-gradient(130deg,#16452f,#2b7850);color:#fff}.gs-cat-head h1{margin:10px 0}.gs-cat-head p{line-height:1.8}.gs-cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px;margin:22px 0}.gs-cat-card{display:flex;flex-direction:column;gap:10px;padding:20px;border-radius:18px;background:#fff;border:1px solid #dce9de;text-decoration:none;color:#214b33}.gs-cat-card h2{font-size:1.15rem;margin:0}.gs-cat-card p{line-height:1.7;color:#58715e;margin:0}.gs-cat-card .gs-cat-icon{font-size:1.8rem}.gs-cat-card .gs-cat-task{padding:10px 12px;border-radius:12px;background:#e9f4ea;color:#28613c;font-weight:800}.gs-cat-back{display:inline-block;margin-top:14px;padding:11px 16px;border-radius:12px;background:#276b43;color:#fff;text-decoration:none;font-weight:800}</style></head><body><main class="gs-cat-page"><header class="gs-cat-head"><span>GO SVT MAROC · ESPACE ÉLÈVE</span><h1>تصنيفات مهام التلميذ</h1><p>اختر صنفاً للوصول إلى المهام المرتبطة به، ثم اضغط على زر المهمة لفتحها في مساحتي.</p></header><section class="gs-cat-grid" id="category-grid"></section><a class="gs-cat-back" href="index.html#student-space">العودة إلى مساحتي</a></main><script>
-const categories=[{"key":"biology","icon":"🧬","ar":"مختبرات علوم الحياة","fr":"Laboratoires de biologie","desc":"الخلية، التركيب الضوئي، جسم الإنسان، التجارب"},{"key":"learning","icon":"🧠","ar":"أدوات التعلم","fr":"Outils d’apprentissage","desc":"مسارات التعلم، بطاقات الذاكرة، قاموس SVT، تحديات"},{"key":"media","icon":"🖼️","ar":"المكتبة العلمية","fr":"Médiathèque scientifique","desc":"الصور العلمية والموارد البصرية"},{"key":"tracking","icon":"📊","ar":"تتبعي وإنجازاتي","fr":"Suivi et progrès","desc":"التقدم الدراسي، سجل النشاط، النتائج والأهداف"}];
-const tasks={"biology":[["cell","استكشف الخلية","Explorer la cellule"],["photosynthesis","مختبر التركيب الضوئي","Laboratoire de photosynthèse"],["quiz","اختبر فهمك للخلية والتركيب الضوئي","Tester vos connaissances : cellule et photosynthèse"],["human","أطلس أجهزة جسم الإنسان","Atlas des systèmes du corps humain"],["microscope","المختبر المجهري","Laboratoire microscopique"],["photo-experiment","تجربة التركيب الضوئي","Expérience de photosynthèse"]],"learning":[["paths","مسارات التعلم حسب المستوى","Parcours selon le niveau"],["memory","بطاقات الذاكرة العلمية","Cartes mémoire scientifiques"],["glossary","قاموس مصطلحات علوم الحياة والأرض","Glossaire des SVT"],["personal-path","مساري الدراسي","Mon parcours d’apprentissage"],["daily","تحدي اليوم","Défi du jour"],["recommendations","توصيات التعلم","Recommandations d’apprentissage"],["quick-access","الوصول السريع إلى الموارد","Accès rapide aux ressources"]],"media":[["scientific-media","مكتبة الصور العلمية","Médiathèque scientifique"]],"tracking":[["activity","ملخص نشاطك الدراسي","Résumé de votre activité"]]};
-const chosen=new URLSearchParams(location.search).get('category');
-const grid=document.getElementById('category-grid');
-const linkTask=key=>'index.html?studentCategory='+encodeURIComponent(chosen)+'&studentTask='+encodeURIComponent(key)+'#student-space';
-if(chosen&&tasks[chosen])grid.innerHTML=tasks[chosen].map(t=>'<a class="gs-cat-card" href="'+linkTask(t[0])+'"><span class="gs-cat-icon">🔬</span><h2>'+t[1]+'</h2><p>اضغط لفتح المهمة في صفحة مستقلة</p><span class="gs-cat-task">فتح المهمة ←</span></a>').join('');
-else grid.innerHTML=categories.map(c=>'<a class="gs-cat-card" href="student-task-categories.html?category='+c.key+'"><span class="gs-cat-icon">'+c.icon+'</span><h2>'+c.ar+'</h2><p>'+c.desc+'</p><span class="gs-cat-task">فتح التصنيف ←</span></a>').join('');
-</script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#21633f">
+  <title>تصنيفات مهام التلميذ | GO SVT Maroc</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .gs-cat-page{max-width:1000px;margin:0 auto;padding:24px 16px 60px}
+    .gs-cat-head{padding:28px;border-radius:24px;background:linear-gradient(130deg,#16452f,#2b7850);color:#fff}
+    .gs-cat-head h1{margin:10px 0}
+    .gs-cat-head p{line-height:1.8}
+    .gs-cat-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:18px}
+    .gs-cat-lang{border:1px solid #ffffff80;border-radius:10px;padding:9px 14px;background:#ffffff18;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+    .gs-cat-lang[aria-pressed="true"]{background:#fff;color:#195235}
+    .gs-cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px;margin:22px 0}
+    .gs-cat-card{display:flex;flex-direction:column;gap:10px;padding:20px;border-radius:18px;background:#fff;border:1px solid #dce9de;text-decoration:none;color:#214b33;transition:transform .18s ease,box-shadow .18s ease}
+    .gs-cat-card:hover,.gs-cat-card:focus-visible{transform:translateY(-3px);box-shadow:0 10px 24px #173c241c;outline:2px solid #398653;outline-offset:2px}
+    .gs-cat-card h2{font-size:1.15rem;margin:0}
+    .gs-cat-card p{line-height:1.7;color:#58715e;margin:0}
+    .gs-cat-card .gs-cat-icon{font-size:1.8rem}
+    .gs-cat-card .gs-cat-task{padding:10px 12px;border-radius:12px;background:#e9f4ea;color:#28613c;font-weight:800}
+    .gs-cat-back{display:inline-block;margin-top:14px;padding:11px 16px;border-radius:12px;background:#276b43;color:#fff;text-decoration:none;font-weight:800}
+    @media(prefers-reduced-motion:reduce){.gs-cat-card{transition:none}.gs-cat-card:hover{transform:none}}
+  </style>
+</head>
+<body>
+  <main class="gs-cat-page">
+    <header class="gs-cat-head">
+      <span>GO SVT MAROC · ESPACE ÉLÈVE</span>
+      <h1 id="page-title">تصنيفات مهام التلميذ</h1>
+      <p id="page-intro">اختر صنفاً للوصول إلى المهام المرتبطة به، ثم اضغط على زر المهمة لفتحها في مساحتي.</p>
+      <div class="gs-cat-tools" role="group" aria-label="Language / اللغة">
+        <button class="gs-cat-lang" type="button" data-lang="ar" aria-pressed="true">العربية</button>
+        <button class="gs-cat-lang" type="button" data-lang="fr" aria-pressed="false">Français</button>
+      </div>
+    </header>
+    <section class="gs-cat-grid" id="category-grid" aria-live="polite"></section>
+    <a class="gs-cat-back" id="back-link" href="index.html#student-space">العودة إلى مساحتي</a>
+  </main>
+<script>
+(() => {
+  'use strict';
+  const categories = [
+    {key:'biology',icon:'🧬',ar:'مختبرات علوم الحياة',fr:'Laboratoires de biologie',descAr:'الخلية، التركيب الضوئي، جسم الإنسان، والتجارب',descFr:'Cellule, photosynthèse, corps humain et expériences'},
+    {key:'learning',icon:'🧠',ar:'أدوات التعلم',fr:'Outils d’apprentissage',descAr:'مسارات التعلم، بطاقات الذاكرة، قاموس SVT، والتحديات',descFr:'Parcours, cartes mémoire, glossaire SVT et défis'},
+    {key:'media',icon:'🖼️',ar:'المكتبة العلمية',fr:'Médiathèque scientifique',descAr:'الصور العلمية والموارد البصرية',descFr:'Images scientifiques et ressources visuelles'},
+    {key:'tracking',icon:'📊',ar:'تتبعي وإنجازاتي',fr:'Suivi et progrès',descAr:'التقدم الدراسي، سجل النشاط، النتائج والأهداف',descFr:'Progression, activité, résultats et objectifs'}
+  ];
+  const tasks = {
+    biology:[
+      ['cell','استكشف الخلية','Explorer la cellule'],
+      ['photosynthesis','مختبر التركيب الضوئي','Laboratoire de photosynthèse'],
+      ['quiz','اختبر فهمك للخلية والتركيب الضوئي','Tester vos connaissances : cellule et photosynthèse'],
+      ['human','أطلس أجهزة جسم الإنسان','Atlas des systèmes du corps humain'],
+      ['microscope','المختبر المجهري','Laboratoire microscopique'],
+      ['photo-experiment','تجربة التركيب الضوئي','Expérience de photosynthèse']
+    ],
+    learning:[
+      ['paths','مسارات التعلم حسب المستوى','Parcours selon le niveau'],
+      ['memory','بطاقات الذاكرة العلمية','Cartes mémoire scientifiques'],
+      ['glossary','قاموس مصطلحات علوم الحياة والأرض','Glossaire des SVT'],
+      ['personal-path','مساري الدراسي','Mon parcours d’apprentissage'],
+      ['daily','تحدي اليوم','Défi du jour'],
+      ['recommendations','توصيات التعلم','Recommandations d’apprentissage'],
+      ['quick-access','الوصول السريع إلى الموارد','Accès rapide aux ressources']
+    ],
+    media:[['scientific-media','مكتبة الصور العلمية','Médiathèque scientifique']],
+    tracking:[['activity','ملخص نشاطك الدراسي','Résumé de votre activité']]
+  };
+  const params = new URLSearchParams(location.search);
+  const chosen = params.get('category');
+  const grid = document.getElementById('category-grid');
+  const title = document.getElementById('page-title');
+  const intro = document.getElementById('page-intro');
+  const back = document.getElementById('back-link');
+  let language = 'ar';
+
+  function makeCard({icon='🔬',label,description,href,action}) {
+    const link = document.createElement('a');
+    link.className = 'gs-cat-card';
+    link.href = href;
+    const symbol = document.createElement('span');
+    symbol.className = 'gs-cat-icon';
+    symbol.setAttribute('aria-hidden','true');
+    symbol.textContent = icon;
+    const heading = document.createElement('h2');
+    heading.textContent = label;
+    link.append(symbol,heading);
+    if (description) {
+      const paragraph = document.createElement('p');
+      paragraph.textContent = description;
+      link.append(paragraph);
+    }
+    const badge = document.createElement('span');
+    badge.className = 'gs-cat-task';
+    badge.textContent = action;
+    link.append(badge);
+    return link;
+  }
+
+  function render() {
+    const fr = language === 'fr';
+    document.documentElement.lang = language;
+    document.documentElement.dir = fr ? 'ltr' : 'rtl';
+    title.textContent = chosen && tasks[chosen]
+      ? (fr ? 'Activités et outils' : 'المهام والأنشطة')
+      : (fr ? 'Catégories des activités' : 'تصنيفات مهام التلميذ');
+    intro.textContent = chosen && tasks[chosen]
+      ? (fr ? 'Choisissez une activité pour l’ouvrir dans votre espace élève.' : 'اختر مهمة لفتحها داخل مساحتي.')
+      : (fr ? 'Choisissez une catégorie pour découvrir les activités disponibles dans votre espace élève.' : 'اختر صنفاً لاكتشاف المهام المرتبطة به، ثم افتح المهمة داخل مساحتي.');
+    back.textContent = fr ? 'Retour à mon espace' : 'العودة إلى مساحتي';
+    grid.replaceChildren();
+    if (chosen && tasks[chosen]) {
+      tasks[chosen].forEach(task => {
+        grid.append(makeCard({
+          label:task[fr?2:1],
+          href:'index.html?studentCategory='+encodeURIComponent(chosen)+'&studentTask='+encodeURIComponent(task[0])+'#student-space',
+          action:fr?'Ouvrir l’activité →':'فتح المهمة ←'
+        }));
+      });
+    } else {
+      categories.forEach(category => {
+        grid.append(makeCard({
+          icon:category.icon,
+          label:category[fr?'fr':'ar'],
+          description:category[fr?'descFr':'descAr'],
+          href:'student-task-categories.html?category='+encodeURIComponent(category.key),
+          action:fr?'Voir les activités →':'فتح التصنيف ←'
+        }));
+      });
+    }
+    document.querySelectorAll('.gs-cat-lang').forEach(button => {
+      button.setAttribute('aria-pressed',String(button.dataset.lang===language));
+    });
+  }
+
+  document.querySelectorAll('.gs-cat-lang').forEach(button => {
+    button.addEventListener('click',() => {
+      language = button.dataset.lang === 'fr' ? 'fr' : 'ar';
+      render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
