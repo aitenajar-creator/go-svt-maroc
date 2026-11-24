@@ -1,6 +1,6 @@
 /* GO SVT Maroc — Unified academic journey data layer.
- * Reads the existing content manifest and the authenticated learner profile.
- * No student records are written; no curriculum units are invented.
+ * Resource inventory is scoped by level and track, with Arabic/French content
+ * kept distinct from the interface language. No student records are written.
  */
 (function () {
   'use strict';
@@ -10,6 +10,7 @@
     '1BAC': ['1BACSE', '1BACSM', '1BACL'],
     '2BAC': ['2BACSVT', '2BACSP', '2BACSM']
   };
+  const LANGUAGES = ['arabe', 'francais'];
   const TYPES = ['cours', 'exercices', 'examens', 'fiches', 'resumes'];
   let snapshot = null;
   let pending = null;
@@ -23,9 +24,15 @@
       const level = String(p.study_level || '').toUpperCase();
       const track = String(p.study_track || '').replace(/\s+/g, '').toUpperCase();
       if (!TRACKS[level] || !TRACKS[level].includes(track)) return null;
-      const language = document.documentElement.lang === 'fr' ? 'francais' : 'arabe';
-      return { id: String(p.id || p.user_id || ''), level, track, language, profile: p };
+      return { id: String(p.id || p.user_id || ''), level, track };
     } catch (_) { return null; }
+  }
+
+  function activeContentLanguage() {
+    const section = document.getElementById('cours');
+    const active = section && section.querySelector('.tab-btn.active[data-subject]');
+    const value = active && active.dataset.subject;
+    return LANGUAGES.includes(value) ? value : 'francais';
   }
 
   function safePath(value) {
@@ -33,16 +40,15 @@
     return path && !path.split('/').includes('..') ? '/' + path : '';
   }
 
-  function matches(path, type, context) {
+  function matches(path, type, context, language) {
     const normalized = safePath(path);
     if (!normalized) return false;
     if (window.GoSVTPathways && typeof GoSVTPathways.matches === 'function') {
-      try { return GoSVTPathways.matches(normalized, type, context.language, context.level, context.track); }
+      try { return GoSVTPathways.matches(normalized, type, language, context.level, context.track); }
       catch (_) { return false; }
     }
     const parts = normalized.split('/').filter(Boolean);
-    if (parts[1] !== context.language || parts[2] !== context.level) return false;
-    if (parts[0] !== type) return false;
+    if (parts[1] !== language || parts[2] !== context.level || parts[0] !== type) return false;
     const folderTrack = parts.slice(3, -1).map(x => x.replace(/\s+/g, '').toUpperCase())
       .find(x => Object.values(TRACKS).flat().includes(x));
     return !folderTrack || folderTrack === context.track;
@@ -52,35 +58,53 @@
     return fetch('/quiz-map.json', { cache: 'no-cache', credentials: 'same-origin' })
       .then(response => response.ok ? response.json() : {})
       .then(map => {
-        if (!map || typeof map !== 'object' || Array.isArray(map)) return [];
-        return Array.from(new Set(Object.values(map).filter(path =>
-          typeof path === 'string' && matches(path, 'quiz', context)
-        )));
+        if (!map || typeof map !== 'object' || Array.isArray(map)) return { arabe: [], francais: [] };
+        const values = Array.from(new Set(Object.values(map).filter(path => typeof path === 'string')));
+        return Object.fromEntries(LANGUAGES.map(language => [
+          language, values.filter(path => matches(path, 'quiz', context, language))
+        ]));
       })
-      .catch(() => []);
+      .catch(() => ({ arabe: [], francais: [] }));
   }
 
   function build(context) {
     if (typeof window.loadManifest !== 'function') {
       return Promise.reject(new Error('Content manifest loader unavailable'));
     }
-    return Promise.all([window.loadManifest(), readQuizMap(context)]).then(([files, quizzes]) => {
-      const list = Array.isArray(files) ? files : [];
+    return Promise.all([window.loadManifest(), readQuizMap(context)]).then(([files, quizzesByLanguage]) => {
+      let list = Array.isArray(files) ? files : [];
+      if (typeof window.isHiddenDuplicateCourseCopy === 'function') {
+        list = list.filter(path => !window.isHiddenDuplicateCourseCopy(path));
+      }
+      list = Array.from(new Set(list));
+      const byLanguage = {};
+      const quizzes = {};
+      LANGUAGES.forEach(language => {
+        byLanguage[language] = {};
+        TYPES.forEach(type => {
+          byLanguage[language][type] = list.filter(path =>
+            matches(path, type, context, language) &&
+            !(type === 'exercices' && matches(path, 'examens', context, language))
+          ).length;
+        });
+        quizzes[language] = quizzesByLanguage[language].length;
+      });
       const counts = {};
       TYPES.forEach(type => {
-        counts[type] = list.filter(path => matches(path, type, context) && !(type === 'exercices' && matches(path, 'examens', context))).length;
+        counts[type] = LANGUAGES.reduce((sum, language) => sum + byLanguage[language][type], 0);
       });
-      // Exam material may also be stored in the exercises tree; the same
-      // matching rules used by the public library determine its visibility.
-      counts.examens = list.filter(path => matches(path, 'examens', context)).length;
       return Object.freeze({
-        profileKey: [context.id, context.level, context.track, context.language].join('|'),
+        profileKey: [context.id, context.level, context.track].join('|'),
         level: context.level,
         track: context.track,
-        language: context.language,
         counts: Object.freeze(counts),
-        quizzes: quizzes.length,
-        total: Object.values(counts).reduce((sum, value) => sum + value, 0) + quizzes.length,
+        byLanguage: Object.freeze(Object.fromEntries(LANGUAGES.map(language => [
+          language, Object.freeze(byLanguage[language])
+        ]))),
+        quizzes: LANGUAGES.reduce((sum, language) => sum + quizzes[language], 0),
+        quizzesByLanguage: Object.freeze(quizzes),
+        total: Object.values(counts).reduce((sum, value) => sum + value, 0) +
+          LANGUAGES.reduce((sum, language) => sum + quizzes[language], 0),
         generatedAt: Date.now()
       });
     });
@@ -94,7 +118,7 @@
       activeKey = '';
       return Promise.resolve(null);
     }
-    const key = [context.id, context.level, context.track, context.language].join('|');
+    const key = [context.id, context.level, context.track].join('|');
     if (snapshot && snapshot.profileKey === key) return Promise.resolve(snapshot);
     if (pending && activeKey === key) return pending;
     activeKey = key;
@@ -115,48 +139,59 @@
   function getSnapshot() {
     const context = currentProfile();
     if (!context || !snapshot) return null;
-    const key = [context.id, context.level, context.track, context.language].join('|');
+    const key = [context.id, context.level, context.track].join('|');
     return snapshot.profileKey === key ? snapshot : null;
+  }
+
+  function chooseLanguage(data, type) {
+    const preferred = activeContentLanguage();
+    const available = data.byLanguage[type] || {};
+    if (Number(available[preferred]) > 0) return preferred;
+    const alternate = preferred === 'francais' ? 'arabe' : 'francais';
+    if (Number(available[alternate]) > 0) return alternate;
+    return preferred;
   }
 
   function getNextStep(stats) {
     const data = getSnapshot();
     const s = stats || {};
     if (!data) return null;
-    if (!data.counts.cours) return { key: 'cours', href: '#cours', available: false };
-    if (!Number(s.lessonsViewed)) return { key: 'cours', href: '#cours', available: true };
-    if (Number(s.completedLessons) < Number(s.lessonsViewed)) return { key: 'continue', href: '#cours', available: true };
-    if (data.counts.exercices && !Number(s.exercisesDone)) return { key: 'exercices', href: '#exercices', available: true };
-    if (data.quizzes && !Number(s.testsTaken)) return { key: 'quiz', href: '#quiz', available: true };
-    if (Number(s.testsTaken) && Number(s.averageScore) < 70 && data.quizzes) return { key: 'quiz-review', href: '#quiz', available: true };
-    if (data.counts.examens) return { key: 'examens', href: '#examens', available: true };
-    if (data.quizzes) return { key: 'quiz', href: '#quiz', available: true };
-    if (data.counts.exercices) return { key: 'exercices', href: '#exercices', available: true };
-    return { key: 'cours', href: '#cours', available: true };
+    const has = key => Number(data.counts[key]) > 0;
+    const hasQuizzes = data.quizzes > 0;
+    const summaryCount = Number(data.counts.fiches) + Number(data.counts.resumes);
+    const hasAny = has('cours') || has('exercices') || has('examens') || hasQuizzes || summaryCount > 0;
+    if (!hasAny) return { key: 'none', section: 'cours', href: '#cours', subject: activeContentLanguage(), available: false };
+
+    const step = (key, section, type) => ({
+      key, section, href: '#' + section,
+      subject: type ? chooseLanguage(data, type) : activeContentLanguage(),
+      available: true
+    });
+
+    if (!Number(s.lessonsViewed)) {
+      if (has('cours')) return step('cours', 'cours', 'cours');
+      if (summaryCount) return step('resumes', 'resumes', data.counts.fiches ? 'fiches' : 'resumes');
+      if (has('exercices')) return step('exercices', 'exercices', 'exercices');
+      if (hasQuizzes) return step('quiz', 'quiz', 'quiz');
+      if (has('examens')) return step('examens', 'examens', 'examens');
+    }
+    if (Number(s.lessonsViewed) > Number(s.completedLessons) && has('cours')) {
+      return step('continue', 'cours', 'cours');
+    }
+    if (has('exercices') && !Number(s.exercisesDone)) return step('exercices', 'exercices', 'exercices');
+    if (hasQuizzes && !Number(s.testsTaken)) return step('quiz', 'quiz', 'quiz');
+    if (hasQuizzes && Number(s.testsTaken) && Number(s.averageScore) < 70) return step('quiz-review', 'quiz', 'quiz');
+    if (has('examens')) return step('examens', 'examens', 'examens');
+    if (summaryCount) return step('resumes', 'resumes', data.counts.fiches ? 'fiches' : 'resumes');
+    if (hasQuizzes) return step('quiz', 'quiz', 'quiz');
+    if (has('exercices')) return step('exercices', 'exercices', 'exercices');
+    if (has('cours')) return step('cours', 'cours', 'cours');
+    return { key: 'none', section: 'cours', href: '#cours', subject: activeContentLanguage(), available: false };
   }
 
-  window.StudentLearningJourney = Object.freeze({
-    refresh,
-    getSnapshot,
-    getNextStep,
-    getProfile: currentProfile
-  });
-
+  window.StudentLearningJourney = Object.freeze({ refresh, getSnapshot, getNextStep });
   document.addEventListener('gosvt:auth-changed', refresh);
   document.addEventListener('gosvt:journey-refresh', refresh);
-  document.addEventListener('click', event => {
-    if (event.target.closest && event.target.closest('.lang-switcher')) {
-      snapshot = null;
-      refresh();
-    }
-  });
-  const languageObserver = new MutationObserver(records => {
-    if (records.some(record => record.attributeName === 'lang')) {
-      snapshot = null;
-      refresh();
-    }
-  });
-  languageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refresh, { once: true });
   else refresh();
 })();
