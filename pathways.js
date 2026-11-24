@@ -76,8 +76,9 @@
     let rawPromise = null;
     function loadRaw() {
         if (!rawPromise) {
-            rawPromise = fetch(`${CONFIG.MANIFEST_URL}?pw=${Date.now()}`, { cache: 'no-store' })
-                .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+            // Use the same manifest pipeline as the library itself so counts
+            // include both repository files and published cloud resources.
+            rawPromise = loadManifest()
                 .catch(err => { rawPromise = null; throw err; });
         }
         return rawPromise;
