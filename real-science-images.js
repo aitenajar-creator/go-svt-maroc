@@ -984,6 +984,12 @@
     const model = models[categoryKey];
     if (!model) return null;
     const copy = model[isFrench ? 'fr' : 'ar'];
+    if (!document.getElementById('ri-experiment-design-styles')) {
+      const style = document.createElement('style');
+      style.id = 'ri-experiment-design-styles';
+      style.textContent = '.ri-experiment-design{display:grid;gap:11px;margin:14px 0;padding:15px;border:1px solid #a8bfae;border-radius:14px;background:rgba(22,101,52,.045)}.ri-experiment-design p{margin:0;line-height:1.65}.ri-experiment-scenario{padding:10px;border-inline-start:3px solid #16835d;background:rgba(22,101,52,.07)}.ri-experiment-design label{display:grid;gap:6px;font-weight:650}.ri-experiment-design textarea,.ri-experiment-select{width:100%;min-height:42px;padding:9px;border:1px solid #a7b9ad;border-radius:8px;background:Canvas;color:CanvasText;font:inherit}.ri-experiment-design textarea{resize:vertical}.ri-experiment-check{justify-self:start;padding:9px 14px;border:0;border-radius:9px;background:#24613b;color:#fff;font:inherit;font-weight:700;cursor:pointer}.ri-experiment-feedback{padding:11px;border-radius:9px;background:rgba(14,116,144,.09);line-height:1.7}.ri-experiment-note{font-size:.82rem;color:#64786a}html.gs-dark .ri-experiment-design{background:rgba(34,197,94,.06);border-color:#456b50}html.gs-dark .ri-experiment-scenario{background:rgba(34,197,94,.1)}';
+      document.head.appendChild(style);
+    }
     if (!document.getElementById('ri-science-simulation-styles')) {
       const style = document.createElement('style');
       style.id = 'ri-science-simulation-styles';
@@ -1027,6 +1033,92 @@
     slider.addEventListener('input', update);
     panel.append(heading, intro, label, slider, output, valueText, meter, result, explanation);
     update();
+    return panel;
+  }
+
+  function createExperimentDesignWorkshop(categoryKey, isFrench) {
+    const cases = {
+      'cell/plant': { ar:['مدة الإضاءة','معدل نمو نباتات متماثلة','كمية الماء ونوع التربة ودرجة الحرارة','مجموعة تتعرض لمدة إضاءة مرجعية'], fr:['Durée d’éclairage','Croissance de plantes comparables','Quantité d’eau, sol et température','Groupe soumis à une durée de référence'] },
+      'genetics/dna': { ar:['نوع العينة (مجهولة أو شواهد)','نتيجة اختبار وجود ADN','طريقة الاختبار والكواشف وشروط القياس','شاهد موجب وشاهد سالب'], fr:['Type d’échantillon (inconnu ou témoins)','Résultat du test de présence d’ADN','Méthode, réactifs et conditions de mesure','Témoin positif et témoin négatif'] },
+      'ecology/ecosystem': { ar:['كمية الماء المتاحة','نمو النباتات','نوع النبات والضوء والتربة','مجموعة تتلقى كمية ماء مرجعية'], fr:['Quantité d’eau disponible','Croissance des plantes','Espèce, lumière et sol','Groupe recevant une quantité d’eau de référence'] },
+      'geology/rock': { ar:['سرعة التبريد في نموذج التبلور','حجم البلورات المتكوّنة','تركيب المادة وكمية العينة','عينة تبرد وفق الشروط المرجعية'], fr:['Vitesse de refroidissement du modèle de cristallisation','Taille des cristaux formés','Composition et quantité de matière','Échantillon refroidi selon les conditions de référence'] },
+      'cell/animal': { ar:['مساحة سطح التبادل في نموذج','كمية المادة المنتقلة خلال مدة ثابتة','فرق التركيز والمدة ودرجة الحرارة','نموذج ذو مساحة سطح مرجعية'], fr:['Surface d’échange du modèle','Quantité transférée pendant une durée fixe','Gradient, durée et température','Modèle avec une surface de référence'] },
+      'cell/mitosis': { ar:['نوع النسيج أو الحالة المدروسة','نسبة الخلايا المرصودة في الانقسام','طريقة أخذ العينة ووقت الملاحظة ومعايير العد','عينة مرجعية من النسيج نفسه'], fr:['Type de tissu ou condition étudiée','Proportion de cellules observées en division','Prélèvement, moment d’observation et critères de comptage','Échantillon de référence du même tissu'] },
+      'respiratory/alveoli': { ar:['سماكة حاجز الانتشار في النموذج','كمية الغاز المنتقلة خلال مدة ثابتة','مساحة السطح وفرق التركيز والحرارة','حاجز ذو سماكة مرجعية'], fr:['Épaisseur de la barrière de diffusion','Quantité de gaz transférée pendant une durée fixe','Surface, gradient de concentration et température','Barrière d’épaisseur de référence'] }
+    };
+    const data = cases[categoryKey];
+    if (!data) return null;
+    const values = data[isFrench ? 'fr' : 'ar'];
+    const panel = document.createElement('section');
+    panel.className = 'ri-experiment-design';
+    const title = document.createElement('strong');
+    title.textContent = isFrench ? 'Atelier de conception expérimentale' : 'ورشة تصميم التجربة العلمية';
+    const intro = document.createElement('p');
+    intro.textContent = isFrench ? 'Construisez un protocole en distinguant le facteur modifié, le résultat mesuré, les facteurs contrôlés et le témoin.' : 'صمّم بروتوكولاً يميز بين العامل الذي ستغيره، والنتيجة التي ستقيسها، والعوامل التي ستثبتها، والمجموعة المرجعية.';
+    const scenario = document.createElement('p');
+    scenario.className = 'ri-experiment-scenario';
+    scenario.textContent = isFrench ? 'Mission : proposer une expérience permettant de tester une relation scientifique sans confondre corrélation et causalité.' : 'المهمة: اقترح تجربة لاختبار علاقة علمية دون الخلط بين التزامن والسببية.';
+    const hypothesisLabel = document.createElement('label');
+    hypothesisLabel.textContent = isFrench ? 'Votre hypothèse :' : 'فرضيتك:';
+    const hypothesis = document.createElement('textarea');
+    hypothesis.rows = 2;
+    hypothesis.maxLength = 500;
+    hypothesis.placeholder = isFrench ? 'Si…, alors…, parce que…' : 'إذا… فإن… لأن…';
+    const fields = [
+      { label: isFrench ? 'Facteur à faire varier' : 'العامل الذي ستغيّره', correct:0, choices:[values[0], isFrench?'La couleur du matériel':'لون الأدوات', isFrench?'Le nom de l’échantillon':'اسم العينة'] },
+      { label: isFrench ? 'Résultat à mesurer' : 'النتيجة التي ستقيسها', correct:0, choices:[values[1], isFrench?'La taille de la photo':'حجم الصورة', isFrench?'La préférence de l’observateur':'تفضيل الملاحظ'] },
+      { label: isFrench ? 'Facteurs à maintenir constants' : 'العوامل التي ستثبتها', correct:0, choices:[values[2], isFrench?'Changer plusieurs facteurs ensemble':'تغيير عدة عوامل معاً', isFrench?'Ne noter aucune condition':'عدم تسجيل أي شرط'] },
+      { label: isFrench ? 'Témoin ou référence' : 'الشاهد أو المجموعة المرجعية', correct:0, choices:[values[3], isFrench?'Supprimer toute comparaison':'إلغاء المقارنة', isFrench?'Choisir un résultat après mesure':'اختيار النتيجة بعد القياس'] }
+    ];
+    const selects = [];
+    fields.forEach(function(field,index){
+      const wrap=document.createElement('label');
+      wrap.className='ri-experiment-field';
+      const caption=document.createElement('span');
+      caption.textContent=(index+1)+'. '+field.label;
+      const select=document.createElement('select');
+      select.className='ri-experiment-select';
+      const empty=document.createElement('option');
+      empty.value='';
+      empty.textContent=isFrench?'Choisissez…':'اختر…';
+      select.appendChild(empty);
+      field.choices.forEach(function(choice,i){
+        const option=document.createElement('option');
+        option.value=String(i);
+        option.textContent=choice;
+        select.appendChild(option);
+      });
+      wrap.append(caption,select);
+      selects.push(select);
+      panel.appendChild(wrap);
+    });
+    const check=document.createElement('button');
+    check.type='button';
+    check.className='ri-experiment-check';
+    check.textContent=isFrench?'Évaluer mon protocole':'قيّم تصميم تجربتي';
+    const feedback=document.createElement('div');
+    feedback.className='ri-experiment-feedback';
+    feedback.hidden=true;
+    feedback.setAttribute('aria-live','polite');
+    check.addEventListener('click',function(){
+      const missing=selects.some(select=>select.value==='');
+      feedback.hidden=false;
+      if(missing){
+        feedback.textContent=isFrench?'Complétez les quatre choix avant l’analyse.':'أكمل الاختيارات الأربعة قبل تحليل البروتوكول.';
+        return;
+      }
+      const score=selects.reduce((sum,select,index)=>sum+(Number(select.value)===fields[index].correct?1:0),0);
+      const details=fields.map(function(field,index){
+        const chosen=field.choices[Number(selects[index].value)];
+        return (index+1)+'. '+field.label+': '+chosen+(Number(selects[index].value)===0?' ✓':' — '+(isFrench?'proposition conseillée : ':'الاقتراح الأنسب: ')+field.choices[0]);
+      });
+      feedback.textContent=(isFrench?'Analyse formative : '+score+'/4 choix cohérents. ':'تحليل تكويني: '+score+' من 4 اختيارات مناسبة. ')+details.join(' | ')+(isFrench?' Rappelez-vous : une expérience rigoureuse modifie un facteur à la fois, mesure un résultat défini et compare à un témoin.':' تذكّر: التجربة المنضبطة تغيّر عاملاً واحداً، وتقيس نتيجة محددة، وتقارنها بشاهد أو مرجع.');
+    });
+    const note=document.createElement('p');
+    note.className='ri-experiment-note';
+    note.textContent=isFrench?'Activité pédagogique sans manipulation de matériel : les réponses ne sont ni notées ni enregistrées.':'نشاط تعليمي للتخطيط فقط، دون استعمال مواد مخبرية؛ لا تُمنح عنه نقاط ولا تُحفظ الإجابات.';
+    panel.prepend(title,intro,scenario,hypothesisLabel,hypothesis);
+    panel.append(check,feedback,note);
     return panel;
   }
 
@@ -1233,7 +1325,7 @@
     const repairActivity = createReasoningRepairActivity(categoryKey, isFrench);
     const hypothesisWorkshop = createHypothesisWorkshop(categoryKey, isFrench);
     const dataAnalysisWorkshop = createDataAnalysisWorkshop(categoryKey, isFrench);
-    const simulationWorkshop = createScienceSimulationWorkshop(categoryKey, isFrench);
+    const simulationWorkshop = createScienceSimulationWorkshop(categoryKey, isFrench);\n    const experimentDesignWorkshop = createExperimentDesignWorkshop(categoryKey, isFrench);
     const privacy = document.createElement('p');
     privacy.className = 'ri-observation-privacy';
     privacy.textContent = isFrench ? 'Enregistrement local uniquement : votre réponse n’est pas envoyée au serveur.' : 'يُحفظ الجواب على هذا الجهاز فقط ولا يُرسل إلى الخادم.';
@@ -1254,7 +1346,7 @@
     stageThree.className = 'ri-learning-stage';
     stageThree.textContent = isFrench ? 'ÉTAPE 3 · SUIVRE SA PROGRESSION' : 'المرحلة 3 · تتبع التقدم والإنجازات';
 
-    activity.append(guidePanel, label, textarea, actions, review, feedback, compareButton, comparison, repairActivity, hypothesisWorkshop, dataAnalysisWorkshop, simulationWorkshop, status, privacy);
+    activity.append(guidePanel, label, textarea, actions, review, feedback, compareButton, comparison, repairActivity, hypothesisWorkshop, dataAnalysisWorkshop, simulationWorkshop, experimentDesignWorkshop, status, privacy);
     if (challenge) {
       challenge.insertBefore(stageTwo, challenge.firstChild);
       activity.appendChild(challenge);
