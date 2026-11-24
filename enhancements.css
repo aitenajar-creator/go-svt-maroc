@@ -868,3 +868,18 @@ html.gs-dark .gs-next-step-icon{background:#344d3b}
 html.gs-dark .gs-next-step-copy p{color:#c0d5c2}
 html.gs-dark .gs-next-step-copy a{color:#bce5bd}
 @media(max-width:520px){.gs-next-step-card{gap:.7rem;padding:.85rem}.gs-next-step-icon{flex-basis:40px;width:40px;height:40px}}
+
+
+/* Exam library: distinguish subjects from corrections */
+.gs-exam-kind-title{
+    grid-column:1 / -1;
+    width:100%;
+    margin:.45rem 0 .15rem;
+    padding:.35rem .7rem;
+    border-inline-start:2px solid var(--gs-green,#39764a);
+    color:var(--gs-green,#39764a);
+    font-size:.88rem;
+    font-weight:700;
+    line-height:1.5;
+}
+html.gs-dark .gs-exam-kind-title{color:#b9dfbd;border-inline-start-color:#78ad7e}
