@@ -8,3 +8,12 @@
 @media(max-width:650px){.gs-dm-steps{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.gs-document-method *{animation:none!important;transition:none!important}}
 @media(prefers-color-scheme:dark){body.dark-mode #student-space #student-space-content .gs-document-method{background:#172a34;color:#e0eef4;border-color:#345363}body.dark-mode .gs-dm-intro,body.dark-mode .gs-dm-steps p,body.dark-mode .gs-dm-note{color:#adc3ce}body.dark-mode .gs-dm-steps li,body.dark-mode .gs-dm-self{background:#203843;border-color:#365360}body.dark-mode .gs-dm-profile{background:#2a4a57;color:#e0f1f7}}
+
+.gs-dm-guide-controls{display:flex;flex-wrap:wrap;align-items:center;gap:.55rem;margin:.85rem 0}
+.gs-dm-guide-controls button{border:1px solid #b8d2dd;border-radius:10px;padding:.55rem .8rem;background:#fff;color:#17566d;font-weight:750;cursor:pointer}
+.gs-dm-guide-controls .gs-dm-guide-toggle{background:#0c766e;color:#fff;border-color:#0c766e}
+.gs-dm-guide-controls button:disabled{opacity:.45;cursor:not-allowed}
+.gs-dm-guide-status{min-width:7rem;text-align:center;font-size:.86rem;font-weight:750;color:#286578}
+.gs-dm-steps li[hidden]{display:none!important}
+.gs-dm-steps li.is-current{border-color:#0c766e;box-shadow:0 0 0 2px rgba(12,118,110,.12)}
+@media(prefers-color-scheme:dark){body.dark-mode .gs-dm-guide-controls button{background:#203843;color:#e0eef4;border-color:#456371}body.dark-mode .gs-dm-guide-controls .gs-dm-guide-toggle{background:#0c766e;color:#fff;border-color:#0c766e}body.dark-mode .gs-dm-guide-status{color:#b7dce7}}
