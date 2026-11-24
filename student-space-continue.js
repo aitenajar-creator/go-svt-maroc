@@ -97,7 +97,11 @@
     const completed = lessons.filter(function (item) { return item && item.completed; }).length;
     const percent = lessons.length ? Math.round(completed / lessons.length * 100) : 0;
     const attempts = Array.isArray(data.quizResults) ? data.quizResults : [];
-    const signature = JSON.stringify({ lang: isFrench ? 'fr' : 'ar', recent: recent ? [recent.path, recent.title, recent.lastViewed, recent.track, recent.level] : null, task: pendingTask ? [pendingTask.id, pendingTask.title, pendingTask.date, pendingTask.duration] : null, quiz: attempts.map(function (item) { return [item && item.quizId, item && item.date, item && item.percentage, item && Array.isArray(item.mistakes) ? item.mistakes.map(function (mistake) { return mistake && [mistake.question, mistake.selected, mistake.correct, mistake.date]; }) : []]; }), lessons: lessons.length, completed: completed, exercises: exercises.length, journey: window.StudentLearningJourney && window.StudentLearningJourney.getSnapshot ? (window.StudentLearningJourney.getSnapshot() || {}).generatedAt || 'pending' : 'unavailable', subject: (document.querySelector('#cours .tab-btn.active') || {}).dataset?.subject || '' });
+    const signature = JSON.stringify({ lang: isFrench ? 'fr' : 'ar', recent: recent ? [recent.path, recent.title, recent.lastViewed, recent.track, recent.level] : null, task: pendingTask ? [pendingTask.id, pendingTask.title, pendingTask.date, pendingTask.duration] : null, quiz: attempts.map(function (item) { return [item && item.quizId, item && item.date, item && item.percentage, item && Array.isArray(item.mistakes) ? item.mistakes.map(function (mistake) { return mistake && [mistake.question, mistake.selected, mistake.correct, mistake.date]; }) : []]; }), lessons: lessons.length, completed: completed, exercises: exercises.length, journey: window.StudentLearningJourney && window.StudentLearningJourney.getSnapshot ? (window.StudentLearningJourney.getSnapshot() || {}).generatedAt || 'pending' : 'unavailable', subject: ['cours', 'exercices', 'quiz', 'examens', 'resumes'].map(function (id) {
+        const section = document.getElementById(id);
+        const active = section && section.querySelector('.tab-btn.active[data-subject]');
+        return id + ':' + (active && active.dataset.subject || '');
+      }).join('|') });
     const card = document.createElement('section');
     card.id = ROOT_ID;
     card.className = 'gs-continue-card';
@@ -200,7 +204,8 @@
     document.addEventListener('gosvt:auth-changed', schedule);
     document.addEventListener('gosvt:journey-ready', schedule);
     document.addEventListener('click', function (event) {
-      if (event.target.closest && event.target.closest('.lang-switcher')) window.setTimeout(schedule, 120);
+      if (!event.target.closest) return;
+      if (event.target.closest('.tab-btn, .lang-switcher')) window.setTimeout(schedule, 120);
     });
   }
 
