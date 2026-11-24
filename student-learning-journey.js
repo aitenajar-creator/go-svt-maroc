@@ -15,6 +15,7 @@
   let snapshot = null;
   let pending = null;
   let activeKey = '';
+  let requestId = 0;
 
   function currentProfile() {
     try {
@@ -129,26 +130,32 @@
     });
   }
 
-  function refresh() {
+  function refresh(force) {
     const context = currentProfile();
     if (!context) {
       snapshot = null;
       pending = null;
       activeKey = '';
+      requestId += 1;
       return Promise.resolve(null);
     }
     const key = [context.id, context.level, context.track].join('|');
-    if (snapshot && snapshot.profileKey === key) return Promise.resolve(snapshot);
-    if (pending && activeKey === key) return pending;
+    if (!force && snapshot && snapshot.profileKey === key) return Promise.resolve(snapshot);
+    if (!force && pending && activeKey === key) return pending;
+    if (force) {
+      snapshot = null;
+      pending = null;
+    }
     activeKey = key;
+    const request = ++requestId;
     pending = build(context).then(value => {
-      if (activeKey !== key) return null;
+      if (activeKey !== key || request !== requestId) return null;
       snapshot = value;
       pending = null;
       document.dispatchEvent(new CustomEvent('gosvt:journey-ready', { detail: { profileKey: key } }));
       return value;
     }).catch(error => {
-      if (activeKey === key) pending = null;
+      if (activeKey === key && request === requestId) pending = null;
       console.warn('[GoSVT] Academic resource inventory unavailable:', error);
       return null;
     });
@@ -215,7 +222,7 @@
 
   window.StudentLearningJourney = Object.freeze({ refresh, getSnapshot, getNextStep });
   document.addEventListener('gosvt:auth-changed', refresh);
-  document.addEventListener('gosvt:journey-refresh', refresh);
+  document.addEventListener('gosvt:journey-refresh', () => refresh(true));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refresh, { once: true });
   else refresh();
 })();
