@@ -166,3 +166,6 @@ html.gs-dark body .content-card.file-resource-card .file-info-panel>.gs-kicker{c
 .gs-search-hidden,.gs-search-group-hidden{display:none!important}
 html.gs-dark .gs-resource-search{background:var(--gs-card,#142c24);border-color:var(--gs-line,#29463a)}
 @media(max-width:600px){.gs-resource-search{margin:.8rem .5rem;padding:.85rem;border-radius:14px}}
+
+.gs-resource-search-clear{margin:.6rem 0 0;min-height:40px;padding:.45rem .9rem;border:1px solid var(--gs-line,#d8e7df);border-radius:10px;background:var(--gs-em,#0b5d43);color:#fff;font:inherit;font-weight:750;cursor:pointer}
+.gs-resource-search-clear:focus-visible{outline:3px solid var(--gs-gold,#f3c969);outline-offset:3px}
