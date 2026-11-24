@@ -196,8 +196,8 @@ function finishChallenge(){
   report.appendChild(heading);
   members.forEach(item=>{
    const stat=organStats[item.id],line=document.createElement('p');
-   line.textContent=(stat.correct>=2?'✓ ':'↻ ')+DATA[item.id][langKey()][0]+' — '+stat.correct+'/3 · '+(stat.correct>=2?(isFr()?'Acquis':'متقن'):(isFr()?'À revoir':'يحتاج إلى مراجعة'));
-   line.className=stat.correct>=2?'is-mastered':'needs-review';report.appendChild(line);
+   const mastered=stat.attempts===3&&stat.correct>=2;\n   line.textContent=(mastered?'✓ ':'↻ ')+DATA[item.id][langKey()][0]+' — '+stat.correct+'/'+stat.attempts+' / 3 · '+(mastered?(isFr()?'Acquis':'متقن'):(stat.attempts<3?(isFr()?'Incomplet':'غير مكتمل'):(isFr()?'À revoir':'يحتاج إلى مراجعة')));
+   line.className=mastered?'is-mastered':'needs-review';report.appendChild(line);
   });
  });
  const previous=quizPanel.querySelector('.gs-3d-quiz-report');if(previous)previous.remove();
