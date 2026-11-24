@@ -3317,10 +3317,13 @@ function openScientificPhotoPreview(card){
                     studentTabs[nextIndex].click();
                 }
             });
-            tab.addEventListener('click', function() {
+            tab.addEventListener('click', function(event) {
                 const tabName = this.dataset.tab;
                 activateStudentTab(this, false);
-                ensureStudentPanel(tabName, tabName === 'favorites');
+                // Force-refresh favorites only after a real user activation.
+                // Synthetic clicks used to restore the previous tab after a
+                // dashboard refresh must not rebuild the favorites list again.
+                ensureStudentPanel(tabName, tabName === 'favorites' && !!(event && event.isTrusted));
 
                 // Build the WebGL scene only when requested. Keeping the 3D lab
                 // lazy avoids blocking the initial student dashboard on devices
