@@ -78,7 +78,7 @@
       }
       // Repository README files document folders; they are not student learning resources.
       // Exclude them from the inventory without changing the shared manifest or library pipeline.
-      list = Array.from(new Set(list.filter(path => !/(^|\\/)README(?:\\.[^/]*)?$/i.test(String(path)))));
+      list = Array.from(new Set(list.filter(path => !/(^|\/)README(?:\.[^/]*)?$/i.test(String(path)))));
       const byLanguage = {};
       const quizzes = {};
       LANGUAGES.forEach(language => {
