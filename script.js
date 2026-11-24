@@ -170,61 +170,93 @@ function describePath(path) {
 // Exam metadata is inferred only from explicit filename markers.
 function getExamFileMetadata(path) {
     const normalizedPath = String(path).replace(/^\/+/, '');
-    if (!normalizedPath.startsWith('examens/')) return null;
-    const filename = normalizedPath.split('/').pop().replace(/\.[^.]+$/, '').toLowerCase();
-    const yearMatch = filename.match(/(?:^|[-_ ])((?:19|20)\d{2})(?=$|[-_ ])/);
-    const sessionMatch = filename.match(/(?:^|[-_ ])(normale|rattrapage)(?=$|[-_ ])/);
-    const kindMatch = filename.match(/(?:^|[-_ ])(corrige|sujet)(?=$|[-_ ])/);
-    if (!yearMatch && !sessionMatch && !kindMatch) return null;
+    if (!/^(examens|exercices)\//.test(normalizedPath)) return null;
+    const filename = normalizedPath.split('/').pop().replace(/\.[^.]+$/, '');
+    const text = normalizeText(filename);
+    const yearMatch = /(?:^|\D)((?:19|20)\d{2})(?!\d)/.exec(text);
+    const isNormal = /normale|normal|عادي/.test(text);
+    const isRattrapage = /rattrapage|استدراك/.test(text);
+    const isSubject = /sujet|موضوع/.test(text);
+    const isCorrection = /corrige|correction|تصحيح/.test(text);
+    if (!yearMatch && !isNormal && !isRattrapage && !isSubject && !isCorrection) return null;
     const labels = [];
     if (yearMatch) labels.push({ ar: yearMatch[1], fr: yearMatch[1], className: 'exam-year' });
-    if (sessionMatch) labels.push({ ar: sessionMatch[1] === 'normale' ? 'الدورة العادية' : 'الدورة الاستدراكية', fr: sessionMatch[1] === 'normale' ? 'Session normale' : 'Session de rattrapage', className: 'exam-session' });
-    if (kindMatch) labels.push({ ar: kindMatch[1] === 'sujet' ? 'موضوع الامتحان' : 'التصحيح', fr: kindMatch[1] === 'sujet' ? 'Sujet' : 'Corrigé', className: kindMatch[1] === 'sujet' ? 'exam-subject' : 'exam-correction' });
+    if (isNormal || isRattrapage) labels.push({
+        ar: isNormal ? 'الدورة العادية' : 'الدورة الاستدراكية',
+        fr: isNormal ? 'Session normale' : 'Session de rattrapage',
+        className: 'exam-session'
+    });
+    if (isSubject || isCorrection) labels.push({
+        ar: isSubject ? 'موضوع الامتحان' : 'التصحيح',
+        fr: isSubject ? 'Sujet' : 'Corrigé',
+        className: isSubject ? 'exam-subject' : 'exam-correction'
+    });
     return labels;
 }
-
 function addExamLibraryFilters(container, files) {
     const rows = files.map(path => {
-        const filename = path.split('/').pop().toLowerCase();
-        const tokens = filename.split(/[-_ .]+/);
-        const year = tokens.find(token => /^(19|20)\d{2}$/.test(token)) || '';
-        const session = tokens.includes('normale') ? 'normale' : tokens.includes('rattrapage') ? 'rattrapage' : '';
-        const kind = tokens.includes('sujet') ? 'sujet' : tokens.includes('corrige') ? 'corrige' : '';
-        return {path,year,session,kind};
+        const filename = String(path).split('/').pop().replace(/\.[^.]+$/, '');
+        const normalized = normalizeText(filename);
+        const yearMatch = /(?:^|\D)((?:19|20)\d{2})(?!\d)/.exec(normalized);
+        const session = /rattrapage|استدراك/.test(normalized) ? 'rattrapage'
+            : /normale|normal|عادي/.test(normalized) ? 'normale' : '';
+        const kind = /corrige|correction|تصحيح/.test(normalized) ? 'corrige'
+            : /sujet|موضوع/.test(normalized) ? 'sujet' : '';
+        return { path, year: yearMatch ? yearMatch[1] : '', session, kind };
     });
     const values = key => [...new Set(rows.map(row => row[key]).filter(Boolean))];
-    const years = values('year').sort((a,b) => Number(b)-Number(a));
+    const years = values('year').sort((a, b) => Number(b) - Number(a));
     const sessions = values('session');
     const kinds = values('kind');
     if (!years.length && !sessions.length && !kinds.length) return;
-    const select = (key,label,items) => items.length ? '<label class="gs-exam-filter"><span>' + label + '</span><select data-filter="' + key + '"><option value="">' + t('الكل','Tous') + '</option>' + items.map(value => '<option value="' + value + '">' + (key === 'session' ? (value === 'normale' ? t('العادية','Normale') : t('الاستدراكية','Rattrapage')) : key === 'kind' ? (value === 'sujet' ? t('الموضوع','Sujet') : t('التصحيح','Corrigé')) : value) + '</option>').join('') + '</select></label>' : '';
+    const select = (key, label, items) => items.length
+        ? '<label class="gs-exam-filter"><span>' + label + '</span><select data-filter="' + key + '"><option value="">' + t('الكل', 'Tous') + '</option>' +
+          items.map(value => '<option value="' + value + '">' +
+              (key === 'session' ? (value === 'normale' ? t('العادية', 'Normale') : t('الاستدراكية', 'Rattrapage'))
+                  : key === 'kind' ? (value === 'sujet' ? t('الموضوع', 'Sujet') : t('التصحيح', 'Corrigé')) : value) +
+          '</option>').join('') + '</select></label>'
+        : '';
     const bar = document.createElement('div');
     bar.className = 'gs-exam-filters';
-    bar.innerHTML = select('year',t('السنة','Année'),years) + select('session',t('الدورة','Session'),sessions) + select('kind',t('نوع الملف','Type'),kinds) + '<button type="button" class="gs-exam-reset">' + t('إعادة ضبط','Réinitialiser') + '</button>';
+    bar.innerHTML = select('year', t('السنة', 'Année'), years) +
+        select('session', t('الدورة', 'Session'), sessions) +
+        select('kind', t('نوع الملف', 'Type'), kinds) +
+        '<button type="button" class="gs-exam-reset">' + t('إعادة ضبط', 'Réinitialiser') + '</button>';
     const count = container.querySelector('.files-count');
     if (count) count.after(bar); else container.prepend(bar);
     const apply = () => {
         const chosen = {};
-        bar.querySelectorAll('select').forEach(item => {chosen[item.dataset.filter] = item.value;});
+        bar.querySelectorAll('select').forEach(item => { chosen[item.dataset.filter] = item.value; });
         let visible = 0;
         rows.forEach(row => {
-            const card = container.querySelector('.file-resource-card[data-resource-path="' + CSS.escape(row.path) + '"]');
+            const card = [...container.querySelectorAll('.file-resource-card')]
+                .find(item => item.dataset.resourcePath === row.path);
             if (!card) return;
-            const show = (!chosen.year || row.year === chosen.year) && (!chosen.session || row.session === chosen.session) && (!chosen.kind || row.kind === chosen.kind);
+            const show = (!chosen.year || row.year === chosen.year) &&
+                (!chosen.session || row.session === chosen.session) &&
+                (!chosen.kind || row.kind === chosen.kind);
             card.hidden = !show;
             if (show) visible++;
         });
-        container.querySelectorAll('.track-content-group').forEach(group => {group.hidden = !group.querySelector('.file-resource-card:not([hidden])');});
-        if (count) count.textContent = visible + ' ' + t('ملف','fichier(s)');
+        container.querySelectorAll('.track-content-group').forEach(group => {
+            group.hidden = !group.querySelector('.file-resource-card:not([hidden])');
+        });
+        if (count) count.textContent = visible + ' ' + t('ملف', 'fichier(s)');
         let empty = container.querySelector('.gs-exam-filter-empty');
-        if (!empty) {empty = document.createElement('p'); empty.className = 'gs-exam-filter-empty'; bar.after(empty);}
+        if (!empty) {
+            empty = document.createElement('p');
+            empty.className = 'gs-exam-filter-empty';
+            bar.after(empty);
+        }
         empty.hidden = visible > 0;
-        empty.textContent = t('لا توجد ملفات مطابقة.','Aucun fichier correspondant.');
+        empty.textContent = t('لا توجد ملفات مطابقة.', 'Aucun fichier correspondant.');
     };
-    bar.querySelectorAll('select').forEach(item => item.addEventListener('change',apply));
-    bar.querySelector('.gs-exam-reset').addEventListener('click',() => {bar.querySelectorAll('select').forEach(item => {item.value='';}); apply();});
+    bar.querySelectorAll('select').forEach(item => item.addEventListener('change', apply));
+    bar.querySelector('.gs-exam-reset').addEventListener('click', () => {
+        bar.querySelectorAll('select').forEach(item => { item.value = ''; });
+        apply();
+    });
 }
-
 function renderCard(path, badgeText) {
     const fileName = path.split('/').pop();
     const ext = getExt(fileName);
