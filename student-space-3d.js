@@ -111,7 +111,7 @@ labelDefinitions.forEach(def=>{
  button.addEventListener('click',()=>{if(quizState.active){answerQuiz(def.id);return;}if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
  labelLayer.appendChild(button);labelNodes.set(def.id,{button,def});
 });
-const handleLabelToggle=()=>{labelLayer.hidden=!labelCheck.checked;};
+const handleLabelToggle=()=>{if(quizState.active){labelCheck.checked=false;labelLayer.hidden=true;return;}labelLayer.hidden=!labelCheck.checked;};
 labelCheck.addEventListener('change',handleLabelToggle);
 function updateOrganLabels(){
  const width=canvas.clientWidth,height=canvas.clientHeight;
@@ -134,6 +134,7 @@ const quizStart=document.createElement('button');quizStart.type='button';quizSta
 quizPanel.append(quizTitle,quizDescription,quizPrompt,quizFeedback,quizStart);
 const organList=info&&info.querySelector('.gs-3d-organ-list');if(organList)organList.insertAdjacentElement('afterend',quizPanel);
 function beginQuiz(){
+ labelCheck.disabled=true;
  const pool=labelDefinitions.filter(item=>item.system===activeSystem);
  if(!pool.length)return;
  quizState.active=true;quizState.target=pool[Math.floor(Math.random()*pool.length)].id;
@@ -143,7 +144,7 @@ function beginQuiz(){
  quizPrompt.textContent=(isFr()?'Trouvez : ':'ابحث عن العضو: ')+(isFr()?DATA[quizState.target].fr[0]:DATA[quizState.target].ar[0]);
 }
 function endQuiz(){
- quizState.active=false;quizState.target=null;
+ quizState.active=false;labelCheck.disabled=false;quizState.target=null;
  quizStart.textContent=isFr()?'Recommencer':'إعادة التحدي';
  quizPrompt.textContent=(isFr()?'Résultat : ':'النتيجة: ')+quizState.score+'/'+quizState.answered;
  quizFeedback.textContent=isFr()?'Défi terminé. Aucun point de progression scolaire n’a été modifié.':'انتهى التحدي. لم تتغير نقاط التقدم الدراسي.';
@@ -188,7 +189,7 @@ const handleCanvasClick=e=>{if(moved){moved=false;return;}const rect=canvas.getB
 canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointermove',pointerMove);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',pointerUp);
 canvas.addEventListener('wheel',handleWheel,{passive:false});
 canvas.addEventListener('click',handleCanvasClick);
-const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(system&&!quizState.active)setSystem(system);select(btn.dataset['3dOrgan']);answerQuiz(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem'])setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
+const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(system&&!quizState.active)setSystem(system);select(btn.dataset['3dOrgan']);answerQuiz(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem']&&!quizState.active)setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
 root.addEventListener('click',handleRootClick);
 activeCleanup=()=>{
 disposed=true;
