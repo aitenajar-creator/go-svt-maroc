@@ -117,7 +117,16 @@
         if (!bar) return;
         const { subject, level } = getSectionState(section);
         const codes = TRACKS[level] || [];
-        const current = trackFor(section.id, level);
+        const selectedTrack = trackFor(section.id, level);
+        const explicitAll = isExplicitAll(section.id, level);
+        const account = window.StudentAccount;
+        const profile = account && account.isLoggedIn() && typeof account.getProfile === 'function'
+            ? account.getProfile() : null;
+        const profileTrack = profile && profile.study_level === level
+            && codes.includes(String(profile.study_track || '').replace(/\\s+/g, '').toUpperCase())
+            ? String(profile.study_track).replace(/\\s+/g, '').toUpperCase() : null;
+        // The active tab mirrors the account-based default unless the learner explicitly chose "all".
+        const current = selectedTrack !== 'all' ? selectedTrack : (explicitAll ? 'all' : (profileTrack || 'all'));
         bar.setAttribute('aria-label', t('الشعبة', 'Filière'));
         bar.innerHTML = `<span class="gs-track-label">${t('الشعبة :', 'Filière :')}</span>` +
             [['all', t('الكل', 'Tout')]].concat(codes.map(c => [c, c])).map(([code, label]) => {
