@@ -21,3 +21,6 @@ html.gs-dark .gs-cc-inventory-heading small,html.gs-dark .gs-cc-inventory-item s
 html.gs-dark .gs-cc-inventory-item{background:#223326;border-color:#3b5940}
 html.gs-dark .gs-cc-inventory-item strong{color:#a9dda5}
 @media(max-width:600px){.gs-cc-inventory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.gs-cc-inventory-item small{color:#77877b;font-size:.66rem;line-height:1.45;font-weight:600}
+html.gs-dark .gs-cc-inventory-item small{color:#b8cbb8}
