@@ -5,3 +5,19 @@
 .gs-cc-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem}.gs-cc-action{display:flex;align-items:center;gap:.75rem;padding:.85rem;border:1px solid #e0eae1;border-radius:15px;background:#fff;color:#28583b;text-decoration:none;min-width:0;transition:transform .15s}.gs-cc-action:hover{transform:translateY(-2px);border-color:#9bc5a3}.gs-cc-action>span{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:12px;background:#eaf4e9;font-size:1.35rem}.gs-cc-action div{min-width:0;display:flex;flex-direction:column;gap:.2rem}.gs-cc-action strong{font-size:.87rem}.gs-cc-action small{color:#6a7e70;line-height:1.45}.gs-cc-footer{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-top:1rem}.gs-cc-tip{display:flex;flex-direction:column;gap:.25rem;color:#486851;font-size:.86rem;line-height:1.65}.gs-cc-tip strong{color:#27623d}.gs-cc-footer button{flex:0 0 auto;min-height:40px;padding:.55rem .85rem;border:1px solid #c5d9c8;border-radius:10px;background:#fff;color:#386247;font:inherit;font-weight:700;cursor:pointer}.gs-cc-step:focus-visible,.gs-cc-action:focus-visible,.gs-cc-footer button:focus-visible{outline:3px solid #d49b42;outline-offset:3px}
 html.gs-dark #student-space #student-space-content .gs-command-center{background:linear-gradient(150deg,#17251a,#1d2d21);border-color:#3a5a3c}html.gs-dark .gs-cc-heading h3,html.gs-dark .gs-cc-step strong,html.gs-dark .gs-cc-action strong{color:#e0eee0}html.gs-dark .gs-cc-heading p,html.gs-dark .gs-cc-step small,html.gs-dark .gs-cc-action small,html.gs-dark .gs-cc-tip{color:#b8cbb8}html.gs-dark .gs-cc-profile{background:#2b4730;color:#c4e8c2}html.gs-dark .gs-cc-step,html.gs-dark .gs-cc-action,html.gs-dark .gs-cc-footer button{background:#223326;border-color:#3b5940;color:#d8ead8}
 @media(max-width:850px){.gs-cc-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.gs-cc-heading{align-items:flex-start;flex-direction:column}.gs-cc-profile{white-space:normal}.gs-cc-steps{grid-template-columns:1fr}.gs-cc-step{min-height:90px}.gs-cc-footer{align-items:stretch;flex-direction:column}.gs-cc-footer button{align-self:flex-start}}@media(prefers-reduced-motion:reduce){.gs-cc-step,.gs-cc-action{transition:none}.gs-cc-step:hover,.gs-cc-action:hover{transform:none}}
+
+/* Academic journey inventory — real resources scoped to the signed-in learner. */
+#student-space #student-space-content .gs-cc-inventory{margin:0 0 1rem;padding:1rem;border:1px solid #dce9de;border-radius:16px;background:#f5faf5}
+.gs-cc-inventory-heading{display:flex;flex-direction:column;gap:.2rem;margin-bottom:.75rem}
+.gs-cc-inventory-heading strong{color:#24583a;font-size:.95rem}
+.gs-cc-inventory-heading small{color:#6b7e70;line-height:1.55}
+.gs-cc-inventory-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem}
+.gs-cc-inventory-item{display:flex;flex-direction:column;gap:.15rem;align-items:center;justify-content:center;min-height:74px;padding:.65rem;border:1px solid #e0eae1;border-radius:12px;background:#fff;text-align:center}
+.gs-cc-inventory-item strong{color:#24643b;font-size:1.35rem;font-variant-numeric:tabular-nums}
+.gs-cc-inventory-item span{color:#637669;font-size:.78rem;font-weight:700}
+html.gs-dark #student-space #student-space-content .gs-cc-inventory{background:#1b2b1f;border-color:#3b5940}
+html.gs-dark .gs-cc-inventory-heading strong{color:#dcebdc}
+html.gs-dark .gs-cc-inventory-heading small,html.gs-dark .gs-cc-inventory-item span{color:#b8cbb8}
+html.gs-dark .gs-cc-inventory-item{background:#223326;border-color:#3b5940}
+html.gs-dark .gs-cc-inventory-item strong{color:#a9dda5}
+@media(max-width:600px){.gs-cc-inventory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
