@@ -1229,7 +1229,7 @@ function getDashboardStats() {
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
         const wantedLevel = String(level || '').toUpperCase();
-        const wantedTrack = String(track || '').replace(/\\s+/g, '').toUpperCase();
+        const wantedTrack = String(track || '').replace(/\s+/g, '').toUpperCase();
 
         // Count only actual records. Legacy/imported nulls, arrays and primitives
         // must not inflate progress or cause the dashboard to throw.
