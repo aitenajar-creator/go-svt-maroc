@@ -154,7 +154,12 @@
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
     status.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'اكتب كلمة للبحث بين الملفات التي تظهر في الصفحة.' : 'Saisis un terme pour filtrer les ressources visibles.';
-    panel.append(label,input,status);
+    var clear = document.createElement('button');
+    clear.type = 'button';
+    clear.className = 'gs-resource-search-clear';
+    clear.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'مسح البحث' : 'Effacer';
+    clear.setAttribute('aria-label', clear.textContent);
+    panel.append(label,input,clear,status);
     course.before(panel);
     function apply() {
       var term = input.value.trim().toLocaleLowerCase();
@@ -174,7 +179,7 @@
       else status.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'النتائج: ' + shown + ' مورد' : 'Résultats : ' + shown + ' ressource(s)';
     }
     input.addEventListener('input', apply);
-    panel.addEventListener('click', function(e) { if (e.target === input) return; });
+    clear.addEventListener('click', function() { input.value=''; apply(); input.focus(); });
     panel.addEventListener('keydown', function(e) { if (e.key === 'Escape') { input.value=''; apply(); input.blur(); } });
     window.GoSVTResourceSearch = { refresh: apply, clear: function(){input.value='';apply();} };
   }
