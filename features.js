@@ -87,24 +87,37 @@ function loadExams(container, subject, level) {
         exams.forEach(p => {
             const rel = p.startsWith(inExamens) ? p.slice(inExamens.length) : p.slice(inExercices.length);
             const { year, session, kind } = examInfo(rel);
+            const sessionKey = /rattrapage|استدراكية/i.test(session) ? 'rattrapage'
+                : /normale|عادية/i.test(session) ? 'normal' : 'other';
             const parts = rel.split('/');
             const detectedTrack = window.GoSVTPathways &&
                 typeof window.GoSVTPathways.trackOfPath === 'function'
                 ? window.GoSVTPathways.trackOfPath(p, level) : null;
             const badge = [detectedTrack || (parts.length > 1 ? parts[0] : level), session, kind]
                 .filter(Boolean).join(' · ');
-            (groups[year] = groups[year] || []).push({ path: p, badge });
+            groups[year] = groups[year] || { normal: [], rattrapage: [], other: [] };
+            groups[year][sessionKey].push({ path: p, badge });
         });
 
         const years = Object.keys(groups).sort((a, b) => (b || '0').localeCompare(a || '0'));
+        const sessionLabels = {
+            normal: t('الدورة العادية', 'Session normale'),
+            rattrapage: t('الدورة الاستدراكية', 'Session de rattrapage'),
+            other: t('دورة غير محددة', 'Session non précisée')
+        };
         const count = `<p class="files-count">${exams.length} ${t('امتحان', 'examen(s)')}</p>`;
 
         return count + years.map(year => {
             const title = year || t('سنوات أخرى', 'Autres années');
-            const cards = groups[year]
-                .sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
-                .map(item => renderCard(item.path, item.badge)).join('');
-            return `<h3 class="gs-group-title">📅 ${escapeHtml(title)}</h3>${cards}`;
+            const sessions = ['normal', 'rattrapage', 'other'].map(key => {
+                const items = groups[year][key];
+                if (!items.length) return '';
+                const cards = items
+                    .sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
+                    .map(item => renderCard(item.path, item.badge)).join('');
+                return `<h4 class="gs-exam-session-title">${sessionLabels[key]}</h4>${cards}`;
+            }).join('');
+            return `<h3 class="gs-group-title">📅 ${escapeHtml(title)}</h3>${sessions}`;
         }).join('');
     });
 }
