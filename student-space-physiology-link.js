@@ -14,8 +14,9 @@
     const grids = document.querySelectorAll('#student-space-content .gs-student-category-grid');
     grids.forEach(grid => {
       cards.forEach(config => {
-        if (grid.querySelector('#' + config.id)) return;
-        const link = document.createElement('a');
+        let link = grid.querySelector('#' + config.id);
+        const isNew = !link;
+        if (!link) link = document.createElement('a');
         link.id = config.id;
         link.className = 'gs-student-category-card';
         link.href = config.href;
@@ -32,8 +33,15 @@
         const action = document.createElement('span');
         action.className = 'gs-student-category-link';
         action.textContent = content[2];
-        link.append(icon, title, description, action);
-        grid.append(link);
+        if (isNew) {
+          link.append(icon, title, description, action);
+          grid.append(link);
+        } else {
+          link.querySelector('.gs-student-category-icon').textContent = config.icon;
+          link.querySelector('strong').textContent = content[0];
+          link.querySelector('small').textContent = content[1];
+          link.querySelector('.gs-student-category-link').textContent = content[2];
+        }
       });
     });
   }
