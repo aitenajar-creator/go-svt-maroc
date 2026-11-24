@@ -3887,10 +3887,20 @@ function openScientificPhotoPreview(card){
         // fire for the same click. Building the full learning workspace is
         // expensive, so render it once after navigation settles.
         let studentSpaceRenderTimer = null;
-        function scheduleStudentSpaceRender() {
+        function scheduleStudentSpaceRender(force) {
             if (studentSpaceRenderTimer !== null) clearTimeout(studentSpaceRenderTimer);
             studentSpaceRenderTimer = setTimeout(function() {
                 studentSpaceRenderTimer = null;
+                const container = document.getElementById('student-space-content');
+                if (!container) return;
+
+                // Re-entering the student section is navigation, not a request
+                // to rebuild its entire dashboard. A full rebuild recreates
+                // every card and listener and can stall the main thread on
+                // slower devices. Data/form actions use refreshStudentSpaceView;
+                // language changes explicitly request a fresh render below.
+                if (!force && container.querySelector('.gs-student-shell')) return;
+
                 renderStudentSpace();
             }, 90);
         }
@@ -3929,7 +3939,7 @@ function openScientificPhotoPreview(card){
                     const container = document.getElementById('student-space-content');
                     if (container && container.children.length > 0 &&
                         document.getElementById('student-space')?.classList.contains('active')) {
-                        scheduleStudentSpaceRender();
+                        scheduleStudentSpaceRender(true);
                     }
                 }, 100);
             });
@@ -3941,8 +3951,8 @@ function openScientificPhotoPreview(card){
             const section = document.getElementById('student-space');
             if (container && container.children.length > 0 &&
                 section && section.classList.contains('active')) {
-                // Route language changes through the same debounce as navigation.
-                scheduleStudentSpaceRender();
+                // Language changes require rebuilding translated interface text.
+                scheduleStudentSpaceRender(true);
             }
         });
 
