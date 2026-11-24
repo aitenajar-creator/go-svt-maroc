@@ -78,8 +78,16 @@
         if (!rawPromise) {
             // Use the same manifest pipeline as the library itself so counts
             // include both repository files and published cloud resources.
-            rawPromise = loadManifest()
-                .catch(err => { rawPromise = null; throw err; });
+            rawPromise = Promise.all([
+                loadManifest(),
+                // Quiz JSON files are intentionally excluded from isContentFile()
+                // because they are rendered by learn.js, but still need counts.
+                fetch(`${CONFIG.MANIFEST_URL}?pw=${Date.now()}`, { cache: 'no-store' })
+                    .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+            ]).then(([contentFiles, allPaths]) => {
+                const quizFiles = allPaths.filter(p => /^\/quiz\//.test(p) && /\.json$/i.test(p));
+                return Array.from(new Set(contentFiles.concat(quizFiles)));
+            }).catch(err => { rawPromise = null; throw err; });
         }
         return rawPromise;
     }
