@@ -1481,11 +1481,12 @@
             {id:'1BAC',title:'الأولى بكالوريا',desc:'الربط بين الخلايا والتبادلات والوظائف الكبرى لأجهزة جسم الإنسان.',steps:[['gs-anatomy-title','أطلس جسم الإنسان'],['gs-microscope-title','التحضيرات المجهرية'],['gs-svt-revision-title','تحدي المراجعة']]},
             {id:'2BAC',title:'الثانية بكالوريا',desc:'تعميق فهم عوامل التركيب الضوئي وترسيخ المفاهيم العلمية الأساسية.',steps:[['gs-experiment-title','التجربة الافتراضية'],['gs-svt-revision-title','تحدي الخلية والتركيب الضوئي'],['gs-svt-glossary-title','المعجم العلمي']]}
         ];
+        const visiblePaths = current ? paths.filter(path => path.id === current) : paths;
         return `<section class="gs-level-paths" aria-labelledby="gs-level-paths-title">
           <div class="gs-level-paths-heading"><div><span class="gs-eyebrow">LEARNING PATH · PARCOURS SVT</span>
             <h3 id="gs-level-paths-title">${fr?'Votre parcours de découverte':'مسارات الاستكشاف حسب المستوى'}</h3>
-            <p>${fr?'Choisissez un niveau pour accéder directement aux activités de découverte.':'اختر مستواك للوصول مباشرة إلى أنشطة الاستكشاف المناسبة.'}</p></div><span aria-hidden="true">🧭</span></div>
-          <div class="gs-level-paths-grid">${paths.map(path=>`<article class="gs-level-path-card ${current===path.id?'is-current':''}" data-path-level="${path.id}">
+            <p>${current ? (fr?'Parcours affiché selon le niveau de votre profil.':'يعرض هذا المسار وفق المستوى المسجل في ملفك الدراسي.') : (fr?'Choisissez un niveau pour accéder directement aux activités de découverte.':'اختر مستواك للوصول مباشرة إلى أنشطة الاستكشاف المناسبة.')}</p></div><span aria-hidden="true">🧭</span></div>
+          <div class="gs-level-paths-grid">${visiblePaths.map(path=>`<article class="gs-level-path-card ${current===path.id?'is-current':''}" data-path-level="${path.id}">
             <div class="gs-level-path-top"><span>${path.id}</span>${current===path.id?`<small>${fr?'Votre niveau':'مستواك الدراسي'}</small>`:''}</div>
             <h4>${path.title}</h4><p>${path.desc}</p>
             <div class="gs-level-path-links">${path.steps.map(step=>`<button type="button" data-study-anchor="${step[0]}"><span>↗</span>${step[1]}</button>`).join('')}</div>
