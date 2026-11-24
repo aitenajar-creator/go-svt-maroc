@@ -36,6 +36,25 @@
     const head=document.createElement('div');head.className='gs-dm-head';head.append(eyebrow,title,intro,profile);box.append(head);
     const list=document.createElement('ol');list.className='gs-dm-steps';
     d.steps.forEach(([num,label,desc])=>{const li=document.createElement('li');const badge=document.createElement('span');badge.className='gs-dm-num';badge.textContent=num;const body=document.createElement('div');const h=document.createElement('strong');h.textContent=label;const p=document.createElement('p');p.textContent=desc;body.append(h,p);li.append(badge,body);list.append(li);});box.append(list);
+    // Optional guided mode: one method step at a time, entirely local to this view.
+    const guide=document.createElement('div');guide.className='gs-dm-guide-controls';
+    const guideToggle=document.createElement('button');guideToggle.type='button';guideToggle.className='gs-dm-guide-toggle';
+    const prev=document.createElement('button');prev.type='button';prev.className='gs-dm-guide-nav';prev.textContent=L==='ar'?'السابق':'Précédent';
+    const next=document.createElement('button');next.type='button';next.className='gs-dm-guide-nav';next.textContent=L==='ar'?'التالي':'Suivant';
+    const status=document.createElement('span');status.className='gs-dm-guide-status';status.setAttribute('aria-live','polite');
+    let guided=false,current=0;
+    const updateGuide=()=>{
+      guideToggle.textContent=guided?(L==='ar'?'عرض جميع الخطوات':'Afficher toutes les étapes'):(L==='ar'?'ابدأ الدليل خطوة بخطوة':'Démarrer le guide pas à pas');
+      guide.classList.toggle('is-guided',guided);list.classList.toggle('is-guided',guided);
+      list.querySelectorAll('li').forEach((item,i)=>{item.classList.toggle('is-current',i===current);item.hidden=guided&&i!==current;});
+      prev.disabled=!guided||current===0;next.disabled=!guided||current===d.steps.length-1;
+      status.textContent=guided?(L==='ar'?'الخطوة '+(current+1)+' من '+d.steps.length:'Étape '+(current+1)+' sur '+d.steps.length):'';
+    };
+    guideToggle.addEventListener('click',()=>{guided=!guided;current=0;updateGuide();});
+    prev.addEventListener('click',()=>{if(guided&&current>0){current--;updateGuide();}});
+    next.addEventListener('click',()=>{if(guided&&current<d.steps.length-1){current++;updateGuide();}});
+    guide.append(guideToggle,prev,status,next);box.append(guide);
+    updateGuide();
     const details=document.createElement('details');details.className='gs-dm-self';const summary=document.createElement('summary');summary.textContent=d.self;details.append(summary);
     const checklist=document.createElement('ul');d.checks.forEach(s=>{const li=document.createElement('li');const label=document.createElement('label');const input=document.createElement('input');input.type='checkbox';const span=document.createElement('span');span.textContent=s;label.append(input,span);li.append(label);checklist.append(li);});details.append(checklist);box.append(details);
     const note=document.createElement('p');note.className='gs-dm-note';note.textContent=d.disclaimer;box.append(note);
