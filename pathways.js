@@ -31,8 +31,13 @@
     }
     function setTrack(sectionId, track) {
         state = readState();               // يحافظ على ما كتبته تبويبات أخرى
-        if (track && track !== 'all') state[sectionId] = track; else delete state[sectionId];
+        // Persist an explicit "all" choice so it can override the account's default track.
+        state[sectionId] = track && track !== 'all' ? track : 'all';
         storage.set(STATE_KEY, JSON.stringify(state));
+    }
+    function isExplicitAll(sectionId, level) {
+        state = readState();
+        return state[sectionId] === 'all' && Boolean(TRACKS[level]);
     }
 
     // ---------- مطابقة مسار ملف مع شعبة ----------
@@ -261,5 +266,5 @@
         if (quizBox) new MutationObserver(filterQuiz).observe(quizBox, { childList: true });
     })();
 
-    window.GoSVTPathways = { TRACKS, matches, trackFor, trackOfPath };
+    window.GoSVTPathways = { TRACKS, matches, trackFor, trackOfPath, isExplicitAll };
 })();
