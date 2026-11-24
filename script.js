@@ -430,6 +430,15 @@ let pdfThumbnailVisibilityObserver = null;
 
 function enqueuePdfThumbnail(container) {
     if (!container || container.dataset.rendered === 'true' || container.dataset.queued === 'true') return;
+    // Discard detached nodes before queueing new work. Navigating between
+    // sections can otherwise leave stale thumbnail entries in memory.
+    for (let i = pdfThumbnailQueue.length - 1; i >= 0; i--) {
+        const queued = pdfThumbnailQueue[i].container;
+        if (!queued || !queued.isConnected || queued.dataset.rendered === 'true') {
+            if (queued && queued.dataset) delete queued.dataset.queued;
+            pdfThumbnailQueue.splice(i, 1);
+        }
+    }
     container.dataset.queued = 'true';
     const rect = container.getBoundingClientRect();
     const distance = rect.top < 0 ? Math.abs(rect.top) : Math.max(0, rect.top - window.innerHeight);
@@ -464,9 +473,11 @@ function queuePdfThumbnail(container, alreadyVisible = false) {
     enqueuePdfThumbnail(container);
 }
 function processPdfThumbnailQueue() {
+    // Keep the pending queue clean and skip entries from content already removed.
     while (pdfThumbnailActive < PDF_THUMBNAIL_CONCURRENCY && pdfThumbnailQueue.length) {
         const item = pdfThumbnailQueue.shift();
-        const node = item.container;
+        const node = item && item.container;
+        if (!node) continue;
         delete node.dataset.queued;
         if (!node.isConnected || node.dataset.rendered === 'true') continue;
         pdfThumbnailActive++;
