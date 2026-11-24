@@ -76,6 +76,7 @@ blob('bladder',[0,-1.45,.47],[.22,.2,.17],stomachMat,24,systems.urinary);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(2.7,64),new THREE.MeshBasicMaterial({color:0x234438,transparent:true,opacity:.48}));floor.rotation.x=-Math.PI/2;floor.position.y=-3.35;scene.add(floor);
 let selected='heart',activeSystem='circulatory',rotY=0,rotX=0,drag=false,moved=false,lastX=0,lastY=0,zoom=1;
 let quizState={active:false,target:null,mode:'name',score:0,answered:0};
+let freeTest={active:false,queue:[],index:0,current:null,score:0,answered:0,bySystem:{}};
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let highlighted=[];
 const labelDefinitions=[
@@ -108,10 +109,10 @@ labelDefinitions.forEach(def=>{
  button.type='button';button.className='gs-3d-organ-label';
  button.textContent=isFr()?def.fr:def.ar;
  button.setAttribute('aria-label',(isFr()?'Sélectionner ':'اختيار ')+(isFr()?def.fr:def.ar));
- button.addEventListener('click',()=>{if(challenge.active){acceptChallengeAnswer(def.id);return;}if(review.active){acceptReviewAnswer(def.id);return;}if(quizState.active){answerQuiz(def.id);return;}if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
+ button.addEventListener('click',()=>{if(challenge.active){acceptChallengeAnswer(def.id);return;}if(review.active){acceptReviewAnswer(def.id);return;}if(freeTest.active){acceptFreeTestAnswer(def.id);return;}if(quizState.active){answerQuiz(def.id);return;}if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
  labelLayer.appendChild(button);labelNodes.set(def.id,{button,def});
 });
-const handleLabelToggle=()=>{if(challenge.active||quizState.active){labelCheck.checked=false;labelLayer.hidden=true;return;}labelLayer.hidden=!labelCheck.checked;};
+const handleLabelToggle=()=>{if(challenge.active||review.active||freeTest.active||quizState.active){labelCheck.checked=false;labelLayer.hidden=true;return;}labelLayer.hidden=!labelCheck.checked;};
 labelCheck.addEventListener('change',handleLabelToggle);
 function updateOrganLabels(){
  const width=canvas.clientWidth,height=canvas.clientHeight;
@@ -134,12 +135,77 @@ const quizProgress=document.createElement('p');quizProgress.className='gs-3d-qui
 const quizStart=document.createElement('button');quizStart.type='button';quizStart.className='gs-3d-quiz-start';quizStart.textContent=isFr()?'Commencer le défi complet':'ابدأ التحدي الشامل';
 const quizFinish=document.createElement('button');quizFinish.type='button';quizFinish.className='gs-3d-quiz-finish';quizFinish.textContent=isFr()?'Terminer et voir le bilan':'إنهاء التحدي وعرض التقرير';quizFinish.hidden=true;
 quizPanel.append(quizTitle,quizDescription,quizProgress,quizPrompt,quizFeedback,quizStart,quizFinish);
+const freeSection=document.createElement('section');freeSection.className='gs-3d-free-test';
+const freeTitle=document.createElement('h6');freeTitle.textContent=isFr()?'Test anatomique libre':'اختبار تشريحي حر';
+const freeDescription=document.createElement('p');freeDescription.textContent=isFr()?'Choisissez un système ou testez les cinq. Deux questions variées par organe.':'اختر جهازاً واحداً أو اختبر الأجهزة الخمسة. سؤالان متنوعان لكل عضو.';
+const freeFilter=document.createElement('select');freeFilter.className='gs-3d-free-filter';freeFilter.setAttribute('aria-label',isFr()?'Système à évaluer':'الجهاز المراد اختباره');
+const freeProgress=document.createElement('p');freeProgress.className='gs-3d-free-progress';freeProgress.setAttribute('aria-live','polite');
+const freePrompt=document.createElement('p');freePrompt.className='gs-3d-quiz-prompt';freePrompt.setAttribute('aria-live','polite');freePrompt.textContent=isFr()?'Prêt à explorer ?':'هل أنت مستعد للاختبار؟';
+const freeFeedback=document.createElement('p');freeFeedback.className='gs-3d-quiz-feedback';freeFeedback.setAttribute('aria-live','polite');
+const freeStart=document.createElement('button');freeStart.type='button';freeStart.className='gs-3d-quiz-start';freeStart.textContent=isFr()?'Lancer le test libre':'ابدأ الاختبار الحر';
+freeSection.append(freeTitle,freeDescription,freeFilter,freeProgress,freePrompt,freeFeedback,freeStart);quizPanel.appendChild(freeSection);
 const organList=info&&info.querySelector('.gs-3d-organ-list');if(organList)organList.insertAdjacentElement('afterend',quizPanel);
 const SYSTEM_NAMES={circulatory:{ar:'الجهاز الدوراني',fr:'Système circulatoire'},respiratory:{ar:'الجهاز التنفسي',fr:'Système respiratoire'},nervous:{ar:'الجهاز العصبي',fr:'Système nerveux'},digestive:{ar:'الجهاز الهضمي',fr:'Système digestif'},urinary:{ar:'الجهاز البولي',fr:'Système urinaire'}};
 const LEVEL_NAMES=[{ar:'المستوى الأساسي',fr:'Niveau 1 · Essentiel'},{ar:'المستوى المتوسط',fr:'Niveau 2 · Fonctions'},{ar:'المستوى المتقدم',fr:'Niveau 3 · Raisonnement'}];
+Object.entries(SYSTEM_NAMES).forEach(([value,names])=>{const option=document.createElement('option');option.value=value;option.textContent=names[isFr()?'fr':'ar'];freeFilter.appendChild(option);});
+const allOption=document.createElement('option');allOption.value='all';allOption.textContent=isFr()?'Tous les systèmes':'جميع الأجهزة';freeFilter.insertBefore(allOption,freeFilter.firstChild);
+
 const organStats={};
 let challenge={active:false,finished:false,queue:[],index:0,score:0,answered:0,level:0,current:null};
 function shuffle(items){const result=items.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
+function startFreeTest(){
+ if(challenge.active||review.active)return;
+ const chosen=freeFilter.value;
+ const members=labelDefinitions.filter(item=>chosen==='all'||item.system===chosen);
+ if(!members.length)return;
+ freeTest={active:true,queue:[],index:0,current:null,score:0,answered:0,bySystem:{}};
+ Object.keys(SYSTEM_NAMES).forEach(system=>freeTest.bySystem[system]={score:0,answered:0});
+ members.forEach(item=>{freeTest.queue.push({id:item.id,mode:'name',system:item.system});freeTest.queue.push({id:item.id,mode:'function',system:item.system});});
+ freeTest.queue=shuffle(freeTest.queue);
+ freeFilter.disabled=true;freeStart.textContent=isFr()?'Question suivante':'السؤال التالي';
+ freeStart.disabled=true;labelCheck.checked=false;labelCheck.disabled=true;handleLabelToggle();
+ showFreeQuestion();
+}
+function showFreeQuestion(){
+ if(!freeTest.active)return;
+ if(freeTest.index>=freeTest.queue.length){finishFreeTest();return;}
+ const q=freeTest.queue[freeTest.index];freeTest.current=q;setQuizSystem(q.system);select(q.id);
+ const d=DATA[q.id][isFr()?'fr':'ar'];
+ freeProgress.textContent=(isFr()?'Question ':'السؤال ')+(freeTest.index+1)+'/'+freeTest.queue.length+' · '+SYSTEM_NAMES[q.system][isFr()?'fr':'ar'];
+ freePrompt.textContent=q.mode==='name'
+  ?(isFr()?'Repérez cet organe sur le modèle : ':'حدّد هذا العضو على النموذج: ')+d[0]
+  :(isFr()?'Quel organe assure cette fonction ? ':'أي عضو يقوم بهذه الوظيفة؟ ')+d[2];
+ freeFeedback.textContent='';freeStart.disabled=true;
+}
+function acceptFreeTestAnswer(id){
+ if(!freeTest.active||!freeTest.current)return;
+ const q=freeTest.current,correct=id===q.id,d=DATA[q.id][isFr()?'fr':'ar'],chosen=DATA[id]?.[isFr()?'fr':'ar'];
+ freeTest.answered++;if(correct)freeTest.score++;
+ const stat=freeTest.bySystem[q.system];stat.answered++;if(correct)stat.score++;
+ freeFeedback.textContent=correct
+  ?(isFr()?'Correct ! ':'إجابة صحيحة! ')+d[0]+' — '+d[2]
+  :(isFr()?'Organe attendu : ':'العضو الصحيح: ')+d[0]+' — '+d[2]+(chosen?(isFr()?' · Votre choix : ':' · اختيارك: ')+chosen[0]:'');
+ freeTest.current=null;freeTest.index++;freeProgress.textContent=(isFr()?'Progression : ':'التقدم: ')+freeTest.index+'/'+freeTest.queue.length+' · '+(isFr()?'Score : ':'النتيجة: ')+freeTest.score;
+ freePrompt.textContent=isFr()?'Réponse enregistrée. Continuez.':'تم تسجيل الإجابة. انتقل إلى السؤال التالي.';
+ freeStart.disabled=false;
+}
+function finishFreeTest(){
+ freeTest.active=false;freeFilter.disabled=false;freeStart.disabled=false;freeStart.textContent=isFr()?'Recommencer le test':'إعادة الاختبار الحر';
+ labelCheck.disabled=false;labelCheck.checked=true;handleLabelToggle();
+ freeProgress.textContent=(isFr()?'Résultat global : ':'النتيجة الإجمالية: ')+freeTest.score+'/'+freeTest.answered;
+ freePrompt.textContent=isFr()?'Résultats par système':'النتائج حسب أجهزة الجسم';
+ const report=document.createElement('div');report.className='gs-3d-free-report';
+ Object.entries(freeTest.bySystem).forEach(([system,stat])=>{
+  if(!stat.answered)return;
+  const line=document.createElement('p'),percent=Math.round(stat.score/stat.answered*100);
+  line.textContent=SYSTEM_NAMES[system][isFr()?'fr':'ar']+' · '+stat.score+'/'+stat.answered+' ('+percent+'%)';
+  line.className=percent>=75?'is-strong':percent>=50?'is-progress':'needs-practice';report.appendChild(line);
+ });
+ const previous=freeSection.querySelector('.gs-3d-free-report');if(previous)previous.remove();freeSection.appendChild(report);
+ freeFeedback.textContent=isFr()?'Test indépendant : aucun XP ni donnée scolaire n’a été modifié.':'اختبار مستقل: لم تتغير نقاط XP أو بيانات التقدم الدراسي.';
+}
+freeStart.addEventListener('click',()=>{if(!freeTest.active){const old=freeSection.querySelector('.gs-3d-free-report');if(old)old.remove();startFreeTest();}else if(freeTest.current===null)showFreeQuestion();});
+
 function setQuizSystem(system){activeSystem=system;Object.entries(systems).forEach(([key,group])=>group.visible=key===system);root.querySelectorAll('[data-3d-system]').forEach(button=>{const active=button.dataset['3dSystem']===system;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',active?'true':'false');});}
 function buildChallenge(){
  const previousReport=quizPanel.querySelector('.gs-3d-quiz-report');if(previousReport)previousReport.remove();
@@ -321,11 +387,11 @@ function pointerDown(e){drag=true;moved=false;lastX=e.clientX;lastY=e.clientY;ca
 function pointerMove(e){if(!drag)return;if(Math.abs(e.clientX-lastX)+Math.abs(e.clientY-lastY)>3)moved=true;rotY+=(e.clientX-lastX)*.009;rotX=Math.max(-.65,Math.min(.65,rotX+(e.clientY-lastY)*.006));lastX=e.clientX;lastY=e.clientY;}
 function pointerUp(){drag=false;}
 const handleWheel=e=>{e.preventDefault();zoom=Math.max(.72,Math.min(1.55,zoom+(e.deltaY>0?-.07:.07)));};
-const handleCanvasClick=e=>{if(moved){moved=false;return;}const rect=canvas.getBoundingClientRect();pointer.x=((e.clientX-rect.left)/rect.width)*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(model.children,true);const hit=hits.find(h=>DATA[h.object.name]||h.object.name==='lungs'||h.object.name==='kidneys');if(hit){const name=hit.object.name;if(DATA[name]){select(name);if(challenge.active){acceptChallengeAnswer(name);return;}if(review.active){acceptReviewAnswer(name);return;}answerQuiz(name);}}};
+const handleCanvasClick=e=>{if(moved){moved=false;return;}const rect=canvas.getBoundingClientRect();pointer.x=((e.clientX-rect.left)/rect.width)*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(model.children,true);const hit=hits.find(h=>DATA[h.object.name]||h.object.name==='lungs'||h.object.name==='kidneys');if(hit){const name=hit.object.name;if(DATA[name]){select(name);if(challenge.active){acceptChallengeAnswer(name);return;}if(review.active){acceptReviewAnswer(name);return;}if(freeTest.active){acceptFreeTestAnswer(name);return;}answerQuiz(name);}}};
 canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointermove',pointerMove);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',pointerUp);
 canvas.addEventListener('wheel',handleWheel,{passive:false});
 canvas.addEventListener('click',handleCanvasClick);
-const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(challenge.active){select(btn.dataset['3dOrgan']);acceptChallengeAnswer(btn.dataset['3dOrgan']);return;}if(review.active){select(btn.dataset['3dOrgan']);acceptReviewAnswer(btn.dataset['3dOrgan']);return;}if(system&&!quizState.active)setSystem(system);select(btn.dataset['3dOrgan']);answerQuiz(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem']&&!quizState.active&&!challenge.active&&!review.active)setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
+const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(challenge.active){select(btn.dataset['3dOrgan']);acceptChallengeAnswer(btn.dataset['3dOrgan']);return;}if(review.active){select(btn.dataset['3dOrgan']);acceptReviewAnswer(btn.dataset['3dOrgan']);return;}if(freeTest.active){select(btn.dataset['3dOrgan']);acceptFreeTestAnswer(btn.dataset['3dOrgan']);return;}if(system&&!quizState.active)setSystem(system);select(btn.dataset['3dOrgan']);answerQuiz(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem']&&!quizState.active&&!challenge.active&&!review.active&&!freeTest.active)setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
 root.addEventListener('click',handleRootClick);
 activeCleanup=()=>{
 disposed=true;
