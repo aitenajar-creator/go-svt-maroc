@@ -112,7 +112,18 @@
   }
   if ('MutationObserver' in window) {
     var main = document.querySelector('main') || document.body;
-    new MutationObserver(function () { enrichEmpty(main); enhanceCards(main); }).observe(main, { childList: true, subtree: true });
+    var scanQueued = false;
+    function scanDynamicContent() {
+      if (scanQueued) return;
+      scanQueued = true;
+      var schedule = window.requestAnimationFrame || function (fn) { return setTimeout(fn, 16); };
+      schedule(function () {
+        scanQueued = false;
+        enrichEmpty(main);
+        enhanceCards(main);
+      });
+    }
+    new MutationObserver(scanDynamicContent).observe(main, { childList: true, subtree: true });
     enrichEmpty(main); enhanceCards(main);
   }
 
