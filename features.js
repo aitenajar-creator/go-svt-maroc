@@ -88,7 +88,11 @@ function loadExams(container, subject, level) {
             const rel = p.startsWith(inExamens) ? p.slice(inExamens.length) : p.slice(inExercices.length);
             const { year, session, kind } = examInfo(rel);
             const parts = rel.split('/');
-            const badge = [parts.length > 1 ? parts[0] : level, session, kind].filter(Boolean).join(' · ');
+            const detectedTrack = window.GoSVTPathways &&
+                typeof window.GoSVTPathways.trackOfPath === 'function'
+                ? window.GoSVTPathways.trackOfPath(p, level) : null;
+            const badge = [detectedTrack || (parts.length > 1 ? parts[0] : level), session, kind]
+                .filter(Boolean).join(' · ');
             (groups[year] = groups[year] || []).push({ path: p, badge });
         });
 
