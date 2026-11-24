@@ -15,7 +15,7 @@ let fileAddedDates = null;
 
 function loadDates() {
     if (!datesPromise) {
-        datesPromise = fetch(`dates.json?v=${Date.now()}`, { cache: 'no-store' })
+        datesPromise = fetch('dates.json', { cache: 'no-cache' })
             .then(r => (r.ok ? r.json() : null))
             .catch(() => null)
             .then(data => {
