@@ -1703,6 +1703,27 @@
         if(credit)credit.textContent=fr?'Schéma pédagogique (illustration, non photographie)':'رسم تعليمي توضيحي (ليس صورة حقيقية)';
     }
 
+    // Reuse the scientific-media catalogue across dashboard renders. Re-fetching
+    // this JSON on every tab switch or progress update adds avoidable network work.
+    let scienceMediaCataloguePromise = null;
+    async function getScienceMediaCatalogue() {
+        if (!scienceMediaCataloguePromise) {
+            scienceMediaCataloguePromise = fetch(
+                new URL('science-media.json', document.baseURI).href,
+                { cache: 'default', headers: { Accept: 'application/json' } }
+            ).then(async function(response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const catalogue = await response.json();
+                return catalogue && catalogue.items ? catalogue.items : {};
+            }).catch(function(error) {
+                scienceMediaCataloguePromise = null; // Allow a later retry after a network failure.
+                console.warn('[GO SVT science catalogue]', error);
+                return {};
+            });
+        }
+        return scienceMediaCataloguePromise;
+    }
+
     async function loadScientificMediaImages(root) {
         const selector = '.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search], .gs-real-science-photo[data-science-search]';
         const cards = Array.from(root.querySelectorAll(selector));
@@ -1710,11 +1731,7 @@
         const fr = lang() === 'fr';
         // Display self-contained diagrams immediately, then upgrade to cached photos.
         cards.forEach(card => setScienceDiagramFallback(card, fr, card.getAttribute('data-science-search') || ''));
-        let items={};
-        try {
-            const response = await fetch(new URL('science-media.json', document.baseURI).href, {cache:'no-cache',headers:{Accept:'application/json'}});
-            if(response.ok){const catalogue=await response.json();items=catalogue&&catalogue.items?catalogue.items:{};}
-        } catch(error) { console.warn('[GO SVT science catalogue]',error); }
+        const items = await getScienceMediaCatalogue();
         await Promise.all(cards.map(async function(card) {
             const query=card.getAttribute('data-science-search')||'';
             const photo=card.querySelector('.gs-science-media-photo');
