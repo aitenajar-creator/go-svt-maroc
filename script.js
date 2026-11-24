@@ -172,7 +172,8 @@ function getExamFileMetadata(path) {
     const normalizedPath = String(path).replace(/^\/+/, '');
     if (!/^(examens|exercices)\//.test(normalizedPath)) return null;
     const filename = normalizedPath.split('/').pop().replace(/\.[^.]+$/, '');
-    const text = normalizeText(filename);
+    // بعض الموارد تضع السنة أو الدورة أو نوع الوثيقة في اسم المجلد لا الملف.
+    const text = normalizeText(normalizedPath.replace(/\.[^/.]+$/, '').replace(/\//g, ' '));
     const yearMatch = /(?:^|\D)((?:19|20)\d{2})(?!\d)/.exec(text);
     const isNormal = /normale|normal|عادي/.test(text);
     const isRattrapage = /rattrapage|استدراك/.test(text);
@@ -195,8 +196,8 @@ function getExamFileMetadata(path) {
 }
 function addExamLibraryFilters(container, files) {
     const rows = files.map(path => {
-        const filename = String(path).split('/').pop().replace(/\.[^.]+$/, '');
-        const normalized = normalizeText(filename);
+        // اقرأ مسار المورد كله لدعم التصنيف الموجود في المجلدات الفرعية أيضاً.
+        const normalized = normalizeText(String(path).replace(/\.[^/.]+$/, '').replace(/\//g, ' '));
         const yearMatch = /(?:^|\D)((?:19|20)\d{2})(?!\d)/.exec(normalized);
         const session = /rattrapage|استدراك/.test(normalized) ? 'rattrapage'
             : /normale|normal|عادي/.test(normalized) ? 'normale' : '';
