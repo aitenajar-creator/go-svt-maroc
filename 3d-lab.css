@@ -103,3 +103,22 @@ html.gs-dark #student-space-content .gs-3d-review-progress{color:#f0d29a!importa
 html.gs-dark #student-space-content .gs-3d-review-report .is-improved{background:#294d36;color:#d8f0df}
 html.gs-dark #student-space-content .gs-3d-review-report .still-review{background:#51402c;color:#ffe1b7}
 @media(max-width:760px){#student-space-content .gs-3d-smart-review .gs-3d-quiz-start{width:100%;justify-self:stretch}}
+
+/* Free anatomy assessment */
+#student-space-content .gs-3d-free-test{display:grid;gap:9px;margin-top:16px;padding:14px;border:1px solid #b8c9d8;border-radius:13px;background:#f2f8fc}
+#student-space-content .gs-3d-free-test h6{margin:0;color:#244d6b;font-size:.98rem}
+#student-space-content .gs-3d-free-test>p{margin:0;line-height:1.7}
+#student-space-content .gs-3d-free-filter{width:100%;min-height:42px;padding:8px 10px;border:1px solid #9eb4c7;border-radius:9px;background:#fff;color:#203747;font:inherit}
+#student-space-content .gs-3d-free-progress{font-size:.84rem;font-weight:800;color:#315f80}
+#student-space-content .gs-3d-free-report{display:grid;gap:6px;margin-top:8px}
+#student-space-content .gs-3d-free-report p{margin:0;padding:9px 10px;border-radius:8px;font-size:.86rem}
+#student-space-content .gs-3d-free-report .is-strong{background:#e2f2e8;color:#205c39}
+#student-space-content .gs-3d-free-report .is-progress{background:#e8f0fb;color:#28547c}
+#student-space-content .gs-3d-free-report .needs-practice{background:#fff0df;color:#75451f}
+html.gs-dark #student-space-content .gs-3d-free-test{background:#263b49;border-color:#526f82}
+html.gs-dark #student-space-content .gs-3d-free-test h6,html.gs-dark #student-space-content .gs-3d-free-progress{color:#c5e4fa}
+html.gs-dark #student-space-content .gs-3d-free-filter{background:#1c2b35;color:#e8f2f8;border-color:#587184}
+html.gs-dark #student-space-content .gs-3d-free-report .is-strong{background:#294d36;color:#d8f0df}
+html.gs-dark #student-space-content .gs-3d-free-report .is-progress{background:#294359;color:#d5eaff}
+html.gs-dark #student-space-content .gs-3d-free-report .needs-practice{background:#51402c;color:#ffe1b7}
+@media(max-width:760px){#student-space-content .gs-3d-free-test .gs-3d-quiz-start{width:100%}}
