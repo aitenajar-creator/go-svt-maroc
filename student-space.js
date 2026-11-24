@@ -2765,9 +2765,15 @@ function openScientificPhotoPreview(card){
                 `;
                 document.head.appendChild(standaloneStyle);
             }
+            const taskLanguage = taskParams.get('lang') === 'fr' ? 'fr' : lang();
             const back = document.createElement('div');
             back.className = 'gs-standalone-task-back';
-            back.innerHTML = '<strong>GO SVT Maroc · المهمة المستقلة</strong><a href="student-task-categories.html?category=' + encodeURIComponent(studentCategory || 'learning') + '">← العودة إلى قائمة المهام</a>';
+            const backLabel = document.createElement('strong');
+            backLabel.textContent = taskLanguage === 'fr' ? 'GO SVT Maroc · Activité' : 'GO SVT Maroc · المهمة';
+            const backLink = document.createElement('a');
+            backLink.href = 'student-task-categories.html?category=' + encodeURIComponent(studentCategory || 'learning') + '&lang=' + encodeURIComponent(taskLanguage);
+            backLink.textContent = taskLanguage === 'fr' ? '← Retour à la liste des activités' : '← العودة إلى قائمة المهام';
+            back.append(backLabel, backLink);
             container.insertBefore(back, container.firstChild);
 
             const taskNodes = Array.from(container.querySelectorAll('details.gs-student-task[data-task-key]'));
@@ -2780,7 +2786,16 @@ function openScientificPhotoPreview(card){
                 const unavailable = document.createElement('section');
                 unavailable.className = 'gs-standalone-task-unavailable';
                 unavailable.setAttribute('role', 'status');
-                unavailable.innerHTML = '<h2>تعذر العثور على هذه المهمة</h2><p>قد يكون رابط المهمة قديماً أو أن المهمة نُقلت إلى تصنيف آخر.</p><a href="student-task-categories.html?category=' + encodeURIComponent(studentCategory || 'learning') + '">العودة إلى قائمة المهام</a>';
+                const unavailableTitle = document.createElement('h2');
+                unavailableTitle.textContent = taskLanguage === 'fr' ? 'Activité introuvable' : 'تعذر العثور على هذه المهمة';
+                const unavailableMessage = document.createElement('p');
+                unavailableMessage.textContent = taskLanguage === 'fr'
+                    ? 'Ce lien est peut-être ancien ou l’activité a été déplacée vers une autre catégorie.'
+                    : 'قد يكون رابط المهمة قديماً أو أن المهمة نُقلت إلى تصنيف آخر.';
+                const unavailableLink = document.createElement('a');
+                unavailableLink.href = 'student-task-categories.html?category=' + encodeURIComponent(studentCategory || 'learning') + '&lang=' + encodeURIComponent(taskLanguage);
+                unavailableLink.textContent = taskLanguage === 'fr' ? 'Retour à la liste des activités' : 'العودة إلى قائمة المهام';
+                unavailable.append(unavailableTitle, unavailableMessage, unavailableLink);
                 container.appendChild(unavailable);
             }
             const hubNode = container.querySelector('.gs-student-category-hub');
