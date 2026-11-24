@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="real-svg-icons.css">
     <link rel="stylesheet" href="file-cards.css?v=20261121-grid-fix-v2">
     <link rel="stylesheet" href="student-space-layout.css?v=20261122-rebuilt-shell-v1">
+    <link rel="stylesheet" href="design-upgrade.css?v=1">
     <link rel="stylesheet" href="3d-lab.css?v=20261123-1">
     <link rel="stylesheet" href="evolution-lab.css?v=20261123-v2">
 
@@ -112,16 +113,33 @@
     <main>
         <!-- Accueil -->
         <section id="accueil" class="section active">
-            <div class="hero">
-                <div class="container">
-                    <h2 data-lang-ar="مرحباً بك في Go SVT Maroc" data-lang-fr="Bienvenue sur Go SVT Maroc">مرحباً بك في Go SVT Maroc</h2>
-                    <p data-lang-ar="منصة تعليمية متكاملة لعلوم الحياة والأرض لجميع المستويات" data-lang-fr="Plateforme éducative complète en SVT pour tous les niveaux">منصة تعليمية متكاملة لعلوم الحياة والأرض لجميع المستويات</p>
-                    <div class="hero-buttons">
-                        <a href="#cours" class="btn btn-primary" data-lang-ar="تصفح الدروس" data-lang-fr="Voir les cours">تصفح الدروس</a>
-                        <a href="#exercices" class="btn btn-secondary" data-lang-ar="حل التمارين" data-lang-fr="Faire les exercices">حل التمارين</a>
-                        <a href="#examens" class="btn btn-secondary" data-lang-ar="الامتحانات الوطنية" data-lang-fr="Examens nationaux">الامتحانات الوطنية</a>
+            <div class="hero gs-hero">
+                <div class="gs-hero-bg" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="container gs-hero-inner">
+                    <div class="gs-hero-copy">
+                        <span class="gs-pill" data-lang-ar="✨ مجاني بالكامل · عربي وفرنسي" data-lang-fr="✨ 100 % gratuit · arabe et français">✨ مجاني بالكامل · عربي وفرنسي</span>
+                        <h2><span data-lang-ar="علوم الحياة والأرض" data-lang-fr="Les SVT,">علوم الحياة والأرض</span> <em data-lang-ar="بطريقة أذكى" data-lang-fr="autrement">بطريقة أذكى</em></h2>
+                        <p data-lang-ar="دروس، تمارين، امتحانات وطنية واختبارات تفاعلية في مكان واحد، لتنجح في الباكالوريا بثقة." data-lang-fr="Cours, exercices, examens nationaux et quiz interactifs au même endroit, pour réussir le Bac avec confiance.">دروس، تمارين، امتحانات وطنية واختبارات تفاعلية في مكان واحد، لتنجح في الباكالوريا بثقة.</p>
+                        <div class="hero-buttons">
+                            <a href="#cours" class="btn btn-primary" data-lang-ar="تصفح الدروس" data-lang-fr="Voir les cours">تصفح الدروس</a>
+                            <a href="#quiz" class="btn btn-secondary" data-lang-ar="جرّب اختباراً" data-lang-fr="Tester un quiz">جرّب اختباراً</a>
+                            <a href="#examens" class="btn btn-secondary" data-lang-ar="الامتحانات الوطنية" data-lang-fr="Examens nationaux">الامتحانات الوطنية</a>
+                        </div>
+                        <div class="gs-countdown" id="gs-countdown" hidden></div>
                     </div>
-                    <div class="gs-countdown" id="gs-countdown" hidden></div>
+                    <div class="gs-hero-visual" aria-hidden="true">
+                        <svg class="gs-helix" viewBox="0 0 300 380" aria-hidden="true" focusable="false">
+                            <g class="r" style="--i:0" transform="translate(150 18)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:1" transform="translate(150 44)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:2" transform="translate(150 70)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:3" transform="translate(150 96)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:4" transform="translate(150 122)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:5" transform="translate(150 148)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:6" transform="translate(150 174)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:7" transform="translate(150 200)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:8" transform="translate(150 226)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:9" transform="translate(150 252)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:10" transform="translate(150 278)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:11" transform="translate(150 304)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:12" transform="translate(150 330)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g><g class="r" style="--i:13" transform="translate(150 356)"><line x1="-86" x2="86"/><circle class="a" r="7"/><circle class="b" r="7"/></g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="container">
+                    <p class="gs-levels-title" data-lang-ar="اختر مستواك وابدأ" data-lang-fr="Choisis ton niveau">اختر مستواك وابدأ</p>
+                    <div class="gs-levels">
+                        <a href="#cours" class="gs-level-card" data-go-level="TC"><span class="gs-level-code">TC</span><strong data-lang-ar="الجذع المشترك" data-lang-fr="Tronc commun">الجذع المشترك</strong><small data-lang-ar="أساسيات الخلية والجيولوجيا والبيئة" data-lang-fr="Cellule, géologie et environnement">أساسيات الخلية والجيولوجيا والبيئة</small><span class="gs-level-go" aria-hidden="true">←</span></a>
+                        <a href="#cours" class="gs-level-card" data-go-level="1BAC"><span class="gs-level-code">1BAC</span><strong data-lang-ar="الأولى باكالوريا" data-lang-fr="1ère Bac">الأولى باكالوريا</strong><small data-lang-ar="الطاقة، الوراثة، الجيولوجيا الكبرى" data-lang-fr="Énergie, génétique, grandes structures">الطاقة، الوراثة، الجيولوجيا الكبرى</small><span class="gs-level-go" aria-hidden="true">←</span></a>
+                        <a href="#cours" class="gs-level-card" data-go-level="2BAC"><span class="gs-level-code">2BAC</span><strong data-lang-ar="الثانية باكالوريا" data-lang-fr="2ème Bac">الثانية باكالوريا</strong><small data-lang-ar="استعد للوطني بالامتحانات والتصحيحات" data-lang-fr="Prépare le national : examens et corrigés">استعد للوطني بالامتحانات والتصحيحات</small><span class="gs-level-go" aria-hidden="true">←</span></a>
+                    </div>
                 </div>
             </div>
             <div class="features">
@@ -442,5 +460,6 @@
     <!-- Audit tests are intentionally excluded from production to protect student-local data. -->
 <script src="founder-profile.js?v=20261112-1"></script>
     <script src="private-student-lessons.js?v=1"></script>
+<script src="design-upgrade.js?v=1" defer></script>
 </body>
 </html>
