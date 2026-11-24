@@ -2740,7 +2740,7 @@ function openScientificPhotoPreview(card){
         `;
 
         container.innerHTML = html;
-        if (window.GOSVT3DLab) window.GOSVT3DLab.mount(container.querySelector('#panel-3d-lab'));
+        // The 3D lab is intentionally mounted only when the learner opens its tab.
         const taskParams = new URLSearchParams(window.location.search);
         const studentCategory = taskParams.get('studentCategory');
         const studentTaskKey = taskParams.get('studentTask');
@@ -3257,6 +3257,14 @@ function openScientificPhotoPreview(card){
             tab.addEventListener('click', function() {
                 const tabName = this.dataset.tab;
                 activateStudentTab(this, false);
+
+                // Build the WebGL scene only when requested. Keeping the 3D lab
+                // lazy avoids blocking the initial student dashboard on devices
+                // with limited graphics or memory resources.
+                if (tabName === '3d-lab' && window.GOSVT3DLab) {
+                    const labPanel = container.querySelector('#panel-3d-lab');
+                    if (labPanel) window.GOSVT3DLab.mount(labPanel);
+                }
 
                 // Favorites may have changed since the student space was rendered.
                 if (tabName === 'favorites') {
