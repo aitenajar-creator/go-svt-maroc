@@ -49,3 +49,17 @@ html.gs-dark #student-space-content .gs-3d-system-nav button.is-active{backgroun
 #student-space-content .gs-3d-label-toggle{position:absolute;z-index:4;bottom:42px;inset-inline-end:12px;display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #719181;border-radius:10px;background:#173a2ee8;color:#fff;font-size:.8rem;cursor:pointer}
 #student-space-content .gs-3d-label-toggle input{accent-color:#8fdbac}
 html.gs-dark #student-space-content .gs-3d-organ-label{background:#193b2deb;border-color:#6fae83;color:#e5f5e9}
+
+/* Anatomy identification quiz */
+#student-space-content .gs-3d-quiz{display:grid;gap:8px;margin-top:16px;padding:14px;border:1px solid #cfe2d4;border-radius:14px;background:#f2f8f3}
+#student-space-content .gs-3d-quiz h5{margin:0;color:#205c39;font-size:1rem}
+#student-space-content .gs-3d-quiz p{margin:0;line-height:1.7;color:#405d4a}
+#student-space-content .gs-3d-quiz .gs-3d-quiz-prompt{padding:9px 11px;border-radius:10px;background:#e2f1e6;color:#174b32;font-weight:800}
+#student-space-content .gs-3d-quiz .gs-3d-quiz-feedback{font-size:.88rem}
+#student-space-content .gs-3d-quiz-start{justify-self:start;padding:9px 14px;border:0;border-radius:10px;background:#246b48;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+#student-space-content .gs-3d-quiz-start:focus-visible{outline:3px solid #e2ad3c;outline-offset:2px}
+#student-space-content .gs-3d-label-toggle input:disabled{opacity:.55}
+html.gs-dark #student-space-content .gs-3d-quiz{background:#263a2e;border-color:#49634f}
+html.gs-dark #student-space-content .gs-3d-quiz h5,html.gs-dark #student-space-content .gs-3d-quiz p{color:#d5e8d9}
+html.gs-dark #student-space-content .gs-3d-quiz .gs-3d-quiz-prompt{background:#304936;color:#e4f4e8}
+@media(max-width:760px){#student-space-content .gs-3d-quiz-start{width:100%;justify-self:stretch}}
