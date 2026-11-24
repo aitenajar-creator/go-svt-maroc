@@ -245,7 +245,8 @@ function addExamLibraryFilters(container, files) {
 
         // إخفاء عناوين السنة والدورة ونوع الوثيقة عندما لا يبقى تحتها أي ملف ظاهر.
         const headingRank = heading => heading.classList.contains('gs-group-title') ? 1
-            : heading.classList.contains('gs-exam-session-title') ? 2 : 3;
+            : heading.classList.contains('gs-exam-session-title') ? 2
+            : heading.classList.contains('gs-exam-kind-title') ? 3 : 0;
         const headings = [...container.querySelectorAll(
             '.gs-group-title, .gs-exam-session-title, .gs-exam-kind-title'
         )];
