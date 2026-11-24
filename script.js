@@ -95,24 +95,31 @@ function loadManifest() {
                 const files = paths.filter(isContentFile);
                 // Add resources uploaded from the owner dashboard; existing repository files remain untouched.
                 if (window.supabaseClient) {
-                    const { data, error } = await window.supabaseClient
-                        .from('site_content_items')
-                        .select('id,category,language,study_level,study_track,file_name,storage_path')
-                        .order('created_at', { ascending: false });
-                    if (error) throw error;
-                    (data || []).forEach(item => {
-                        const category = item.category === 'resumes' ? 'fiches' : item.category;
-                        const parts = [category];
-                        if (['cours','exercices','examens','fiches'].includes(category)) {
-                            parts.push(item.language || 'francais', item.study_level || 'TC');
-                            if (item.study_track) parts.push(item.study_track);
-                        }
-                        parts.push('__cloud', item.id, item.file_name);
-                        const virtualPath = '/' + parts.join('/');
-                        const publicUrl = window.supabaseClient.storage.from('site-content').getPublicUrl(item.storage_path).data.publicUrl;
-                        cloudContentUrls.set(virtualPath, publicUrl);
-                        files.push(virtualPath);
-                    });
+                    // Cloud uploads are an optional addition to the repository library.
+                    // A missing table, denied read, or temporary Supabase issue must never
+                    // prevent the ordinary GitHub-hosted lessons and exams from appearing.
+                    try {
+                        const { data, error } = await window.supabaseClient
+                            .from('site_content_items')
+                            .select('id,category,language,study_level,study_track,file_name,storage_path')
+                            .order('created_at', { ascending: false });
+                        if (error) throw error;
+                        (data || []).forEach(item => {
+                            const category = item.category === 'resumes' ? 'fiches' : item.category;
+                            const parts = [category];
+                            if (['cours','exercices','examens','fiches'].includes(category)) {
+                                parts.push(item.language || 'francais', item.study_level || 'TC');
+                                if (item.study_track) parts.push(item.study_track);
+                            }
+                            parts.push('__cloud', item.id, item.file_name);
+                            const virtualPath = '/' + parts.join('/');
+                            const publicUrl = window.supabaseClient.storage.from('site-content').getPublicUrl(item.storage_path).data.publicUrl;
+                            cloudContentUrls.set(virtualPath, publicUrl);
+                            files.push(virtualPath);
+                        });
+                    } catch (cloudError) {
+                        console.warn('Cloud library unavailable; continuing with repository content:', cloudError);
+                    }
                 }
                 trackNewFiles(files);
                 return files;
