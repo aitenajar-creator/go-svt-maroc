@@ -63,3 +63,22 @@ html.gs-dark #student-space-content .gs-3d-quiz{background:#263a2e;border-color:
 html.gs-dark #student-space-content .gs-3d-quiz h5,html.gs-dark #student-space-content .gs-3d-quiz p{color:#d5e8d9}
 html.gs-dark #student-space-content .gs-3d-quiz .gs-3d-quiz-prompt{background:#304936;color:#e4f4e8}
 @media(max-width:760px){#student-space-content .gs-3d-quiz-start{width:100%;justify-self:stretch}}
+
+
+/* Progressive challenge report and controls */
+#student-space-content .gs-3d-quiz-progress{font-size:.82rem;font-weight:800;color:#427454!important}
+#student-space-content .gs-3d-quiz-finish{justify-self:start;padding:8px 12px;border:1px solid #9b7050;border-radius:10px;background:#fff7ec;color:#75451f;font:inherit;font-weight:800;cursor:pointer}
+#student-space-content .gs-3d-quiz-finish[hidden]{display:none}
+#student-space-content .gs-3d-quiz-start:disabled{opacity:.55;cursor:wait}
+#student-space-content .gs-3d-quiz-report{display:grid;gap:5px;margin-top:8px;padding-top:10px;border-top:1px solid #cbded0}
+#student-space-content .gs-3d-quiz-report h6{margin:8px 0 2px;color:#205c39;font-size:.9rem}
+#student-space-content .gs-3d-quiz-report p{margin:0;padding:5px 8px;border-radius:8px;font-size:.82rem}
+#student-space-content .gs-3d-quiz-report .is-mastered{background:#e5f3e9;color:#205c39}
+#student-space-content .gs-3d-quiz-report .needs-review{background:#fff1df;color:#75451f}
+html.gs-dark #student-space-content .gs-3d-quiz-progress{color:#a9d7b6!important}
+html.gs-dark #student-space-content .gs-3d-quiz-finish{background:#493b2c;border-color:#8e7456;color:#ffe4c2}
+html.gs-dark #student-space-content .gs-3d-quiz-report{border-color:#49634f}
+html.gs-dark #student-space-content .gs-3d-quiz-report h6{color:#bce4c8}
+html.gs-dark #student-space-content .gs-3d-quiz-report .is-mastered{background:#294d36;color:#d8f0df}
+html.gs-dark #student-space-content .gs-3d-quiz-report .needs-review{background:#51402c;color:#ffe1b7}
+@media(max-width:760px){#student-space-content .gs-3d-quiz-finish{width:100%;justify-self:stretch}}
