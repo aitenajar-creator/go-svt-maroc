@@ -885,6 +885,9 @@
                 p.hidden = !selected;
                 p.setAttribute('aria-hidden', selected ? 'false' : 'true');
             });
+            // Re-activate through the normal tab path so a lazy panel is restored after refresh.
+            const restoredTab = container.querySelector('.space-tab[data-tab="' + tabName + '"]');
+            if (restoredTab) restoredTab.click();
         }
 
         const refreshedTasks = container.querySelectorAll('details.gs-student-task');
@@ -2745,13 +2748,13 @@ function openScientificPhotoPreview(card){
                 <main class="space-content">
                     <section class="space-panel" id="panel-3d-lab" aria-hidden="true" hidden><div class="gs-student-panel-content"><header class="gs-student-panel-heading"><span class="gs-student-panel-icon" aria-hidden="true">🧬</span><h2>${lang() === 'ar' ? 'المختبر التفاعلي ثلاثي الأبعاد' : 'Laboratoire interactif 3D'}</h2></header><div class="gs-student-panel-body"><section class="gs-3d-lab" aria-label="${lang() === 'ar' ? 'نموذج ثلاثي الأبعاد لأعضاء الجسم' : 'Modèle 3D des organes'}"><div class="gs-3d-intro"><div><span class="gs-eyebrow">GO SVT MAROC · IMMERSIVE SCIENCE</span><h3>${lang() === 'ar' ? 'استكشف جسم الإنسان' : 'Explorez le corps humain'}</h3><p>${lang() === 'ar' ? 'اسحب لتدوير النموذج، واستخدم عجلة الفأرة للتقريب، ثم اختر عضواً لمعرفة دوره.' : 'Faites glisser pour tourner, utilisez la molette pour zoomer et sélectionnez un organe pour découvrir son rôle.'}</p></div><span aria-hidden="true">🔬</span></div><div class="gs-3d-system-nav" role="group" aria-label="${lang() === 'ar' ? 'استكشاف أجهزة الجسم' : 'Explorer les systèmes du corps'}"><button type="button" data-3d-system="circulatory" class="is-active" aria-pressed="true">🫀 ${lang() === 'ar' ? 'الدوراني' : 'Circulatoire'}</button><button type="button" data-3d-system="respiratory" aria-pressed="false">🫁 ${lang() === 'ar' ? 'التنفسي' : 'Respiratoire'}</button><button type="button" data-3d-system="nervous" aria-pressed="false">🧠 ${lang() === 'ar' ? 'العصبي' : 'Nerveux'}</button><button type="button" data-3d-system="digestive" aria-pressed="false">🍽️ ${lang() === 'ar' ? 'الهضمي' : 'Digestif'}</button><button type="button" data-3d-system="urinary" aria-pressed="false">🫘 ${lang() === 'ar' ? 'البولي' : 'Urinaire'}</button></div><div class="gs-3d-workspace"><div class="gs-3d-view"><div class="gs-3d-loading" role="status">${lang() === 'ar' ? 'جارٍ إعداد النموذج ثلاثي الأبعاد…' : 'Préparation du modèle 3D…'}</div><canvas class="gs-3d-canvas" aria-label="${lang() === 'ar' ? 'نموذج ثلاثي الأبعاد تفاعلي' : 'Modèle 3D interactif'}"></canvas><div class="gs-3d-controls"><button type="button" data-3d-action="reset" title="${lang() === 'ar' ? 'إعادة العرض' : 'Réinitialiser'}">↺</button><button type="button" data-3d-action="zoom-in" aria-label="${lang() === 'ar' ? 'تكبير' : 'Zoom avant'}">＋</button><button type="button" data-3d-action="zoom-out" aria-label="${lang() === 'ar' ? 'تصغير' : 'Zoom arrière'}">－</button></div><span class="gs-3d-hint">${lang() === 'ar' ? 'اسحب النموذج · انقر على عضو' : 'Glisser pour tourner · cliquer un organe'}</span></div><aside class="gs-3d-info" aria-live="polite"><span class="gs-3d-info-kicker">${lang() === 'ar' ? 'العضو المحدد' : 'ORGANE SÉLECTIONNÉ'}</span><h4 data-3d-name>${lang() === 'ar' ? 'القلب' : 'Le cœur'}</h4><p data-3d-description>${lang() === 'ar' ? 'يضخ الدم إلى مختلف أنحاء الجسم، ويساهم في ضمان وصول الأكسجين والمواد الغذائية إلى الخلايا.' : 'Il propulse le sang dans l’organisme et permet l’apport d’oxygène et de nutriments aux cellules.'}</p><div class="gs-3d-fact"><b>${lang() === 'ar' ? 'وظيفته الأساسية' : 'Fonction principale'}</b><span data-3d-function>${lang() === 'ar' ? 'ضخ الدم والمحافظة على الدورة الدموية.' : 'Propulser le sang et maintenir la circulation.'}</span></div><div class="gs-3d-organ-list"><b>${lang() === 'ar' ? 'اختر عضواً' : 'Choisir un organe'}</b><div><button type="button" data-3d-organ="heart" class="is-active">❤️ ${lang() === 'ar' ? 'القلب' : 'Cœur'}</button><button type="button" data-3d-organ="lungs">🫁 ${lang() === 'ar' ? 'الرئتان' : 'Poumons'}</button><button type="button" data-3d-organ="brain">🧠 ${lang() === 'ar' ? 'الدماغ' : 'Cerveau'}</button><button type="button" data-3d-organ="liver">🟤 ${lang() === 'ar' ? 'الكبد' : 'Foie'}</button><button type="button" data-3d-organ="stomach">🟠 ${lang() === 'ar' ? 'المعدة' : 'Estomac'}</button><button type="button" data-3d-organ="kidneys">🫘 ${lang() === 'ar' ? 'الكليتان' : 'Reins'}</button><button type="button" data-3d-organ="intestines">〰️ ${lang() === 'ar' ? 'الأمعاء' : 'Intestins'}</button><button type="button" data-3d-organ="spinal-cord">🧠 ${lang() === 'ar' ? 'النخاع الشوكي' : 'Moelle épinière'}</button><button type="button" data-3d-organ="trachea">🫁 ${lang() === 'ar' ? 'القصبة الهوائية' : 'Trachée'}</button><button type="button" data-3d-organ="bladder">💧 ${lang() === 'ar' ? 'المثانة' : 'Vessie'}</button></div></div></aside></div><p class="gs-3d-disclaimer">${lang() === 'ar' ? 'نموذج تعليمي مبسط، لا يمثل الأطلس التشريحي الدقيق ولا يُستخدم لأغراض التشخيص الطبي.' : 'Modèle pédagogique simplifié, non destiné au diagnostic médical.'}</p></section></div></div></section>
                     <section class="space-panel" id="panel-dashboard" aria-hidden="true" hidden>${renderDashboard(false)}</section>
-                    <section class="space-panel" id="panel-progress" aria-hidden="true" hidden>${panelTask('📈','تقدمي الدراسي','Ma progression',renderProgress())}</section>
-                    <section class="space-panel" id="panel-history" aria-hidden="true" hidden>${panelTask('🕘','سجل الاختبارات','Historique des quiz',renderHistory())}</section>
-                    <section class="space-panel" id="panel-mistakes" aria-hidden="true" hidden>${panelTask('🧩','مراجعة أخطائي','Révision de mes erreurs',renderMistakes())}</section>
-                    <section class="space-panel" id="panel-favorites" aria-hidden="true" hidden>${panelTask('⭐','مواردي المفضلة','Mes favoris',renderFavorites())}</section>
-                    <section class="space-panel" id="panel-motivation" aria-hidden="true" hidden>${panelTask('🏅','التحفيز والأهداف','Motivation et objectifs',renderMotivation())}</section>
-                    <section class="space-panel" id="panel-planner" aria-hidden="true" hidden>${panelTask('🗓','خطة المراجعة','Mon planning de révision',renderPlanner())}</section>
-                    <section class="space-panel" id="panel-notes" aria-hidden="true" hidden>${panelTask('🗒','ملاحظاتي','Mes notes',renderNotes())}</section>
+                    <section class="space-panel" id="panel-progress" aria-hidden="true" hidden data-lazy-panel="progress"></section>
+                    <section class="space-panel" id="panel-history" aria-hidden="true" hidden data-lazy-panel="history"></section>
+                    <section class="space-panel" id="panel-mistakes" aria-hidden="true" hidden data-lazy-panel="mistakes"></section>
+                    <section class="space-panel" id="panel-favorites" aria-hidden="true" hidden data-lazy-panel="favorites"></section>
+                    <section class="space-panel" id="panel-motivation" aria-hidden="true" hidden data-lazy-panel="motivation"></section>
+                    <section class="space-panel" id="panel-planner" aria-hidden="true" hidden data-lazy-panel="planner"></section>
+                    <section class="space-panel" id="panel-notes" aria-hidden="true" hidden data-lazy-panel="notes"></section>
                 </main>
             </div>
         `;
@@ -3231,13 +3234,56 @@ function openScientificPhotoPreview(card){
             });
             renderQuizStep();
         }
-        bindPlannerAndNotes(container);
-        bindGoalControls(container.querySelector('#panel-motivation'));
-        bindFavoritesPanel(container.querySelector('#panel-favorites'));
         hydrateDailyChallenge();
         container.querySelectorAll('.gs-daily-option').forEach(button => {
             button.addEventListener('click', function () { answerDailyChallenge(this.dataset.dailyOption, this); });
         });
+
+        // Render secondary panels only when the learner opens them.
+        // This avoids computing progress/history/notes/favorites on the initial dashboard render.
+        function ensureStudentPanel(tabName, forceRefresh) {
+            const panel = container.querySelector('#panel-' + tabName + '[data-lazy-panel]');
+            if (!panel) return;
+            if (panel.dataset.loaded === 'true' && !forceRefresh) return;
+            let content = '';
+            switch (tabName) {
+                case 'progress':
+                    content = panelTask('📈', 'تقدمي الدراسي', 'Ma progression', renderProgress());
+                    break;
+                case 'history':
+                    content = panelTask('🕘', 'سجل الاختبارات', 'Historique des quiz', renderHistory());
+                    break;
+                case 'mistakes':
+                    content = panelTask('🧩', 'مراجعة أخطائي', 'Révision de mes erreurs', renderMistakes());
+                    break;
+                case 'favorites':
+                    content = panelTask('⭐', 'مواردي المفضلة', 'Mes favoris', renderFavorites());
+                    break;
+                case 'motivation':
+                    content = panelTask('🏅', 'التحفيز والأهداف', 'Motivation et objectifs', renderMotivation());
+                    break;
+                case 'planner':
+                    content = panelTask('🗓', 'خطة المراجعة', 'Mon planning de révision', renderPlanner());
+                    break;
+                case 'notes':
+                    content = panelTask('🗒', 'ملاحظاتي', 'Mes notes', renderNotes());
+                    break;
+                default:
+                    return;
+            }
+            panel.innerHTML = content;
+            panel.dataset.loaded = 'true';
+            if (tabName === 'favorites') bindFavoritesPanel(panel);
+            if (tabName === 'motivation') bindGoalControls(panel);
+            if (tabName === 'planner' || tabName === 'notes') bindPlannerAndNotes(panel);
+            if (tabName === 'mistakes') {
+                panel.querySelectorAll('.btn-retry-mistakes').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        retryMistakes(this.dataset.quizId);
+                    });
+                });
+            }
+        }
 
         // Add event listeners
         const studentTabs = Array.from(container.querySelectorAll('.space-tab'));
@@ -3274,6 +3320,7 @@ function openScientificPhotoPreview(card){
             tab.addEventListener('click', function() {
                 const tabName = this.dataset.tab;
                 activateStudentTab(this, false);
+                ensureStudentPanel(tabName, tabName === 'favorites');
 
                 // Build the WebGL scene only when requested. Keeping the 3D lab
                 // lazy avoids blocking the initial student dashboard on devices
@@ -3281,15 +3328,6 @@ function openScientificPhotoPreview(card){
                 if (tabName === '3d-lab' && window.GOSVT3DLab) {
                     const labPanel = container.querySelector('#panel-3d-lab');
                     if (labPanel) window.GOSVT3DLab.mount(labPanel);
-                }
-
-                // Favorites may have changed since the student space was rendered.
-                if (tabName === 'favorites') {
-                    const favoritesPanel = container.querySelector('#panel-favorites');
-                    if (favoritesPanel) {
-                        favoritesPanel.innerHTML = renderFavorites();
-                        bindFavoritesPanel(favoritesPanel);
-                    }
                 }
 
 
