@@ -129,6 +129,57 @@
 
 
 
+  // 6) Recherche rapide dans les ressources actuellement affichées
+  function initResourceSearch() {
+    if (document.getElementById('gs-resource-search')) return;
+    var course = document.getElementById('cours');
+    if (!course) return;
+    var panel = document.createElement('section');
+    panel.className = 'gs-resource-search';
+    panel.id = 'gs-resource-search';
+    panel.setAttribute('aria-label', (document.documentElement.lang || 'ar') === 'ar' ? 'البحث في الموارد' : 'Recherche de ressources');
+    var label = document.createElement('label');
+    label.className = 'gs-resource-search-label';
+    label.setAttribute('for', 'gs-resource-search-input');
+    label.textContent = (document.documentElement.lang || 'ar') === 'ar' ? '🔎 ابحث في الموارد' : '🔎 Rechercher dans les ressources';
+    var input = document.createElement('input');
+    input.id = 'gs-resource-search-input';
+    input.type = 'search';
+    input.autocomplete = 'off';
+    input.placeholder = (document.documentElement.lang || 'ar') === 'ar' ? 'اسم الدرس، الوحدة، الملف، المستوى...' : 'Cours, unité, fichier, niveau…';
+    input.setAttribute('aria-describedby', 'gs-resource-search-status');
+    var status = document.createElement('p');
+    status.id = 'gs-resource-search-status';
+    status.className = 'gs-resource-search-status';
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    status.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'اكتب كلمة للبحث بين الملفات التي تظهر في الصفحة.' : 'Saisis un terme pour filtrer les ressources visibles.';
+    panel.append(label,input,status);
+    course.before(panel);
+    function apply() {
+      var term = input.value.trim().toLocaleLowerCase();
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.file-resource-card'));
+      var shown = 0;
+      cards.forEach(function(card) {
+        var text = (card.textContent + ' ' + (card.getAttribute('data-resource-path') || '')).toLocaleLowerCase();
+        var match = !term || text.indexOf(term) !== -1;
+        card.classList.toggle('gs-search-hidden', !match);
+        if (match && !card.hidden) shown++;
+      });
+      document.querySelectorAll('.track-content-group').forEach(function(group) {
+        var visible = group.querySelector('.file-resource-card:not([hidden]):not(.gs-search-hidden)');
+        group.classList.toggle('gs-search-group-hidden', !!term && !visible);
+      });
+      if (!term) status.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'اكتب كلمة للبحث بين الملفات التي تظهر في الصفحة.' : 'Saisis un terme pour filtrer les ressources visibles.';
+      else status.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'النتائج: ' + shown + ' مورد' : 'Résultats : ' + shown + ' ressource(s)';
+    }
+    input.addEventListener('input', apply);
+    panel.addEventListener('click', function(e) { if (e.target === input) return; });
+    panel.addEventListener('keydown', function(e) { if (e.key === 'Escape') { input.value=''; apply(); input.blur(); } });
+    window.GoSVTResourceSearch = { refresh: apply, clear: function(){input.value='';apply();} };
+  }
+  initResourceSearch();
+
   // 6) Vrais titres de cours sur les cartes : tirés des fichiers quiz liés par quiz-map.json (repli : nom du fichier)
   var qmap = null, qcache = {};
   function loadMap() { return qmap || (qmap = fetch('quiz-map.json').then(function (r) { return r.json(); }).catch(function () { return {}; })); }
