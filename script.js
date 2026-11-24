@@ -443,8 +443,11 @@ async function loadContentFromManifest(type, subject, level) {
     // أولوية الاختيار الظاهر في أزرار المستوى والشعبة على مستوى الحساب.
     const pathwayTrack = window.GoSVTPathways && typeof window.GoSVTPathways.trackFor === 'function'
         ? window.GoSVTPathways.trackFor(type, level) : 'all';
+    const explicitlyAllTracks = window.GoSVTPathways &&
+        typeof window.GoSVTPathways.isExplicitAll === 'function' &&
+        window.GoSVTPathways.isExplicitAll(type, level);
     const effectiveStudentTrack = pathwayTrack && pathwayTrack !== 'all'
-        ? pathwayTrack : (studentLevel === level ? studentTrack : null);
+        ? pathwayTrack : (explicitlyAllTracks ? null : (studentLevel === level ? studentTrack : null));
     const trackPrefix = effectiveStudentTrack && (type === 'cours' || type === 'exercices')
         ? `${effectiveStudentTrack}/` : '';
     const prefix = `/${type}/${subject}/${level}/${trackPrefix}`;
