@@ -54,24 +54,40 @@
     return !folderTrack || folderTrack === context.track;
   }
 
-  function readQuizMap(context) {
-    return fetch('/quiz-map.json', { cache: 'no-cache', credentials: 'same-origin' })
-      .then(response => response.ok ? response.json() : {})
-      .then(map => {
-        if (!map || typeof map !== 'object' || Array.isArray(map)) return { arabe: [], francais: [] };
-        const values = Array.from(new Set(Object.values(map).filter(path => typeof path === 'string')));
+  function readQuizFiles(context) {
+    // Match the public quiz catalogue used by pathways.js. quiz-map.json links
+    // quizzes to selected courses, but it is not the complete quiz inventory;
+    // counting it would silently omit standalone quizzes and could count stale
+    // mappings. content.json is the authoritative published-file manifest.
+    const manifestUrl = window.CONFIG && window.CONFIG.MANIFEST_URL;
+    if (!manifestUrl) return Promise.resolve({ arabe: [], francais: [] });
+    const separator = manifestUrl.includes('?') ? '&' : '?';
+    return fetch(manifestUrl + separator + 'pw=' + Date.now(), {
+      cache: 'no-store',
+      credentials: 'same-origin'
+    }).then(response => response.ok ? response.json() : [])
+      .then(paths => {
+        const files = Array.isArray(paths) ? paths : [];
+        const quizFiles = Array.from(new Set(files.filter(path =>
+          typeof path === 'string' &&
+          /^\\/?quiz\\//i.test(path) &&
+          /\\.json$/i.test(path)
+        )));
         return Object.fromEntries(LANGUAGES.map(language => [
-          language, values.filter(path => matches(path, 'quiz', context, language))
+          language, quizFiles.filter(path => matches(path, 'quiz', context, language))
         ]));
       })
-      .catch(() => ({ arabe: [], francais: [] }));
+      .catch(error => {
+        console.warn('[GoSVT] Quiz inventory unavailable:', error);
+        return { arabe: [], francais: [] };
+      });
   }
 
   function build(context) {
     if (typeof window.loadManifest !== 'function') {
       return Promise.reject(new Error('Content manifest loader unavailable'));
     }
-    return Promise.all([window.loadManifest(), readQuizMap(context)]).then(([files, quizzesByLanguage]) => {
+    return Promise.all([window.loadManifest(), readQuizFiles(context)]).then(([files, quizzesByLanguage]) => {
       let list = Array.isArray(files) ? files : [];
       if (typeof window.isHiddenDuplicateCourseCopy === 'function') {
         list = list.filter(path => !window.isHiddenDuplicateCourseCopy(path));
