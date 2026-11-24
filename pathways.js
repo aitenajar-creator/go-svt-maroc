@@ -123,8 +123,8 @@
         const profile = account && account.isLoggedIn() && typeof account.getProfile === 'function'
             ? account.getProfile() : null;
         const profileTrack = profile && profile.study_level === level
-            && codes.includes(String(profile.study_track || '').replace(/\\s+/g, '').toUpperCase())
-            ? String(profile.study_track).replace(/\\s+/g, '').toUpperCase() : null;
+            && codes.includes(String(profile.study_track || '').replace(/\s+/g, '').toUpperCase())
+            ? String(profile.study_track).replace(/\s+/g, '').toUpperCase() : null;
         // The active tab mirrors the account-based default unless the learner explicitly chose "all".
         const current = selectedTrack !== 'all' ? selectedTrack : (explicitAll ? 'all' : (profileTrack || 'all'));
         bar.setAttribute('aria-label', t('الشعبة', 'Filière'));
