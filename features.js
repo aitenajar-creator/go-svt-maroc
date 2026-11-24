@@ -112,10 +112,27 @@ function loadExams(container, subject, level) {
             const sessions = ['normal', 'rattrapage', 'other'].map(key => {
                 const items = groups[year][key];
                 if (!items.length) return '';
-                const cards = items
-                    .sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
-                    .map(item => renderCard(item.path, item.badge)).join('');
-                return `<h4 class="gs-exam-session-title">${sessionLabels[key]}</h4>${cards}`;
+
+                const kindOf = item => /corrig|correction|تصحيح/i.test(item.badge)
+                    ? 'correction'
+                    : /sujet|موضوع/i.test(item.badge) ? 'subject' : 'other';
+                const kindLabels = {
+                    subject: t('مواضيع الامتحان', 'Sujets d’examen'),
+                    correction: t('التصحيحات وعناصر الإجابة', 'Corrigés et éléments de réponse'),
+                    other: t('موارد امتحانية أخرى', 'Autres ressources d’examen')
+                };
+                const kinds = { subject: [], correction: [], other: [] };
+                items.forEach(item => kinds[kindOf(item)].push(item));
+                const populatedKinds = ['subject', 'correction', 'other'].filter(kind => kinds[kind].length);
+                const showKindTitles = populatedKinds.length > 1;
+                const content = populatedKinds.map(kind => {
+                    const cards = kinds[kind]
+                        .sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }))
+                        .map(item => renderCard(item.path, item.badge)).join('');
+                    return (showKindTitles
+                        ? `<h5 class="gs-exam-kind-title">${kindLabels[kind]}</h5>` : '') + cards;
+                }).join('');
+                return `<h4 class="gs-exam-session-title">${sessionLabels[key]}</h4>${content}`;
             }).join('');
             return `<h3 class="gs-group-title">📅 ${escapeHtml(title)}</h3>${sessions}`;
         }).join('');
