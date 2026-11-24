@@ -414,7 +414,7 @@ function getTrackInfo(path) {
         TCS: ['الجذع المشترك العلمي', 'Tronc commun scientifique'],
         TCL: ['الجذع المشترك الأدبي', 'Tronc commun littéraire'],
         '1BACSE': ['الأولى باكالوريا: علوم تجريبية', '1ère Bac : Sciences expérimentales'],
-        '1BACL': ['الأولى باكالوريا: علوم رياضية', '1ère Bac : Sciences mathématiques'],
+        '1BACL': ['الأولى باكالوريا: الآداب', '1ère Bac : Lettres'],
         '1BACSM': ['الأولى باكالوريا: علوم رياضية', '1ère Bac : Sciences mathématiques'],
         '2BACSVT': ['الثانية باكالوريا: علوم الحياة والأرض', '2ème Bac : Sciences de la vie et de la Terre'],
         '2BACSP': ['الثانية باكالوريا: علوم فيزيائية', '2ème Bac : Sciences physiques'],
