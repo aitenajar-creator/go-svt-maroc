@@ -142,6 +142,7 @@ let challenge={active:false,finished:false,queue:[],index:0,score:0,answered:0,l
 function shuffle(items){const result=items.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
 function setQuizSystem(system){activeSystem=system;Object.entries(systems).forEach(([key,group])=>group.visible=key===system);root.querySelectorAll('[data-3d-system]').forEach(button=>{const active=button.dataset['3dSystem']===system;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',active?'true':'false');});}
 function buildChallenge(){
+ const previousReport=quizPanel.querySelector('.gs-3d-quiz-report');if(previousReport)previousReport.remove();
  challenge={active:true,finished:false,queue:[],index:0,score:0,answered:0,level:0,current:null};
  Object.keys(DATA).forEach(id=>organStats[id]={attempts:0,correct:0});
  for(let level=0;level<3;level++){
@@ -201,7 +202,7 @@ function finishChallenge(){
    line.className=mastered?'is-mastered':'needs-review';report.appendChild(line);
    if(!mastered){
     const advice=document.createElement('small');advice.className='gs-3d-review-tip';
-    advice.textContent=isFr()?'À revoir : relisez la description et la fonction dans la fiche de cet organe, puis réessayez le niveau correspondant.':'مراجعة مقترحة: اقرأ وصف العضو ووظيفته في بطاقته، ثم أعد محاولة المستوى المرتبط به.';
+    advice.textContent=isFr()?'Révisez la fiche de '+DATA[item.id].fr[0]+' et retenez sa fonction : '+DATA[item.id].fr[2]:'راجع بطاقة '+DATA[item.id].ar[0]+' وركز على وظيفته: '+DATA[item.id].ar[2];
     report.appendChild(advice);
    }
   });
