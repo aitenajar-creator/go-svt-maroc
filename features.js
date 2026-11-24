@@ -54,9 +54,10 @@ async function renderInto(container, buildHtml) {
         if (container.dataset.requestId !== requestId) return;
         container.innerHTML = buildHtml(files);
         if (container.id === 'examens-content' && typeof addExamLibraryFilters === 'function') {
-            const inExamens = container.dataset.examPathPrefix || '';
-            const subjectLevelFiles = files.filter(path =>
-                path.startsWith('/examens/') || path.startsWith('/exercices/'));
+            let prefixes = [];
+            try { prefixes = JSON.parse(container.dataset.examPathPrefixes || '[]'); } catch (_) {}
+            const subjectLevelFiles = files.filter(path => prefixes.some(prefix => path.startsWith(prefix)) &&
+                (path.startsWith(prefixes[0]) || EXAM_KEYWORDS.test(normalizeText(path.slice(prefixes[1].length)))));
             addExamLibraryFilters(container, subjectLevelFiles);
         }
     } catch (error) {
@@ -83,6 +84,7 @@ function examInfo(relPath) {
 function loadExams(container, subject, level) {
     const inExamens = `/examens/${subject}/${level}/`;
     const inExercices = `/exercices/${subject}/${level}/`;
+    container.dataset.examPathPrefixes = JSON.stringify([inExamens, inExercices]);
 
     renderInto(container, files => {
         const exams = files.filter(p => p.startsWith(inExamens) ||
