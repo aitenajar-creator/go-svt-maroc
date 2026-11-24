@@ -16,7 +16,7 @@
       library: 'مكتبة الدروس', lab: 'المختبرات والتجارب', exams: 'الامتحانات', progress: 'تتبع التقدم',
       libraryDesc: 'الدروس والملخصات حسب مسارك الدراسي', labDesc: 'نماذج وصور وتجارب علمية تفاعلية',
       examsDesc: 'تدرب على الفروض والامتحانات', progressDesc: 'راجع إنجازاتك ونتائجك المسجلة',
-      level: 'مستواك', refresh: 'تحديث المؤشرات', tip: 'طريقة فعالة للتعلم', resources: 'الموارد المتاحة لمسارك', resourceNote: 'أعداد الملفات الفعلية المتاحة حسب مستواك ومسلكك، مع فصل اللغتين.', courses: 'دروس', exercises: 'تمارين', quizzes: 'اختبارات', exams: 'امتحانات', arabic: 'العربية', french: 'الفرنسية',
+      level: 'مستواك', refresh: 'تحديث المؤشرات', tip: 'طريقة فعالة للتعلم', resources: 'الموارد المتاحة لمسارك', resourceNote: 'أعداد الملفات الفعلية المتاحة حسب مستواك ومسلكك، مع فصل اللغتين.', courses: 'دروس', exercises: 'تمارين', summaries: 'ملخصات', quizzes: 'اختبارات', exams: 'امتحانات', arabic: 'العربية', french: 'الفرنسية',
       tipText: 'اقرأ الوثيقة، استخرج المعطيات، فسّرها علمياً، ثم تحقق من فهمك بسؤال أو تمرين.'
     },
     fr: {
@@ -29,7 +29,7 @@
       library: 'Bibliothèque', lab: 'Laboratoires et expériences', exams: 'Examens', progress: 'Suivi des progrès',
       libraryDesc: 'Cours et résumés selon votre parcours', labDesc: 'Modèles, images et expériences interactives',
       examsDesc: 'Entraînez-vous aux devoirs et examens', progressDesc: 'Consultez vos activités et résultats',
-      level: 'Votre niveau', refresh: 'Actualiser les indicateurs', tip: 'Une méthode efficace', resources: 'Ressources de votre parcours', resourceNote: 'Nombre réel de fichiers selon votre niveau et filière, langues séparées.', courses: 'Cours', exercises: 'Exercices', quizzes: 'Quiz', exams: 'Examens', arabic: 'Arabe', french: 'Français',
+      level: 'Votre niveau', refresh: 'Actualiser les indicateurs', tip: 'Une méthode efficace', resources: 'Ressources de votre parcours', resourceNote: 'Nombre réel de fichiers selon votre niveau et filière, langues séparées.', courses: 'Cours', exercises: 'Exercices', summaries: 'Fiches et résumés', quizzes: 'Quiz', exams: 'Examens', arabic: 'Arabe', french: 'Français',
       tipText: 'Lisez le document, relevez les données, interprétez-les puis vérifiez votre compréhension.'
     }
   };
@@ -155,11 +155,12 @@
       const inventoryGrid = document.createElement('div');
       inventoryGrid.className = 'gs-cc-inventory-grid';
       [
-        [t.courses, inventory.counts.cours],
-        [t.exercises, inventory.counts.exercices],
-        [t.quizzes, inventory.quizzes],
-        [t.exams, inventory.counts.examens]
-      ].forEach(([label, count], index) => {
+        [t.courses, inventory.counts.cours, 'cours'],
+        [t.exercises, inventory.counts.exercices, 'exercices'],
+        [t.summaries, inventory.counts.fiches + inventory.counts.resumes, 'summaries'],
+        [t.quizzes, inventory.quizzes, 'quiz'],
+        [t.exams, inventory.counts.examens, 'examens']
+      ].forEach(([label, count, type]) => {
         const item = document.createElement('div');
         item.className = 'gs-cc-inventory-item';
         const value = document.createElement('strong');
@@ -167,9 +168,16 @@
         const caption = document.createElement('span');
         caption.textContent = label;
         const details = document.createElement('small');
-        const type = ['cours', 'exercices', 'quiz', 'examens'][index];
-        const arabicCount = type === 'quiz' ? inventory.quizzesByLanguage.arabe : inventory.byLanguage.arabe[type];
-        const frenchCount = type === 'quiz' ? inventory.quizzesByLanguage.francais : inventory.byLanguage.francais[type];
+        const arabicCount = type === 'quiz'
+          ? inventory.quizzesByLanguage.arabe
+          : type === 'summaries'
+            ? inventory.byLanguage.arabe.fiches + inventory.byLanguage.arabe.resumes
+            : inventory.byLanguage.arabe[type];
+        const frenchCount = type === 'quiz'
+          ? inventory.quizzesByLanguage.francais
+          : type === 'summaries'
+            ? inventory.byLanguage.francais.fiches + inventory.byLanguage.francais.resumes
+            : inventory.byLanguage.francais[type];
         details.textContent = t.arabic + ': ' + number(arabicCount) + ' · ' + t.french + ': ' + number(frenchCount);
         item.append(value, caption, details);
         inventoryGrid.append(item);
