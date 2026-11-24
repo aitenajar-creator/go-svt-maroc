@@ -636,13 +636,29 @@ function getSectionState(section) {
 }
 
 function loadSection(section) {
+    if (!section) return;
     if (!section.querySelector('.tab-btn, .level-tab-btn')) return;
     const { type, subject, level } = getSectionState(section);
+    const container = document.getElementById(`${type}-content`);
+    if (!container) return;
+
+    // Load a section only when it is visited, and avoid rebuilding it on
+    // repeated navigation unless its selected filters or language changed.
+    const stateKey = [type, subject, level, currentLang].join('|');
+    if (container.dataset.gsLoadedState === stateKey &&
+        container.children.length > 0 &&
+        !container.querySelector('.error')) return;
+
+    container.dataset.gsLoadedState = stateKey;
     loadContent(type, subject, level);
 }
 
 function reloadAllSections() {
-    document.querySelectorAll('.section').forEach(loadSection);
+    // The previous implementation loaded every hidden section on startup.
+    // Only the visible section is needed; the others load on first visit.
+    const activeSection = document.querySelector('.section.active') ||
+        document.querySelector('.section');
+    if (activeSection) loadSection(activeSection);
 }
 
 // ---------- البحث ----------
@@ -920,6 +936,9 @@ function navigateTo(sectionId, options = {}) {
         history.pushState({ sectionId }, '', '#' + sectionId);
     }
     window.scrollTo(0, 0);
+
+    // Populate only the destination section; hidden sections stay idle.
+    loadSection(target);
 
     // Render student space content if navigating to student-space section
     if (sectionId === 'student-space' && window.renderStudentSpaceContent) {
