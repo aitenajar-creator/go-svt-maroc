@@ -197,14 +197,21 @@ function loadExams(container, subject, level) {
 // ---------- أقسام Documents / Ressources / Divers ----------
 function loadFolderSection(container, type) {
     const prefix = `/${type}/`;
-    renderInto(container, files => {
+    renderBatchedInto(container, files => {
         const list = sortPaths(files.filter(p => p.startsWith(prefix)));
-        if (!list.length) return emptyHtml();
-        return `<p class="files-count">${list.length} ${t('ملف', 'fichier(s)')}</p>` + list.map(p => {
-            const sub = p.slice(prefix.length).split('/').slice(0, -1)
-                .map(s => SUBJECT_NAMES[s] || s).join(' · ');
-            return renderCard(p, sub || SECTION_NAMES[type][currentLang]);
-        }).join('');
+        if (!list.length) return { chunks: [], emptyHtml: emptyHtml() };
+        const chunks = [];
+        for (let i = 0; i < list.length; i += 32) {
+            chunks.push(list.slice(i, i + 32).map(p => {
+                const sub = p.slice(prefix.length).split('/').slice(0, -1)
+                    .map(s => SUBJECT_NAMES[s] || s).join(' · ');
+                return renderCard(p, sub || SECTION_NAMES[type][currentLang]);
+            }).join(''));
+        }
+        return {
+            prefix: `<p class="files-count">${list.length} ${t('ملف', 'fichier(s)')}</p>`,
+            chunks
+        };
     });
 }
 
