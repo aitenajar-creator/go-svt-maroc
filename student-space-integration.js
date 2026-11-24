@@ -20,8 +20,19 @@
         const roots = document.querySelectorAll('#quizBox, [data-quiz-root]');
         roots.forEach(attachQuizListeners);
 
-        const observer = new MutationObserver(function () {
-            document.querySelectorAll('#quizBox, [data-quiz-root]').forEach(attachQuizListeners);
+        // Observe insertions only; do not rescan every quiz on every page mutation.
+        const observer = new MutationObserver(function (records) {
+            records.forEach(function (record) {
+                record.addedNodes.forEach(function (node) {
+                    if (node.nodeType !== 1) return;
+                    if (node.matches && node.matches('#quizBox, [data-quiz-root]')) {
+                        attachQuizListeners(node);
+                    }
+                    if (node.querySelectorAll) {
+                        node.querySelectorAll('#quizBox, [data-quiz-root]').forEach(attachQuizListeners);
+                    }
+                });
+            });
         });
         observer.observe(document.body, { childList: true, subtree: true });
     }
@@ -182,47 +193,22 @@
     function syncFavorites() {
         // StudentSpace lit la clé commune au moment du rendu. Écoute aussi les
         // changements provenant d'un autre onglet, sans polling permanent.
-        window.addEventListener('storage', function (event) {
-            if (event.key === 'gosvt-favs' && window.StudentSpace) {
-                window.StudentSpace.refresh();
-            }
+        function integrateNotesSystem() {
+        // The student-space container is stable across renders. Delegate once
+        // instead of observing the whole document and rebinding every button.
+        const container = document.getElementById('student-space-content');
+        if (!container || container._gosvtCompleteDelegation) return;
+        container._gosvtCompleteDelegation = true;
+        container.addEventListener('click', function (event) {
+            const button = event.target && event.target.closest
+                ? event.target.closest('.btn-complete')
+                : null;
+            if (!button || !container.contains(button)) return;
+            const lessonId = button.dataset.lesson;
+            if (!lessonId || !window.StudentSpace) return;
+            window.StudentSpace.markLessonComplete(lessonId);
+            if (window.StudentSpace.refresh) window.StudentSpace.refresh();
         });
-        document.addEventListener('gosvt:favorites-updated', function () {
-            if (window.StudentSpace) window.StudentSpace.refresh();
-        });
-    }
-
-    // ============================================
-    // 4. INTEGRATION NOTES - Marquer leçons comme terminées
-    // ============================================
-    function integrateNotesSystem() {
-        // Si le système de notes existe, permettre de marquer comme terminé
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.target.id === 'student-space-content') {
-                    // Re-attacher les événements après re-render
-                    setTimeout(function() {
-                        const container = document.getElementById('student-space-content');
-                        if (container) {
-                            container.querySelectorAll('.btn-complete').forEach(function(btn) {
-                                btn.onclick = function() {
-                                    const lessonId = this.dataset.lesson;
-                                    if (window.StudentSpace) {
-                                        window.StudentSpace.markLessonComplete(lessonId);
-                                        // Re-render
-                                        if (window.StudentSpace.refresh) {
-                                            window.StudentSpace.refresh();
-                                        }
-                                    }
-                                };
-                            });
-                        }
-                    }, 100);
-                }
-            });
-        });
-
-        observer.observe(document.body, { childList: true, subtree: true });
     }
 
     // ============================================
