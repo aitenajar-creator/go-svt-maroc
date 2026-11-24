@@ -3767,6 +3767,16 @@ function openScientificPhotoPreview(card){
     // 14. INITIALIZATION (التهيئة)
     // ============================================
     function init() {
+        // Standalone activities inherit the language selected on the category page.
+        // Do not override the site's normal language outside standalone task routes.
+        const initialTaskParams = new URLSearchParams(window.location.search);
+        const requestedTaskLanguage = initialTaskParams.get('lang');
+        if ((initialTaskParams.has('studentCategory') || initialTaskParams.has('studentTask')) &&
+            (requestedTaskLanguage === 'ar' || requestedTaskLanguage === 'fr')) {
+            document.documentElement.lang = requestedTaskLanguage;
+            document.documentElement.dir = requestedTaskLanguage === 'fr' ? 'ltr' : 'rtl';
+        }
+
         // Refresh when the active profile changes in another tab, including
         // quiz history, mistakes, notes, study plans and goals (not only progress).
         window.addEventListener('storage', function (e) {
