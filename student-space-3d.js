@@ -75,6 +75,7 @@ tube('ureters',[[.53,-.85,.42],[.3,-1.15,.45],[0,-1.35,.45]],.035,bone,systems.u
 blob('bladder',[0,-1.45,.47],[.22,.2,.17],stomachMat,24,systems.urinary);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(2.7,64),new THREE.MeshBasicMaterial({color:0x234438,transparent:true,opacity:.48}));floor.rotation.x=-Math.PI/2;floor.position.y=-3.35;scene.add(floor);
 let selected='heart',activeSystem='circulatory',rotY=0,rotX=0,drag=false,moved=false,lastX=0,lastY=0,zoom=1;
+let quizState={active:false,target:null,score:0,answered:0};
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let highlighted=[];
 const labelDefinitions=[
@@ -107,7 +108,7 @@ labelDefinitions.forEach(def=>{
  button.type='button';button.className='gs-3d-organ-label';
  button.textContent=isFr()?def.fr:def.ar;
  button.setAttribute('aria-label',(isFr()?'Sélectionner ':'اختيار ')+(isFr()?def.fr:def.ar));
- button.addEventListener('click',()=>{if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
+ button.addEventListener('click',()=>{if(quizState.active){answerQuiz(def.id);return;}if(def.system!==activeSystem)setSystem(def.system);select(def.id);});
  labelLayer.appendChild(button);labelNodes.set(def.id,{button,def});
 });
 const handleLabelToggle=()=>{labelLayer.hidden=!labelCheck.checked;};
@@ -121,6 +122,48 @@ function updateOrganLabels(){
    if(visible){button.style.left=((point.x+1)*.5*width)+'px';button.style.top=((1-point.y)*.5*height)+'px';}
  });
 }
+const info=root.querySelector('.gs-3d-info');
+const quizPanel=document.createElement('section');
+quizPanel.className='gs-3d-quiz';
+quizPanel.setAttribute('aria-labelledby','gs-3d-quiz-title');
+const quizTitle=document.createElement('h5');quizTitle.id='gs-3d-quiz-title';quizTitle.textContent=isFr()?'Défi anatomique':'تحدي تشريحي';
+const quizDescription=document.createElement('p');quizDescription.textContent=isFr()?'Identifiez l’organe demandé sur le modèle ou dans la liste.':'حدّد العضو المطلوب على النموذج أو من القائمة.';
+const quizPrompt=document.createElement('p');quizPrompt.className='gs-3d-quiz-prompt';quizPrompt.setAttribute('aria-live','polite');quizPrompt.textContent=isFr()?'Prêt à commencer ?':'هل أنت مستعد للبدء؟';
+const quizFeedback=document.createElement('p');quizFeedback.className='gs-3d-quiz-feedback';quizFeedback.setAttribute('aria-live','polite');
+const quizStart=document.createElement('button');quizStart.type='button';quizStart.className='gs-3d-quiz-start';quizStart.textContent=isFr()?'Commencer le défi':'ابدأ التحدي';
+quizPanel.append(quizTitle,quizDescription,quizPrompt,quizFeedback,quizStart);
+const organList=info&&info.querySelector('.gs-3d-organ-list');if(organList)organList.insertAdjacentElement('afterend',quizPanel);
+function beginQuiz(){
+ const pool=labelDefinitions.filter(item=>item.system===activeSystem);
+ if(!pool.length)return;
+ quizState.active=true;quizState.target=pool[Math.floor(Math.random()*pool.length)].id;
+ labelCheck.checked=false;handleLabelToggle();
+ quizStart.textContent=isFr()?'Terminer le défi':'إنهاء التحدي';
+ quizFeedback.textContent='';
+ quizPrompt.textContent=(isFr()?'Trouvez : ':'ابحث عن العضو: ')+(isFr()?DATA[quizState.target].fr[0]:DATA[quizState.target].ar[0]);
+}
+function endQuiz(){
+ quizState.active=false;quizState.target=null;
+ quizStart.textContent=isFr()?'Recommencer':'إعادة التحدي';
+ quizPrompt.textContent=(isFr()?'Résultat : ':'النتيجة: ')+quizState.score+'/'+quizState.answered;
+ quizFeedback.textContent=isFr()?'Défi terminé. Aucun point de progression scolaire n’a été modifié.':'انتهى التحدي. لم تتغير نقاط التقدم الدراسي.';
+}
+function answerQuiz(id){
+ if(!quizState.active||!quizState.target)return;
+ const correct=id===quizState.target;quizState.answered++;if(correct)quizState.score++;
+ quizFeedback.textContent=correct
+  ?(isFr()?'Bonne réponse ! ':'إجابة صحيحة! ')+(isFr()?DATA[id].fr[1]:DATA[id].ar[1])
+  :(isFr()?'Pas tout à fait. La bonne réponse était : ':'ليست الإجابة الصحيحة. العضو المطلوب هو: ')+(isFr()?DATA[quizState.target].fr[0]:DATA[quizState.target].ar[0]);
+ quizState.target=null;
+ quizPrompt.textContent=(isFr()?'Score : ':'النتيجة الحالية: ')+quizState.score+'/'+quizState.answered;
+ quizStart.textContent=isFr()?'Question suivante':'السؤال التالي';
+}
+quizStart.addEventListener('click',()=>{
+ if(quizState.active&&quizState.target){endQuiz();return;}
+ if(quizState.active){beginQuiz();return;}
+ quizState={active:true,target:null,score:0,answered:0};beginQuiz();
+});
+
 function clearHighlight(){highlighted.forEach(item=>{item.mesh.material=item.original;});highlighted=[];}
 function select(id){if(!DATA[id])return;selected=id;clearHighlight();model.traverse(object=>{if(!object.isMesh||object.name!==id)return;const original=object.material;const glow=original.clone();if(glow.emissive){glow.emissive.set(0xffc247);glow.emissiveIntensity=.72;}object.material=glow;highlighted.push({mesh:object,original});});const lang=isFr()?'fr':'ar',d=DATA[id][lang];root.querySelector('[data-3d-name]').textContent=d[0];root.querySelector('[data-3d-description]').textContent=d[1];root.querySelector('[data-3d-function]').textContent=d[2];root.querySelectorAll('[data-3d-organ]').forEach(b=>b.classList.toggle('is-active',b.dataset['3dOrgan']===id));}
 const SYSTEM_FOR={heart:'circulatory',lungs:'respiratory',brain:'nervous',liver:'digestive',stomach:'digestive',kidneys:'urinary',intestines:'digestive','spinal-cord':'nervous',trachea:'respiratory',bladder:'urinary'};
@@ -141,11 +184,11 @@ function pointerDown(e){drag=true;moved=false;lastX=e.clientX;lastY=e.clientY;ca
 function pointerMove(e){if(!drag)return;if(Math.abs(e.clientX-lastX)+Math.abs(e.clientY-lastY)>3)moved=true;rotY+=(e.clientX-lastX)*.009;rotX=Math.max(-.65,Math.min(.65,rotX+(e.clientY-lastY)*.006));lastX=e.clientX;lastY=e.clientY;}
 function pointerUp(){drag=false;}
 const handleWheel=e=>{e.preventDefault();zoom=Math.max(.72,Math.min(1.55,zoom+(e.deltaY>0?-.07:.07)));};
-const handleCanvasClick=e=>{if(moved){moved=false;return;}const rect=canvas.getBoundingClientRect();pointer.x=((e.clientX-rect.left)/rect.width)*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(model.children,true);const hit=hits.find(h=>DATA[h.object.name]||h.object.name==='lungs'||h.object.name==='kidneys');if(hit){const name=hit.object.name;if(DATA[name])select(name);}};
+const handleCanvasClick=e=>{if(moved){moved=false;return;}const rect=canvas.getBoundingClientRect();pointer.x=((e.clientX-rect.left)/rect.width)*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(model.children,true);const hit=hits.find(h=>DATA[h.object.name]||h.object.name==='lungs'||h.object.name==='kidneys');if(hit){const name=hit.object.name;if(DATA[name]){select(name);answerQuiz(name);}}};
 canvas.addEventListener('pointerdown',pointerDown);canvas.addEventListener('pointermove',pointerMove);canvas.addEventListener('pointerup',pointerUp);canvas.addEventListener('pointercancel',pointerUp);
 canvas.addEventListener('wheel',handleWheel,{passive:false});
 canvas.addEventListener('click',handleCanvasClick);
-const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(system)setSystem(system);select(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem'])setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
+const handleRootClick=e=>{const btn=e.target.closest('[data-3d-organ],[data-3d-action],[data-3d-system]');if(!btn)return;if(btn.dataset['3dOrgan']){const system=SYSTEM_FOR[btn.dataset['3dOrgan']];if(system&&!quizState.active)setSystem(system);select(btn.dataset['3dOrgan']);answerQuiz(btn.dataset['3dOrgan']);}if(btn.dataset['3dSystem'])setSystem(btn.dataset['3dSystem']);if(btn.dataset['3dAction']==='reset'){rotY=0;rotX=0;zoom=1;}if(btn.dataset['3dAction']==='zoom-in')zoom=Math.min(1.55,zoom+.12);if(btn.dataset['3dAction']==='zoom-out')zoom=Math.max(.72,zoom-.12);};
 root.addEventListener('click',handleRootClick);
 activeCleanup=()=>{
 disposed=true;
@@ -157,6 +200,7 @@ document.removeEventListener('visibilitychange',handleDocVisibility);
 canvas.removeEventListener('pointerdown',pointerDown);canvas.removeEventListener('pointermove',pointerMove);canvas.removeEventListener('pointerup',pointerUp);canvas.removeEventListener('pointercancel',pointerUp);
 canvas.removeEventListener('wheel',handleWheel);canvas.removeEventListener('click',handleCanvasClick);
 root.removeEventListener('click',handleRootClick);
+quizStart.removeEventListener('click',beginQuiz);
 labelCheck.removeEventListener('change',handleLabelToggle);labelLayer.remove();labelToggle.remove();
 scene.traverse(object=>{if(object.geometry)object.geometry.dispose();if(object.material){const materials=Array.isArray(object.material)?object.material:[object.material];materials.forEach(material=>material.dispose());}});
 renderer.dispose();
