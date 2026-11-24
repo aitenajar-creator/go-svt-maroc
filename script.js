@@ -585,21 +585,32 @@ async function loadContentFromManifest(type, subject, level) {
                 return info.key.replace(/\s+/g, '').toUpperCase() === selectedTrack;
             });
         }
-        files = files.sort((a, b) => {
-            if (type === 'examens') {
-                const metadata = path => {
-                    const labels = getExamFileMetadata(path) || [];
-                    const value = name => (labels.find(item => item.className === name) || {}).ar || '';
-                    return {year:Number(value('exam-year')) || 0, session:value('exam-session'), kind:value('exam-subject') ? 0 : value('exam-correction') ? 1 : 2};
+        if (type === 'examens') {
+            // Compute exam labels once per file. Recomputing them inside the
+            // sort comparator repeated regex/metadata work O(n log n) times.
+            files = files.map((path, index) => {
+                const labels = getExamFileMetadata(path) || [];
+                const value = name => (labels.find(item => item.className === name) || {}).ar || '';
+                return {
+                    path,
+                    index,
+                    year: Number(value('exam-year')) || 0,
+                    session: value('exam-session'),
+                    kind: value('exam-subject') ? 0 : value('exam-correction') ? 1 : 2
                 };
-                const left = metadata(a);
-                const right = metadata(b);
-                if (left.year !== right.year) return right.year - left.year;
-                if (left.session !== right.session) return (left.session === 'الدورة العادية' ? 0 : 1) - (right.session === 'الدورة العادية' ? 0 : 1);
-                if (left.kind !== right.kind) return left.kind - right.kind;
-            }
-            return a.localeCompare(b, undefined, { numeric: true });
-        });
+            }).sort((a, b) => {
+                if (a.year !== b.year) return b.year - a.year;
+                if (a.session !== b.session) {
+                    return (a.session === 'الدورة العادية' ? 0 : 1) -
+                        (b.session === 'الدورة العادية' ? 0 : 1);
+                }
+                if (a.kind !== b.kind) return a.kind - b.kind;
+                return a.path.localeCompare(b.path, undefined, { numeric: true }) ||
+                    a.index - b.index;
+            }).map(item => item.path);
+        } else {
+            files = files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        }
 
         if (files.length === 0) {
             container.innerHTML = `<p class="no-files">${t('لا توجد ملفات حالياً', 'Aucun fichier disponible pour le moment')}</p>`;
