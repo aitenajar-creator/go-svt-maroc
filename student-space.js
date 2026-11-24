@@ -2819,6 +2819,12 @@ function openScientificPhotoPreview(card){
                 if (!jump || !container.contains(jump)) return;
                 const target = container.querySelector('#' + jump.dataset.studyAnchor);
                 if (target) {
+                    // Open every containing disclosure before scrolling to content.
+                    let disclosure = target.closest('details');
+                    while (disclosure) {
+                        disclosure.open = true;
+                        disclosure = disclosure.parentElement && disclosure.parentElement.closest('details');
+                    }
                     const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                     target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
                     target.setAttribute('tabindex','-1');
