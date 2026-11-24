@@ -75,7 +75,7 @@
   const title = document.getElementById('page-title');
   const intro = document.getElementById('page-intro');
   const back = document.getElementById('back-link');
-  let language = 'ar';
+  let language = params.get('lang') === 'fr' ? 'fr' : 'ar';
 
   function makeCard({icon='🔬',label,description,href,action}) {
     const link = document.createElement('a');
@@ -126,7 +126,7 @@
           icon:category.icon,
           label:category[fr?'fr':'ar'],
           description:category[fr?'descFr':'descAr'],
-          href:'student-task-categories.html?category='+encodeURIComponent(category.key),
+          href:'student-task-categories.html?category='+encodeURIComponent(category.key)+'&lang='+language,
           action:fr?'Voir les activités →':'فتح التصنيف ←'
         }));
       });
