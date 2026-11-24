@@ -43,7 +43,7 @@
     const parts = normalized.split('/').filter(Boolean);
     if (parts[1] !== context.language || parts[2] !== context.level) return false;
     if (parts[0] !== type) return false;
-    const folderTrack = parts.slice(3, -1).map(x => x.replace(/\\s+/g, '').toUpperCase())
+    const folderTrack = parts.slice(3, -1).map(x => x.replace(/\s+/g, '').toUpperCase())
       .find(x => Object.values(TRACKS).flat().includes(x));
     return !folderTrack || folderTrack === context.track;
   }
