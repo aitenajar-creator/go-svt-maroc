@@ -176,6 +176,7 @@
         group.classList.toggle('gs-search-group-hidden', !!term && !visible);
       });
       if (!term) status.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'اكتب كلمة للبحث بين الملفات التي تظهر في الصفحة.' : 'Saisis un terme pour filtrer les ressources visibles.';
+      else if (shown === 0) status.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'لا توجد نتائج مطابقة. جرّب كلمة أخرى أو امسح البحث.' : 'Aucun résultat. Essaie un autre terme ou efface la recherche.';
       else status.textContent = (document.documentElement.lang || 'ar') === 'ar' ? 'النتائج: ' + shown + ' مورد' : 'Résultats : ' + shown + ' ressource(s)';
     }
     input.addEventListener('input', apply);
