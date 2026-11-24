@@ -76,7 +76,7 @@ function examInfo(relPath) {
     if (/rattrapage|استدراك/.test(text)) session = t('استدراكية', 'Rattrapage');
     else if (/normale|normal|ordinaire|عادي/.test(text)) session = t('عادية', 'Normale');
         let kind = '';
-    if (/corrig|correction|تصحيح/.test(text)) kind = t('التصحيح', 'Corrigé');
+    if (/corrig|correction|تصحيح|عناصر الاجابة|اجوبة|اجابات/.test(text)) kind = t('التصحيح', 'Corrigé');
     else if (/sujet|موضوع/.test(text)) kind = t('الموضوع', 'Sujet');
     return { year: yearMatch ? yearMatch[1] : '', session, kind };
 }
@@ -97,7 +97,7 @@ function loadExams(container, subject, level) {
             const { year, session, kind } = examInfo(rel);
             const sessionKey = /rattrapage|استدراكية/i.test(session) ? 'rattrapage'
                 : /normale|عادية/i.test(session) ? 'normal' : 'other';
-            const kindKey = /corrig|correction|تصحيح/i.test(normalizeText(rel)) ? 'correction'
+            const kindKey = /corrig|correction|تصحيح|عناصر الاجابة|اجوبة|اجابات/i.test(normalizeText(rel)) ? 'correction'
                 : /sujet|موضوع/i.test(normalizeText(rel)) ? 'subject' : 'other';
             const parts = rel.split('/');
             const detectedTrack = window.GoSVTPathways &&
