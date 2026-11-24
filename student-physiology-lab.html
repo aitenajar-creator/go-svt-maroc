@@ -19,6 +19,11 @@ a.back,.lang button,.system button,.controls button{border:1px solid var(--line)
 .progress{height:10px;background:#e8efe9;border-radius:99px;overflow:hidden;margin:12px 0 18px}.progress>span{display:block;height:100%;background:linear-gradient(90deg,#176b4b,#62a879);width:0;transition:width .2s}
 .controls{display:flex;justify-content:space-between;gap:10px;margin-top:18px}.controls button:disabled{opacity:.45;cursor:not-allowed}
 .fact{margin-top:14px;padding:13px;border-radius:12px;background:#f0f7f1;border-inline-start:4px solid #58a276;color:#345b40}
+
+.quiz-panel{margin-top:16px}.quiz-question{font-size:1.08rem;font-weight:800;margin:8px 0 14px}.quiz-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.quiz-option{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:inherit;text-align:start;cursor:pointer}.quiz-option:disabled{cursor:default;opacity:1}.quiz-option.correct{border-color:#27834c;background:#eaf6ed}.quiz-option.wrong{border-color:#bd6b58;background:#fff0ec}.quiz-feedback{min-height:1.7em;margin:12px 0;color:var(--green);font-weight:750}.quiz-meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:.92rem}.quiz-actions{display:flex;justify-content:flex-end;gap:8px}.quiz-actions button{border:1px solid var(--line);border-radius:11px;padding:10px 15px;background:var(--green);color:#fff;font:inherit;font-weight:750;cursor:pointer}.quiz-actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:560px){.quiz-options{grid-template-columns:1fr}}
+html.dark .quiz-option{background:#213329;color:#e7f0e9;border-color:#405b49}html.dark .quiz-option.correct{background:#254a32}html.dark .quiz-option.wrong{background:#4a302b}html.dark .quiz-feedback{color:#a9d9b5}
+
 @media(max-width:700px){.layout{grid-template-columns:1fr}.hero{padding:20px}.wrap{margin:14px auto}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 html.dark body{background:#15221a;color:#e7f0e9}html.dark .panel,html.dark .step,html.dark .system button,html.dark .lang button,html.dark a.back,html.dark .controls button{background:#213329;color:#e7f0e9;border-color:#405b49}html.dark .step[aria-current=step],html.dark .fact{background:#293f30;color:#e7f0e9}html.dark .panel p{color:#bdcfc1}
@@ -40,6 +45,14 @@ html.dark body{background:#15221a;color:#e7f0e9}html.dark .panel,html.dark .step
 </section>
 <aside class="panel"><h2 data-t="journey">مراحل الرحلة</h2><p data-t="choose">اختر مرحلة لقراءة دورها، أو استخدم زري السابق والتالي.</p><div class="steps" id="steps"></div></aside>
 </div>
+<section class="panel quiz-panel" aria-labelledby="quiz-title">
+  <h2 id="quiz-title" data-t="quizTitle">اختبر فهمك</h2>
+  <div class="quiz-meta"><span id="quiz-progress">السؤال 1 من 3</span><span id="quiz-score">النقاط: 0</span></div>
+  <p class="quiz-question" id="quiz-question"></p>
+  <div class="quiz-options" id="quiz-options"></div>
+  <p class="quiz-feedback" id="quiz-feedback" role="status" aria-live="polite"></p>
+  <div class="quiz-actions"><button type="button" id="quiz-next" disabled>السؤال التالي</button></div>
+</section>
 </main>
 <script>
 (()=>{
@@ -72,8 +85,8 @@ respiratory:{title:'Appareil respiratoire',stages:[
 ['Alvéoles pulmonaires','🫧','Les échanges d’O₂ et de CO₂ entre l’air et le sang se réalisent à travers une paroi fine.','La diffusion dépend des gradients de pression partielle.']]}
 }
 };
-const labels={ar:{back:'العودة إلى مساحة التلميذ',title:'مختبر وظائف الأعضاء',subtitle:'اكتشف مسار الغذاء وتبادل الغازات خطوة بخطوة.',digestive:'الجهاز الهضمي',respiratory:'الجهاز التنفسي',stage:'المرحلة',remember:'تذكّر:',journey:'مراحل الرحلة',choose:'اختر مرحلة لقراءة دورها، أو استخدم زري السابق والتالي.',prev:'السابق',next:'التالي',done:'اكتملت الرحلة'},fr:{back:'Retour à l’espace élève',title:'Laboratoire de physiologie',subtitle:'Découvrez le trajet des aliments et les échanges gazeux étape par étape.',digestive:'Appareil digestif',respiratory:'Appareil respiratoire',stage:'Étape',remember:'À retenir :',journey:'Étapes du parcours',choose:'Choisissez une étape ou utilisez les boutons précédent et suivant.',prev:'Précédent',next:'Suivant',done:'Parcours terminé'}};
-let lang='ar',system='digestive',index=0;
+const labels={ar:{back:'العودة إلى مساحة التلميذ',title:'مختبر وظائف الأعضاء',subtitle:'اكتشف مسار الغذاء وتبادل الغازات خطوة بخطوة.',digestive:'الجهاز الهضمي',respiratory:'الجهاز التنفسي',stage:'المرحلة',remember:'تذكّر:',journey:'مراحل الرحلة',choose:'اختر مرحلة لقراءة دورها، أو استخدم زري السابق والتالي.',prev:'السابق',next:'التالي',done:'اكتملت الرحلة',quizTitle:'اختبر فهمك',question:'السؤال',of:'من',score:'النقاط',correct:'إجابة صحيحة! أحسنت.',incorrect:'ليست الإجابة الصحيحة. حاول فهم التفسير.',nextQuestion:'السؤال التالي',finish:'عرض النتيجة',restart:'إعادة الاختبار',result:'نتيجتك',outOf:'من'},fr:{back:'Retour à l’espace élève',title:'Laboratoire de physiologie',subtitle:'Découvrez le trajet des aliments et les échanges gazeux étape par étape.',digestive:'Appareil digestif',respiratory:'Appareil respiratoire',stage:'Étape',remember:'À retenir :',journey:'Étapes du parcours',choose:'Choisissez une étape ou utilisez les boutons précédent et suivant.',prev:'Précédent',next:'Suivant',done:'Parcours terminé',quizTitle:'Vérifiez vos acquis',question:'Question',of:'sur',score:'Score',correct:'Bonne réponse ! Bravo.',incorrect:'Ce n’est pas la bonne réponse. Lisez l’explication.',nextQuestion:'Question suivante',finish:'Voir le résultat',restart:'Recommencer',result:'Votre résultat',outOf:'sur'}};
+let lang='ar',system='digestive',index=0,quizIndex=0,quizScore=0,quizAnswered=false;
 const $=id=>document.getElementById(id);
 function t(k){return labels[lang][k]}
 function render(){
@@ -86,9 +99,72 @@ function render(){
  $('progress-fill').style.width=pct+'%';$('progress').setAttribute('aria-valuenow',String(pct));
  $('prev').disabled=index===0;$('next').disabled=index===stages.length-1;
  $('steps').replaceChildren(...stages.map((s,i)=>{const b=document.createElement('button');b.type='button';b.className='step';b.setAttribute('aria-current',i===index?'step':'false');const n=document.createElement('span');n.textContent=String(i+1);const label=document.createElement('strong');label.textContent=s[0];b.append(n,label);b.addEventListener('click',()=>{index=i;render()});return b}));
+ renderQuiz();
 }
-document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>{lang=b.dataset.lang;render()}));
-document.querySelectorAll('[data-system]').forEach(b=>b.addEventListener('click',()=>{system=b.dataset.system;index=0;render()}));
+const quizData={
+ ar:{
+  digestive:[
+   {q:'أين تبدأ عملية الهضم؟',o:['في الفم','في المعدة','في الأمعاء الغليظة'],a:0,e:'يبدأ الهضم في الفم بفضل المضغ واللعاب.'},
+   {q:'أين يتم امتصاص معظم المغذيات؟',o:['في المريء','في الأمعاء الدقيقة','في المعدة'],a:1,e:'تسمح الزغابات المعوية بامتصاص معظم المغذيات.'},
+   {q:'ما الحركة التي تدفع الطعام في المريء؟',o:['الانتشار','الترشيح','الحركة الدودية'],a:2,e:'تدفع تقلصات العضلات المتتابعة اللقمة نحو المعدة.'}
+  ],
+  respiratory:[
+   {q:'أين يحدث التبادل الغازي بين الهواء والدم؟',o:['في القصبة الهوائية','في الحويصلات الهوائية','في الأنف'],a:1,e:'تتميز الحويصلات بجدار رقيق يسهّل تبادل الغازات.'},
+   {q:'في أي اتجاه ينتقل الأكسجين أثناء التبادل الغازي؟',o:['من هواء الحويصلات إلى الدم','من الدم إلى هواء الحويصلات','من المعدة إلى الدم'],a:0,e:'ينتقل الأكسجين من الهواء السنخي إلى الدم وفق تدرج الضغط الجزئي.'},
+   {q:'ما دور المخاط والأهداب في المسالك التنفسية؟',o:['هضم الغذاء','ضخ الدم','احتجاز الجسيمات والمساعدة على طردها'],a:2,e:'يحتجز المخاط الجسيمات، وتساعد الأهداب على تحريك المخاط.'}
+  ]
+ },
+ fr:{
+  digestive:[
+   {q:'Où commence la digestion ?',o:['Dans la bouche','Dans l’estomac','Dans le gros intestin'],a:0,e:'La digestion commence dans la bouche grâce à la mastication et à la salive.'},
+   {q:'Où la majorité des nutriments est-elle absorbée ?',o:['Dans l’œsophage','Dans l’intestin grêle','Dans l’estomac'],a:1,e:'Les villosités intestinales permettent l’absorption de la majorité des nutriments.'},
+   {q:'Quel mouvement fait avancer les aliments dans l’œsophage ?',o:['La diffusion','La filtration','Le péristaltisme'],a:2,e:'Les contractions musculaires successives propulsent le bol alimentaire.'}
+  ],
+  respiratory:[
+   {q:'Où ont lieu les échanges gazeux entre l’air et le sang ?',o:['Dans la trachée','Dans les alvéoles pulmonaires','Dans le nez'],a:1,e:'La paroi fine des alvéoles facilite les échanges gazeux.'},
+   {q:'Dans quel sens l’oxygène diffuse-t-il ?',o:['De l’air alvéolaire vers le sang','Du sang vers l’air alvéolaire','De l’estomac vers le sang'],a:0,e:'L’oxygène diffuse de l’air alvéolaire vers le sang selon le gradient de pression partielle.'},
+   {q:'Quel est le rôle du mucus et des cils ?',o:['Digérer les aliments','Pomper le sang','Piéger et évacuer des particules'],a:2,e:'Le mucus piège des particules et les cils contribuent à déplacer le mucus.'}
+  ]
+ }
+};
+function renderQuiz(){
+ const questions=quizData[lang][system],q=questions[quizIndex];
+ const options=$('quiz-options');options.replaceChildren();
+ $('quiz-title').textContent=t('quizTitle');
+ $('quiz-score').textContent=t('score')+': '+quizScore;
+ if(!q){
+  $('quiz-progress').textContent=t('result');
+  $('quiz-question').textContent=t('result')+': '+quizScore+' '+t('outOf')+' '+questions.length;
+  $('quiz-feedback').textContent=lang==='ar'?'يمكنك إعادة الاختبار لتثبيت المعلومات.':'Vous pouvez recommencer pour consolider vos connaissances.';
+  $('quiz-next').textContent=t('restart');$('quiz-next').disabled=false;
+  return;
+ }
+ $('quiz-progress').textContent=t('question')+' '+(quizIndex+1)+' '+t('of')+' '+questions.length;
+ $('quiz-question').textContent=q.q;
+ q.o.forEach((choice,i)=>{
+  const b=document.createElement('button');b.type='button';b.className='quiz-option';b.textContent=choice;
+  b.addEventListener('click',()=>{
+   if(quizAnswered)return;quizAnswered=true;
+   const correct=i===q.a;if(correct)quizScore++;
+   Array.from(options.children).forEach((item,n)=>{item.disabled=true;if(n===q.a)item.classList.add('correct');else if(n===i)item.classList.add('wrong')});
+   $('quiz-feedback').textContent=(correct?t('correct'):t('incorrect'))+' '+q.e;
+   $('quiz-score').textContent=t('score')+': '+quizScore;
+   $('quiz-next').disabled=false;
+  });
+  options.append(b);
+ });
+ $('quiz-feedback').textContent='';
+ $('quiz-next').textContent=quizIndex===questions.length-1?t('finish'):t('nextQuestion');
+ $('quiz-next').disabled=true;
+}
+
+document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>{lang=b.dataset.lang;quizIndex=0;quizScore=0;quizAnswered=false;render()}));
+document.querySelectorAll('[data-system]').forEach(b=>b.addEventListener('click',()=>{system=b.dataset.system;index=0;quizIndex=0;quizScore=0;quizAnswered=false;render()}));
+$('quiz-next').addEventListener('click',()=>{
+ const questions=quizData[lang][system];
+ if(quizIndex>=questions.length){quizIndex=0;quizScore=0;}else if(quizIndex<questions.length-1){quizIndex++;}else{quizIndex=questions.length;}
+ quizAnswered=false;renderQuiz();
+});
 $('prev').addEventListener('click',()=>{if(index>0){index--;render()}});
 $('next').addEventListener('click',()=>{const max=data[lang][system].stages.length-1;if(index<max){index++;render()}});
 try{if(localStorage.getItem('gosvt-theme')==='dark')document.documentElement.classList.add('dark')}catch(_){}
