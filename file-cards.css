@@ -341,3 +341,75 @@ html[dir="ltr"] .content-card.file-resource-card .file-info-panel {
     gap: .75rem !important;
   }
 }
+
+/* Consistent card presentation across lessons, exercises, exams and summaries.
+   Exam controls are full-row elements, never grid items competing with file cards. */
+#cours-content,
+#exercices-content,
+#examens-content,
+#fiches-content,
+#resumes-content {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)) !important;
+  align-items: stretch !important;
+  gap: 1rem !important;
+}
+#cours-content > .file-resource-card,
+#exercices-content > .file-resource-card,
+#examens-content > .file-resource-card,
+#fiches-content > .file-resource-card,
+#resumes-content > .file-resource-card {
+  grid-column: auto !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+}
+#examens-content > .files-count,
+#examens-content > .gs-exam-filters,
+#examens-content > .gs-exam-filter-empty,
+#examens-content > .track-content-group {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+#examens-content > .track-content-group > .content-grid,
+#fiches-content > .track-content-group > .content-grid,
+#resumes-content > .track-content-group > .content-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)) !important;
+  align-items: stretch !important;
+  gap: 1rem !important;
+}
+#examens-content .file-resource-card .exam-metadata {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: .4rem !important;
+  width: 100% !important;
+}
+@media (max-width: 760px) {
+  #cours-content,
+  #exercices-content,
+  #examens-content,
+  #fiches-content,
+  #resumes-content,
+  #examens-content > .track-content-group > .content-grid,
+  #fiches-content > .track-content-group > .content-grid,
+  #resumes-content > .track-content-group > .content-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .7rem !important;
+  }
+}
+@media (max-width: 440px) {
+  #cours-content,
+  #exercices-content,
+  #examens-content,
+  #fiches-content,
+  #resumes-content,
+  #examens-content > .track-content-group > .content-grid,
+  #fiches-content > .track-content-group > .content-grid,
+  #resumes-content > .track-content-group > .content-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .75rem !important;
+  }
+}
