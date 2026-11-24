@@ -311,8 +311,7 @@ function renderCard(path, badgeText) {
         ? `<button type="button" class="preview-btn" data-path="${safePath}">👁️ ${t('معاينة', 'Aperçu')}</button>`
         : '';
     const thumbnail = ext === 'pdf'
-        // Avoid automatic PDF.js canvas rendering in the background; the preview button remains on-demand.
-        ? `<div class="content-card-thumbnail file-thumbnail pdf-thumbnail-static" aria-label="${t('ملف PDF', 'Document PDF')}"><span>📕</span><small>PDF</small></div>`
+        ? `<div class="content-card-thumbnail pdf-thumbnail" data-pdf-thumbnail data-path="${safePath}" aria-label="${t('معاينة الصفحة الأولى', 'Aperçu de la première page')}"><span class="thumbnail-loading">${t('جاري إعداد المعاينة...', 'Préparation de l’aperçu...')}</span></div>`
         : ['jpg','jpeg','png','gif','webp'].includes(ext)
             ? `<div class="content-card-thumbnail image-thumbnail" data-preview-path="${safePath}" role="button" tabindex="0" aria-label="${t('فتح معاينة الصورة', 'Ouvrir l’aperçu de l’image')}"><img src="${buildFileUrl(path)}" alt="${t('معاينة الملف المصور', 'Aperçu du fichier image')}" loading="lazy" decoding="async"><span class="image-thumbnail-hint">${t('اضغط لمعاينة الصورة', 'Cliquer pour agrandir')}</span></div>`
             : `<div class="content-card-thumbnail file-thumbnail" aria-label="${t('نوع الملف', 'Type de fichier')}"><span>${getFileIcon(ext)}</span><small>${escapeHtml(ext.toUpperCase() || 'FILE')}</small></div>`;
