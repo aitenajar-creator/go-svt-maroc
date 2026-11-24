@@ -12,7 +12,7 @@
       lessonEmpty: 'ابدأ بزيارة درس', practiceEmpty: 'ابدأ بتمرين', quizEmpty: 'أنجز اختباراً',
       lessonCount: (done, seen) => done + ' مكتمل من ' + seen + ' تمت زيارته',
       practiceCount: n => n + ' مورد تدريبي تمت زيارته',
-      quizCount: (n, avg) => n + ' محاولة مسجلة · المعدل ' + avg + '%',
+      quizCount: (n, avg) => n + ' محاولة مسجلة (كل المسالك) · المعدل ' + avg + '%,
       library: 'مكتبة الدروس', lab: 'المختبرات والتجارب', exams: 'الامتحانات', progress: 'تتبع التقدم',
       libraryDesc: 'الدروس والملخصات حسب مسارك الدراسي', labDesc: 'نماذج وصور وتجارب علمية تفاعلية',
       examsDesc: 'تدرب على الفروض والامتحانات', progressDesc: 'راجع إنجازاتك ونتائجك المسجلة',
@@ -25,7 +25,7 @@
       lessonEmpty: 'Consultez un cours', practiceEmpty: 'Commencez un exercice', quizEmpty: 'Effectuez un quiz',
       lessonCount: (done, seen) => done + ' terminé(s) sur ' + seen + ' consulté(s)',
       practiceCount: n => n + ' ressource(s) consultée(s)',
-      quizCount: (n, avg) => n + ' tentative(s) · moyenne ' + avg + '%',
+      quizCount: (n, avg) => n + ' tentative(s) (tous parcours) · moyenne ' + avg + '%,
       library: 'Bibliothèque', lab: 'Laboratoires et expériences', exams: 'Examens', progress: 'Suivi des progrès',
       libraryDesc: 'Cours et résumés selon votre parcours', labDesc: 'Modèles, images et expériences interactives',
       examsDesc: 'Entraînez-vous aux devoirs et examens', progressDesc: 'Consultez vos activités et résultats',
@@ -75,17 +75,20 @@
       return;
     }
 
-    const stats = getStats();
-    if (!stats) return;
+    const globalStats = getStats();
+    if (!globalStats) return;
+    const pathwayStats = window.StudentSpace && typeof StudentSpace.getDashboardStatsForPath === 'function'
+      ? StudentSpace.getDashboardStatsForPath(profile.study_level, profile.study_track) : globalStats;
     const L = language(), t = TEXT[L];
     const level = String(profile.study_level || '').toUpperCase();
     const track = String(profile.study_track || '').toUpperCase();
     const trackLabel = tracks[track] ? tracks[track][L] : track;
-    const seen = number(stats.lessonsViewed);
-    const completed = number(stats.completedLessons);
-    const exercises = number(stats.exercisesDone);
-    const attempts = number(stats.testsTaken);
-    const average = number(stats.averageScore);
+    const seen = number(pathwayStats.lessonsViewed);
+    const completed = number(pathwayStats.completedLessons);
+    const exercises = number(pathwayStats.exercisesDone);
+    // Legacy quiz attempts have no reliable pathway metadata: keep them global and label this explicitly.
+    const attempts = number(globalStats.testsTaken);
+    const average = number(globalStats.averageScore);
     const journey = window.StudentLearningJourney;
     if (journey && typeof journey.refresh === 'function') journey.refresh();
     const inventory = journey && typeof journey.getSnapshot === 'function' ? journey.getSnapshot() : null;
