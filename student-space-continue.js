@@ -137,18 +137,23 @@
       exercices: { icon: '🧩', title: isFrench ? 'Appliquez vos acquis dans un exercice' : 'طبّق مكتسباتك في تمرين', label: isFrench ? 'Voir les exercices' : 'فتح التمارين' },
       quiz: { icon: '⚡', title: isFrench ? 'Vérifiez votre compréhension avec un quiz' : 'تحقق من فهمك باختبار قصير', label: isFrench ? 'Lancer un quiz' : 'بدء اختبار' },
       'quiz-review': { icon: '🎯', title: isFrench ? 'Consolidez les notions à retravailler' : 'عزّز المفاهيم التي تحتاج إلى مراجعة', label: isFrench ? 'Revoir les quiz' : 'مراجعة الاختبارات' },
+      resumes: { icon: '🗂️', title: isFrench ? 'Commencez par les fiches de votre parcours' : 'ابدأ بملخصات مسارك الدراسي', label: isFrench ? 'Voir les fiches' : 'فتح الملخصات' },
       examens: { icon: '🏆', title: isFrench ? 'Mobilisez vos acquis dans un examen' : 'وظّف مكتسباتك في امتحان', label: isFrench ? 'Voir les examens' : 'فتح الامتحانات' }
     };
     const guidedRecommendation = guidedStep && guidedStep.available && guidedLabels[guidedStep.key]
-      ? { ...guidedLabels[guidedStep.key], href: guidedStep.href } : null;
+      ? { ...guidedLabels[guidedStep.key], href: guidedStep.href, guided: true, section: guidedStep.section, subject: guidedStep.subject } : null;
+    const noContentRecommendation = guidedStep && !guidedStep.available
+      ? { icon: '📭', title: isFrench ? 'Aucune ressource n’est encore publiée pour ce parcours et cette langue.' : 'لا تتوفر حالياً موارد منشورة لهذا المسلك ضمن اللغتين.', href: '#cours', label: isFrench ? 'Consulter la bibliothèque' : 'الاطلاع على المكتبة' } : null;
     const recommendation = latestWithMistakes
       ? { icon: '🧠', title: isFrench ? 'Revoir les erreurs de votre dernier quiz' : 'راجع أخطاء آخر اختبار أنجزته', href: '#gs-performance-analytics', label: isFrench ? 'Voir mon analyse' : 'عرض تحليل أدائي' }
       : pendingTask
         ? { icon: '🎯', title: escapeHtml(pendingTask.title || t.plan), detail: escapeHtml(pendingTask.date || '') + ' · ' + (pendingTask.duration || 30) + (isFrench ? ' min' : ' دقيقة'), href: '#student-space', label: isFrench ? 'Voir le planning' : 'عرض الخطة', planner: true }
         : recent
           ? { icon: '📖', title: isFrench ? 'Continuez votre apprentissage' : 'واصل التعلم انطلاقاً من آخر درس', href: safeLessonPath || '#cours', label: isFrench ? 'Reprendre' : 'استكمال التعلم' }
-          : guidedRecommendation || { icon: '🧪', title: isFrench ? 'Commencez par un exercice adapté à votre niveau' : 'ابدأ بتمرين مناسب لمستواك الدراسي', href: '#exercices', label: isFrench ? 'Voir les exercices' : 'استكشف التمارين' };
-    const nextBlock = '<div class="gs-continue-next"><span>' + recommendation.icon + '</span><div><small>' + t.next + '</small><strong>' + recommendation.title + '</strong>' + (recommendation.detail ? '<span>' + recommendation.detail + '</span>' : '') + '</div><a href="' + escapeHtml(recommendation.href) + '"' + (recommendation.planner ? ' data-open-planner="true"' : '') + '>' + recommendation.label + ' ←</a></div>';
+          : guidedRecommendation || noContentRecommendation || { icon: '🧪', title: isFrench ? 'Commencez par un exercice adapté à votre niveau' : 'ابدأ بتمرين مناسب لمستواك الدراسي', href: '#exercices', label: isFrench ? 'Voir les exercices' : 'استكشف التمارين' };
+    const guidedAttrs = recommendation.guided
+      ? ' data-journey-open="true" data-open-section="' + escapeHtml(recommendation.section) + '" data-open-subject="' + escapeHtml(recommendation.subject) + '"' : '';
+    const nextBlock = '<div class="gs-continue-next"><span>' + recommendation.icon + '</span><div><small>' + t.next + '</small><strong>' + recommendation.title + '</strong>' + (recommendation.detail ? '<span>' + recommendation.detail + '</span>' : '') + '</div><a href="' + escapeHtml(recommendation.href) + '"' + (recommendation.planner ? ' data-open-planner="true"' : '') + guidedAttrs + '>' + recommendation.label + ' ←</a></div>';
 
     card.innerHTML =
       '<div class="gs-continue-heading"><div><span class="gs-continue-eyebrow">' + t.eyebrow + '</span><h3>' + t.title + '</h3></div><span class="gs-continue-mark">🧭</span></div>' +
@@ -167,6 +172,13 @@
     if (plannerLink) plannerLink.addEventListener('click', function () {
       const tab = document.querySelector('.space-tab[data-tab="planner"]');
       if (tab) setTimeout(function () { tab.click(); }, 80);
+    });
+    const guidedLink = card.querySelector('[data-journey-open]');
+    if (guidedLink) guidedLink.addEventListener('click', function () {
+      const section = document.getElementById(guidedLink.dataset.openSection);
+      const subject = guidedLink.dataset.openSubject;
+      const button = section && section.querySelector('.tab-btn[data-subject="' + subject + '"]');
+      if (button && !button.classList.contains('active')) button.click();
     });
   }
 
