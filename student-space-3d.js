@@ -14,12 +14,40 @@ bladder:{ar:['المثانة البولية','عضو عضلي مرن يخزن ا
 };
 const isFr=()=>document.documentElement.lang==='fr';
 let activeCleanup=null;
+let threeLoadPromise=null;
+function ensureThree(){
+if(window.THREE)return Promise.resolve(window.THREE);
+if(threeLoadPromise)return threeLoadPromise;
+threeLoadPromise=new Promise((resolve,reject)=>{
+const script=document.createElement('script');
+script.src='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
+script.crossOrigin='anonymous';
+script.async=true;
+script.onload=()=>window.THREE?resolve(window.THREE):reject(new Error('Three.js loaded without exposing THREE'));
+script.onerror=()=>reject(new Error('Three.js network request failed'));
+document.head.appendChild(script);
+}).catch(error=>{threeLoadPromise=null;throw error;});
+return threeLoadPromise;
+}
 function mount(root){
 if(!root)return;
 if(activeCleanup){activeCleanup();activeCleanup=null;}
 if(root.dataset.gs3dReady==='1')return;
 const canvas=root.querySelector('.gs-3d-canvas'),loading=root.querySelector('.gs-3d-loading');
-if(!window.THREE){loading.textContent=isFr()?'Le moteur 3D n’a pas pu être chargé. Vérifiez la connexion puis rechargez la page.':'تعذر تحميل محرك العرض ثلاثي الأبعاد. تحقق من الاتصال ثم أعد تحميل الصفحة.';return;}
+if(!window.THREE){
+if(root.dataset.gs3dLoading==='1')return;
+root.dataset.gs3dLoading='1';
+loading.textContent=isFr()?'Chargement du moteur 3D à la demande…':'جارٍ تحميل محرك العرض ثلاثي الأبعاد عند الطلب…';
+ensureThree().then(()=>{
+delete root.dataset.gs3dLoading;
+if(root.isConnected)mount(root);
+}).catch(error=>{
+delete root.dataset.gs3dLoading;
+loading.textContent=isFr()?'Le moteur 3D n’a pas pu être chargé. Vérifiez la connexion puis réessayez.':'تعذر تحميل محرك العرض ثلاثي الأبعاد. تحقق من الاتصال ثم أعد المحاولة.';
+console.warn('3D engine could not be loaded:',error);
+});
+return;
+}
 const THREE=window.THREE,scene=new THREE.Scene();scene.background=new THREE.Color(0x142b25);
 const camera=new THREE.PerspectiveCamera(35,1,.1,100);camera.position.set(0,1.1,8.5);
 let renderer;
