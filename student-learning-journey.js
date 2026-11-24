@@ -21,7 +21,7 @@
       const p = StudentAccount.getProfile();
       if (!p || ['admin', 'teacher'].includes(String(p.role || '').toLowerCase())) return null;
       const level = String(p.study_level || '').toUpperCase();
-      const track = String(p.study_track || '').replace(/\\s+/g, '').toUpperCase();
+      const track = String(p.study_track || '').replace(/\s+/g, '').toUpperCase();
       if (!TRACKS[level] || !TRACKS[level].includes(track)) return null;
       const language = document.documentElement.lang === 'fr' ? 'francais' : 'arabe';
       return { id: String(p.id || p.user_id || ''), level, track, language, profile: p };
@@ -29,7 +29,7 @@
   }
 
   function safePath(value) {
-    const path = String(value || '').replace(/^\\/+/, '');
+    const path = String(value || '').replace(/^\/+/, '');
     return path && !path.split('/').includes('..') ? '/' + path : '';
   }
 
