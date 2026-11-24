@@ -93,8 +93,9 @@ function loadExams(container, subject, level) {
             const detectedTrack = window.GoSVTPathways &&
                 typeof window.GoSVTPathways.trackOfPath === 'function'
                 ? window.GoSVTPathways.trackOfPath(p, level) : null;
-            const badge = [detectedTrack || (parts.length > 1 ? parts[0] : level), session, kind]
-                .filter(Boolean).join(' · ');
+            // السنة والدورة ونوع الوثيقة معروضة في عناوين المجموعات؛
+            // نُبقي الشارة مختصرة لتمييز المسلك فقط دون تكرار المعلومات.
+            const badge = detectedTrack || (parts.length > 1 ? parts[0] : level);
             groups[year] = groups[year] || { normal: [], rattrapage: [], other: [] };
             groups[year][sessionKey].push({ path: p, badge });
         });
