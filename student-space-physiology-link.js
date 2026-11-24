@@ -10,6 +10,9 @@
       ar: ['مختبر الخلية والوراثة 3D', 'استكشف الخلايا النباتية والحيوانية وبنية ADN ثلاثية الأبعاد', 'اكتشف المختبر ←'],
       fr: ['Laboratoire cellule & ADN 3D', 'Explorez les cellules végétales, animales et la structure de l’ADN', 'Explorer le laboratoire ←'] }
   ];
+  function setTextIfChanged(node, value) {
+    if (node && node.textContent !== value) node.textContent = value;
+  }
   function addCard() {
     const grids = document.querySelectorAll('#student-space-content .gs-student-category-grid');
     grids.forEach(grid => {
@@ -37,19 +40,24 @@
           link.append(icon, title, description, action);
           grid.append(link);
         } else {
-          link.querySelector('.gs-student-category-icon').textContent = config.icon;
-          link.querySelector('strong').textContent = content[0];
-          link.querySelector('small').textContent = content[1];
-          link.querySelector('.gs-student-category-link').textContent = content[2];
+          setTextIfChanged(link.querySelector('.gs-student-category-icon'), config.icon);
+          setTextIfChanged(link.querySelector('strong'), content[0]);
+          setTextIfChanged(link.querySelector('small'), content[1]);
+          setTextIfChanged(link.querySelector('.gs-student-category-link'), content[2]);
         }
       });
     });
   }
   const start = () => {
     addCard();
-    const observer = new MutationObserver(addCard);
-    observer.observe(document.body, { childList: true, subtree: true });
-    document.addEventListener('click', () => queueMicrotask(addCard), true);
+    const studentSpace = document.getElementById('student-space-content');
+    if (studentSpace) {
+      const observer = new MutationObserver(addCard);
+      observer.observe(studentSpace, { childList: true, subtree: true });
+    }
+    document.addEventListener('click', event => {
+      if (event.target.closest && event.target.closest('.lang-switcher')) queueMicrotask(addCard);
+    }, true);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
