@@ -193,7 +193,12 @@
     function syncFavorites() {
         // StudentSpace lit la clé commune au moment du rendu. Écoute aussi les
         // changements provenant d'un autre onglet, sans polling permanent.
-        function integrateNotesSystem() {
+    }
+
+    // ============================================
+    // 4. INTEGRATION NOTES - Marquer leçons comme terminées
+    // ============================================
+    function integrateNotesSystem() {
         // The student-space container is stable across renders. Delegate once
         // instead of observing the whole document and rebinding every button.
         const container = document.getElementById('student-space-content');
