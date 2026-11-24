@@ -1471,6 +1471,16 @@
             typeof account.getProfile === 'function' ? account.getProfile() : null;
         const level = String(academic && academic.study_level || '').toUpperCase();
         const track = String(academic && academic.study_track || '').toUpperCase();
+        const trackNames = fr ? {
+            TCS:'Tronc commun scientifique', TCL:'Tronc commun lettres',
+            '1BACSE':'Sciences expérimentales', '1BACSM':'Sciences mathématiques', '1BACL':'Lettres',
+            '2BACSVT':'Sciences de la vie et de la Terre', '2BACSP':'Sciences physiques', '2BACSM':'Sciences mathématiques'
+        } : {
+            TCS:'الجذع المشترك العلمي', TCL:'الجذع المشترك الأدبي',
+            '1BACSE':'العلوم التجريبية', '1BACSM':'العلوم الرياضية', '1BACL':'الآداب',
+            '2BACSVT':'علوم الحياة والأرض', '2BACSP':'العلوم الفيزيائية', '2BACSM':'العلوم الرياضية'
+        };
+        const trackLabel = trackNames[track] || track;
         const current = level.startsWith('2BAC') ? '2BAC' : level.startsWith('1BAC') ? '1BAC' : level === 'TC' ? 'TC' : '';
         const paths = fr ? [
             {id:'TC',title:'Tronc commun',desc:'Découvrir la cellule végétale, les observations microscopiques et la photosynthèse.',steps:[['gs-cell-lab-title','Cellule végétale'],['gs-microscope-title','Observer au microscope'],['gs-photo-lab-title','Photosynthèse']]},
@@ -1492,7 +1502,7 @@
             <div class="gs-level-path-links">${path.steps.map(step=>`<button type="button" data-study-anchor="${step[0]}"><span>↗</span>${step[1]}</button>`).join('')}</div>
           </article>`).join('')}</div>
           <p class="gs-level-paths-note">${fr?'Parcours de découverte complémentaires : consultez aussi les cours, exercices et examens officiels de votre niveau.':'هذه مسارات استكشاف مساعدة؛ احرص أيضاً على مراجعة الدروس والتمارين والامتحانات الخاصة بمستواك.'} <a href="#cours">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
-          ${track?`<span class="gs-level-path-track">${fr?'Filière de votre profil : ':'مسلك ملفك الدراسي: '}${escapeHtml(track)}</span>`:''}
+          ${track?`<span class="gs-level-path-track">${fr?'Filière de votre profil : ':'المسلك المسجل في ملفك: '}${escapeHtml(trackLabel)}</span>`:''}
         </section>`;
     }
 
