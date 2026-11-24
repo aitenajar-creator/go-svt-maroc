@@ -143,6 +143,8 @@ function shuffle(items){const result=items.slice();for(let i=result.length-1;i>0
 function setQuizSystem(system){activeSystem=system;Object.entries(systems).forEach(([key,group])=>group.visible=key===system);root.querySelectorAll('[data-3d-system]').forEach(button=>{const active=button.dataset['3dSystem']===system;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',active?'true':'false');});}
 function buildChallenge(){
  const previousReport=quizPanel.querySelector('.gs-3d-quiz-report');if(previousReport)previousReport.remove();
+ const previousReview=quizPanel.querySelector('.gs-3d-smart-review');if(previousReview)previousReview.remove();
+ review={active:false,queue:[],index:0,current:null,results:{}};
  challenge={active:true,finished:false,queue:[],index:0,score:0,answered:0,level:0,current:null};
  Object.keys(DATA).forEach(id=>organStats[id]={attempts:0,correct:0});
  for(let level=0;level<3;level++){
