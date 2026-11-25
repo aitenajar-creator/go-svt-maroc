@@ -2776,8 +2776,14 @@ function openScientificPhotoPreview(card){
         // Optional Masahati experience: delegate only when its assets are loaded
         // and it explicitly accepts this student account. Otherwise keep the
         // established student dashboard as the safe fallback.
-        if (window.Masahati && typeof window.Masahati.mount === 'function' && window.Masahati.mount(container)) {
-            return;
+        if (window.Masahati && typeof window.Masahati.mount === 'function') {
+            try {
+                if (window.Masahati.mount(container)) return;
+            } catch (error) {
+                // Masahati is an optional enhancement: a runtime failure must
+                // never prevent the established student dashboard from loading.
+                console.warn('Masahati mount failed; using the standard student dashboard.', error);
+            }
         }
 
         syncCurrentProfile();
