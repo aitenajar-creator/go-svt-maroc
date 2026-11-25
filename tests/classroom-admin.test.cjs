@@ -89,3 +89,10 @@ test('classroom session guard rejects stale users and detached panels',()=>{
   panel.isConnected=false;
   assert.equal(b.context.sessionIsCurrent({id:'account-b'},panel),false);
 });
+
+test('teacher pin loading stops when the account disappears during inbox loading',()=>{
+  const block=between(source('teacher-classroom.js'),'      const activeTeacher=await currentUser();','      const pinnedIds=');
+  const guard=block.indexOf('if(!activeTeacher||!sessionIsCurrent(user,host))return;');
+  const query=block.indexOf("client.from('teacher_question_pins')");
+  assert(guard>=0&&query>guard,'the active account must be revalidated before querying its pins');
+});
