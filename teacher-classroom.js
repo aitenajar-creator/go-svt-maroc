@@ -642,6 +642,7 @@
       } else if(action==='save-academic-profile'){
         const study_level=document.getElementById('gs-cl-academic-level')?.value;
         const study_track=document.getElementById('gs-cl-academic-track')?.value;
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.rpc('gosvt_set_student_academic_profile',{p_study_level:study_level,p_study_track:study_track});
         if(error){
           if(String(error.message||'').includes('academic_profile_already_set'))throw new Error(tr('تم تثبيت بياناتك الدراسية من قبل. أعد تحميل الصفحة.','Vos informations scolaires sont déjà confirmées. Actualisez la page.'));
@@ -652,6 +653,7 @@
         await refreshPanel();
       } else if(action==='join'){
         const code=document.getElementById('gs-cl-code').value.trim();
+        if(!actionSessionIsCurrent(user))return;
         const {data,error}=await client.rpc('gosvt_join_teacher_class',{p_join_code:code});
         if(error){
           if(String(error.message||'').includes('join_rate_limited'))throw new Error(tr('تجاوزت عدد المحاولات المسموح بها. حاول مجدداً بعد 15 دقيقة.','Trop de tentatives. Réessayez dans 15 minutes.'));
@@ -668,8 +670,10 @@
         if(!classId)throw new Error(tr('انضم إلى قسم أولاً قبل إرسال السؤال.','Rejoignez d’abord une classe avant d’envoyer une question.'));
         if(subject.length<3)throw new Error(tr('اكتب موضوعاً واضحاً من 3 أحرف على الأقل.','Saisissez un sujet d’au moins 3 caractères.'));
         if(body.length<5)throw new Error(tr('اكتب تفاصيل السؤال في 5 أحرف على الأقل.','Décrivez votre question en au moins 5 caractères.'));
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_questions').insert({class_id:classId,student_id:user.id,subject,body});
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم إرسال سؤالك إلى الأستاذ.','Votre question a été envoyée.'));
         await refreshPanel();
       } else if(action==='create-class'){
@@ -678,8 +682,10 @@
         const study_track=document.getElementById('gs-cl-track').value;
         if(name.length<3)throw new Error(tr('اسم القسم يجب أن يتكون من 3 أحرف على الأقل.','Le nom de la classe doit contenir au moins 3 caractères.'));
         if(!study_level||!study_track)throw new Error(tr('حدد المستوى والمسلك الدراسي.','Sélectionnez le niveau et la filière.'));
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_classes').insert({teacher_id:user.id,name,study_level,study_track});
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         await refreshPanel();
       } else if(action==='roster'){
         notice(tr('جارٍ تحميل قائمة التلاميذ ومؤشرات القسم...','Chargement de la liste des élèves et des indicateurs...'));
@@ -876,8 +882,10 @@
         const due_at=field('data-support-due')?.value||null;
         const status=field('data-support-status')?.value||'planned';
         if(title.length<2||actions.length<3)throw new Error(tr('أدخل عنواناً وإجراءات واضحة للخطة.','Saisissez un titre et des actions précises.'));
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_student_support_plans').insert({class_id:button.dataset.classId,student_id:id,teacher_id:user.id,title,actions,success_criteria,due_at,status});
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم حفظ خطة الدعم الفردية.','Plan de soutien individuel enregistré.'));
         const host=document.getElementById('gs-cl-support-'+id);
         if(host)host.innerHTML='<p class="gs-cl-msg">'+tr('حُفظت الخطة. اضغط على «خطة الدعم الفردية» لعرض السجل المحدث.','Plan enregistré. Cliquez sur « Plan de soutien individuel » pour actualiser le registre.')+'</p>';
@@ -905,8 +913,10 @@
         const note=field?field.value.trim():'';
         const note_type=typeField?typeField.value:'other';
         if(!note)throw new Error(tr('لا يمكن حفظ ملاحظة فارغة.','La note ne peut pas être vide.'));
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_student_notes').update({note,note_type}).eq('id',id);
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم تحديث الملاحظة.','Note mise à jour.'));
         const card=button.closest('[data-note-card]');
         const text=card&&card.querySelector('[data-note-text]');
@@ -914,8 +924,10 @@
         if(card){const typeBadge=card.querySelector('.gs-cl-pill');if(typeBadge)typeBadge.textContent=noteTypeLabel(note_type);if(card)card.dataset.noteType=note_type;card.querySelectorAll('label,textarea[data-edit-note],select[data-edit-note-type],button[data-action="update-student-note"]').forEach(el=>el.remove());}
       } else if(action==='delete-student-note'){
         if(!window.confirm(tr('هل تريد حذف هذه الملاحظة نهائياً؟','Supprimer définitivement cette note ?')))return;
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_student_notes').delete().eq('id',id);
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم حذف الملاحظة.','Note supprimée.'));
         const card=button.closest('[data-note-card]');
         if(card)card.remove();
@@ -925,8 +937,10 @@
         const typeField=document.querySelector('[data-note-type-for="'+CSS.escape(id)+'"]');
         const note_type=typeField?typeField.value:'other';
         if(!note)throw new Error(tr('اكتب الملاحظة قبل الحفظ.','Saisissez une note avant l’enregistrement.'));
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_student_notes').insert({class_id:button.dataset.classId,student_id:id,teacher_id:user.id,note,note_type});
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم حفظ الملاحظة الخاصة.','Note privée enregistrée.'));
         const notesHost=document.getElementById('gs-cl-notes-'+id);
         if(notesHost)notesHost.innerHTML='<p class="gs-cl-msg">'+tr('حُفظت الملاحظة. اضغط على «ملاحظات الأستاذ الخاصة» لعرض السجل المحدث.','Note enregistrée. Cliquez sur « Notes pédagogiques privées » pour actualiser le registre.')+'</p>';
@@ -940,14 +954,18 @@
         if(rawUrl&&!resource_url)throw new Error(tr('الرابط يجب أن يبدأ بـ http أو https.','Le lien doit commencer par http ou https.'));
         const rawDue=document.getElementById('gs-cl-assignment-due').value;
         const due_at=rawDue?new Date(rawDue).toISOString():null;
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_assignments').insert({class_id,created_by:user.id,title,instructions,resource_url,due_at});if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم نشر الواجب.','Devoir publié.'));await refreshPanel();
       } else if(action==='create-announcement'){
         const class_id=document.getElementById('gs-cl-announcement-class').value;
         const title=document.getElementById('gs-cl-announcement-title').value.trim();
         const body=document.getElementById('gs-cl-announcement-body').value.trim();
         if(title.length<2||body.length<1)throw new Error(tr('أدخل عنوان الإعلان ونصه.','Saisissez le titre et le texte de l’annonce.'));
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_announcements').insert({class_id,created_by:user.id,title,body});if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم نشر الإعلان.','Annonce publiée.'));await refreshPanel();
       } else if(action==='create-session'){
         const class_id=document.getElementById('gs-cl-session-class').value;
@@ -963,13 +981,17 @@
         const rawUrl=document.getElementById('gs-cl-session-url').value.trim();
         const meeting_url=rawUrl?safeHttpUrl(rawUrl):null;
         if(rawUrl&&!meeting_url)throw new Error(tr('الرابط يجب أن يبدأ بـ http أو https.','Le lien doit commencer par http ou https.'));
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_review_sessions').insert({class_id,created_by:user.id,title,description,starts_at,meeting_url});if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تمت برمجة حصة المراجعة.','Séance programmée.'));await refreshPanel();
       } else if(action==='submit-assignment'){
         const field=document.querySelector('[data-answer-for="'+CSS.escape(id)+'"]');
         const answer=field?field.value.trim():'';
         if(!answer)throw new Error(tr('اكتب إجابتك قبل الإرسال.','Saisissez votre réponse avant l’envoi.'));
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_assignment_submissions').insert({assignment_id:id,student_id:user.id,answer});if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم إرسال إجابتك إلى الأستاذ.','Votre réponse a été envoyée.'));await refreshPanel();
       } else if(action==='grade-submission'){
         const scoreField=document.querySelector('[data-score-for="'+CSS.escape(id)+'"]');
@@ -978,7 +1000,9 @@
         const score=rawScore===''?null:Number(rawScore);
         if(score!==null&&(!Number.isFinite(score)||score<0||score>20))throw new Error(tr('النقطة يجب أن تكون بين 0 و20.','La note doit être comprise entre 0 et 20.'));
         const feedback=feedbackField?feedbackField.value.trim():'';
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.from('teacher_assignment_submissions').update({score,feedback,reviewed_at:new Date().toISOString()}).eq('id',id);if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم حفظ التصحيح.','Correction enregistrée.'));await refreshPanel();
       } else if(action==='export-class-report'){
         if(!lastClassReport)throw new Error(tr('لا يوجد تقرير جاهز للتصدير.','Aucun rapport disponible à exporter.'));
@@ -993,11 +1017,15 @@
         if(existing.error)throw existing.error;
         if(!actionSessionIsCurrent(user))return;
         if(existing.data){
+          if(!actionSessionIsCurrent(user))return;
           const {error}=await client.from('teacher_question_pins').delete().eq('teacher_id',user.id).eq('question_id',id);
           if(error)throw error;
+          if(!actionSessionIsCurrent(user))return;
         }else{
+          if(!actionSessionIsCurrent(user))return;
           const {error}=await client.from('teacher_question_pins').insert({teacher_id:user.id,question_id:id});
           if(error)throw error;
+          if(!actionSessionIsCurrent(user))return;
         }
         await refreshPanel();
       } else if(action==='thread'){
@@ -1012,10 +1040,12 @@
           field.dataset.replyBody = body;
           field.dataset.replyOwner = user.id;
         }
+        if(!actionSessionIsCurrent(user))return;
         const {error}=await client.rpc('gosvt_send_teacher_reply',{
           p_question_id:id, p_body:body, p_client_message_id:field.dataset.replyToken, p_expected_sender_id:user.id
         });
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         await renderThread(id);
         notice(tr('تم إرسال الرد.','Réponse envoyée.'));
       }
