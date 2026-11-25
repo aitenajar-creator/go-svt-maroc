@@ -644,17 +644,20 @@
         const study_track=document.getElementById('gs-cl-academic-track')?.value;
         if(!actionSessionIsCurrent(user))return;
         const {error}=await client.rpc('gosvt_set_student_academic_profile',{p_study_level:study_level,p_study_track:study_track});
+        if(!actionSessionIsCurrent(user))return;
         if(error){
           if(String(error.message||'').includes('academic_profile_already_set'))throw new Error(tr('تم تثبيت بياناتك الدراسية من قبل. أعد تحميل الصفحة.','Vos informations scolaires sont déjà confirmées. Actualisez la page.'));
           throw error;
         }
         if (window.StudentAccount && window.StudentAccount.refreshProfile) await window.StudentAccount.refreshProfile();
+        if(!actionSessionIsCurrent(user))return;
         notice(tr('تم تثبيت المستوى والمسلك بنجاح.','Votre niveau et votre filière ont été confirmés.'));
         await refreshPanel();
       } else if(action==='join'){
         const code=document.getElementById('gs-cl-code').value.trim();
         if(!actionSessionIsCurrent(user))return;
         const {data,error}=await client.rpc('gosvt_join_teacher_class',{p_join_code:code});
+        if(!actionSessionIsCurrent(user))return;
         if(error){
           if(String(error.message||'').includes('join_rate_limited'))throw new Error(tr('تجاوزت عدد المحاولات المسموح بها. حاول مجدداً بعد 15 دقيقة.','Trop de tentatives. Réessayez dans 15 minutes.'));
           if(String(error.message||'').includes('academic_profile_required'))throw new Error(tr('ثبّت المستوى والمسلك الدراسي أولاً.','Confirmez d’abord votre niveau et votre filière.'));
