@@ -298,6 +298,9 @@
     const active=typeof account.getUser==='function'?account.getUser():null;
     return !!active&&active.id===user.id;
   }
+  function actionSessionIsCurrent(user) {
+    return sessionIsCurrent(user,document.getElementById('gs-cl-content'));
+  }
   async function profileFor(user) {
     const {data,error}=await client.from('profiles').select('id,display_name,role').eq('id',user.id).single();
     if(error) throw error;
@@ -633,6 +636,7 @@
     busy=true;button.disabled=true;
     try {
       const user=await currentUser();if(!user)throw new Error(tr('يرجى تسجيل الدخول.','Veuillez vous connecter.'));
+      if(!actionSessionIsCurrent(user))return;
       if(action==='refresh-panel'){
         await refreshPanel();
       } else if(action==='save-academic-profile'){
@@ -980,6 +984,7 @@
       } else if(action==='toggle-pin'){
         const existing=await client.from('teacher_question_pins').select('question_id').eq('teacher_id',user.id).eq('question_id',id).maybeSingle();
         if(existing.error)throw existing.error;
+        if(!actionSessionIsCurrent(user))return;
         if(existing.data){
           const {error}=await client.from('teacher_question_pins').delete().eq('teacher_id',user.id).eq('question_id',id);
           if(error)throw error;
