@@ -341,14 +341,16 @@
           updatedAt: Number(n.updatedAt) || Date.now()
         }));
       if (!rows.length) return;
+      let rejectedRestores = 0;
       for (const item of rows) {
         if (JSON.stringify(item).length > 10000) throw new Error('الملاحظة تتجاوز الحد المسموح للتخزين السحابي.');
         const { data, error } = await client.rpc('gosvt_upsert_student_collection_item', {
           p_collection: 'notes', p_item_key: item.id, p_expected_student_id: studentId, p_item: item
         });
         if (error) throw error;
-        if (data === false) throw new Error('الملاحظة محذوفة سابقاً في السحابة؛ لن تتم استعادتها من نسخة قديمة.');
+        if (data === false) rejectedRestores++;
       }
+      if (rejectedRestores) throw new Error('تم حفظ بقية الملاحظات، لكن رُفضت استعادة ' + rejectedRestores + ' ملاحظة محذوفة سابقاً من نسخة قديمة.');
     },
 
     async deleteNote(noteId, expectedStudentId) {
@@ -418,13 +420,15 @@
           updatedAt: Number(item.updatedAt) || Date.now()
         }));
       if (!rows.length) return;
+      let rejectedRestores = 0;
       for (const item of rows) {
         const { data, error } = await client.rpc('gosvt_upsert_student_collection_item', {
           p_collection: 'studyPlan', p_item_key: item.id, p_expected_student_id: studentId, p_item: item
         });
         if (error) throw error;
-        if (data === false) throw new Error('عنصر خطة الدراسة محذوف سابقاً في السحابة؛ لن تتم استعادته من نسخة قديمة.');
+        if (data === false) rejectedRestores++;
       }
+      if (rejectedRestores) throw new Error('تم حفظ بقية عناصر خطة الدراسة، لكن رُفضت استعادة ' + rejectedRestores + ' عناصر محذوفة سابقاً من نسخة قديمة.');
     },
 
     async deleteStudyPlanItem(itemId, expectedStudentId) {
