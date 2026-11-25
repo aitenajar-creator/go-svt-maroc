@@ -3,7 +3,7 @@
 -- student_id-only shape without touching existing student progress/notes/favorites tables.
 
 create table if not exists public.student_platform_state (
-  student_id uuid not null references auth.users(id) on delete cascade,
+  student_id uuid not null,
   profile_id text not null default 'default',
   state jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now(),
@@ -78,29 +78,13 @@ begin
   end if;
 end $$;
 
-do $
-declare
-  student_id_attnum smallint;
-begin
-  select attnum into student_id_attnum
-  from pg_attribute
-  where attrelid = 'public.student_platform_state'::regclass
-    and attname = 'student_id'
-    and not attisdropped;
-
-  if not exists (
-    select 1
-    from pg_constraint
-    where conrelid = 'public.student_platform_state'::regclass
-      and contype = 'f'
-      and conkey = array[student_id_attnum]::smallint[]
-      and confrelid = 'auth.users'::regclass
-  ) then
-    alter table public.student_platform_state
-      add constraint student_platform_state_student_id_fkey
-      foreign key (student_id) references auth.users(id) on delete cascade;
-  end if;
-end $;
+-- Ensure a foreign key exists for both fresh and legacy table shapes.
+-- A legacy FK under a different name may remain as an equivalent guard.
+alter table public.student_platform_state
+  drop constraint if exists student_platform_state_student_id_fkey;
+alter table public.student_platform_state
+  add constraint student_platform_state_student_id_fkey
+  foreign key (student_id) references auth.users(id) on delete cascade;
 
 alter table public.student_platform_state enable row level security;
 
