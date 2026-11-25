@@ -8,7 +8,7 @@ create function auth.uid() returns uuid language sql stable as $$
 $$;
 grant usage on schema auth, public to authenticated;
 grant execute on function auth.uid() to authenticated;
-create table public.profiles(id uuid primary key references auth.users(id), role text not null);
+create table public.profiles(id uuid primary key references auth.users(id) on delete cascade, role text not null);
 grant select on public.profiles to authenticated;
 create table public.private_student_lessons(id uuid primary key, title text, is_published boolean not null default true);
 grant select on public.private_student_lessons to authenticated;
