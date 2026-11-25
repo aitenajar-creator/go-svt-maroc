@@ -139,7 +139,9 @@
           typeof mistake.correct === 'string' && mistake.correct.trim() &&
           mistake.selected.trim() !== mistake.correct.trim();
       });
-      return quizId.length > 0 && quizId.length <= 200 &&
+      const samePathway = String(item.level || '').trim().toUpperCase() === selectedLevel &&
+        String(item.track || '').replace(/\\s+/g, '').toUpperCase() === selectedTrack;
+      return samePathway && quizId.length > 0 && quizId.length <= 200 &&
         Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
         Number.isFinite(date) && date > 0 && hasReviewableMistake;
     }).sort(function (a, b) { return Number(b.date) - Number(a.date); })[0];
