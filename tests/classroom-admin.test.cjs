@@ -160,3 +160,22 @@ test('teacher community requests reject stale account generations',()=>{
   b.context.user={id:'teacher-b'};
   assert.equal(b.context.communitySessionIsCurrent(snapshot),false);
 });
+
+
+test('teacher community mutations revalidate the account around writes',()=>{
+  const community=source('teacher-community.js');
+  const cases=[
+    ['async function handleEditResource(e)','async function findResource(id)','client.from(\'teacher_community_resources\').update(','updated.error'],
+    ['async function safelyDeleteResource(r, session = captureCommunitySession())','async function deleteResource(id)','client.from(\'teacher_community_resources\')','hidden.error'],
+    ['async function handleUpload(e)','async function handleAdminAction(e)','client.storage.from(\'teacher-community\').upload(','upload.error'],
+    ['async function handleAdminAction(e)','async function inviteFriends()','client.from(\'teacher_community_members\').update(','updated.error']
+  ];
+  for(const [start,end,requestMarker,responseMarker] of cases){
+    const block=between(community,start,end);
+    const request=block.indexOf(requestMarker);
+    const before=block.lastIndexOf('communitySessionIsCurrent(session)',request);
+    const after=block.indexOf('communitySessionIsCurrent(session)',request);
+    assert(request>=0&&before>=0&&after>request,'session must be checked around '+requestMarker);
+    assert(block.indexOf(responseMarker,request)>=0,'expected response handling after '+requestMarker);
+  }
+});
