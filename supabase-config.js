@@ -333,29 +333,21 @@
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !Array.isArray(notes) || !notes.length) return;
       const rows = notes.filter(n => n && typeof n === 'object' && n.id)
-        .map(n => {
-          const payload = {
-            id: String(n.id),
-            title: String(n.title || '').slice(0, 120),
-            body: String(n.body || '').slice(0, 5000),
-            createdAt: Number(n.createdAt) || Date.now(),
-            updatedAt: Number(n.updatedAt) || Date.now()
-          };
-          return {
-            student_id: studentId,
-            content_key: payload.id.slice(0, 500),
-            note: JSON.stringify(payload),
-            updated_at: new Date(payload.updatedAt).toISOString()
-          };
-        });
+        .map(n => ({
+          id: String(n.id).slice(0, 500),
+          title: String(n.title || '').slice(0, 120),
+          body: String(n.body || '').slice(0, 5000),
+          createdAt: Number(n.createdAt) || Date.now(),
+          updatedAt: Number(n.updatedAt) || Date.now()
+        }));
       if (!rows.length) return;
-      rows.forEach(row => {
-        if (row.note.length > 10000) throw new Error('الملاحظة تتجاوز الحد المسموح للتخزين السحابي.');
-      });
-      const { error } = await client.from('student_notes').upsert(rows, {
-        onConflict: 'student_id,content_key'
-      });
-      if (error) throw error;
+      for (const item of rows) {
+        if (JSON.stringify(item).length > 10000) throw new Error('الملاحظة تتجاوز الحد المسموح للتخزين السحابي.');
+        const { error } = await client.rpc('gosvt_upsert_student_collection_item', {
+          p_collection: 'notes', p_item_key: item.id, p_expected_student_id: studentId, p_item: item
+        });
+        if (error) throw error;
+      }
     },
 
     async deleteNote(noteId, expectedStudentId) {
@@ -416,20 +408,21 @@
       if (!studentId || !Array.isArray(items) || !items.length) return;
       const rows = items.filter(item => item && typeof item === 'object' && item.id && item.date)
         .map(item => ({
-          student_id: studentId,
-          item_key: String(item.id).slice(0, 500),
+          id: String(item.id).slice(0, 500),
           title: String(item.title || '').trim().slice(0, 120),
-          scheduled_date: String(item.date),
-          duration_minutes: Math.min(600, Math.max(5, Number(item.duration) || 30)),
+          date: String(item.date),
+          duration: Math.min(600, Math.max(5, Number(item.duration) || 30)),
           completed: item.completed === true,
-          created_at: new Date(Number(item.createdAt) || Date.now()).toISOString(),
-          updated_at: new Date(Number(item.updatedAt) || Date.now()).toISOString()
+          createdAt: Number(item.createdAt) || Date.now(),
+          updatedAt: Number(item.updatedAt) || Date.now()
         }));
       if (!rows.length) return;
-      const { error } = await client.from('student_study_plan').upsert(rows, {
-        onConflict: 'student_id,item_key'
-      });
-      if (error) throw error;
+      for (const item of rows) {
+        const { error } = await client.rpc('gosvt_upsert_student_collection_item', {
+          p_collection: 'studyPlan', p_item_key: item.id, p_expected_student_id: studentId, p_item: item
+        });
+        if (error) throw error;
+      }
     },
 
     async deleteStudyPlanItem(itemId, expectedStudentId) {
