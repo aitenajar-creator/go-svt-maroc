@@ -51,7 +51,8 @@
         "20261121000100_student_lesson_objectives.sql",
         "20261125000100_student_collection_deletions.sql",
         "20261125000200_per_lesson_objectives.sql",
-        "20261125000300_atomic_teacher_question_replies.sql"
+        "20261125000300_atomic_teacher_question_replies.sql",
+        "20261125000400_recreate_student_collection_items.sql"
       ]
     },
     "teacher-community": {
