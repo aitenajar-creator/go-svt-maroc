@@ -88,8 +88,10 @@
       : (window.StudentSpace && typeof window.StudentSpace.getCurrentProfile === 'function'
         ? window.StudentSpace.getCurrentProfile() : null);
     const selectedLevel = String(currentProfile && currentProfile.study_level || '').toUpperCase();
-    const selectedTrack = String(currentProfile && currentProfile.study_track || '').replace(/\\s+/g, '').toUpperCase();
-    const inSelectedPathway = item => isProgressRecord(item) && item.level === selectedLevel && item.track === selectedTrack;
+    const selectedTrack = String(currentProfile && currentProfile.study_track || '').replace(/\s+/g, '').toUpperCase();
+    const inSelectedPathway = item => isProgressRecord(item) &&
+      String(item.level || '').trim().toUpperCase() === selectedLevel &&
+      String(item.track || '').replace(/\s+/g, '').toUpperCase() === selectedTrack;
     const lessons = Object.values(progress.lessons && typeof progress.lessons === 'object' && !Array.isArray(progress.lessons)
       ? progress.lessons : {}).filter(inSelectedPathway);
     const exercises = Object.values(progress.exercises && typeof progress.exercises === 'object' && !Array.isArray(progress.exercises)
@@ -141,8 +143,10 @@
         Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
         Number.isFinite(date) && date > 0 && hasReviewableMistake;
     }).sort(function (a, b) { return Number(b.date) - Number(a.date); })[0];
-    const profile = window.StudentSpace && typeof window.StudentSpace.getCurrentProfile === 'function'
-      ? window.StudentSpace.getCurrentProfile() : null;
+    const profile = window.StudentAccount && typeof window.StudentAccount.getProfile === 'function'
+      ? window.StudentAccount.getProfile()
+      : (window.StudentSpace && typeof window.StudentSpace.getCurrentProfile === 'function'
+        ? window.StudentSpace.getCurrentProfile() : null);
     const stats = profile && window.StudentSpace && typeof window.StudentSpace.getDashboardStatsForPath === 'function'
       ? window.StudentSpace.getDashboardStatsForPath(profile.study_level, profile.study_track)
       : (window.StudentSpace && typeof window.StudentSpace.getDashboardStats === 'function'
