@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 
 function harness({readResult={data:null,error:null},writeResult={error:null}}={}) {
-  const source = fs.readFileSync(require('node:path').join(__dirname,'masahati.js'),'utf8');
+  const source = fs.readFileSync(require('node:path').join(__dirname,'..','masahati.js'),'utf8');
   const start = source.indexOf('let _ps = null, _psPid = null, _saveT = null;');
   const end = source.indexOf('\nfunction bump(kind)', start);
   assert(start >= 0 && end > start);
