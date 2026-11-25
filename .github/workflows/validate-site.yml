@@ -89,7 +89,7 @@ jobs:
           with open("dates.json", "w", encoding="utf-8") as output:
               json.dump(dates, output, ensure_ascii=False)
           PY
-          chmod -R u+w _site
+          sudo chown -R "$(id -u):$(id -g)" _site
           cp dates.json _site/dates.json
 
       - name: Stamp release-scoped offline caches
