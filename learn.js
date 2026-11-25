@@ -139,6 +139,28 @@
     let quizListPromise = null;
     const quizCache = {};
     let quizState = null;
+    let quizRequest = 0;
+    function quizOwner() {
+        const account = window.StudentAccount;
+        const user = account && account.isLoggedIn() && account.getUser();
+        return user ? String(user.id) : 'guest';
+    }
+    const quizScoresKey = owner => 'gosvt-quiz:' + owner;
+    let activeQuizOwner = quizOwner();
+    function cancelQuiz() {
+        quizRequest++;
+        quizState = null;
+        const modal = document.getElementById('gs-quiz-modal');
+        if (modal && !modal.hidden) closeModal(modal);
+    }
+    document.addEventListener('gosvt:auth-changed', function () {
+        const owner = quizOwner();
+        if (owner === activeQuizOwner) return;
+        activeQuizOwner = owner;
+        cancelQuiz();
+        const section = document.getElementById('quiz');
+        if (section) renderQuizList(section);
+    });
 
     function loadQuizList() {
         if (!quizListPromise) {
@@ -204,7 +226,7 @@
             if (container.dataset.requestId !== requestId) return;
             if (!items.length) { container.innerHTML = empty; return; }
 
-            const scores = readObject('gosvt-quiz');
+            const scores = readObject(quizScoresKey(quizOwner()));
             container.innerHTML = `<p class="files-count">${items.length} ${t('اختبار', 'quiz')}</p>` + items.map(({ path, quiz }) => {
                 const sub = path.slice(prefix.length).split('/').slice(0, -1).join(' / ');
                 const sc = scores[path];
@@ -247,19 +269,29 @@
 
     const quizModal = () => document.getElementById('gs-quiz-modal');
     const quizBody = () => document.querySelector('#gs-quiz-modal .gs-quiz-body');
+    const prevQuizCloseModal = closeModal;
+    closeModal = function (modal) {
+        if (modal && modal.id === 'gs-quiz-modal') { quizRequest++; quizState = null; }
+        return prevQuizCloseModal.apply(this, arguments);
+    };
 
     async function openQuiz(path) {
         const modal = quizModal();
         if (!modal) return;
+        const request = ++quizRequest;
+        const owner = quizOwner();
+        activeQuizOwner = owner;
+        quizState = null;
         const title = modal.querySelector('.gs-modal-title');
         title.textContent = `❓ ${fileTitle(path)}`;
         quizBody().innerHTML = `<p class="loading">${t('جاري التحميل...', 'Chargement...')}</p>`;
         openModal('gs-quiz-modal');
         try {
             const quiz = await loadQuiz(path);
+            if (request !== quizRequest || owner !== quizOwner() || modal.hidden) return;
             if (quiz.titre) title.textContent = `❓ ${quiz.titre}`;
             quizState = {
-                path, quiz, order: shuffle(quiz.questions.map((_, i) => i)),
+                owner, path, quiz, order: shuffle(quiz.questions.map((_, i) => i)),
                 index: 0, score: 0, wrong: [], answered: false,
                 attemptId: (window.crypto && crypto.randomUUID)
                     ? crypto.randomUUID()
@@ -268,6 +300,7 @@
             };
             renderQuestion();
         } catch (e) {
+            if (request !== quizRequest || owner !== quizOwner() || modal.hidden) return;
             quizBody().innerHTML = `<p class="error">${t('تعذر تحميل الاختبار.', 'Impossible de charger ce quiz.')} <small>(${escapeHtml(e.message)})</small></p>`;
         }
     }
@@ -303,6 +336,7 @@
     function answer(choice) {
         const s = quizState;
         if (!s || s.answered) return;
+        if (s.owner !== quizOwner()) { cancelQuiz(); return; }
         s.answered = true;
         const q = s.quiz.questions[s.order[s.index]];
         const ok = choice === q.reponse;
@@ -330,7 +364,8 @@
 
     function nextQuestion() {
         const s = quizState;
-        if (!s) return;
+        if (!s || !s.answered) return;
+        if (s.owner !== quizOwner()) { cancelQuiz(); return; }
         s.answered = false;
         s.index++;
         if (s.index < s.order.length) renderQuestion(); else renderResult();
@@ -338,20 +373,21 @@
 
     function renderResult() {
         const s = quizState;
+        if (!s || s.owner !== quizOwner()) { cancelQuiz(); return; }
         const total = s.order.length;
         const pct = Math.round(s.score / total * 100);
         let best = pct;
         if (!s.reviewMode) {
-            const scores = readObject('gosvt-quiz');
+            const scores = readObject(quizScoresKey(quizOwner()));
             best = Math.max(pct, scores[s.path] ? scores[s.path].best : 0);
             scores[s.path] = { best, last: pct, date: Date.now() };
-            storage.set('gosvt-quiz', JSON.stringify(scores));
+            storage.set(quizScoresKey(s.owner), JSON.stringify(scores));
             trackEvent('quiz', s.path);
         }
 
         // Save modern course quizzes to the student's personal assessment history.
         // Keep the attempt token stable so duplicate result rendering cannot add repeats.
-        if (!s.reviewMode && !s.resultSaved && window.StudentSpace &&
+        if (!s.reviewMode && s.owner !== 'guest' && !s.resultSaved && window.StudentSpace &&
             typeof window.StudentSpace.saveQuizResult === 'function') {
             const mistakes = s.wrong.map(function (item) {
                 return {
@@ -421,6 +457,7 @@
         if (!safeItems.length) return false;
         if (!quizModal()) buildQuizModal();
 
+        quizRequest++;
         const path = String(safeItems[0].quizId || 'mistakes-review');
         const questions = safeItems.map(item => ({
             question: item.question.slice(0, 2000),
@@ -432,6 +469,7 @@
         const title = quizModal().querySelector('.gs-modal-title');
         if (title) title.textContent = t('مراجعة أخطائي', 'Révision de mes erreurs');
         quizState = {
+            owner: quizOwner(),
             path: path,
             quiz: { titre: t('مراجعة أخطائي', 'Révision de mes erreurs'), questions: questions, auto: false },
             order: shuffle(questions.map((_, index) => index)),

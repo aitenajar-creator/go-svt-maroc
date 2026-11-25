@@ -87,8 +87,8 @@ async function start(){
   const list=panel.querySelector('.gs-objective-list');
   const progress=panel.querySelector('.gs-objective-progress');
   const status=document.createElement('p');status.setAttribute('role','status');status.textContent='Chargement de votre progression…';panel.appendChild(status);
-  let savedObjectives={};
-  const objectiveKey='private-lesson:'+id;
+  // Each lesson owns a separate row; another open lesson cannot replace it.
+  let savedObjectives=[];
   function renderObjectiveProgress(){
    const done=list.querySelectorAll('input:checked').length;
    progress.textContent=done+'/'+objectiveSet.items.length+' objectifs cochés'+(done===objectiveSet.items.length?' — Bravo, tous les objectifs sont cochés !':'');
@@ -100,17 +100,16 @@ async function start(){
   });
   (async function(){
    try{
-    const result=await client.from('student_learning_state').select('lesson_objectives').eq('student_id',user.id).maybeSingle();
+    const result=await client.from('student_lesson_objectives').select('checked_indices').eq('student_id',user.id).eq('lesson_id',id).maybeSingle();
     if(result.error)throw result.error;
-    savedObjectives=result.data&&result.data.lesson_objectives&&typeof result.data.lesson_objectives==='object'?result.data.lesson_objectives:{};
+    savedObjectives=Array.isArray(result.data&&result.data.checked_indices)?result.data.checked_indices:[];
     const checks=list.querySelectorAll('input[type="checkbox"]');
-    const saved=Array.isArray(savedObjectives[objectiveKey])?savedObjectives[objectiveKey]:[];
+    const saved=savedObjectives;
     checks.forEach((cb,i)=>{cb.checked=saved.includes(i);cb.disabled=false;});
     renderObjectiveProgress();
     status.textContent='Progression synchronisée avec votre compte.';
    }catch(loadError){
-    list.querySelectorAll('input').forEach(cb=>cb.disabled=false);
-    status.textContent='Sauvegarde indisponible pour le moment : vos coches restent temporaires.';
+    status.textContent='Impossible de charger la progression. Rechargez la page avant de modifier les objectifs.';
     console.warn('Impossible de charger les objectifs du cours',loadError);
    }
   })();
@@ -119,13 +118,13 @@ async function start(){
   list.addEventListener('change',function(){
    renderObjectiveProgress();
    const checks=Array.from(list.querySelectorAll('input[type="checkbox"]'));
-   savedObjectives[objectiveKey]=checks.map((cb,i)=>cb.checked?i:null).filter(i=>i!==null);
-   const snapshot=JSON.parse(JSON.stringify(savedObjectives));
+   savedObjectives=checks.map((cb,i)=>cb.checked?i:null).filter(i=>i!==null);
+   const snapshot=savedObjectives.slice();
    const version=++objectiveSaveVersion;
    status.textContent='Enregistrement…';
    // Serialize writes so rapid checkbox changes cannot finish out of order.
    objectiveSaveQueue=objectiveSaveQueue.catch(()=>{}).then(async()=>{
-    const result=await client.from('student_learning_state').upsert({student_id:user.id,lesson_objectives:snapshot,updated_at:new Date().toISOString()},{onConflict:'student_id'});
+    const result=await client.from('student_lesson_objectives').upsert({student_id:user.id,lesson_id:id,checked_indices:snapshot,updated_at:new Date().toISOString()},{onConflict:'student_id,lesson_id'});
     if(result.error)throw result.error;
     if(version===objectiveSaveVersion)status.textContent='Progression enregistrée dans votre compte.';
    }).catch(saveError=>{
@@ -181,16 +180,17 @@ async function start(){
    const win=frame.contentWindow,doc=win.document;
    if(!win||!doc)return;
    const measure=()=>Math.max(0,doc.documentElement.scrollHeight-win.innerHeight);
+   const showSaved=()=>updateReadingUI(Math.min(100,Math.round(savedPosition/Math.max(1,measure())*100)));
    const refresh=()=>{
     const max=measure(),position=Math.min(max,Math.max(0,win.scrollY||doc.documentElement.scrollTop||0));
     const percent=max?Math.min(100,Math.round(position/max*100)):0;
     try{localStorage.setItem(readingKey,JSON.stringify({position,percent,updatedAt:Date.now()}));}catch(storageError){}
     savedPosition=position;updateReadingUI(percent);
    };
-   if(savedPosition>0)updateReadingUI(Math.min(100,Math.round(savedPosition/Math.max(1,measure())*100)));
+   // Loading/resizing is not a reading action. Preserve the resume point until scrolling.
+   showSaved();
    win.addEventListener('scroll',refresh,{passive:true});
-   win.addEventListener('resize',refresh);
-   refresh();
+   win.addEventListener('resize',showSaved);
   }catch(readError){console.warn('Reading position tracking unavailable',readError);}
  });
  // Load via document.write fallback as well as srcdoc: avoids browser edge cases where
@@ -265,7 +265,25 @@ async function start(){
  const st=document.createElement('style');st.textContent='.gs-lesson-checkpoint{margin:1rem auto 2rem;max-width:1100px;padding:1.2rem;border-radius:16px;background:#f6fbf5;border:1px solid #d7e8d5;color:#244631}.gs-lesson-checkpoint h2{margin-top:0}.gs-lesson-checkpoint fieldset{border:1px solid #d5e3d3;border-radius:12px;margin:.8rem 0;padding:1rem;background:white}.gs-lesson-checkpoint legend{font-weight:700}.gs-lesson-checkpoint label{display:block;padding:.35rem}.gs-lesson-checkpoint button{padding:.65rem 1rem;border:0;border-radius:9px;background:#24633e;color:white;font-weight:700;cursor:pointer}.gs-lesson-checkpoint .feedback{padding:.75rem;margin:.6rem 0;background:#eef5ec;border-radius:9px}';document.head.appendChild(st);
  const form=quiz.querySelector('form');bank.forEach((q,i)=>{const fs=document.createElement('fieldset');const legend=document.createElement('legend');legend.textContent=(i+1)+'. '+q.q;fs.appendChild(legend);q.a.forEach((a,j)=>{const label=document.createElement('label'),radio=document.createElement('input');radio.type='radio';radio.name='q'+i;radio.value=String(j);label.append(radio,document.createTextNode(' '+a));fs.appendChild(label);});form.appendChild(fs);});
  $('lesson-frame-wrap').after(quiz);
- quiz.querySelector('#gs-checkpoint-submit').addEventListener('click',async()=>{const feedback=quiz.querySelector('#gs-checkpoint-feedback');let score=0,complete=true;bank.forEach((q,i)=>{const selected=form.querySelector('input[name="q'+i+'"]:checked');if(!selected){complete=false;return;}if(Number(selected.value)===q.correct)score++;});if(!complete){feedback.textContent='يرجى الإجابة عن الأسئلة الثلاثة قبل التصحيح.';return;}feedback.innerHTML='<p><strong>نتيجتك: '+score+'/'+bank.length+'</strong> — '+(score>=2?'أحسنت! يمكنك اعتبار هذا المحور مكتسباً.':'راجع التفسيرات ثم أعد المحاولة.')+'</p>'+bank.map((q,i)=>'<div class="feedback"><strong>'+(i+1)+'. '+q.why+'</strong></div>').join('');if(score>=2){try{await client.from('student_progress').upsert({student_id:user.id,content_key:'private-lesson:'+id,content_type:'lesson',completed:true,updated_at:new Date().toISOString()},{onConflict:'student_id,content_key,content_type'});feedback.insertAdjacentHTML('beforeend','<p>تم تسجيل إنجاز الدرس في حسابك.</p>');}catch(e){}}});
+ const submit=quiz.querySelector('#gs-checkpoint-submit');
+ submit.addEventListener('click',async()=>{
+  if(submit.disabled)return;
+  const feedback=quiz.querySelector('#gs-checkpoint-feedback');
+  let score=0,complete=true;
+  bank.forEach((q,i)=>{const selected=form.querySelector('input[name="q'+i+'"]:checked');if(!selected){complete=false;return;}if(Number(selected.value)===q.correct)score++;});
+  if(!complete){feedback.textContent='يرجى الإجابة عن الأسئلة الثلاثة قبل التصحيح.';return;}
+  feedback.innerHTML='<p><strong>نتيجتك: '+score+'/'+bank.length+'</strong> — '+(score>=2?'أحسنت! يمكنك اعتبار هذا المحور مكتسباً.':'راجع التفسيرات ثم أعد المحاولة.')+'</p>'+bank.map((q,i)=>'<div class="feedback"><strong>'+(i+1)+'. '+q.why+'</strong></div>').join('');
+  if(score<2)return;
+  submit.disabled=true;
+  try{
+   const result=await client.from('student_progress').upsert({student_id:user.id,content_key:'private-lesson:'+id,content_type:'lesson',completed:true,updated_at:new Date().toISOString()},{onConflict:'student_id,content_key,content_type'});
+   if(result.error)throw result.error;
+   feedback.insertAdjacentHTML('beforeend','<p>تم تسجيل إنجاز الدرس في حسابك.</p>');
+  }catch(error){
+   feedback.insertAdjacentHTML('beforeend','<p role="alert">تعذر حفظ إنجاز الدرس. نتيجتك ظاهرة أعلاه؛ اضغط التصحيح مجدداً لإعادة محاولة الحفظ.</p>');
+   console.warn('[GoSVT reader] Completion save failed:',error);
+  }finally{submit.disabled=false;}
+ });
  }
 
 }

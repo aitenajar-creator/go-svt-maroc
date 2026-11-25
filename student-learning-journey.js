@@ -177,7 +177,9 @@
     // learner to a language with zero quizzes when the other language has them.
     const available = type === 'quiz'
       ? (data.quizzesByLanguage || {})
-      : (data.byLanguage[type] || {});
+      : Object.fromEntries(LANGUAGES.map(language => [
+          language, Number(data.byLanguage[language] && data.byLanguage[language][type]) || 0
+        ]));
     if (Number(available[preferred]) > 0) return preferred;
     const alternate = preferred === 'francais' ? 'arabe' : 'francais';
     if (Number(available[alternate]) > 0) return alternate;

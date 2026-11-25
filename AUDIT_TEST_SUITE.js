@@ -302,8 +302,10 @@
             const profileId = window.StudentSpace.createProfile('FavTestUser');
             window.StudentSpace.switchProfile(profileId);
             
-            // The standalone runner starts with an empty container, so render explicitly.
+            // The favorites panel is lazy: exercise the same tab action as a learner.
             window.StudentSpace.renderStudentSpace();
+            const favoritesTab = document.querySelector('.space-tab[data-tab="favorites"]');
+            if (favoritesTab) favoritesTab.click();
             const favoriteLink = document.querySelector('#panel-favorites .favorite-item a');
             logTest('8.1 Lecture favoris existants', !!favoriteLink && /test-favorite/.test(favoriteLink.href),
                 'Favori lu depuis gosvt-favs (format tableau de chemins)');

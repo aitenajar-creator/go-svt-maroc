@@ -370,6 +370,25 @@
         }
     }
 
+    function applyCloudDeletions(profileId, deletions) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId] || !deletions) return;
+        const key = profileId + '_gosvt_cloud_tombstones';
+        const previous = storage.get(key) || {};
+        const all = {};
+        [['notes', STORAGE_KEYS.NOTES], ['studyPlan', STORAGE_KEYS.STUDY_PLAN]].forEach(function ([kind, storageKey]) {
+            all[kind] = Array.from(new Set([
+                ...(Array.isArray(previous[kind]) ? previous[kind] : []),
+                ...(Array.isArray(deletions[kind]) ? deletions[kind] : [])
+            ].filter(id => typeof id === 'string')));
+            const removed = new Set(all[kind]);
+            const items = storage.get(profileId + '_' + storageKey);
+            if (Array.isArray(items)) {
+                storage.set(profileId + '_' + storageKey, items.filter(item => !item || !removed.has(String(item.id))));
+            }
+        });
+        storage.set(key, all);
+    }
+
     function mergeCloudCollections(profileId, cloudNotes, cloudPlan) {
         if (typeof profileId !== 'string' || !getProfiles()[profileId]) return;
         const prefix = profileId + '_';
@@ -390,7 +409,9 @@
                 if (!Array.isArray(localItems)) return;
             }
 
-            const merged = localItems.slice();
+            const tombstones = storage.get(profileId + '_gosvt_cloud_tombstones') || {};
+            const removed = new Set(tombstones[kind === 'note' ? 'notes' : 'studyPlan'] || []);
+            const merged = localItems.filter(item => !item || !removed.has(String(item.id)));
             const positions = new Map();
             merged.forEach(function (item, index) {
                 if (item && typeof item === 'object' && !Array.isArray(item) &&
@@ -400,10 +421,10 @@
                 }
             });
 
-            let changed = false;
+            let changed = merged.length !== localItems.length;
             remoteItems.forEach(function (remote) {
                 if (!remote || typeof remote !== 'object' || Array.isArray(remote) ||
-                    typeof remote.id !== 'string' || !remote.id.trim()) return;
+                    typeof remote.id !== 'string' || !remote.id.trim() || removed.has(remote.id.trim())) return;
                 if (kind === 'note' &&
                     (typeof remote.title !== 'string' || typeof remote.body !== 'string')) return;
                 if (kind === 'plan' &&
@@ -537,6 +558,16 @@
     }
 
     function saveProfileData(profileId, data) {
+        const previous = getProfileData(profileId);
+        const tombstones = storage.get(profileId + '_gosvt_cloud_tombstones') || {};
+        ['notes', 'studyPlan'].forEach(function (kind) {
+            const removed = new Set(tombstones[kind] || []);
+            data[kind] = (Array.isArray(data[kind]) ? data[kind] : []).filter(item => item && !removed.has(String(item.id)));
+        });
+        const changedItems = function (items, oldItems, key = 'id') {
+            const old = new Map((oldItems || []).filter(Boolean).map(item => [item[key], JSON.stringify(item)]));
+            return (items || []).filter(item => item && old.get(item[key]) !== JSON.stringify(item));
+        };
         const prefix = profileId + '_';
         storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
         storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
@@ -554,19 +585,27 @@
             account.activeProfileId() === profileId &&
             account.getUser() && account.getUser().id;
         if (window.GoSVTCloud && cloudUid) {
+            const progressDelta = {};
+            ['lessons', 'exercises', 'tests'].forEach(function (bucket) {
+                progressDelta[bucket] = Object.fromEntries(Object.entries(data.progress[bucket] || {})
+                    .filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(previous.progress[bucket][key])));
+            });
             const jobs = [
-                ['progress', 'syncProgress', data.progress],
-                ['notes', 'syncNotes', data.notes],
-                ['study plan', 'syncStudyPlan', data.studyPlan],
-                ['quiz attempts', 'syncQuizAttempts', data.quizResults],
-                ['learning state', 'syncLearningState', { goals: data.goals, streak: data.streak }]
+                ['progress', 'syncProgress', progressDelta],
+                ['notes', 'syncNotes', changedItems(data.notes, previous.notes)],
+                ['study plan', 'syncStudyPlan', changedItems(data.studyPlan, previous.studyPlan)],
+                ['quiz attempts', 'syncQuizAttempts', changedItems(data.quizResults, previous.quizResults, 'attemptId')]
             ];
+            if (JSON.stringify([data.goals, data.streak]) !== JSON.stringify([previous.goals, previous.streak])) {
+                jobs.push(['learning state', 'syncLearningState', { goals: data.goals, streak: data.streak }]);
+            }
             jobs.forEach(function (job) {
                 if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
                 Promise.resolve().then(function () {
                     return window.GoSVTCloud[job[1]](job[2], cloudUid);
                 }).catch(function (err) {
                     console.warn('[GoSVT] Cloud ' + job[0] + ' sync deferred:', err && err.message);
+                    if (account.reportSyncError) account.reportSyncError(job[0], cloudUid);
                 });
             });
         }
@@ -1158,8 +1197,6 @@
     function getDashboardStats() {
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
-
-        // Global history: include all valid attempts, including legacy records.
         const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
         const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord);
         const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord);
@@ -1170,60 +1207,40 @@
         const testsTaken = quizResults.length;
         const totalScore = quizResults.reduce((sum, result) => sum + Number(result.percentage), 0);
         const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
-        const globalProgress = lessonsViewed > 0
-            ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
+        const globalProgress = lessonsViewed > 0 ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
         const streak = Number(profileData.streak.current);
         const bestStreak = Number(profileData.streak.best);
-
         return {
-            lessonsViewed,
-            completedLessons,
-            exercisesDone,
-            testsTaken,
-            averageScore,
-            globalProgress,
+            lessonsViewed, completedLessons, exercisesDone, testsTaken, averageScore, globalProgress,
             streak: Number.isFinite(streak) && streak >= 0 ? streak : 0,
             bestStreak: Number.isFinite(bestStreak) && bestStreak >= 0 ? bestStreak : 0
         };
     }
 
-    // Pathway statistics use only records explicitly tagged for the selected
-    // level and track. Untagged historical quiz attempts remain in global history.
     function getDashboardStatsForPath(level, track) {
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
         const wantedLevel = String(level || '').trim().toUpperCase();
         const wantedTrack = String(track || '').replace(/\s+/g, '').toUpperCase();
-
         const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
         const matchesPathway = item =>
             !!wantedLevel && !!wantedTrack &&
             String(item.level || '').trim().toUpperCase() === wantedLevel &&
             String(item.track || '').replace(/\s+/g, '').toUpperCase() === wantedTrack;
-        const lessonRecords = Object.values(profileData.progress.lessons)
-            .filter(isProgressRecord).filter(matchesPathway);
-        const exerciseRecords = Object.values(profileData.progress.exercises)
-            .filter(isProgressRecord).filter(matchesPathway);
+        const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord).filter(matchesPathway);
+        const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord).filter(matchesPathway);
         const quizResults = getValidQuizResults(profileData).filter(matchesPathway);
-
         const lessonsViewed = lessonRecords.length;
         const completedLessons = lessonRecords.filter(item => item.completed === true).length;
         const exercisesDone = exerciseRecords.length;
         const testsTaken = quizResults.length;
         const totalScore = quizResults.reduce((sum, result) => sum + Number(result.percentage), 0);
         const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
-        const globalProgress = lessonsViewed > 0
-            ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
+        const globalProgress = lessonsViewed > 0 ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
         const streak = Number(profileData.streak.current);
         const bestStreak = Number(profileData.streak.best);
-
         return {
-            lessonsViewed,
-            completedLessons,
-            exercisesDone,
-            testsTaken,
-            averageScore,
-            globalProgress,
+            lessonsViewed, completedLessons, exercisesDone, testsTaken, averageScore, globalProgress,
             streak: Number.isFinite(streak) && streak >= 0 ? streak : 0,
             bestStreak: Number.isFinite(bestStreak) && bestStreak >= 0 ? bestStreak : 0
         };
@@ -4035,6 +4052,7 @@ function openScientificPhotoPreview(card){
         mergeCloudProgress,
         mergeCloudLearningState,
         mergeCloudCollections,
+        applyCloudDeletions,
         filterPendingCloudDeletions,
         retryPendingCloudDeletions,
         mergeCloudQuizAttempts,

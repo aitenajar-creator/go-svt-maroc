@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   validate:
-    name: JavaScript, JSON and all-page asset references
+    name: Source, behavior, database fixtures and browser checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -27,21 +27,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - name: Check JavaScript syntax
-        run: |
-          git ls-files -z -- '*.js' | xargs -0 -r -n1 node --check
+      - name: Install locked test dependencies
+        run: npm ci --ignore-scripts
 
-      - name: Validate JSON files
-        run: |
-          git ls-files -z -- '*.json' | python3 -c '
-          import json, pathlib, sys
-          paths = [p.decode() for p in sys.stdin.buffer.read().split(bytes([0])) if p and p.decode() != "content.json"]
-          for name in paths:
-              with pathlib.Path(name).open(encoding="utf-8") as f:
-                  json.load(f)
-              print("Valid JSON:", name)
-          '
+      - name: Check source JSON, JavaScript, inline scripts, assets and load order
+        run: python3 scripts/check-site.py
 
       - name: Verify RLS coverage in database migrations
         run: python3 scripts/check-migration-rls.py
@@ -55,63 +47,14 @@ jobs:
       - name: Verify basic accessibility in static HTML
         run: python3 scripts/check-basic-accessibility.py
 
-      - name: Verify local assets referenced by every HTML page
-        run: |
-          python3 - <<'PY'
-          from html.parser import HTMLParser
-          from pathlib import Path
+      - name: Check migration project assignments
+        run: python3 scripts/migration-plan.py --check
 
-          ROOT = Path(".").resolve()
+      - name: Run behavioral and isolated PostgreSQL regression tests
+        run: npm test
 
-          class AssetParser(HTMLParser):
-              def __init__(self):
-                  super().__init__()
-                  self.assets = []
-              def handle_starttag(self, tag, attrs):
-                  attrs = dict(attrs)
-                  if tag == "script" and attrs.get("src"):
-                      self.assets.append(("script", attrs["src"]))
-                  elif tag == "link" and "stylesheet" in attrs.get("rel", "").split() and attrs.get("href"):
-                      self.assets.append(("stylesheet", attrs["href"]))
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
 
-          def is_external(url):
-              return url.startswith(("https://", "http://", "//", "data:", "mailto:", "tel:", "#"))
-
-          def resolve_asset(page, url):
-              clean = url.split("?", 1)[0].split("#", 1)[0]
-              if not clean or is_external(clean):
-                  return None
-              if clean.startswith("/"):
-                  return ROOT / clean.lstrip("/")
-              local = (page.parent / clean).resolve()
-              if local.is_file():
-                  return local
-              return ROOT / clean
-
-          pages = sorted(Path(".").rglob("*.html"))
-          missing = []
-          checked = 0
-          for page in pages:
-              parser = AssetParser()
-              parser.feed(page.read_text(encoding="utf-8"))
-              for kind, url in parser.assets:
-                  target = resolve_asset(page, url)
-                  if target is None:
-                      continue
-                  checked += 1
-                  if not target.is_file():
-                      missing.append(f"{page}: {kind}: {url}")
-
-              if page.as_posix() == "index.html":
-                  ordered = [url for kind, url in parser.assets if kind == "script"]
-                  for before, after in [
-                      ("student-space.js", "student-account.js"),
-                      ("student-account.js", "student-space-continue.js"),
-                  ]:
-                      if before in ordered and after in ordered and ordered.index(before) >= ordered.index(after):
-                          missing.append(f"{page}: script order invalid; {before} must precede {after}")
-
-          if missing:
-              raise SystemExit("Missing local assets or invalid references:\\n" + "\\n".join(missing))
-          print(f"Verified {checked} local script/stylesheet references across {len(pages)} HTML pages.")
-          PY
+      - name: Run browser regression tests with mocked services
+        run: npm run test:browser

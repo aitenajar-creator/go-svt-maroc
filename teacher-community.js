@@ -14,6 +14,28 @@
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   let uploadInProgress = false;
+  let sessionGeneration = 0;
+  let authorizationKey = null;
+
+  function clearCommunityView() {
+    resources = [];
+    ['tc-resource-grid','tc-my-resources','tc-admin-members','tc-admin-resources','tc-admin-activity'].forEach(id => {
+      const node = $(id); if (node) node.replaceChildren();
+    });
+    ['tc-admin-panel','tc-admin-tab','tc-dashboard'].forEach(id => { if ($(id)) $(id).hidden = true; });
+    document.querySelectorAll('.tc-dashboard-tabs [data-panel]').forEach(tab => {
+      const active = tab.dataset.panel === 'mine';
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      const panel = $('tc-' + tab.dataset.panel + '-panel');
+      if (panel) { panel.hidden = !active; panel.setAttribute('aria-hidden', String(!active)); }
+    });
+    ['tc-edit-dialog','tc-upload-dialog','tc-auth-dialog'].forEach(id => { const dialog = $(id); if (dialog && dialog.open) dialog.close(); });
+    ['tc-edit-form','tc-upload-form'].forEach(id => { const form = $(id); if (form) form.reset(); });
+    if ($('tc-password')) $('tc-password').value = '';
+    if ($('tc-member-label')) $('tc-member-label').textContent = '';
+  }
   const PAGE_SIZE = 50;
   let adminActivitySearchTimer = null;
   let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false, adminResourcesRefreshPending = false, adminResourceSearchTimer = null, adminActivityOffset = 0, adminActivityMore = false, adminActivityLoading = false, adminActivityRefreshPending = false;
@@ -86,7 +108,16 @@
     }
     $('tc-member-label').textContent = (member && member.display_name) || user.email || '';
     $('tc-admin-tab').hidden = !isAdmin;
-    $('tc-pending-panel').hidden = false;
+    if (!isAdmin) {
+      $('tc-admin-panel').hidden = true;
+      $('tc-admin-panel').setAttribute('aria-hidden', 'true');
+      ['tc-admin-members','tc-admin-resources','tc-admin-activity'].forEach(id => $(id).replaceChildren());
+      if ($('tc-admin-tab').classList.contains('active')) {
+        $('tc-admin-tab').classList.remove('active');
+        $('tc-admin-tab').setAttribute('aria-selected', 'false');
+        $('tc-tab-mine').click();
+      }
+    }
     $('tc-membership-status').textContent = isAdmin
       ? 'أنت مدير المنصة. يمكنك إدارة طلبات الانضمام والموارد المشتركة.'
       : member && member.status === 'approved'
@@ -103,7 +134,8 @@
     loadMyResources();
     if (isAdmin) { loadAdmin(); loadAdminActivity(true); }
   }
-  async function ensureMember() {
+  async function ensureMember(requestUser = user) {
+    const user = requestUser;
     if (!user) return null;
     const { data, error } = await client.from('teacher_community_members')
       .select('user_id,display_name,professional_title,school_name,status,created_at')
@@ -134,18 +166,30 @@
   }
   async function refreshSession() {
     if (!client) return;
+    const generation = ++sessionGeneration;
     const { data, error } = await client.auth.getUser();
+    if (generation !== sessionGeneration) return;
     if (error && error.name !== 'AuthSessionMissingError') throw error;
-    user = data && data.user || null; member = null; isAdmin = false;
-    if (user) {
+    const sessionUser = data && data.user || null;
+    let nextAdmin = false, nextMember = null;
+    if (sessionUser) {
       const adminCheck = await client.rpc('gosvt_teacher_community_is_admin');
+      if (generation !== sessionGeneration) return;
       if (adminCheck.error) throw adminCheck.error;
-      isAdmin = adminCheck.data === true;
-      if (!isAdmin) member = await ensureMember();
-      else {
-        member = { display_name: user.user_metadata?.teacher_display_name || user.email, status: 'approved' };
-      }
+      nextAdmin = adminCheck.data === true;
+      nextMember = nextAdmin
+        ? { display_name: sessionUser.user_metadata?.teacher_display_name || sessionUser.email, status: 'approved' }
+        : await ensureMember(sessionUser);
     }
+    if (generation !== sessionGeneration) return;
+    const nextKey = sessionUser ? sessionUser.id + ':' + (nextAdmin ? 'admin' : nextMember && nextMember.status) : 'guest';
+    if (authorizationKey && authorizationKey !== nextKey) {
+      clearCommunityView();
+      window.location.reload();
+      return;
+    }
+    authorizationKey = nextKey;
+    user = sessionUser; member = nextMember; isAdmin = nextAdmin;
     setSignedInUI();
   }
   function fileExt(name) { return (String(name).split('.').pop() || '').toLowerCase(); }
@@ -1243,7 +1287,7 @@
     }
     const categorySelect = $('tc-category');
     if (requestedCategory && categorySelect && Array.from(categorySelect.options).some(option => option.value === requestedCategory)) categorySelect.value = requestedCategory;
-    if (!config || !window.supabase || !window.supabase.createClient) {
+    if (!config || !config.url || !config.publishableKey || !window.supabase || !window.supabase.createClient) {
       $('tc-library-state').textContent='إعداد الاتصال غير متاح. تحقق من تحميل إعداد Supabase.';
       return;
     }
@@ -1253,7 +1297,13 @@
       storageKey:'gosvt_teacher_community_auth_v1',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true
     }});
     client.auth.onAuthStateChange((event,session)=>{
-      if(event==='SIGNED_OUT'){user=null;member=null;isAdmin=false;setSignedInUI();}
+      if(event==='SIGNED_OUT'){
+        sessionGeneration++;
+        user=null;member=null;isAdmin=false;authorizationKey=null;
+        clearCommunityView();setSignedInUI();
+        window.location.reload();
+        return;
+      }
       if(event==='SIGNED_IN' || event==='TOKEN_REFRESHED') setTimeout(()=>refreshSession().catch(err=>console.warn('[Teacher community]',err)),0);
     });
     try { await refreshSession(); } catch(err) { console.error('[Teacher community]',err); $('tc-library-state').textContent='تعذر التحقق من الحساب. أعد تحميل الصفحة.'; }

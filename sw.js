@@ -1,7 +1,8 @@
-// Go SVT Maroc - PWA Service Worker v4
-// Keep offline study files in their own cache across application updates.
-const SHELL_CACHE = 'gosvt-shell-v4';
-const RUNTIME_CACHE = 'gosvt-runtime-v4';
+// Go SVT Maroc - release-scoped PWA caches.
+// CI replaces RELEASE with a hash of the built application shell.
+const RELEASE = 'review-fixes-20261125';
+const SHELL_CACHE = 'gosvt-shell-' + RELEASE;
+const RUNTIME_CACHE = 'gosvt-runtime-' + RELEASE;
 const OFFLINE_CACHE = 'gosvt-offline';
 const KEEP_CACHES = [SHELL_CACHE, RUNTIME_CACHE, OFFLINE_CACHE];
 
@@ -49,7 +50,7 @@ const cacheKeyFor = request => {
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(SHELL_CACHE)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(cache => cache.addAll(APP_SHELL.map(url => new Request(new URL(url, self.location.origin), { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
@@ -102,18 +103,22 @@ self.addEventListener('fetch', event => {
     try {
       const response = await fetch(request);
       if (response && response.ok) {
-        const cache = await caches.open(RUNTIME_CACHE);
-        await cache.put(key, response.clone());
+        try {
+          const cache = await caches.open(RUNTIME_CACHE);
+          await cache.put(key, response.clone());
+        } catch (_) { /* A full cache must not replace a successful network response. */ }
       }
       return response;
     } catch (_) {
-      const cached = await caches.match(key);
+      const runtime = await caches.open(RUNTIME_CACHE);
+      const shell = await caches.open(SHELL_CACHE);
+      const cached = await runtime.match(key) || await shell.match(key);
       if (cached) return cached;
 
       if (isNavigation) {
-        const home = await caches.match('/');
+        const home = await runtime.match('/') || await shell.match('/');
         if (home) return home;
-        const offline = await caches.match('/offline.html');
+        const offline = await shell.match('/offline.html');
         if (offline) return offline;
       }
 

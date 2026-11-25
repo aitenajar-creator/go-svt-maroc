@@ -502,6 +502,81 @@
     const sHost=document.getElementById('gs-cl-student-sessions');
     if(sHost)sHost.innerHTML=(ses.data||[]).length?ses.data.map(x=>'<article class="gs-cl-row"><strong>'+esc(x.title)+'</strong><p>'+esc(x.description||'')+'</p><p class="gs-cl-muted">'+esc(new Date(x.starts_at).toLocaleString())+'</p>'+safeLink(x.meeting_url,tr('الانضمام إلى الحصة','Rejoindre la séance'))+'</article>').join(''):'<p class="gs-cl-muted">'+tr('لا توجد حصص مبرمجة.','Aucune séance programmée.')+'</p>';
   }
+  let submissionPageLoader = null;
+  function submissionQuery(classIds, assignmentId, state) {
+    let query = client.from('teacher_assignment_submissions')
+      .select('id,assignment_id,student_id,answer,score,feedback,submitted_at,reviewed_at,teacher_assignments!inner(id,title,class_id)', { count: 'exact' })
+      .in('teacher_assignments.class_id', classIds);
+    if (assignmentId !== 'all') query = query.eq('assignment_id', assignmentId);
+    if (state === 'pending') query = query.is('reviewed_at', null);
+    if (state === 'reviewed') query = query.not('reviewed_at', 'is', null);
+    return query.order('submitted_at', { ascending: false }).order('id', { ascending: false });
+  }
+  async function renderTeacherSubmissions(host, classIds, user) {
+    if (!host) return;
+    const current = () => host.isConnected !== false && (!window.StudentAccount ||
+      (window.StudentAccount.getUser() && window.StudentAccount.getUser().id === user.id));
+    const assignments = [];
+    for (let offset = 0; ; offset += 200) {
+      const { data, error } = await client.from('teacher_assignments').select('id,title,class_id')
+        .in('class_id', classIds).order('created_at', { ascending: false }).order('id').range(offset, offset + 199);
+      if (!current()) return;
+      if (error) throw error;
+      assignments.push(...(data || []));
+      if (!data || data.length < 200) break;
+    }
+    host.innerHTML = '<label for="gs-cl-submission-assignment">'+tr('تصفية حسب الواجب','Filtrer par devoir')+'</label>'+
+      '<select id="gs-cl-submission-assignment"><option value="all">'+tr('جميع الواجبات','Tous les devoirs')+'</option>'+
+      assignments.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.title)+'</option>').join('')+'</select>'+
+      '<label for="gs-cl-submission-status">'+tr('حالة التصحيح','État de correction')+'</label>'+
+      '<select id="gs-cl-submission-status"><option value="all">'+tr('كل الإجابات','Toutes les réponses')+'</option><option value="pending">'+tr('تحتاج إلى تصحيح','À corriger')+'</option><option value="reviewed">'+tr('تم تصحيحها','Corrigées')+'</option></select>'+
+      '<p id="gs-cl-submission-filter-status" role="status" aria-live="polite"></p><div id="gs-cl-submission-cards" class="gs-cl-list"></div>'+
+      '<button type="button" id="gs-cl-submission-more" class="gs-cl-secondary" hidden>'+tr('تحميل المزيد','Charger la suite')+'</button>';
+    const cards = host.querySelector('#gs-cl-submission-cards');
+    const status = host.querySelector('#gs-cl-submission-filter-status');
+    const more = host.querySelector('#gs-cl-submission-more');
+    let offset = 0, loading = false, refreshPending = false;
+    const pageSize = 50;
+    async function loadPage(reset = true) {
+      if (!current()) return;
+      if (loading) { if (reset) refreshPending = true; return; }
+      loading = true; more.disabled = true;
+      if (reset) { offset = 0; cards.replaceChildren(); more.hidden = true; }
+      status.textContent = tr('جارٍ تحميل الإجابات…','Chargement des réponses…');
+      try {
+        const assignmentId = host.querySelector('#gs-cl-submission-assignment').value;
+        const state = host.querySelector('#gs-cl-submission-status').value;
+        const { data, error, count } = await submissionQuery(classIds, assignmentId, state).range(offset, offset + pageSize - 1);
+        if (!current()) return;
+        if (error) throw error;
+        const page = data || [];
+        cards.insertAdjacentHTML('beforeend', page.map(item => {
+          const reviewed = !!item.reviewed_at;
+          const title = item.teacher_assignments && item.teacher_assignments.title || tr('واجب','Devoir');
+          return '<article class="gs-cl-row" data-submission-card="true" data-assignment-id="'+esc(item.assignment_id)+'" data-reviewed="'+reviewed+'"><strong>'+esc(title)+'</strong>'+
+            '<p class="gs-cl-muted">'+(reviewed?tr('تم التصحيح','Corrigée'):tr('بانتظار التصحيح','En attente de correction'))+' · '+esc(item.student_id.slice(0,8))+' · '+esc(new Date(item.submitted_at).toLocaleString())+'</p>'+
+            '<details><summary>'+tr('عرض الإجابة','Voir la réponse')+'</summary><p>'+esc(item.answer)+'</p></details>'+
+            '<label>'+tr('النقطة من 20','Note sur 20')+'<input type="number" min="0" max="20" step="0.25" data-score-for="'+esc(item.id)+'" value="'+(item.score==null?'':esc(item.score))+'"></label>'+
+            '<label>'+tr('ملاحظات التصحيح','Commentaire')+'<textarea data-feedback-for="'+esc(item.id)+'" maxlength="5000">'+esc(item.feedback||'')+'</textarea></label>'+
+            '<button type="button" data-action="grade-submission" data-id="'+esc(item.id)+'">'+tr('حفظ التصحيح','Enregistrer la correction')+'</button></article>';
+        }).join(''));
+        offset += page.length;
+        more.hidden = page.length < pageSize || (count !== null && offset >= count);
+        status.textContent = tr('الإجابات المعروضة: ','Réponses affichées : ')+offset+' / '+(count == null ? '—' : count);
+      } catch (error) {
+        if (!current()) return;
+        status.textContent = tr('تعذر تحميل الإجابات. أعد المحاولة: ','Chargement impossible. Réessayez : ')+(error.message || error);
+        more.hidden = false;
+      } finally {
+        loading = false; more.disabled = false;
+        if (refreshPending && current()) { refreshPending = false; void loadPage(true); }
+      }
+    }
+    submissionPageLoader = loadPage;
+    more.addEventListener('click', () => loadPage(false));
+    await loadPage(true);
+  }
+
   async function loadTeacherExtras(classes,user) {
     const host=document.getElementById('gs-cl-teacher-work');
     if(!host)return;
@@ -513,29 +588,7 @@
       '<div class="gs-cl-card"><h3>'+tr('📢 نشر إعلان','📢 Publier une annonce')+'</h3><label>'+tr('القسم','Classe')+'</label><select id="gs-cl-announcement-class">'+opts+'</select><label>'+tr('العنوان','Titre')+'</label><input id="gs-cl-announcement-title" maxlength="180"><label>'+tr('نص الإعلان','Message')+'</label><textarea id="gs-cl-announcement-body" maxlength="8000"></textarea><button type="button" data-action="create-announcement">'+tr('نشر الإعلان','Publier')+'</button></div>'+
       '<div class="gs-cl-card"><h3>'+tr('📅 برمجة حصة مراجعة','📅 Programmer une séance')+'</h3><label>'+tr('القسم','Classe')+'</label><select id="gs-cl-session-class">'+opts+'</select><label>'+tr('عنوان الحصة','Titre')+'</label><input id="gs-cl-session-title" maxlength="180"><label>'+tr('الوصف','Description')+'</label><textarea id="gs-cl-session-description" maxlength="5000"></textarea><label>'+tr('التاريخ والوقت','Date et heure')+'</label><input id="gs-cl-session-start" type="datetime-local"><label>'+tr('رابط اللقاء (اختياري)','Lien de réunion (facultatif)')+'</label><input id="gs-cl-session-url" type="url" placeholder="https://..."><button type="button" data-action="create-session">'+tr('برمجة الحصة','Programmer')+'</button></div></div>'+
       '<div class="gs-cl-card" style="margin-top:1rem"><h3>'+tr('📥 إجابات التلاميذ والتصحيح','📥 Réponses et correction')+'</h3><div id="gs-cl-submissions" class="gs-cl-list">'+tr('جارٍ تحميل الإجابات...','Chargement des réponses...')+'</div></div>';
-    const a=await client.from('teacher_assignments').select('id,title,class_id').in('class_id',ids).order('created_at',{ascending:false}).limit(60);
-    if(a.error)throw a.error;
-    const subHost=document.getElementById('gs-cl-submissions');
-    if(!a.data.length){if(subHost)subHost.innerHTML='<p class="gs-cl-muted">'+tr('لم تنشر واجبات بعد.','Aucun devoir publié.')+'</p>';return;}
-    const submissions=await client.from('teacher_assignment_submissions').select('id,assignment_id,student_id,answer,score,feedback,submitted_at,reviewed_at').in('assignment_id',a.data.map(x=>x.id)).order('submitted_at',{ascending:false}).limit(150);
-    if(submissions.error)throw submissions.error;
-    const titles=new Map(a.data.map(x=>[x.id,x.title]));
-    const received=submissions.data||[];
-    const reviewedCount=received.filter(x=>!!x.reviewed_at).length;
-    const pendingCount=received.length-reviewedCount;
-    if(subHost)subHost.innerHTML=received.length
-      ? '<div class="gs-cl-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:.75rem">'+
-          '<div class="gs-cl-row"><strong>'+received.length+'</strong><p class="gs-cl-muted">'+tr('إجابات مستلمة','Réponses reçues')+'</p></div>'+
-          '<div class="gs-cl-row"><strong>'+pendingCount+'</strong><p class="gs-cl-muted">'+tr('تحتاج إلى تصحيح','À corriger')+'</p></div>'+
-          '<div class="gs-cl-row"><strong>'+reviewedCount+'</strong><p class="gs-cl-muted">'+tr('تم تصحيحها','Corrigées')+'</p></div></div>'+
-        '<label for="gs-cl-submission-assignment">'+tr('تصفية حسب الواجب','Filtrer par devoir')+'</label><select id="gs-cl-submission-assignment"><option value="all">'+tr('جميع الواجبات','Tous les devoirs')+'</option>'+a.data.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+'</option>').join('')+'</select>'+
-        '<label for="gs-cl-submission-status">'+tr('حالة التصحيح','État de correction')+'</label><select id="gs-cl-submission-status"><option value="all">'+tr('كل الإجابات','Toutes les réponses')+'</option><option value="pending">'+tr('تحتاج إلى تصحيح','À corriger')+' ('+pendingCount+')</option><option value="reviewed">'+tr('تم تصحيحها','Corrigées')+' ('+reviewedCount+')</option></select>'+
-        '<p id="gs-cl-submission-filter-status" class="gs-cl-muted" role="status" aria-live="polite"></p>'+
-        '<div id="gs-cl-submission-cards" class="gs-cl-list">'+received.map(x=>{
-          const reviewed=!!x.reviewed_at;
-          return '<article class="gs-cl-row" data-submission-card="true" data-assignment-id="'+esc(x.assignment_id)+'" data-reviewed="'+(reviewed?'true':'false')+'"><strong>'+esc(titles.get(x.assignment_id)||tr('واجب','Devoir'))+'</strong><p class="gs-cl-muted">'+(reviewed?tr('تم التصحيح','Corrigée'):tr('بانتظار التصحيح','En attente de correction'))+' · '+tr('معرّف التلميذ','ID élève')+': '+esc(x.student_id.slice(0,8))+' · '+esc(new Date(x.submitted_at).toLocaleString())+'</p><details><summary>'+tr('عرض الإجابة','Voir la réponse')+'</summary><p>'+esc(x.answer)+'</p></details><label>'+tr('النقطة من 20','Note sur 20')+'</label><input type="number" min="0" max="20" step="0.25" data-score-for="'+esc(x.id)+'" value="'+(x.score==null?'':esc(x.score))+'"><label>'+tr('ملاحظات التصحيح','Commentaire')+'</label><textarea data-feedback-for="'+esc(x.id)+'" maxlength="5000">'+esc(x.feedback||'')+'</textarea><button type="button" data-action="grade-submission" data-id="'+esc(x.id)+'">'+tr('حفظ التصحيح','Enregistrer la correction')+'</button></article>';
-        }).join('')+'</div>'
-      : '<p class="gs-cl-muted">'+tr('لم يتوصل القسم بإجابات بعد.','Aucune réponse reçue pour le moment.')+'</p>';
+    await renderTeacherSubmissions(document.getElementById('gs-cl-submissions'), ids, user);
   }
 
   async function renderThread(id) {
@@ -566,6 +619,7 @@
           if(String(error.message||'').includes('academic_profile_already_set'))throw new Error(tr('تم تثبيت بياناتك الدراسية من قبل. أعد تحميل الصفحة.','Vos informations scolaires sont déjà confirmées. Actualisez la page.'));
           throw error;
         }
+        if (window.StudentAccount && window.StudentAccount.refreshProfile) await window.StudentAccount.refreshProfile();
         notice(tr('تم تثبيت المستوى والمسلك بنجاح.','Votre niveau et votre filière ont été confirmés.'));
         await refreshPanel();
       } else if(action==='join'){
@@ -915,15 +969,17 @@
       } else if(action==='reply'){
         const field=document.querySelector('[data-reply-for="'+CSS.escape(id)+'"]');
         const body=field?field.value.trim():'';
-        const {error}=await client.from('teacher_question_messages').insert({question_id:id,sender_id:user.id,body});if(error)throw error;
-        const activeProfile=await profileFor(user);
-        if(activeProfile&&activeProfile.role==='student'){
-          const {error:statusError}=await client.rpc('gosvt_student_reopen_question',{p_question_id:id});
-          if(statusError)throw statusError;
-        } else {
-          const {error:statusError}=await client.from('teacher_questions').update({status:'answered'}).eq('id',id);
-          if(statusError)throw statusError;
+        if (!body) throw new Error(tr('اكتب الرد قبل الإرسال.','Saisissez une réponse avant l’envoi.'));
+        if (!field.dataset.replyToken || field.dataset.replyBody !== body || field.dataset.replyOwner !== user.id) {
+          field.dataset.replyToken = window.crypto && window.crypto.randomUUID
+            ? window.crypto.randomUUID() : 'reply_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
+          field.dataset.replyBody = body;
+          field.dataset.replyOwner = user.id;
         }
+        const {error}=await client.rpc('gosvt_send_teacher_reply',{
+          p_question_id:id, p_body:body, p_client_message_id:field.dataset.replyToken, p_expected_sender_id:user.id
+        });
+        if(error)throw error;
         await renderThread(id);
         notice(tr('تم إرسال الرد.','Réponse envoyée.'));
       }
@@ -939,22 +995,7 @@
     mount();
   }
   function applySubmissionFilters(){
-    const host=document.getElementById('gs-cl-submission-cards');
-    if(!host)return;
-    const assignment=document.getElementById('gs-cl-submission-assignment');
-    const status=document.getElementById('gs-cl-submission-status');
-    const assignmentId=assignment?assignment.value:'all';
-    const state=status?status.value:'all';
-    const cards=Array.from(host.querySelectorAll('[data-submission-card="true"]'));
-    let visible=0;
-    cards.forEach(card=>{
-      const assignmentMatch=assignmentId==='all'||card.dataset.assignmentId===assignmentId;
-      const statusMatch=state==='all'||(state==='reviewed'?card.dataset.reviewed==='true':card.dataset.reviewed!=='true');
-      card.hidden=!(assignmentMatch&&statusMatch);
-      if(!card.hidden)visible++;
-    });
-    const message=document.getElementById('gs-cl-submission-filter-status');
-    if(message)message.textContent=tr('الإجابات المعروضة: '+visible+' من '+cards.length,'Réponses affichées : '+visible+' sur '+cards.length);
+    if (submissionPageLoader) void submissionPageLoader(true);
   }
   document.addEventListener('change',e=>{
     if(e.target&&(e.target.id==='gs-cl-submission-assignment'||e.target.id==='gs-cl-submission-status'))applySubmissionFilters();

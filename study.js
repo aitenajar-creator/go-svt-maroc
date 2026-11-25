@@ -35,7 +35,12 @@
             if (activeFavoriteUid !== uid || !window.GoSVTCloud ||
                 typeof window.GoSVTCloud.syncFavorites !== 'function') return;
             return window.GoSVTCloud.syncFavorites(snapshot, uid);
-        }).catch(err => console.warn(warningLabel, err && err.message));
+        }).catch(err => {
+            console.warn(warningLabel, err && err.message);
+            if (window.StudentAccount && window.StudentAccount.reportSyncError) {
+                window.StudentAccount.reportSyncError('favorites', uid);
+            }
+        });
         return favoriteSyncQueue;
     }
 
@@ -64,7 +69,7 @@
         // This prevents an account switch without a clean sign-out from inheriting another user's favorites.
         const legacyOwner = storage.get('gosvt-favs-legacy-owner');
         const mayImportLegacy = !migrated && !legacyOwner;
-        const legacy = mayImportLegacy ? getFavs() : [];
+        const legacy = mayImportLegacy ? readList('gosvt-favs') : [];
         if (mayImportLegacy) save('gosvt-favs-legacy-owner', activeFavoriteUid);
         const merged = Array.from(new Set([
             ...(Array.isArray(cloudPaths) ? cloudPaths : []), ...cached, ...legacy

@@ -29,3 +29,13 @@ desktop.ini
 .env
 .env.*
 !.env.example
+
+# Local development and test outputs
+/node_modules/
+/test-results/
+/playwright-report/
+/_site/
+/.jekyll-cache/
+/config.local.json
+__pycache__/
+*.pyc

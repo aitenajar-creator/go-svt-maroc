@@ -7,6 +7,29 @@
   let ready = false, user = null, profile = null, localProfileId = null, view = 'login', recoveryMode = false;
   let sessionGeneration = 0;
   let sessionApply = null;
+  let syncStatus = { phase: 'idle', failures: [] };
+
+  function syncStatusText() {
+    if (syncStatus.phase === 'loading') return L('جارٍ مزامنة بياناتك…', 'Synchronisation en cours…');
+    if (syncStatus.phase === 'partial') return L('تعذرت مزامنة بعض البيانات. نسختك المحلية محفوظة؛ أعد المحاولة.', 'Certaines données ne sont pas synchronisées. Votre copie locale est conservée ; réessayez.');
+    if (syncStatus.phase === 'ready') return L('تمت مزامنة البيانات.', 'Données synchronisées.');
+    return '';
+  }
+  function setSyncStatus(phase, failures = []) {
+    syncStatus = { phase, failures: Array.from(new Set(failures)) };
+    document.querySelectorAll('[data-gs-sync-status]').forEach(node => { node.textContent = syncStatusText(); });
+    document.querySelectorAll('[data-gs-sync-retry]').forEach(node => { node.hidden = phase !== 'partial'; });
+  }
+  function reportSyncError(name, uid) {
+    if (uid && (!user || user.id !== uid)) return;
+    setSyncStatus('partial', [...syncStatus.failures, name]);
+  }
+  async function refreshProfile() {
+    if (!client) return;
+    const { data, error } = await client.auth.getSession();
+    if (error) throw error;
+    return applySession(data && data.session, true);
+  }
   const MAP_KEY = 'gosvt_supabase_profile_map';
   const STUDY_TRACKS = {
     TC: [
@@ -58,11 +81,15 @@
   }
   function setMap(v) { try { localStorage.setItem(MAP_KEY, JSON.stringify(v)); } catch (_) {} }
 
-  async function applySession(session) {
+  async function applySession(session, force = false) {
     const uid = session && session.user ? session.user.id : null;
-    // Supabase may fire SIGNED_IN while the form handler also applies the same session.
-    // Share the in-flight work so the same account cannot create two local profiles.
+    // Token refresh and repeated SIGNED_IN events are not account switches.
+    // Avoid rebuilding forms and discarding drafts for an unchanged account.
     if (sessionApply && sessionApply.uid === uid) return sessionApply.promise;
+    if (!force && ready && uid && user && user.id === uid && profile && localProfileId) {
+      user = session.user;
+      return;
+    }
     const generation = ++sessionGeneration;
     const promise = applySessionInternal(session, generation);
     sessionApply = { uid, promise };
@@ -126,14 +153,22 @@
       if (error) console.warn('[GoSVT] Profile read:', error.message);
 
       const metadata = sessionUser.user_metadata || {};
+      let academic = null;
+      if (!data || data.role === 'student') {
+        try {
+          const result = await withAuthTimeout(client.from('student_academic_profiles')
+            .select('study_level,study_track').eq('student_id', uid).maybeSingle(), 'Academic profile lookup');
+          if (result.error) throw result.error;
+          academic = result.data;
+        } catch (err) {
+          console.warn('[GoSVT] Academic profile unavailable:', err && err.message);
+        }
+      }
+      if (generation !== sessionGeneration) return;
       profile = {
-        ...(data || {
-          id: uid,
-          display_name: metadata.display_name || sessionUser.email,
-          role: 'student'
-        }),
-        study_level: metadata.study_level || (data && data.study_level) || null,
-        study_track: metadata.study_track || (data && data.study_track) || null
+        ...(data || { id: uid, display_name: metadata.display_name || sessionUser.email, role: 'student' }),
+        study_level: academic && academic.study_level || null,
+        study_track: academic && academic.study_track || null
       };
 
       if (window.StudentSpace) {
@@ -170,61 +205,81 @@
             .catch(err => {
               console.warn('[GoSVT] Favorites cloud restore deferred:', err && err.message);
               if (generation === sessionGeneration && user && user.id === uid) {
+                reportSyncError('favorites', uid);
                 window.GoSVTStudyFavorites.activate(uid, null);
               }
             });
         }
 
         if (window.GoSVTCloud && window.StudentSpace) {
-          Promise.all([
-            typeof window.GoSVTCloud.loadProgress === 'function' ? window.GoSVTCloud.loadProgress(uid) : Promise.resolve(null),
-            typeof window.GoSVTCloud.loadNotes === 'function' ? window.GoSVTCloud.loadNotes(uid) : Promise.resolve(null),
-            typeof window.GoSVTCloud.loadStudyPlan === 'function' ? window.GoSVTCloud.loadStudyPlan(uid) : Promise.resolve(null),
-            typeof window.GoSVTCloud.loadQuizAttempts === 'function' ? window.GoSVTCloud.loadQuizAttempts(uid) : Promise.resolve(null),
-            typeof window.GoSVTCloud.loadLearningState === 'function' ? window.GoSVTCloud.loadLearningState(uid) : Promise.resolve(null)
-          ]).then(results => {
+          setSyncStatus('loading');
+          const loads = [
+            ['progress', 'loadProgress'], ['notes', 'loadNotes'], ['studyPlan', 'loadStudyPlan'],
+            ['quizAttempts', 'loadQuizAttempts'], ['learningState', 'loadLearningState'],
+            ['deletions', 'loadCollectionDeletions']
+          ];
+          Promise.allSettled(loads.map(([name, method]) => Promise.resolve().then(() =>
+            typeof window.GoSVTCloud[method] === 'function'
+              ? withAuthTimeout(window.GoSVTCloud[method](uid), name + ' restore', 15000) : null
+          ))).then(async results => {
             if (generation !== sessionGeneration || !user || user.id !== uid) return;
-            const [cloudProgress, loadedNotes, loadedPlan, cloudQuizAttempts, cloudLearningState] = results;
-            const pendingFiltered = typeof window.StudentSpace.filterPendingCloudDeletions === 'function'
-              ? window.StudentSpace.filterPendingCloudDeletions(uid, loadedNotes, loadedPlan)
-              : { notes: loadedNotes, studyPlan: loadedPlan };
-            const cloudNotes = pendingFiltered.notes;
-            const cloudPlan = pendingFiltered.studyPlan;
-            // Filter first, then retry: an offline deletion must not reappear during restore.
-            if (typeof window.StudentSpace.retryPendingCloudDeletions === 'function') {
-              window.StudentSpace.retryPendingCloudDeletions(uid);
-            }
-            if (cloudProgress && typeof window.StudentSpace.mergeCloudProgress === 'function') {
-              window.StudentSpace.mergeCloudProgress(profileIdForSession, cloudProgress);
-            }
-            if ((Array.isArray(cloudNotes) || Array.isArray(cloudPlan)) &&
-                typeof window.StudentSpace.mergeCloudCollections === 'function') {
-              window.StudentSpace.mergeCloudCollections(profileIdForSession, cloudNotes, cloudPlan);
-            }
-            if (Array.isArray(cloudQuizAttempts) &&
-                typeof window.StudentSpace.mergeCloudQuizAttempts === 'function') {
-              window.StudentSpace.mergeCloudQuizAttempts(profileIdForSession, cloudQuizAttempts);
-            }
-            if (cloudLearningState && typeof window.StudentSpace.mergeCloudLearningState === 'function') {
-              window.StudentSpace.mergeCloudLearningState(profileIdForSession, cloudLearningState);
-            }
-            if (generation !== sessionGeneration || !user || user.id !== uid) return;
-            const cached = window.StudentSpace.getProfileData(profileIdForSession);
-            const syncJobs = [
-              ['progress', 'syncProgress', cached.progress],
-              ['notes', 'syncNotes', cached.notes],
-              ['study plan', 'syncStudyPlan', cached.studyPlan],
-              ['quiz attempts', 'syncQuizAttempts', cached.quizResults],
-              ['learning state', 'syncLearningState', { goals: cached.goals, streak: cached.streak }]
-            ];
-            syncJobs.forEach(job => {
-              if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
-              Promise.resolve().then(() => window.GoSVTCloud[job[1]](job[2], uid))
-                .catch(err => console.warn('[GoSVT] Background ' + job[0] + ' sync deferred:', err && err.message));
+            const values = {}, failures = [];
+            results.forEach((result, index) => {
+              const name = loads[index][0];
+              values[name] = result.status === 'fulfilled' ? result.value : null;
+              if (result.status === 'rejected') failures.push(name);
             });
+            // A failed tombstone read blocks only the two deletable collections.
+            // Never merge/re-upload their stale cache without knowing remote deletions.
+            if (values.deletions && window.StudentSpace.applyCloudDeletions) {
+              window.StudentSpace.applyCloudDeletions(profileIdForSession, values.deletions);
+            } else {
+              values.notes = values.studyPlan = null;
+              failures.push('deletions');
+            }
+            const filtered = window.StudentSpace.filterPendingCloudDeletions
+              ? window.StudentSpace.filterPendingCloudDeletions(uid, values.notes, values.studyPlan)
+              : { notes: values.notes, studyPlan: values.studyPlan };
+            values.notes = filtered.notes;
+            values.studyPlan = filtered.studyPlan;
+            if (window.StudentSpace.retryPendingCloudDeletions) window.StudentSpace.retryPendingCloudDeletions(uid);
+            if (values.progress) window.StudentSpace.mergeCloudProgress(profileIdForSession, values.progress);
+            if (Array.isArray(values.notes) || Array.isArray(values.studyPlan)) {
+              window.StudentSpace.mergeCloudCollections(profileIdForSession, values.notes, values.studyPlan);
+            }
+            if (Array.isArray(values.quizAttempts)) window.StudentSpace.mergeCloudQuizAttempts(profileIdForSession, values.quizAttempts);
+            if (values.learningState) window.StudentSpace.mergeCloudLearningState(profileIdForSession, values.learningState);
+            const cached = window.StudentSpace.getProfileData(profileIdForSession);
+            const newer = (local, remote) => {
+              const byId = new Map((remote || []).map(item => [item.id, item]));
+              return (local || []).filter(item => {
+                const old = byId.get(item.id);
+                return !old || Number(item.updatedAt || item.createdAt || 0) > Number(old.updatedAt || old.createdAt || 0);
+              });
+            };
+            const jobs = [];
+            if (values.progress) jobs.push(['progress', 'syncProgress', cached.progress]);
+            if (Array.isArray(values.notes)) jobs.push(['notes', 'syncNotes', newer(cached.notes, values.notes)]);
+            if (Array.isArray(values.studyPlan)) jobs.push(['studyPlan', 'syncStudyPlan', newer(cached.studyPlan, values.studyPlan)]);
+            if (Array.isArray(values.quizAttempts)) {
+              const known = new Set(values.quizAttempts.map(item => item.attemptId));
+              jobs.push(['quizAttempts', 'syncQuizAttempts', cached.quizResults.filter(item => !known.has(item.attemptId))]);
+            }
+            if (values.learningState) jobs.push(['learningState', 'syncLearningState', { goals: cached.goals, streak: cached.streak }]);
+            const synced = await Promise.allSettled(jobs.map(([name, method, value]) => Promise.resolve().then(() =>
+              typeof window.GoSVTCloud[method] === 'function'
+                ? withAuthTimeout(window.GoSVTCloud[method](value, uid), name + ' sync', 15000) : null
+            )));
+            if (generation !== sessionGeneration || !user || user.id !== uid) return;
+            synced.forEach((result, index) => { if (result.status === 'rejected') failures.push(jobs[index][0]); });
+            failures.push(...syncStatus.failures);
+            setSyncStatus(failures.length ? 'partial' : 'ready', failures);
             emit();
-            console.log('[GoSVT] Cloud student data restored in background.');
-          }).catch(err => console.warn('[GoSVT] Background cloud restore failed:', err && err.message));
+          }).catch(err => {
+            if (generation !== sessionGeneration || !user || user.id !== uid) return;
+            reportSyncError('restore', uid);
+            console.warn('[GoSVT] Cloud restoration deferred:', err && err.message);
+          });
         }
         return;
       }
@@ -346,9 +401,14 @@
   }
   function renderBar() {
     if (!user) return '';
-    return `<div class="gs-acc-wrap"><div class="gs-acc-bar"><div class="gs-acc-who">👤 <strong>${esc(profile && profile.display_name || user.email)}</strong><small>${esc(user.email)}</small></div><div class="gs-acc-actions"><button type="button" class="gs-acc-btn gs-acc-chpw">🔑 ${L('تغيير كلمة المرور','Changer le mot de passe')}</button><button type="button" class="gs-acc-btn gs-acc-logout">🚪 ${L('تسجيل الخروج','Se déconnecter')}</button></div></div><form class="gs-acc-panel" id="gs-chpw-form" hidden novalidate>${field('gs-c-new',L('كلمة المرور الجديدة','Nouveau mot de passe'),'password','minlength="8" required')}${field('gs-c-new2',L('تأكيد كلمة المرور','Confirmer'),'password','required')}<p class="gs-auth-msg" role="alert"></p><button type="submit" class="gs-auth-submit">${L('حفظ','Enregistrer')}</button></form></div>`;
+    return `<div class="gs-acc-wrap"><div class="gs-acc-bar"><div class="gs-acc-who">👤 <strong>${esc(profile && profile.display_name || user.email)}</strong><small>${esc(user.email)}</small></div><div class="gs-acc-actions"><button type="button" class="gs-acc-btn gs-acc-chpw">🔑 ${L('تغيير كلمة المرور','Changer le mot de passe')}</button><button type="button" class="gs-acc-btn gs-acc-logout">🚪 ${L('تسجيل الخروج','Se déconnecter')}</button></div></div><p data-gs-sync-status role="status" aria-live="polite">${esc(syncStatusText())}</p><button type="button" class="gs-acc-btn" data-gs-sync-retry ${syncStatus.phase === 'partial' ? '' : 'hidden'}>${L('إعادة المزامنة','Réessayer la synchronisation')}</button><form class="gs-acc-panel" id="gs-chpw-form" hidden novalidate>${field('gs-c-new',L('كلمة المرور الجديدة','Nouveau mot de passe'),'password','minlength="8" required')}${field('gs-c-new2',L('تأكيد كلمة المرور','Confirmer'),'password','required')}<p class="gs-auth-msg" role="alert"></p><button type="submit" class="gs-auth-submit">${L('حفظ','Enregistrer')}</button></form></div>`;
   }
-  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.gs-acc-logout')) logout().catch(() => {}); const b=e.target.closest&&e.target.closest('.gs-acc-chpw'); if(b){const p=document.getElementById('gs-chpw-form');if(p)p.hidden=!p.hidden;} });
+  document.addEventListener('click', e => {
+    if (!e.target.closest) return;
+    if (e.target.closest('.gs-acc-logout')) logout().catch(() => {});
+    if (e.target.closest('[data-gs-sync-retry]')) refreshProfile().catch(() => reportSyncError('retry'));
+    if (e.target.closest('.gs-acc-chpw')) { const panel = document.getElementById('gs-chpw-form'); if (panel) panel.hidden = !panel.hidden; }
+  });
   document.addEventListener('submit', async e => { if(e.target.id!=='gs-chpw-form')return; e.preventDefault(); const f=e.target, p=f.querySelector('#gs-c-new').value, p2=f.querySelector('#gs-c-new2').value; if(p.length<8)return msg(f,L('كلمة المرور يجب أن تتكون من 8 أحرف على الأقل.','8 caractères minimum.')); if(p!==p2)return msg(f,L('كلمتا المرور غير متطابقتين.','Les mots de passe ne correspondent pas.')); const b=f.querySelector('button'); b.disabled=true; try{const {error}=await client.auth.updateUser({password:p});if(error)throw error;f.reset();msg(f,L('تم تغيير كلمة المرور.','Mot de passe modifié.'));}catch(err){msg(f,errorText(err));}finally{b.disabled=false;} });
   function initAuth() {
     if (!client) { ready = true; emit(); return; }
@@ -369,6 +429,7 @@
         }
         sessionGeneration++;
         sessionApply = null;
+        setSyncStatus('idle');
         setAccountSwitching(false);
         recoveryMode = false;
         view = 'login';
@@ -379,11 +440,15 @@
         emit();
         return;
       }
-      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session) {
-        setTimeout(() => applySession(session).catch(e => console.error('[GoSVT Auth]', e)), 0);
+      if (event === 'TOKEN_REFRESHED' && session && user && user.id === session.user.id) {
+        user = session.user;
         return;
       }
-      emit();
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session) {
+        setTimeout(() => applySession(session, event === 'USER_UPDATED').catch(e => console.error('[GoSVT Auth]', e)), 0);
+        return;
+      }
+      if (event === 'PASSWORD_RECOVERY') emit();
     };
 
     try {
@@ -435,6 +500,9 @@
     renderBar,
     logout,
     getUser: () => user,
-    getProfile: () => profile
+    getProfile: () => profile,
+    getSyncStatus: () => ({ ...syncStatus, failures: syncStatus.failures.slice() }),
+    reportSyncError,
+    refreshProfile
   };
 })();

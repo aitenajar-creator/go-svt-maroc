@@ -1,0 +1,67 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
+const {root,source,between,browser,node,query}=require('./helpers.cjs');
+
+test('submission filters and pagination are sent to the database',async()=>{
+  const operations=[];
+  const b=browser({client:{from:table=>{assert.equal(table,'teacher_assignment_submissions');return query({data:[{id:'old-ungraded'}],count:1,error:null},operations);}}});
+  b.run(between(source('teacher-classroom.js'),'  function submissionQuery(','  async function renderTeacherSubmissions'));
+  const result=await b.context.submissionQuery(['class-1'],'all','pending').range(0,49);
+  assert(operations.some(x=>x[0]==='is'&&x[1]==='reviewed_at'&&x[2]===null));
+  assert(operations.some(x=>x[0]==='in'&&x[1]==='teacher_assignments.class_id'));
+  assert(!operations.some(x=>x[0]==='limit'));
+  assert.equal(result.data[0].id,'old-ungraded');
+});
+
+test('reply retries retain the same idempotency token and use one RPC',async()=>{
+  const field=node();field.value='A helpful reply';const requests=[];
+  const b=browser({busy:false,CSS:{escape:s=>s},currentUser:async()=>({id:'teacher'}),tr:(_,fr)=>fr,notice(){},renderThread:async()=>{},client:{rpc:async(name,payload)=>{requests.push({name,payload});return {error:requests.length===1?new Error('Temporary response failure'):null};}}});
+  b.context.document.querySelector=()=>field;
+  b.run(between(source('teacher-classroom.js'),'  async function act(button)','  async function refreshPanel'));
+  const button={dataset:{action:'reply',id:'question'},isConnected:true};
+  await b.context.act(button);await b.context.act(button);
+  assert.equal(requests.length,2);assert(requests.every(x=>x.name==='gosvt_send_teacher_reply'));
+  assert.equal(requests[0].payload.p_client_message_id,requests[1].payload.p_client_message_id);
+});
+
+test('community reset erases administrative lists and hides the admin panel',()=>{
+  const b=browser({resources:[{title:'Private fixture'}]}),c=b.context;
+  const tabs=['mine','pending','admin'].map(name=>{const tab=node();tab.dataset.panel=name;return tab;});
+  c.document.querySelectorAll=()=>tabs;
+  c.$=id=>{if(!b.nodes.has(id))b.nodes.set(id,node());return b.nodes.get(id);};
+  c.$('tc-admin-members').innerHTML='Private fixture';c.$('tc-admin-panel').hidden=false;
+  b.run(between(source('teacher-community.js'),'  function clearCommunityView()','  const PAGE_SIZE'));
+  c.clearCommunityView();
+  assert.equal(c.$('tc-admin-members').innerHTML,'');assert.equal(c.$('tc-admin-panel').hidden,true);
+  assert.equal(c.resources.length,0);
+});
+
+test('admin reset clears cached identities, exports and visible lists',()=>{
+  const b=browser({currentUser:{id:'admin'},adminSessionGeneration:0,resourceCache:[1],roleRequestCache:[1],accountCache:[1],activityCache:[1],pedagogicalReportRows:[1],dashboard:node(),loginPanel:node()}),c=b.context;
+  c.$=id=>{if(!b.nodes.has(id))b.nodes.set(id,node());return b.nodes.get(id);};
+  c.$('resource-list').innerHTML='Private fixture';
+  b.run(between(source('admin.js'),'  function clearAdminSession()','  let resourceCache'));
+  c.clearAdminSession();assert.equal(c.currentUser,null);assert.equal(c.dashboard.hidden,true);
+  assert.equal(c.$('resource-list').innerHTML,'');assert.equal(c.accountCache.length,0);assert.equal(c.pedagogicalReportRows,null);
+});
+
+test('role-request CSV has a real UTF-8 BOM and CRLF records',()=>{
+  const block=between(source('admin.js'),"  $('role-requests-export').addEventListener", "  $('role-requests-refresh')");
+  const line=block.split('\n').find(line=>line.includes('const csv ='));
+  const b=browser({output:[['الاسم','التفاصيل'],['طالب','قال "نعم", اليوم']],cell:value=>'"'+String(value).replace(/"/g,'""')+'"'});
+  const csv=b.run(line+'\ncsv');
+  assert.equal(csv.charCodeAt(0),0xfeff);assert.equal(csv.split('\r\n').length,2);
+  assert(csv.includes('""نعم""'));assert(!csv.includes('\\r\\n'));
+});
+
+test('the CI load-order guard checks cache-busted script URLs',()=>{
+  const parent=path.join(root,'test-results');fs.mkdirSync(parent,{recursive:true});
+  const dir=fs.mkdtempSync(path.join(parent,'order-'));
+  try{
+    for(const name of ['student-account.js','student-space.js','student-space-continue.js'])fs.writeFileSync(path.join(dir,name),'');
+    fs.writeFileSync(path.join(dir,'index.html'),'<script src="student-account.js?v=1"></script><script src="student-space.js?v=2"></script><script src="student-space-continue.js?v=3"></script>');
+    const result=spawnSync('python3',['-B',path.join(root,'scripts/check-site.py'),dir],{encoding:'utf8'});
+    assert.notEqual(result.status,0);assert((result.stdout+result.stderr).includes('must precede'));
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
