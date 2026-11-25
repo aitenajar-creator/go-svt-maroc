@@ -57,6 +57,21 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
       const rows=(await db.query('select lesson_id,checked_indices from public.student_lesson_objectives order by lesson_id')).rows;
       assert.deepEqual(rows.map(row=>row.checked_indices),[[0],[1,2]]);
     });
+
+    await t.test('lesson objectives are limited to published lessons and student accounts',async()=>{
+      await as(student);
+      await db.query('insert into public.student_lesson_objectives(student_id,lesson_id,checked_indices) values($1,$2,$3)',[student,first,[3]]);
+      const unpublished='10000000-0000-0000-0000-000000000003';
+      await assert.rejects(
+        db.query('insert into public.student_lesson_objectives(student_id,lesson_id,checked_indices) values($1,$2,$3)',[student,unpublished,[0]]),
+        /row-level security/
+      );
+      await as(teacher);
+      await assert.rejects(
+        db.query('insert into public.student_lesson_objectives(student_id,lesson_id,checked_indices) values($1,$2,$3)',[teacher,first,[0]]),
+        /row-level security/
+      );
+    });
     await t.test('reply retries save one message and do not replay an old status',async()=>{
       await as(teacher);
       const a=await send('A helpful reply','fixture-reply-token'),b=await send('A helpful reply','fixture-reply-token');
