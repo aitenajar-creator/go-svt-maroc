@@ -26,21 +26,28 @@ test('the existing standalone audit suite passes in a real browser',async({page}
   expect(result.results.filter(item=>!item.passed)).toEqual([]);
 });
 
-test('login, token refresh with a draft, and logout use the real UI',async({page})=>{
+test('login, token refresh with a draft, and logout use the real student UI',async({page})=>{
   await isolate(page);
   await page.goto('/index.html#student-space');
   await page.locator('#gs-l-email').fill('student@example.invalid');
   await page.locator('#gs-l-pwd').fill('fixture-password');
   await page.locator('form[data-form="login"] button[type="submit"]').click();
   await expect.poll(()=>page.evaluate(()=>window.StudentAccount.getSyncStatus().phase)).toBe('ready');
-  await page.locator('#student-tab-notes').click();
-  await page.locator('#gs-note-form input[name="title"]').fill('Unsent draft');
-  await page.locator('#gs-note-form textarea[name="body"]').fill('Do not discard this text.');
-  await page.evaluate(async()=>{window.__authFixture.emit('TOKEN_REFRESHED');await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
-  await expect(page.locator('#gs-note-form textarea[name="body"]')).toHaveValue('Do not discard this text.');
+
+  // Masahati's current navigation is organized as: Mon parcours > Notes.
+  await page.locator('#student-space-content .mh-nav button[data-a="go"][data-v="me"]').click();
+  await page.locator('#student-space-content button[data-a="msub"][data-s="notes"]').click();
+  const noteForm=page.locator('#student-space-content form[data-form="note"]');
+  await noteForm.locator('input[name="title"]').fill('Unsent draft');
+  await noteForm.locator('textarea[name="body"]').fill('Do not discard this text.');
+  await page.evaluate(async()=>{
+    window.__authFixture.emit('TOKEN_REFRESHED');
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  });
+  await expect(noteForm.locator('textarea[name="body"]')).toHaveValue('Do not discard this text.');
   await page.locator('.gs-acc-logout').click();
   await expect(page.locator('#gs-l-email')).toBeVisible();
-  await expect(page.locator('#gs-note-form')).toHaveCount(0);
+  await expect(page.locator('#student-space-content form[data-form="note"]')).toHaveCount(0);
 });
 
 test('partial cloud failure retains quiz history and offers retry',async({page})=>{
