@@ -147,3 +147,16 @@ test('classroom roster and student reports discard stale account responses',()=>
     assert(request>=0&&guard>request,'the active account must be revalidated after '+marker);
   }
 });
+
+
+test('teacher community requests reject stale account generations',()=>{
+  const b=browser({user:{id:'teacher-a'},sessionGeneration:7});
+  b.run(between(source('teacher-community.js'),'  function captureCommunitySession()','  function clearCommunityView()'));
+  const snapshot=b.context.captureCommunitySession();
+  assert.equal(b.context.communitySessionIsCurrent(snapshot),true);
+  b.context.sessionGeneration=8;
+  assert.equal(b.context.communitySessionIsCurrent(snapshot),false);
+  b.context.sessionGeneration=7;
+  b.context.user={id:'teacher-b'};
+  assert.equal(b.context.communitySessionIsCurrent(snapshot),false);
+});
