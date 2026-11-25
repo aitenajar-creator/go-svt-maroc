@@ -15,7 +15,9 @@
       completed: 'مكتملة',
       viewed: 'دروس تمت زيارتها',
       exercises: 'تمارين تمت زيارتها',
-      pending: 'غير مكتملة'
+      pending: 'غير مكتملة',
+      quizScope: 'الاختبارات تشمل جميع المسالك',
+      lessonScope: 'إحصاءات الدروس والتمارين تخص مسارك'
     },
     fr: {
       eyebrow: 'VOTRE PROCHAINE ÉTAPE',
@@ -29,7 +31,9 @@
       completed: 'Terminés',
       viewed: 'Cours consultés',
       exercises: 'Exercices consultés',
-      pending: 'À faire'
+      pending: 'À faire',
+      quizScope: 'Quiz : tous les parcours',
+      lessonScope: 'Cours et exercices : votre parcours'
     }
   };
 
@@ -130,8 +134,12 @@
         Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
         Number.isFinite(date) && date > 0 && hasReviewableMistake;
     }).sort(function (a, b) { return Number(b.date) - Number(a.date); })[0];
-    const stats = window.StudentSpace && typeof window.StudentSpace.getDashboardStats === 'function'
-      ? window.StudentSpace.getDashboardStats() : {};
+    const profile = window.StudentSpace && typeof window.StudentSpace.getCurrentProfile === 'function'
+      ? window.StudentSpace.getCurrentProfile() : null;
+    const stats = profile && window.StudentSpace && typeof window.StudentSpace.getDashboardStatsForPath === 'function'
+      ? window.StudentSpace.getDashboardStatsForPath(profile.study_level, profile.study_track)
+      : (window.StudentSpace && typeof window.StudentSpace.getDashboardStats === 'function'
+        ? window.StudentSpace.getDashboardStats() : {});
     const guidedStep = window.StudentLearningJourney &&
       typeof window.StudentLearningJourney.getNextStep === 'function'
       ? window.StudentLearningJourney.getNextStep(stats) : null;
@@ -163,7 +171,7 @@
       '<div class="gs-continue-heading"><div><span class="gs-continue-eyebrow">' + t.eyebrow + '</span><h3>' + t.title + '</h3></div><span class="gs-continue-mark">🧭</span></div>' +
       recentBlock + nextBlock +
       '<a class="gs-continue-model-link" href="/laboratory.html#tectonic-model"><span>🌍</span><span><strong>' + (isFrench ? 'Modèles interactifs de SVT' : 'النماذج التفاعلية لعلوم الحياة والأرض') + '</strong><small>' + (isFrench ? 'Explorez les plaques tectoniques et les expériences virtuelles' : 'استكشف الصفائح التكتونية والتجارب الافتراضية') + '</small></span><b>←</b></a>' +
-      '<div class="gs-continue-stats"><div><strong>' + lessons.length + '</strong><span>' + t.viewed + '</span></div><div><strong>' + completed + '</strong><span>' + t.completed + '</span></div><div><strong>' + exercises.length + '</strong><span>' + t.exercises + '</span></div><div class="gs-continue-progress"><div><span>' + (isFrench ? 'Progression des cours terminés' : 'نسبة إتمام الدروس') + '</span><strong>' + percent + '%</strong></div><i><b style="width:' + percent + '%"></b></i></div></div>';
+      '<div class="gs-continue-stats"><div><strong>' + lessons.length + '</strong><span>' + t.viewed + '</span></div><div><strong>' + completed + '</strong><span>' + t.completed + '</span></div><div><strong>' + exercises.length + '</strong><span>' + t.exercises + '</span></div><div class="gs-continue-progress"><div><span>' + (isFrench ? 'Progression des cours terminés' : 'نسبة إتمام الدروس') + '</span><strong>' + percent + '%</strong></div><i><b style="width:' + percent + '%"></b></i></div><small class="gs-continue-scope">' + t.lessonScope + ' · ' + t.quizScope + '</small></div>';
 
     const existing = document.getElementById(ROOT_ID);
     if (existing && existing.dataset.signature === signature) return;
