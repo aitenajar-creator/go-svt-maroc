@@ -62,6 +62,15 @@ test('a failed deletion-marker read blocks only deletable collections',async()=>
   assert(f.merged.includes('progress'));assert(f.merged.includes('quizzes'));
 });
 
+test('a successful retry clears the previous synchronization error',async()=>{
+  const f=authFixture('loadLearningState');await flush();
+  assert.equal(f.c.StudentAccount.getSyncStatus().phase,'partial');
+  f.c.GoSVTCloud.loadLearningState=async()=>({goals:[],streak:{current:0,best:0,lastVisit:null}});
+  await f.c.StudentAccount.refreshProfile();await flush();
+  assert.equal(f.c.StudentAccount.getSyncStatus().phase,'ready');
+  assert.deepEqual(f.c.StudentAccount.getSyncStatus().failures,[]);
+});
+
 test('the account uses the server academic profile, not editable signup metadata',async()=>{
   const f=authFixture();await flush();
   assert(f.tables.includes('student_academic_profiles'));
