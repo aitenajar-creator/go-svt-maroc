@@ -40,36 +40,29 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
       await db.query('insert into public.student_study_plan(student_id,item_key,title) values($1,$2,$3)',[student,'plan-1','Delayed task']);
       assert.equal((await db.query('select * from public.student_study_plan')).rows.length,0);
     });
-    await t.test('deleted notes can be recreated intentionally while stale copies remain blocked',async()=>{
+    await t.test('a tombstoned note key cannot be reused even with a future client timestamp',async()=>{
       await as(student);
-      await remove('notes','note-recreate');
-      const stale={id:'note-recreate',title:'Old',body:'stale',createdAt:1,updatedAt:1};
-      const staleResult=await db.query(
+      await remove('notes','note-retired');
+      const futureTime=Number((await db.query("select extract(epoch from now() + interval '365 days') * 1000 as ms")).rows[0].ms);
+      const attempted={id:'note-retired',title:'Restored backup',body:'must remain deleted',createdAt:futureTime,updatedAt:futureTime};
+      const result=await db.query(
         'select public.gosvt_upsert_student_collection_item($1,$2,$3,$4::jsonb) as saved',
-        ['notes','note-recreate',student,JSON.stringify(stale)]
+        ['notes','note-retired',student,JSON.stringify(attempted)]
       );
-      assert.equal(staleResult.rows[0].saved,false);
-      const freshTime=Number((await db.query("select extract(epoch from now() + interval '1 minute') * 1000 as ms")).rows[0].ms);
-      const fresh={id:'note-recreate',title:'New',body:'intentionally recreated',createdAt:freshTime,updatedAt:freshTime};
-      const freshResult=await db.query(
-        'select public.gosvt_upsert_student_collection_item($1,$2,$3,$4::jsonb) as saved',
-        ['notes','note-recreate',student,JSON.stringify(fresh)]
-      );
-      assert.equal(freshResult.rows[0].saved,true);
-      assert.equal((await db.query("select note::jsonb->>'body' as body from public.student_notes where content_key='note-recreate'")).rows[0].body,'intentionally recreated');
-      await db.query('insert into public.student_notes(student_id,content_key,note,updated_at) values($1,$2,$3,to_timestamp(1)) on conflict(student_id,content_key) do update set note=excluded.note,updated_at=excluded.updated_at',
-        [student,'note-recreate',JSON.stringify(stale)]);
-      assert.equal((await db.query("select note::jsonb->>'body' as body from public.student_notes where content_key='note-recreate'")).rows[0].body,'intentionally recreated');
+      assert.equal(result.rows[0].saved,false);
+      assert.equal((await db.query("select * from public.student_notes where content_key='note-retired'")).rows.length,0);
+      assert.equal((await db.query("select * from public.student_collection_tombstones where item_key='note-retired'")).rows.length,1);
     });
-    await t.test('deleted planner items can be recreated with a new creation timestamp',async()=>{
+    await t.test('a tombstoned planner key cannot be reused even with a future client timestamp',async()=>{
       await as(student);
-      await remove('studyPlan','plan-recreate');
-      const freshTime=Number((await db.query("select extract(epoch from now() + interval '1 minute') * 1000 as ms")).rows[0].ms);
-      const fresh={id:'plan-recreate',title:'New plan',date:'2026-12-01',duration:30,completed:false,createdAt:freshTime,updatedAt:freshTime};
-      const saved=await db.query('select public.gosvt_upsert_student_collection_item($1,$2,$3,$4::jsonb) as saved',
-        ['studyPlan','plan-recreate',student,JSON.stringify(fresh)]);
-      assert.equal(saved.rows[0].saved,true);
-      assert.equal((await db.query("select title from public.student_study_plan where item_key='plan-recreate'")).rows[0].title,'New plan');
+      await remove('studyPlan','plan-retired');
+      const futureTime=Number((await db.query("select extract(epoch from now() + interval '365 days') * 1000 as ms")).rows[0].ms);
+      const attempted={id:'plan-retired',title:'Restored backup',date:'2026-12-01',duration:30,completed:false,createdAt:futureTime,updatedAt:futureTime};
+      const result=await db.query('select public.gosvt_upsert_student_collection_item($1,$2,$3,$4::jsonb) as saved',
+        ['studyPlan','plan-retired',student,JSON.stringify(attempted)]);
+      assert.equal(result.rows[0].saved,false);
+      assert.equal((await db.query("select * from public.student_study_plan where item_key='plan-retired'")).rows.length,0);
+      assert.equal((await db.query("select * from public.student_collection_tombstones where item_key='plan-retired'")).rows.length,1);
     });
     await t.test('a queued deletion is rejected when the expected identity has changed',async()=>{
       await as(other);await assert.rejects(remove('notes','note-1',student),/session_changed/);
