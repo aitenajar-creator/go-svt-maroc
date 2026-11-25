@@ -9,7 +9,7 @@ $$;
 grant usage on schema auth, public to authenticated;
 grant execute on function auth.uid() to authenticated;
 create table public.profiles(id uuid primary key references auth.users(id), role text not null);
-create table public.private_student_lessons(id uuid primary key, title text);
+create table public.private_student_lessons(id uuid primary key, title text, is_published boolean not null default true);
 create table public.student_notes(student_id uuid references auth.users(id) on delete cascade, content_key text, note text, updated_at timestamptz not null default now(), primary key(student_id,content_key));
 create table public.student_study_plan(student_id uuid references auth.users(id) on delete cascade, item_key text, title text, updated_at timestamptz not null default now(), primary key(student_id,item_key));
 alter table public.student_notes enable row level security;
@@ -25,6 +25,6 @@ create function public.gosvt_can_manage_class(p_class_id uuid) returns boolean l
 $$;
 insert into auth.users values ('00000000-0000-0000-0000-000000000001'),('00000000-0000-0000-0000-000000000002'),('00000000-0000-0000-0000-000000000003');
 insert into public.profiles values ('00000000-0000-0000-0000-000000000001','student'),('00000000-0000-0000-0000-000000000002','student'),('00000000-0000-0000-0000-000000000003','teacher');
-insert into public.private_student_lessons values ('10000000-0000-0000-0000-000000000001','Lesson one'),('10000000-0000-0000-0000-000000000002','Lesson two');
+insert into public.private_student_lessons values ('10000000-0000-0000-0000-000000000001','Lesson one'),('10000000-0000-0000-0000-000000000002','Lesson two'),('10000000-0000-0000-0000-000000000003','Unpublished lesson',false);
 insert into public.teacher_classes values ('20000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000003');
 insert into public.teacher_questions(id,class_id,student_id) values ('30000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000001');
