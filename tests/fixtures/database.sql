@@ -25,6 +25,6 @@ create function public.gosvt_can_manage_class(p_class_id uuid) returns boolean l
 $$;
 insert into auth.users values ('00000000-0000-0000-0000-000000000001'),('00000000-0000-0000-0000-000000000002'),('00000000-0000-0000-0000-000000000003');
 insert into public.profiles values ('00000000-0000-0000-0000-000000000001','student'),('00000000-0000-0000-0000-000000000002','student'),('00000000-0000-0000-0000-000000000003','teacher');
-insert into public.private_student_lessons values ('10000000-0000-0000-0000-000000000001','Lesson one'),('10000000-0000-0000-0000-000000000002','Lesson two'),('10000000-0000-0000-0000-000000000003','Unpublished lesson',false);
+insert into public.private_student_lessons(id,title,is_published) values ('10000000-0000-0000-0000-000000000001','Lesson one',true),('10000000-0000-0000-0000-000000000002','Lesson two',true),('10000000-0000-0000-0000-000000000003','Unpublished lesson',false);
 insert into public.teacher_classes values ('20000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000003');
 insert into public.teacher_questions(id,class_id,student_id) values ('30000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000001');
