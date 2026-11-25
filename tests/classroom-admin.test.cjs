@@ -208,6 +208,10 @@ test('teacher community read failures and cleanup cannot repaint a newer session
  
 test('teacher community preview, download, edit and sharing stop on stale sessions',()=>{
   const community=source('teacher-community.js');
+  const download=between(community,'  async function downloadResource(id)','  async function previewResource(id)');
+  const preview=between(community,'  async function previewResource(id)','  let editingResourceId');
+  assert.equal((download.match(/downloadTab && !downloadTab.closed\) downloadTab.close\(\); return;/g)||[]).length,2,'stale downloads must close their pending tab');
+  assert.equal((preview.match(/previewTab && !previewTab.closed\) previewTab.close\(\); return;/g)||[]).length,2,'stale previews must close their pending tab');
   for(const [start,end,request] of [
     ['async function downloadResource(id)','async function previewResource(id)','createSignedUrl'],
     ['async function previewResource(id)','let editingResourceId','createSignedUrl'],
