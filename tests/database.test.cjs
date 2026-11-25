@@ -15,7 +15,7 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
   const send=(body,token,expected=teacher)=>db.query('select public.gosvt_send_teacher_reply($1,$2,$3,$4) as id',[question,body,token,expected]);
   try{
     await db.exec(source('tests/fixtures/database.sql'));
-    for(const file of ['20261116000000_student_learning_state.sql','20261121000100_student_lesson_objectives.sql','20261125000100_student_collection_deletions.sql','20261125000200_per_lesson_objectives.sql','20261125000400_recreate_student_collection_items.sql','20261125000300_atomic_teacher_question_replies.sql']){
+    for(const file of ['20261116000000_student_learning_state.sql','20261121000100_student_lesson_objectives.sql','20261125000100_student_collection_deletions.sql','20261125000200_per_lesson_objectives.sql','20261125000300_atomic_teacher_question_replies.sql','20261125000400_recreate_student_collection_items.sql']){
       if(file==='20261125000200_per_lesson_objectives.sql'){
         await db.query('insert into public.student_learning_state(student_id,lesson_objectives) values($1,$2)',[student,JSON.stringify({['private-lesson:'+first]:[0,0,'invalid',999],['private-lesson:'+second]:[1]})]);
       }
