@@ -444,6 +444,7 @@
         });
       }
       const activeTeacher=await currentUser();
+      if(!activeTeacher||!sessionIsCurrent(user,host))return;
       let pinsReady=true;
       const {data:pins,error:pinsError}=await client.from('teacher_question_pins').select('question_id').eq('teacher_id',activeTeacher.id);
       if(pinsError)pinsReady=false;
