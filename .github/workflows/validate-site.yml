@@ -73,6 +73,13 @@ jobs:
           source: ./
           destination: ./_site
 
+      # Keep the public browser configuration in the artifact. Jekyll may omit
+      # this root-level runtime file when processing repository ignore rules.
+      - name: Include public Supabase browser configuration
+        run: |
+          test -s supabase-config.js
+          install -m 0644 supabase-config.js _site/supabase-config.js
+
       - name: Add deployment dates metadata
         run: |
           python3 - <<'PY'
