@@ -195,6 +195,8 @@
         ready = true;
         emit();
 
+        if (window.GoSVTCloud) setSyncStatus('loading', []);
+
         if (window.GoSVTCloud && window.GoSVTStudyFavorites &&
             typeof window.GoSVTCloud.loadFavorites === 'function') {
           window.GoSVTCloud.loadFavorites(uid)
@@ -212,7 +214,6 @@
         }
 
         if (window.GoSVTCloud && window.StudentSpace) {
-          setSyncStatus('loading');
           const loads = [
             ['progress', 'loadProgress'], ['notes', 'loadNotes'], ['studyPlan', 'loadStudyPlan'],
             ['quizAttempts', 'loadQuizAttempts'], ['learningState', 'loadLearningState'],
