@@ -190,6 +190,22 @@ test('teacher community edit errors and cleanup do not repaint a newer account',
   assert(finallyBlock.includes('if (communitySessionIsCurrent(session))'),'stale edit cleanup must not repaint new account controls');
 });
  
+test('teacher community read failures and cleanup cannot repaint a newer session',()=>{
+  const community=source('teacher-community.js');
+  const cases=[
+    ['async function loadLibrary(reset = true)','function updateLibraryResetVisibility'],
+    ['async function loadMyResources(reset = true)','async function downloadResource(id)'],
+    ['async function loadAdmin(reset = true, only = \'both\')','const activityActions ='],
+    ['async function loadAdminActivity(reset = true)','function csvCell']
+  ];
+  for(const [start,end] of cases){
+    const block=between(community,'  '+start,'  '+end);
+    assert(block.includes('communitySessionIsCurrent(session)'),'read flow must validate session before updating UI: '+start);
+    assert(block.includes('finally {'),'read flow must release its loading lock: '+start);
+    assert(block.includes('if (communitySessionIsCurrent(session))'),'read cleanup must be session-scoped: '+start);
+  }
+});
+ 
 test('teacher community preview, download, edit and sharing stop on stale sessions',()=>{
   const community=source('teacher-community.js');
   for(const [start,end,request] of [
