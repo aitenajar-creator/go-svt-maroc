@@ -1,0 +1,548 @@
+// =====================================================
+// Go SVT Maroc - learn.js (الدفعة 5)
+// ❓ الاختبارات التفاعلية + 🎥 فيديوهات الشرح
+// =====================================================
+(function () {
+    'use strict';
+
+    SECTION_NAMES.quiz = { ar: 'الاختبارات', fr: 'Quiz' };
+
+    // ملفات الاختبارات لا تظهر كبطاقات تحميل
+    const prevIsContentFile = isContentFile;
+    isContentFile = function (path) {
+        return path.startsWith('/quiz/') ? false : prevIsContentFile(path);
+    };
+
+    function readObject(key) {
+        try { const v = JSON.parse(storage.get(key)); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; }
+    }
+    const fileTitle = path => getFileTitle(path.split('/').pop());
+    const nfc = s => String(s).normalize('NFC').trim();
+
+    // =============== 🎥 الفيديوهات ===============
+    let videoMap = {};
+    let videosPromise = null;
+
+    function youtubeId(value) {
+        const s = String(value || '').trim();
+        if (/^[\w-]{11}$/.test(s)) return s;
+        const m = /(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/.exec(s);
+        return m ? m[1] : '';
+    }
+
+    function loadVideos() {
+        if (!videosPromise) {
+            videosPromise = fetch(`videos.json?v=${Date.now()}`, { cache: 'no-store' })
+                .then(r => (r.ok ? r.json() : {}))
+                .catch(err => { console.warn('videos.json :', err); return {}; })
+                .then(data => {
+                    videoMap = {};
+                    if (data && typeof data === 'object') {
+                        Object.keys(data).forEach(key => {
+                            const ids = [].concat(data[key]).map(youtubeId).filter(Boolean);
+                            if (ids.length) videoMap[nfc(key)] = ids;
+                        });
+                    }
+                    return videoMap;
+                });
+        }
+        return videosPromise;
+    }
+
+    function videosFor(path) {
+        const p = nfc(path);
+        const name = p.split('/').pop();
+        return videoMap[p] || videoMap[name] || videoMap[name.replace(/\.[^.]+$/, '')] || [];
+    }
+
+    const prevLoadManifest = loadManifest;
+    loadManifest = function () {
+        return Promise.all([prevLoadManifest(), loadVideos()]).then(([files]) => files);
+    };
+
+    const prevRenderCard = renderCard;
+    renderCard = function (path, badgeText) {
+        const html = prevRenderCard(path, badgeText);
+        if (!videosFor(path).length) return html;
+        const btn = `<button type="button" class="gs-video-btn" data-path="${escapeHtml(path)}">🎥 ${t('فيديو الشرح', 'Vidéo')}</button>`;
+        return html.replace('<div class="card-actions">', '<div class="card-actions">' + btn);
+    };
+
+    function openVideo(path, index) {
+        const modal = document.getElementById('gs-preview');
+        const ids = videosFor(path);
+        if (!modal || !ids.length) return;
+        const i = Math.min(Math.max(index || 0, 0), ids.length - 1);
+        modal.querySelector('.gs-modal-title').textContent = `🎥 ${fileTitle(path)}`;
+        modal.querySelector('.gs-open-tab').href = `https://www.youtube.com/watch?v=${ids[i]}`;
+        const parts = ids.length > 1
+            ? `<div class="gs-video-parts">${ids.map((id, n) =>
+                `<button type="button" class="gs-video-part${n === i ? ' active' : ''}" data-path="${escapeHtml(path)}" data-index="${n}">${t('الجزء', 'Partie')} ${n + 1}</button>`).join('')}</div>`
+            : '';
+        modal.querySelector('.gs-modal-body').innerHTML = parts +
+            `<div class="gs-video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/${ids[i]}?rel=0&autoplay=1" title="YouTube" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
+        openModal('gs-preview');
+        trackEvent('video', path);
+    }
+
+
+    // =============== 🎯 تمارين مرتبطة بكل درس (quiz-map.json) ===============
+    // يُنشئه _tools/generate_quiz.py: مسار الدرس ← مسار اختباره
+    let quizMap = {};
+    let quizMapPromise = null;
+    const mapKey = p => nfc(String(p || '')).replace(/^\/+/, '');
+
+    function loadQuizMap() {
+        if (!quizMapPromise) {
+            quizMapPromise = fetch(`quiz-map.json?v=${Date.now()}`, { cache: 'no-store' })
+                .then(r => (r.ok ? r.json() : {}))
+                .catch(() => ({}))
+                .then(data => {
+                    quizMap = {};
+                    if (data && typeof data === 'object') {
+                        Object.keys(data).forEach(k => { quizMap[mapKey(k)] = '/' + mapKey(data[k]); });
+                    }
+                    return quizMap;
+                });
+        }
+        return quizMapPromise;
+    }
+
+    const prevLoadManifestQuiz = loadManifest;
+    loadManifest = function () {
+        return Promise.all([prevLoadManifestQuiz(), loadQuizMap()]).then(([files]) => files);
+    };
+
+    const prevRenderCardQuiz = renderCard;
+    renderCard = function (path, badgeText) {
+        const html = prevRenderCardQuiz(path, badgeText);
+        const quizPath = quizMap[mapKey(path)];
+        if (!quizPath) return html;
+        const btn = `<button type="button" class="gs-lesson-quiz gs-quiz-start" data-path="${escapeHtml(quizPath)}" ` +
+            `style="cursor:pointer;padding:.5rem 1rem;border-radius:8px;border:2px solid #2d5a27;background:#2d5a27;color:#fff;font:inherit;font-weight:600">` +
+            `🎯 ${t('تمارين تفاعلية', 'Exercices interactifs')}</button>`;
+        return html.replace('<div class="card-actions">', '<div class="card-actions">' + btn);
+    };
+
+    // رابط "الإبلاغ عن خطأ" (واتساب الموجود في صفحة الاتصال) للاختبارات المولّدة آلياً
+    function reportLink(quiz, q) {
+        if (!quiz || !quiz.auto) return '';
+        const wa = document.querySelector('a[href*="wa.me/"]');
+        if (!wa) return '';
+        const msg = `⚠️ ${t('تبليغ عن خطأ في اختبار', 'Erreur dans un quiz')}\n${quiz.titre || ''}\n${q.question}`;
+        const url = `${wa.href.split('?')[0]}?text=${encodeURIComponent(msg)}`;
+        return `<p style="margin-top:.5rem"><a class="gs-quiz-report" href="${escapeHtml(url)}" target="_blank" rel="noopener" ` +
+            `style="font-size:.85rem">⚠️ ${t('الإبلاغ عن خطأ في هذا السؤال', 'Signaler une erreur dans cette question')}</a></p>`;
+    }
+
+    // =============== ❓ الاختبارات ===============
+    let quizListPromise = null;
+    const quizCache = {};
+    let quizState = null;
+    let quizRequest = 0;
+    function quizOwner() {
+        const account = window.StudentAccount;
+        const user = account && account.isLoggedIn() && account.getUser();
+        return user ? String(user.id) : 'guest';
+    }
+    const quizScoresKey = owner => 'gosvt-quiz:' + owner;
+    let activeQuizOwner = quizOwner();
+    function cancelQuiz() {
+        quizRequest++;
+        quizState = null;
+        const modal = document.getElementById('gs-quiz-modal');
+        if (modal && !modal.hidden) closeModal(modal);
+    }
+    document.addEventListener('gosvt:auth-changed', function () {
+        const owner = quizOwner();
+        if (owner === activeQuizOwner) return;
+        activeQuizOwner = owner;
+        cancelQuiz();
+        const section = document.getElementById('quiz');
+        if (section) renderQuizList(section);
+    });
+
+    function loadQuizList() {
+        if (!quizListPromise) {
+            quizListPromise = fetch(`${CONFIG.MANIFEST_URL}?q=${Date.now()}`, { cache: 'no-store' })
+                .then(r => { if (!r.ok) throw new Error(`content.json (${r.status})`); return r.json(); })
+                .then(paths => paths.filter(p => p.startsWith('/quiz/') && /\.json$/i.test(p)))
+                .catch(err => { quizListPromise = null; throw err; });
+        }
+        return quizListPromise;
+    }
+
+    function validateQuiz(data) {
+        const questions = (data && Array.isArray(data.questions) ? data.questions : [])
+            .filter(q => q && q.question && Array.isArray(q.choix) && q.choix.length >= 2 &&
+                Number.isInteger(q.reponse) && q.reponse >= 1 && q.reponse <= q.choix.length)
+            .map(q => ({
+                question: String(q.question),
+                choix: q.choix.map(String),
+                reponse: q.reponse - 1,
+                explication: q.explication ? String(q.explication) : '',
+                image: q.image ? String(q.image) : ''
+            }));
+        if (!questions.length) throw new Error('quiz vide ou mal formé');
+        return { titre: String(data.titre || ''), description: String(data.description || ''), auto: data.auto === true, source: data.source ? String(data.source) : '', questions };
+    }
+
+    function loadQuiz(path) {
+        if (!quizCache[path]) {
+            quizCache[path] = fetch(buildFileUrl(path), { cache: 'no-cache' })
+                .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+                .then(validateQuiz)
+                .catch(err => { delete quizCache[path]; throw err; });
+        }
+        return quizCache[path];
+    }
+
+    function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    async function renderQuizList(section) {
+        const container = document.getElementById('quiz-content');
+        if (!container) return;
+        const { subject, level } = getSectionState(section);
+        const prefix = `/quiz/${subject}/${level}/`;
+        const requestId = String(++requestCounter);
+        container.dataset.requestId = requestId;
+        container.innerHTML = `<p class="loading">${t('جاري التحميل...', 'Chargement...')}</p>`;
+        const empty = `<p class="no-files">${t('لا توجد اختبارات حالياً لهذا المستوى', 'Aucun quiz pour ce niveau pour le moment')}</p>`;
+
+        try {
+            const paths = (await loadQuizList())
+                .filter(p => p.startsWith(prefix))
+                .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+            const items = (await Promise.all(paths.map(p =>
+                loadQuiz(p).then(quiz => ({ path: p, quiz })).catch(err => { console.warn(p, err); return null; })
+            ))).filter(Boolean);
+            if (container.dataset.requestId !== requestId) return;
+            if (!items.length) { container.innerHTML = empty; return; }
+
+            const scores = readObject(quizScoresKey(quizOwner()));
+            container.innerHTML = `<p class="files-count">${items.length} ${t('اختبار', 'quiz')}</p>` + items.map(({ path, quiz }) => {
+                const sub = path.slice(prefix.length).split('/').slice(0, -1).join(' / ');
+                const sc = scores[path];
+                const best = sc ? `<span class="gs-quiz-badge${sc.best >= 80 ? ' good' : ''}">🏅 ${sc.best}%</span>` : '';
+                const desc = quiz.description ? `${escapeHtml(quiz.description)} · ` : '';
+                return `
+                    <div class="content-card gs-quiz-card">
+                        <span class="level-badge">${escapeHtml(sub ? `${level} - ${sub}` : level)}</span>${best}
+                        <div class="file-icon">❓</div>
+                        <h3 dir="auto">${escapeHtml(quiz.titre || fileTitle(path))}</h3>
+                        <p class="file-name" dir="auto">${desc}${quiz.questions.length} ${t('سؤال', 'questions')}${quiz.auto ? ' · 🤖 ' + t('مولّد آلياً', 'généré par IA') : ''}</p>
+                        <div class="card-actions">
+                            <button type="button" class="gs-btn gs-btn-main gs-quiz-start" data-path="${escapeHtml(path)}">▶️ ${sc ? t('إعادة', 'Refaire') : t('ابدأ', 'Commencer')}</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        } catch (error) {
+            if (container.dataset.requestId === requestId) {
+                container.innerHTML = `<p class="error">${t('تعذر تحميل الاختبارات.', 'Impossible de charger les quiz.')}<br><small style="opacity:.6">(${escapeHtml(error.message)})</small></p>`;
+            }
+        }
+    }
+
+    function buildQuizModal() {
+        if (document.getElementById('gs-quiz-modal')) return;
+        const modal = document.createElement('div');
+        modal.className = 'gs-modal';
+        modal.id = 'gs-quiz-modal';
+        modal.hidden = true;
+        modal.innerHTML = `
+            <div class="gs-modal-box">
+                <div class="gs-modal-head">
+                    <h3 class="gs-modal-title"></h3>
+                    <button type="button" class="gs-close" aria-label="Fermer">✕</button>
+                </div>
+                <div class="gs-quiz-body"></div>
+            </div>`;
+        document.body.appendChild(modal);
+    }
+
+    const quizModal = () => document.getElementById('gs-quiz-modal');
+    const quizBody = () => document.querySelector('#gs-quiz-modal .gs-quiz-body');
+    const prevQuizCloseModal = closeModal;
+    closeModal = function (modal) {
+        if (modal && modal.id === 'gs-quiz-modal') { quizRequest++; quizState = null; }
+        return prevQuizCloseModal.apply(this, arguments);
+    };
+
+    async function openQuiz(path) {
+        const modal = quizModal();
+        if (!modal) return;
+        const request = ++quizRequest;
+        const owner = quizOwner();
+        activeQuizOwner = owner;
+        quizState = null;
+        const title = modal.querySelector('.gs-modal-title');
+        title.textContent = `❓ ${fileTitle(path)}`;
+        quizBody().innerHTML = `<p class="loading">${t('جاري التحميل...', 'Chargement...')}</p>`;
+        openModal('gs-quiz-modal');
+        try {
+            const quiz = await loadQuiz(path);
+            if (request !== quizRequest || owner !== quizOwner() || modal.hidden) return;
+            if (quiz.titre) title.textContent = `❓ ${quiz.titre}`;
+            quizState = {
+                owner, path, quiz, order: shuffle(quiz.questions.map((_, i) => i)),
+                index: 0, score: 0, wrong: [], answered: false,
+                attemptId: (window.crypto && crypto.randomUUID)
+                    ? crypto.randomUUID()
+                    : 'attempt_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2),
+                resultSaved: false
+            };
+            renderQuestion();
+        } catch (e) {
+            if (request !== quizRequest || owner !== quizOwner() || modal.hidden) return;
+            quizBody().innerHTML = `<p class="error">${t('تعذر تحميل الاختبار.', 'Impossible de charger ce quiz.')} <small>(${escapeHtml(e.message)})</small></p>`;
+        }
+    }
+
+    function renderQuestion() {
+        const s = quizState;
+        const total = s.order.length;
+        const q = s.quiz.questions[s.order[s.index]];
+        const image = q.image ? `<img class="gs-quiz-img" src="${escapeHtml(encodeURI(q.image))}" alt="${escapeHtml(q.question)}" loading="eager" decoding="async" referrerpolicy="no-referrer">` : '';
+        quizBody().innerHTML = `
+            <div class="gs-quiz-progress"><span style="width:${Math.round(s.index / total * 100)}%"></span></div>
+            <p class="gs-quiz-count">${t('السؤال', 'Question')} ${s.index + 1} / ${total}</p>
+            ${s.quiz.auto ? `<p class="gs-quiz-auto-note" style="font-size:.82rem;opacity:.75;margin:.1rem 0 .6rem">🤖 ${t('أسئلة مولّدة آلياً من الدرس. إن وجدت خطأً فبلّغنا.', 'Questions générées automatiquement à partir du cours. Signalez toute erreur.')}</p>` : ''}
+            <h4 class="gs-quiz-question" dir="auto">${escapeHtml(q.question)}</h4>
+            ${image}
+            <div class="gs-quiz-choices">
+                ${q.choix.map((c, i) => `<button type="button" class="gs-quiz-choice" data-choice="${i}" dir="auto">${escapeHtml(c)}</button>`).join('')}
+            </div>
+            <div class="gs-quiz-feedback" dir="auto" hidden></div>
+            <div class="gs-quiz-nav"><button type="button" class="gs-btn gs-btn-main gs-quiz-next" hidden></button></div>`;
+        const quizImage = quizBody().querySelector('.gs-quiz-img');
+        if (quizImage) {
+            quizImage.addEventListener('error', function() {
+                const fallback = document.createElement('p');
+                fallback.className = 'gs-quiz-image-fallback';
+                fallback.setAttribute('role', 'status');
+                fallback.textContent = t('تعذر تحميل صورة هذا السؤال؛ يمكنك متابعة الإجابة.', 'Image indisponible pour cette question ; vous pouvez continuer.');
+                quizImage.replaceWith(fallback);
+            }, { once: true });
+        }
+    }
+
+    function answer(choice) {
+        const s = quizState;
+        if (!s || s.answered) return;
+        if (s.owner !== quizOwner()) { cancelQuiz(); return; }
+        s.answered = true;
+        const q = s.quiz.questions[s.order[s.index]];
+        const ok = choice === q.reponse;
+        if (ok) s.score++; else s.wrong.push({ q, choice });
+
+        const body = quizBody();
+        body.querySelectorAll('.gs-quiz-choice').forEach(b => {
+            const i = Number(b.dataset.choice);
+            b.disabled = true;
+            if (i === q.reponse) b.classList.add('correct');
+            else if (i === choice) b.classList.add('wrong');
+        });
+        const fb = body.querySelector('.gs-quiz-feedback');
+        fb.hidden = false;
+        fb.classList.add(ok ? 'ok' : 'ko');
+        fb.innerHTML = `<strong>${ok ? t('✅ إجابة صحيحة!', '✅ Bonne réponse !') : t('❌ إجابة خاطئة', '❌ Mauvaise réponse')}</strong>` +
+            (q.explication ? `<p>${escapeHtml(q.explication)}</p>` : '') + reportLink(s.quiz, q);
+        const next = body.querySelector('.gs-quiz-next');
+        next.hidden = false;
+        next.textContent = s.index + 1 < s.order.length
+            ? t('السؤال التالي ←', 'Question suivante →')
+            : t('عرض النتيجة 🏁', 'Voir le résultat 🏁');
+        next.focus();
+    }
+
+    function nextQuestion() {
+        const s = quizState;
+        if (!s || !s.answered) return;
+        if (s.owner !== quizOwner()) { cancelQuiz(); return; }
+        s.answered = false;
+        s.index++;
+        if (s.index < s.order.length) renderQuestion(); else renderResult();
+    }
+
+    function renderResult() {
+        const s = quizState;
+        if (!s || s.owner !== quizOwner()) { cancelQuiz(); return; }
+        const total = s.order.length;
+        const pct = Math.round(s.score / total * 100);
+        let best = pct;
+        if (!s.reviewMode) {
+            const scores = readObject(quizScoresKey(quizOwner()));
+            best = Math.max(pct, scores[s.path] ? scores[s.path].best : 0);
+            scores[s.path] = { best, last: pct, date: Date.now() };
+            storage.set(quizScoresKey(s.owner), JSON.stringify(scores));
+            trackEvent('quiz', s.path);
+        }
+
+        // Save modern course quizzes to the student's personal assessment history.
+        // Keep the attempt token stable so duplicate result rendering cannot add repeats.
+        if (!s.reviewMode && s.owner !== 'guest' && !s.resultSaved && window.StudentSpace &&
+            typeof window.StudentSpace.saveQuizResult === 'function') {
+            const mistakes = s.wrong.map(function (item) {
+                return {
+                    question: item.q.question,
+                    selected: item.q.choix[item.choice],
+                    correct: item.q.choix[item.q.reponse]
+                };
+            });
+            try {
+                window.StudentSpace.saveQuizResult(s.path, s.score, total, mistakes, s.attemptId);
+                s.resultSaved = true;
+            } catch (error) {
+                console.warn('[GoSVT] Quiz result could not be added to student history:', error);
+            }
+        }
+
+        const msg = s.reviewMode
+            ? t('أكملت مراجعة الأخطاء. أحسنت! يمكنك إعادة المراجعة لترسيخ الفهم.', 'Révision terminée. Vous pouvez recommencer pour consolider vos acquis.')
+            : pct >= 80 ? t('🏆 ممتاز! أنت متمكن من هذا الدرس.', '🏆 Excellent ! Vous maîtrisez ce chapitre.')
+            : pct >= 50 ? t('👍 جيد، راجع الأخطاء أسفله.', '👍 Bien ! Revoyez les erreurs ci-dessous.')
+            : t('📚 راجع الدرس ثم أعد المحاولة.', '📚 Révisez le cours puis réessayez.');
+
+        const scoreLabel = s.reviewMode ? t('نتيجة المراجعة:', 'Score de révision :') : t('أفضل نتيجة:', 'Meilleur score :');
+        const restartLabel = s.reviewMode ? t('إعادة المراجعة', 'Recommencer la révision') : t('إعادة الاختبار', 'Recommencer');
+        const review = s.wrong.length
+            ? `<h4 class="gs-quiz-review-title">${t('تصحيح الأخطاء', 'Correction des erreurs')}</h4>` + s.wrong.map(({ q, choice }) => `
+                <div class="gs-quiz-review" dir="auto">
+                    <p><strong>${escapeHtml(q.question)}</strong></p>
+                    <p class="ko">❌ ${escapeHtml(q.choix[choice])}</p>
+                    <p class="ok">✅ ${escapeHtml(q.choix[q.reponse])}</p>
+                    ${q.explication ? `<p class="gs-quiz-expl">${escapeHtml(q.explication)}</p>` : ''}
+                </div>`).join('')
+            : '';
+
+        quizBody().innerHTML = `
+            <div class="gs-quiz-result">
+                <div class="gs-quiz-score">${s.score} / ${total}</div>
+                <p class="gs-quiz-pct">${pct}%</p>
+                <p>${msg}</p>
+                <p class="gs-quiz-best">${scoreLabel} ${best}%</p>
+                <div class="gs-note-actions gs-quiz-end">
+                    <button type="button" class="gs-btn gs-btn-main gs-quiz-restart">🔄 ${restartLabel}</button>
+                    <button type="button" class="gs-btn gs-btn-ghost gs-quiz-close">${t('إغلاق', 'Fermer')}</button>
+                </div>
+            </div>${review}`;
+
+        const section = document.getElementById('quiz');
+        if (section) renderQuizList(section);
+    }
+
+    // =============== مراجعة أخطاء التلميذ من «مساحتي» ===============
+    function startMistakesReview(items) {
+        // This public entry point validates independently of its current caller.
+        // Normalize accepted text without mutating the student's stored history.
+        const safeItems = Array.isArray(items) ? items.filter(item =>
+            item && typeof item === 'object' && !Array.isArray(item) &&
+            typeof item.question === 'string' && item.question.trim() &&
+            typeof item.selected === 'string' && item.selected.trim() &&
+            typeof item.correct === 'string' && item.correct.trim() &&
+            item.selected.trim() !== item.correct.trim()
+        ).slice(0, 50).map(item => ({
+            ...item,
+            question: item.question.trim(),
+            selected: item.selected.trim(),
+            correct: item.correct.trim()
+        })) : [];
+        if (!safeItems.length) return false;
+        if (!quizModal()) buildQuizModal();
+
+        quizRequest++;
+        const path = String(safeItems[0].quizId || 'mistakes-review');
+        const questions = safeItems.map(item => ({
+            question: item.question.slice(0, 2000),
+            choix: [item.selected.slice(0, 1000), item.correct.slice(0, 1000)],
+            reponse: 1,
+            explication: '',
+            image: ''
+        }));
+        const title = quizModal().querySelector('.gs-modal-title');
+        if (title) title.textContent = t('مراجعة أخطائي', 'Révision de mes erreurs');
+        quizState = {
+            owner: quizOwner(),
+            path: path,
+            quiz: { titre: t('مراجعة أخطائي', 'Révision de mes erreurs'), questions: questions, auto: false },
+            order: shuffle(questions.map((_, index) => index)),
+            index: 0,
+            score: 0,
+            wrong: [],
+            answered: false,
+            reviewMode: true,
+            reviewItems: safeItems
+        };
+        openModal('gs-quiz-modal');
+        renderQuestion();
+        return true;
+    }
+
+    window.GoSVTQuiz = window.GoSVTQuiz || {};
+    window.GoSVTQuiz.reviewMistakes = startMistakesReview;
+
+    // =============== توجيه قسم Quiz ===============
+    const prevLoadSection = loadSection;
+    loadSection = function (section) {
+        if (section.id === 'quiz') { renderQuizList(section); return; }
+        prevLoadSection(section);
+    };
+
+    // إخفاء "Quiz" من فلاتر البحث (الاختبارات لا تظهر في البحث)
+    function hideQuizFilter() {
+        document.querySelectorAll('#gs-search-filters option[value="quiz"]').forEach(o => o.remove());
+    }
+    const prevRefreshUiTexts = refreshUiTexts;
+    refreshUiTexts = function () { prevRefreshUiTexts(); hideQuizFilter(); };
+
+    // =============== الأحداث ===============
+    document.addEventListener('click', e => {
+        const start = e.target.closest('.gs-quiz-start');
+        if (start) { openQuiz(start.dataset.path); return; }
+        const choice = e.target.closest('.gs-quiz-choice');
+        if (choice) { answer(Number(choice.dataset.choice)); return; }
+        if (e.target.closest('.gs-quiz-next')) { nextQuestion(); return; }
+        if (e.target.closest('.gs-quiz-restart')) {
+            if (quizState && quizState.reviewMode) startMistakesReview(quizState.reviewItems);
+            else if (quizState) openQuiz(quizState.path);
+            return;
+        }
+        if (e.target.closest('.gs-quiz-close')) { closeModal(quizModal()); return; }
+        const video = e.target.closest('.gs-video-btn, .gs-video-part');
+        if (video) openVideo(video.dataset.path, Number(video.dataset.index || 0));
+    });
+
+    // الإجابة بالأرقام 1، 2، 3، 4 من لوحة المفاتيح
+    document.addEventListener('keydown', e => {
+        const modal = quizModal();
+        if (!modal || modal.hidden || !quizState || !/^[1-9]$/.test(e.key)) return;
+        const btn = modal.querySelector(`.gs-quiz-choice[data-choice="${Number(e.key) - 1}"]`);
+        if (btn && !btn.disabled) btn.click();
+    });
+
+    // =============== 🔗 فتح اختبار مباشرة من رابط: /?quiz=quiz/francais/1BAC/…/x.json#quiz ===============
+    // (يستعمله زر «Passer ce quiz» في صفحات /svt/quiz/…). المسار يجب أن يكون ملف .json داخل مجلد quiz/ فقط.
+    function openQuizFromUrl() {
+        try {
+            const raw = new URLSearchParams(location.search).get('quiz');
+            if (!raw) return;
+            const path = raw.replace(/^\/+/, '');
+            if (!/^quiz\/[^?#\\]+\.json$/i.test(path) || path.split('/').includes('..')) return;
+            history.replaceState(null, '', location.pathname + location.hash);   // لا يُعاد فتحه عند تحديث الصفحة
+            openQuiz('/' + path);
+        } catch (e) { /* رابط غير صالح: نتجاهله */ }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        buildQuizModal();
+        hideQuizFilter();
+        openQuizFromUrl();
+    });
+})();

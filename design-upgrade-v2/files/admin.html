@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#173f35">
+  <title>إدارة GO SVT Maroc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css?v=20261122-roles2">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-header">
+      <a class="brand" href="/" aria-label="Go SVT Maroc"><span>🔬</span><span>GO SVT Maroc<small>لوحة الإدارة الخاصة</small></span></a>
+      <a class="back-link" href="/">العودة إلى الموقع ↩</a>
+    </header>
+
+    <section id="login-panel" class="panel auth-panel">
+      <div class="panel-icon">🔐</div>
+      <p class="eyebrow">OWNER ACCESS</p>
+      <h1>الدخول إلى الإدارة</h1>
+      <p class="muted">هذه المساحة مخصصة لمدير المنصة المعتمد فقط.</p>
+      <form id="login-form">
+        <label for="admin-email">البريد الإلكتروني</label>
+        <input id="admin-email" type="email" autocomplete="username" required>
+        <label for="admin-password">كلمة المرور</label>
+        <input id="admin-password" type="password" autocomplete="current-password" required>
+        <button class="primary-btn" type="submit">تسجيل الدخول</button>
+      </form>
+      <p id="login-message" class="message" role="status"></p>
+    </section>
+
+    <section id="dashboard" hidden>
+      <div class="welcome-row">
+        <div><p class="eyebrow">SITE OWNER CONTROL CENTER</p><h1>مرحباً بك في لوحة الإدارة</h1><p id="admin-identity" class="muted"></p></div>
+        <button id="signout-btn" class="quiet-btn" type="button">تسجيل الخروج</button>
+      </div>
+      <nav class="admin-tabs" id="admin-tabs" aria-label="أقسام لوحة المدير">
+        <button type="button" class="admin-tab active" data-admin-tab="platform-overview" aria-selected="true">نظرة عامة</button>
+        <button type="button" class="admin-tab" data-admin-tab="platform-trends-panel" aria-selected="false">مؤشرات النمو</button>
+        <button type="button" class="admin-tab" data-admin-tab="platform-health-panel" aria-selected="false">سلامة المنصة</button>
+        <button type="button" class="admin-tab" data-admin-tab="pedagogical-reports-panel" aria-selected="false">التقارير التربوية</button>
+        <button type="button" class="admin-tab" data-admin-tab="activity-panel" aria-selected="false">سجل الأنشطة</button>
+        <button type="button" class="admin-tab" data-admin-tab="accounts-panel" aria-selected="false">الحسابات</button>
+        <button type="button" class="admin-tab" data-admin-tab="role-requests-panel" aria-selected="false">طلبات الأدوار</button>
+        <button type="button" class="admin-tab" data-admin-tab="platform-stats-panel" aria-selected="false">إحصاءات المحتوى</button>
+        <button type="button" class="admin-tab" data-admin-tab="founder-editor" aria-selected="false">هوية صاحب الموقع</button>
+        <button type="button" class="admin-tab" data-admin-tab="site-content-manager" aria-selected="false">إضافة محتوى</button>
+        <button type="button" class="admin-tab" data-admin-tab="published-library-panel" aria-selected="false">مكتبة المحتوى</button>
+        <button type="button" class="admin-tab" data-admin-tab="private-lessons-panel" aria-selected="false">دروس مساحة التلميذ</button>
+        <button type="button" class="admin-tab" data-admin-tab="teacher-community-admin-panel" aria-selected="false">إدارة مجتمع الأساتذة</button>
+      </nav>
+      <section class="panel admin-tab-content" id="platform-overview">
+        <div class="section-heading"><div><p class="eyebrow">GLOBAL PLATFORM OVERVIEW</p><h2>نظرة عامة على المنصة</h2><p class="muted">مؤشرات مباشرة من قاعدة بيانات الموقع الرئيسية.</p></div><button id="overview-refresh" class="quiet-btn" type="button">تحديث المؤشرات ↻</button></div>
+        <div class="stats-grid platform-stats">
+          <article class="stat-card"><span>👥</span><strong id="overview-users">—</strong><small>الحسابات المسجلة</small></article>
+          <article class="stat-card"><span>🎓</span><strong id="overview-students">—</strong><small>حسابات التلاميذ</small></article>
+          <article class="stat-card"><span>👩‍🏫</span><strong id="overview-teachers">—</strong><small>حسابات الأساتذة</small></article>
+          <article class="stat-card"><span>🏫</span><strong id="overview-classes">—</strong><small>الأقسام التعليمية</small></article>
+          <article class="stat-card"><span>📝</span><strong id="overview-exercises">—</strong><small>الاختبارات المنشورة</small></article>
+          <article class="stat-card"><span>📨</span><strong id="overview-requests">—</strong><small>طلبات تغيير الدور المعلقة</small></article>
+          <article class="stat-card"><span>📘</span><strong id="overview-private-lessons">—</strong><small>الدروس الخاصة المنشورة</small></article>
+          <article class="stat-card"><span>🗂️</span><strong id="overview-library">—</strong><small>موارد المكتبة العامة النشطة</small></article>
+        </div>
+        <p id="overview-message" class="message muted" role="status">سيتم تحميل المؤشرات بعد التحقق من صلاحية المدير.</p>
+        <div class="admin-shortcuts">
+          <a href="#founder-editor">هوية صاحب الموقع</a><a href="#site-content-manager">محتوى الموقع</a><a href="#private-lessons-panel">دروس مساحة التلميذ</a><a href="teacher-community.html">مجتمع الأساتذة (إدارة مستقلة)</a>
+        </div>
+      </section>
+      <section class="panel admin-tab-content" id="platform-trends-panel">
+        <div class="section-heading"><div><p class="eyebrow">GROWTH ANALYTICS</p><h2>تطور المنصة ومؤشرات النمو</h2><p class="muted">مقارنة عدد السجلات المنشأة في الفترة المختارة مع الفترة السابقة المماثلة.</p></div><button id="trends-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="field trend-period"><label for="trend-period">الفترة الزمنية</label><select id="trend-period"><option value="7">آخر 7 أيام مقابل 7 أيام سابقة</option><option value="30" selected>آخر 30 يوماً مقابل 30 يوماً سابقة</option><option value="90">آخر 90 يوماً مقابل 90 يوماً سابقة</option></select></div>
+        <p id="trends-message" class="message muted" role="status">سيتم حساب المؤشرات بعد التحقق من صلاحية المدير.</p>
+        <div class="table-wrap"><table class="admin-trends-table"><thead><tr><th>المؤشر</th><th>الفترة الحالية</th><th>الفترة السابقة</th><th>التغير</th></tr></thead><tbody id="trends-table-body"><tr><td colspan="4">لم يتم تحميل البيانات بعد.</td></tr></tbody></table></div>
+        <p class="muted">تعتمد الأرقام على تاريخ إنشاء السجلات في قاعدة البيانات. لا تمثل بالضرورة عدد المستخدمين النشطين أو الزيارات.</p>
+      </section>
+      <section class="panel admin-tab-content" id="pedagogical-reports-panel">
+        <div class="section-heading"><div><p class="eyebrow">PEDAGOGICAL CONTENT REPORTS</p><h2>التقارير التربوية</h2><p class="muted">مؤشرات إجمالية حول توفر المحتوى المنشور حسب المستوى الدراسي.</p></div><div class="report-actions"><button id="pedagogical-reports-export" class="quiet-btn" type="button" disabled>تصدير التقرير CSV ↓</button><button id="pedagogical-reports-refresh" class="quiet-btn" type="button">تحديث التقرير ↻</button></div></div>
+        <div class="stats-grid platform-stats">
+          <article class="stat-card"><span>📘</span><strong id="report-total-lessons">—</strong><small>الدروس الخاصة المنشورة</small></article>
+          <article class="stat-card"><span>📝</span><strong id="report-total-exercises">—</strong><small>التمارين المنشورة</small></article>
+          <article class="stat-card"><span>📚</span><strong id="report-total-resources">—</strong><small>موارد المكتبة النشطة</small></article>
+        </div>
+        <p id="pedagogical-reports-message" class="message muted" role="status">سيتم تحميل التقرير بعد التحقق من صلاحية المدير.</p>
+        <div class="table-wrap"><table class="admin-trends-table"><thead><tr><th>المستوى</th><th>الدروس المنشورة</th><th>حصة الدروس</th><th>موارد المكتبة</th></tr></thead><tbody id="pedagogical-reports-body"><tr><td colspan="4">لم يتم تحميل البيانات بعد.</td></tr></tbody></table></div>
+        <h3 class="report-subheading">التوزيع حسب الشعبة والمسلك</h3>
+        <div class="table-wrap"><table class="admin-trends-table"><thead><tr><th>المستوى</th><th>الشعبة / المسلك</th><th>الدروس المنشورة</th><th>حصة الدروس</th><th>موارد المكتبة</th></tr></thead><tbody id="pedagogical-tracks-body"><tr><td colspan="5">لم يتم تحميل البيانات بعد.</td></tr></tbody></table></div>
+        <p class="muted health-note">هذا التقرير يقيس توفر المحتوى التعليمي المنشور فقط. لا يعرض تقدم التلاميذ أو ملاحظاتهم أو خططهم أو مفضلاتهم؛ فهذه البيانات محمية بسياسات RLS الخاصة بكل حساب.</p>
+      </section>
+      <section class="panel admin-tab-content" id="platform-health-panel">
+        <div class="section-heading"><div><p class="eyebrow">PLATFORM HEALTH</p><h2>سلامة خدمات المنصة</h2><p class="muted">فحوصات قراءة فقط للتأكد من الاتصال بالجداول الأساسية وإمكانية الوصول إليها.</p></div><button id="health-refresh" class="quiet-btn" type="button">إعادة الفحص ↻</button></div>
+        <div id="platform-health-list" class="health-list" aria-live="polite"><p class="muted">سيتم فحص الخدمات بعد دخول المدير.</p></div>
+        <p id="platform-health-time" class="message muted" role="status"></p>
+        <p class="muted health-note">يشمل الفحص قاعدة بيانات الموقع الرئيسية فقط. مجتمع الأساتذة يعمل على مشروع Supabase مستقل ولا تُفحص خدماته من هنا.</p>
+      </section>
+      <section class="panel admin-tab-content" id="activity-panel">
+        <div class="section-heading"><div><p class="eyebrow">RECENT PLATFORM ACTIVITY</p><h2>سجل أنشطة المنصة</h2><p class="muted">آخر الإضافات والطلبات المسجلة في قاعدة البيانات الرئيسية، للمتابعة والاطلاع فقط.</p></div><div class="report-actions"><button id="activity-export" class="quiet-btn" type="button" disabled>تصدير النتائج المطابقة CSV ↓</button><button id="activity-refresh" class="quiet-btn" type="button">تحديث ↻</button></div></div>
+        <div class="upload-grid">
+          <div class="field"><label for="activity-type-filter">نوع النشاط</label><select id="activity-type-filter"><option value="all">كل الأنشطة</option><option value="content">موارد المكتبة</option><option value="lessons">دروس التلاميذ</option><option value="accounts">الحسابات</option><option value="learning">الأقسام والتمارين</option><option value="requests">طلبات تغيير الأدوار</option></select></div>
+          <div class="field"><label for="activity-search">البحث في السجل</label><input id="activity-search" type="search" placeholder="ابحث في عنوان النشاط أو تفاصيله..." autocomplete="off"></div>
+        </div>
+        <p id="activity-summary" class="muted" aria-live="polite">سيتم تحميل الأنشطة بعد دخول المدير.</p>
+        <div id="activity-list" class="health-list" aria-live="polite"><p class="muted">لا توجد بيانات محمّلة بعد.</p></div>
+      </section>
+      <section class="panel admin-tab-content" id="accounts-panel">
+        <div class="section-heading"><div><p class="eyebrow">ACCOUNT DIRECTORY</p><h2>دليل الحسابات والأدوار</h2><p class="muted">عرض إداري للقراءة فقط؛ تغيير الأدوار يظل محمياً بإجراءات الصلاحيات الحالية.</p></div><div class="report-actions"><button id="accounts-export" class="quiet-btn" type="button" disabled>تصدير الحسابات المحمّلة CSV ↓</button><button id="accounts-refresh" class="quiet-btn" type="button">تحديث ↻</button></div></div>
+        <div class="upload-grid">
+          <div class="field"><label for="accounts-search">البحث بالاسم أو معرّف الحساب</label><input id="accounts-search" type="search" placeholder="اكتب الاسم أو جزءاً من المعرّف"></div>
+          <div class="field"><label for="accounts-role-filter">تصفية حسب الدور</label><select id="accounts-role-filter"><option value="all">جميع الأدوار</option><option value="admin">مدير المنصة</option><option value="teacher">أستاذ</option><option value="student">تلميذ</option><option value="other">دور غير معروف أو غير محدد</option></select></div>
+        </div>
+        <p id="accounts-count" class="muted" aria-live="polite">لم يتم تحميل الحسابات بعد.</p>
+        <p id="accounts-message" class="message muted" role="status"></p>
+        <div id="accounts-list" class="resource-list"><p class="muted">جاري تحميل الحسابات...</p></div>
+        <button id="accounts-load-more" class="quiet-btn" type="button" hidden>تحميل 250 حساباً إضافياً ↓</button>
+      </section>
+      <section class="panel admin-tab-content" id="role-requests-panel">
+        <div class="section-heading"><div><p class="eyebrow">ROLE REQUESTS</p><h2>طلبات تغيير الأدوار</h2><p class="muted">مراجعة الطلبات الواردة. تغيير الدور غير متاح من هذه الواجهة حالياً حفاظاً على حماية الأدوار.</p></div><div class="report-actions"><button id="role-requests-export" class="quiet-btn" type="button" disabled>تصدير النتائج المطابقة CSV ↓</button><button id="role-requests-refresh" class="quiet-btn" type="button">تحديث ↻</button></div></div>
+        <div class="upload-grid"><div class="field"><label for="role-requests-filter">تصفية الطلبات حسب الحالة</label><select id="role-requests-filter"><option value="all">جميع الحالات</option><option value="pending">قيد المراجعة</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option><option value="other">حالة أخرى أو غير محددة</option></select></div><div class="field"><label for="role-requests-search">البحث في الطلبات</label><input id="role-requests-search" type="search" placeholder="ابحث بمعرّف مقدم الطلب أو الحساب المستهدف أو الدور..." autocomplete="off"></div></div>
+        <p id="role-requests-count" class="muted" aria-live="polite">لم يتم تحميل الطلبات بعد.</p>
+        <p id="role-requests-message" class="message muted" role="status"></p>
+        <div id="role-requests-list" class="resource-list"><p class="muted">جاري تحميل الطلبات...</p></div>
+        <button id="role-requests-load-more" class="quiet-btn" type="button" hidden>تحميل 50 طلباً إضافياً ↓</button>
+      </section>
+      <section class="panel admin-tab-content" id="platform-stats-panel"><div class="stats-grid">
+        <article class="stat-card"><span>📚</span><strong id="resource-count">—</strong><small>ملفاً منشوراً عبر الإدارة</small></article>
+        <article class="stat-card"><span>☁️</span><strong>Supabase</strong><small>التخزين السحابي</small></article>
+        <article class="stat-card"><span>🛡️</span><strong>مدير فقط</strong><small>صلاحيات الرفع والتعديل والحذف</small></article>
+      </div></section>
+
+      <section class="panel admin-tab-content" id="founder-editor">
+        <div class="section-heading"><div><p class="eyebrow">FOUNDER PROFILE</p><h2>تعديل نبذة صاحب الموقع</h2><p class="muted">هذه المعلومات تظهر للزوار في الصفحة الرئيسية.</p></div><span class="heading-icon">👨‍🏫</span></div>
+        <form id="founder-form" class="upload-grid">
+          <div class="field"><label for="founder-name-ar">الاسم بالعربية</label><input id="founder-name-ar" maxlength="120" required></div>
+          <div class="field"><label for="founder-name-fr">Nom en français</label><input id="founder-name-fr" maxlength="120" required></div>
+          <div class="field"><label for="founder-role-ar">الصفة المهنية بالعربية</label><input id="founder-role-ar" maxlength="180" required></div>
+          <div class="field"><label for="founder-role-fr">Fonction en français</label><input id="founder-role-fr" maxlength="180" required></div>
+          <div class="field wide"><label for="founder-bio-ar">النبذة بالعربية</label><textarea id="founder-bio-ar" rows="5" maxlength="3000" required></textarea></div>
+          <div class="field wide"><label for="founder-bio-fr">Biographie en français</label><textarea id="founder-bio-fr" rows="5" maxlength="3000" required></textarea></div>
+          <div class="field"><label for="founder-vision-ar">الرؤية بالعربية</label><textarea id="founder-vision-ar" rows="3" maxlength="800" required></textarea></div>
+          <div class="field"><label for="founder-vision-fr">Vision en français</label><textarea id="founder-vision-fr" rows="3" maxlength="800" required></textarea></div>
+          <div class="field wide"><label for="founder-photo">الصورة الشخصية (JPG / PNG / WebP، حتى 5MB)</label><input id="founder-photo" type="file" accept="image/jpeg,image/png,image/webp"><small class="muted">اختياري؛ يمكنك تركه فارغاً للاحتفاظ بالصورة الحالية.</small><img id="founder-photo-preview" alt="معاينة الصورة الشخصية" hidden style="max-width:180px;max-height:180px;object-fit:cover;border-radius:16px"></div>
+          <div class="field wide"><button id="founder-save" class="primary-btn" type="submit">حفظ ونشر التعديلات</button></div>
+        </form>
+        <p id="founder-message" class="message" role="status"></p>
+      </section>
+      <section class="panel admin-tab-content" id="site-content-manager">
+        <div class="section-heading"><div><p class="eyebrow">CONTENT PUBLISHER</p><h2>إضافة محتوى جديد</h2></div><span class="heading-icon">📤</span></div>
+        <form id="upload-form" class="upload-grid">
+          <div class="field wide"><label for="resource-title">عنوان الملف</label><input id="resource-title" maxlength="180" required placeholder="مثال: درس التوالد عند النباتات"></div>
+          <div class="field"><label for="category">القسم</label><select id="category" required>
+            <option value="cours">الدروس</option><option value="exercices">التمارين</option><option value="examens">الامتحانات</option><option value="fiches">الجذاذات</option><option value="resumes">الملخصات</option><option value="documents">الوثائق</option><option value="ressources">الموارد</option><option value="divers">متفرقات</option>
+          </select></div>
+          <div class="field"><label for="language">اللغة</label><select id="language"><option value="francais">Français</option><option value="arabe">العربية</option></select></div>
+          <div class="field"><label for="study-level">المستوى</label><select id="study-level"><option value="">غير محدد</option><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option></select></div>
+          <div class="field"><label for="study-track">الشعبة</label><select id="study-track"><option value="">غير محددة</option><option>TCS</option><option>TCL</option><option>1BACSE</option><option>1BACSM</option><option>1BACL</option><option>2BACSVT</option><option>2BACSP</option><option>2BACSM</option></select></div>
+          <div class="field wide"><label for="resource-file">الملف (PDF أو Office أو صورة، حتى 50MB)</label><input id="resource-file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp" required><small id="file-hint" class="muted">اختر الملف من جهازك.</small></div>
+          <div class="field wide"><button id="upload-btn" class="primary-btn" type="submit">رفع ونشر المحتوى</button></div>
+        </form>
+        <div id="upload-progress" class="progress-track" hidden><span></span></div>
+        <p id="upload-message" class="message" role="status"></p>
+      </section>
+
+      <section class="panel admin-tab-content" id="published-library-panel">
+        <div class="section-heading"><div><p class="eyebrow">PUBLISHED LIBRARY</p><h2>المحتوى الذي أضفته</h2><p class="muted">متابعة الموارد المنشورة والموارد المخفية التي تحتاج إلى استكمال الحذف.</p></div><button id="refresh-btn" class="quiet-btn" type="button">تحديث ↻</button></div>
+        <div class="upload-grid">
+          <div class="field"><label for="resource-state-filter">حالة المورد</label><select id="resource-state-filter"><option value="all">جميع الموارد</option><option value="active">نشط ومنشور</option><option value="deleted">مخفي / حذف غير مكتمل</option></select></div>
+          <div class="field"><label for="resource-category-filter">التصنيف</label><select id="resource-category-filter"><option value="all">جميع التصنيفات</option><option value="cours">الدروس</option><option value="exercices">التمارين</option><option value="examens">الامتحانات</option><option value="fiches">الجذاذات</option><option value="resumes">الملخصات</option><option value="documents">الوثائق</option><option value="ressources">الموارد</option><option value="divers">متفرقات</option></select></div>
+          <div class="field"><label for="resource-level-filter">المستوى الدراسي</label><select id="resource-level-filter"><option value="all">جميع المستويات</option><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option><option value="none">غير محدد</option></select></div>
+          <div class="field"><label for="resource-track-filter">الشعبة أو المسلك</label><select id="resource-track-filter"><option value="all">جميع الشعب والمسالك</option><option value="TCS">TCS</option><option value="TCL">TCL</option><option value="1BACSE">1BACSE</option><option value="1BACSM">1BACSM</option><option value="1BACL">1BACL</option><option value="2BACSVT">2BACSVT</option><option value="2BACSP">2BACSP</option><option value="2BACSM">2BACSM</option><option value="none">غير محدد</option></select></div>
+          <div class="field"><label for="resource-language-filter">لغة المورد</label><select id="resource-language-filter"><option value="all">جميع اللغات</option><option value="francais">Français</option><option value="arabe">العربية</option><option value="none">غير محددة</option></select></div>
+        </div>
+        <div class="field"><label for="resource-search">البحث في المكتبة</label><input id="resource-search" type="search" placeholder="ابحث بعنوان المورد أو اسم الملف أو الشعبة..." autocomplete="off"></div>
+        <p id="resource-summary" class="muted" aria-live="polite">جاري تحميل الموارد...</p>
+        <div id="resource-statistics" class="resource-statistics" aria-live="polite"></div>
+        <div id="resource-list" class="resource-list"><p class="muted">جاري تحميل المحتوى...</p></div>
+      </section>
+<section class="panel admin-tab-content" id="private-lessons-panel" hidden>
+ <div class="section-heading"><div><p class="eyebrow">PRIVATE STUDENT LESSONS</p><h2>الدروس الخاصة بمساحة التلميذ</h2></div><span class="heading-icon">📚</span></div>
+ <p class="muted">تُحفظ هذه الدروس في قاعدة بيانات خاصة، ولا تظهر في الفهرس العام. يمكن للمدير نشرها أو إخفاؤها.</p>
+ <form id="private-lesson-form" class="upload-grid">
+  <div class="field"><label for="private-lesson-title">عنوان الدرس</label><input id="private-lesson-title" required maxlength="180"></div>
+  <div class="field wide"><label for="private-lesson-description">وصف مختصر للدرس (اختياري)</label><input id="private-lesson-description" maxlength="300" placeholder="ملخص موجز يظهر للتلميذ في قائمة الدروس"></div>
+  <div class="field"><label for="private-lesson-slug">معرّف الدرس (لاتيني)</label><input id="private-lesson-slug" required pattern="[a-z0-9-]{3,100}" placeholder="lesson-name"></div>
+  <div class="field"><label for="private-lesson-level">المستوى</label><select id="private-lesson-level"><option>TC</option><option>1BAC</option><option>2BAC</option></select></div>
+  <div class="field"><label for="private-lesson-track">الشعبة</label><select id="private-lesson-track"><option>TCS</option><option>TCL</option><option>1BACSE</option><option>1BACSM</option><option>1BACL</option><option>2BACSVT</option><option>2BACSP</option><option>2BACSM</option></select></div>
+  <div class="field"><label for="private-lesson-language">اللغة</label><select id="private-lesson-language"><option value="fr">Français</option><option value="ar">العربية</option></select></div>
+  <div class="field"><label for="private-lesson-file">ملف HTML كامل (حتى 2MB)</label><input id="private-lesson-file" type="file" accept=".html,.htm" required></div>
+  <div class="field wide"><label><input id="private-lesson-publish" type="checkbox" checked> نشر الدرس للتلاميذ المسجلين</label></div>
+  <div class="field wide"><button id="private-lesson-save" class="primary-btn" type="submit">حفظ الدرس الخاص</button></div>
+ </form>
+ <p id="private-lesson-msg" class="message" role="status"></p>
+ <div class="section-heading"><h3>الدروس المسجلة</h3><button id="private-lessons-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+ <div class="upload-grid" style="margin:.7rem 0"><div class="field"><label for="private-admin-search">البحث عن درس</label><input id="private-admin-search" type="search" placeholder="العنوان أو المعرّف"></div><div class="field"><label for="private-admin-level">تصفية حسب المستوى</label><select id="private-admin-level"><option value="">كل المستويات</option><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option></select></div><div class="field"><label for="private-admin-track">تصفية حسب الشعبة</label><select id="private-admin-track"><option value="">كل الشعب</option><option>TCS</option><option>TCL</option><option>1BACSE</option><option>1BACSM</option><option>1BACL</option><option>2BACSVT</option><option>2BACSP</option><option>2BACSM</option></select></div><div class="field"><label for="private-admin-state">حالة النشر</label><select id="private-admin-state"><option value="all">الكل</option><option value="published">منشور</option><option value="draft">مسودة</option></select></div></div>
+ <div id="private-lessons-summary" class="muted" style="padding:.8rem 0" aria-live="polite"></div>
+ <div id="private-lessons-list" class="resource-list">جاري التحميل…</div>
+ <div class="section-heading"><h3>إضافة صور ووثائق أصلية للدرس</h3></div>
+ <form id="private-lesson-assets-form" class="upload-grid">
+  <div class="field wide"><label for="private-asset-lesson">الدرس المستهدف</label><select id="private-asset-lesson" required></select></div>
+  <div class="field wide"><label for="private-asset-placement">موضع إدراج الصور داخل الدرس</label><select id="private-asset-placement"><option value="end">في نهاية الدرس</option></select><small>يمكن اختيار عنوان من الدرس لوضع الصور مباشرة بعده.</small></div>
+  <div class="field wide"><label for="private-asset-files">صور مستخرجة من الوثيقة الأصلية (JPG / PNG / WebP، حتى 5MB للصورة)</label><input id="private-asset-files" type="file" accept="image/jpeg,image/png,image/webp" multiple required></div>
+  <div class="field wide"><label for="private-asset-caption">وصف الوثيقة (اختياري)</label><input id="private-asset-caption" maxlength="180" placeholder="مثال: وثيقة أصلية — صور توضح الافتراس"></div>
+  <div class="field wide"><button id="private-asset-upload" class="primary-btn" type="submit">رفع الصور إلى التخزين الخاص وإضافتها إلى الدرس</button></div>
+ </form><p id="private-asset-message" class="message" role="status"></p>
+</section>
+<section class="panel admin-tab-content" id="teacher-community-admin-panel" hidden>
+  <div class="section-heading">
+    <div><p class="eyebrow">TEACHER COMMUNITY CONTROL</p><h2>إدارة مجتمع الأساتذة</h2><p class="muted">لوحة مستقلة لإدارة الموارد المشتركة ومتابعة نشاط مجتمع الأساتذة.</p></div>
+    <span class="heading-icon">👩‍🏫</span>
+  </div>
+  <p class="muted">يعمل مجتمع الأساتذة على مشروع Supabase مستقل عن قاعدة بيانات الموقع الرئيسية. افتح المجتمع من هنا، ثم سجّل الدخول بحساب الإدارة المعتمد الخاص بالمجتمع. تبقى صلاحياته وبياناته منفصلة ولا تتغير صلاحيات لوحة الموقع الرئيسية.</p>
+  <p><a class="primary-btn" href="teacher-community.html" target="_blank" rel="noopener noreferrer">فتح مجتمع الأساتذة في نافذة مستقلة ↗</a></p>
+  <div class="teacher-community-frame-wrap">
+    <iframe src="teacher-community.html" title="مجتمع الأساتذة وإدارته" loading="lazy" referrerpolicy="same-origin"></iframe>
+  </div>
+</section>
+<style>
+#teacher-community-admin-panel .teacher-community-frame-wrap{width:100%;margin-top:18px;border:1px solid #dfe9e3;border-radius:14px;overflow:hidden;background:#f7faf8}
+#teacher-community-admin-panel iframe{display:block;width:100%;height:1100px;border:0;background:#fff}
+@media(max-width:680px){#teacher-community-admin-panel iframe{height:1250px}}
+</style>
+
+<style>
+#private-lessons-panel .private-admin-counts{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem}#private-lessons-panel .private-admin-counts span{padding:.3rem .55rem;border-radius:7px;background:#eef4eb;color:#31583c;font-size:.82rem}#private-lessons-panel .private-admin-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 0;border-bottom:1px solid #e7eee5}
+#private-lessons-panel .private-admin-item small{display:block;color:#718074;margin-top:.2rem}
+#private-lessons-panel .private-admin-actions{display:flex;gap:.5rem;align-items:center}
+#private-lessons-panel .private-admin-actions a,#private-lessons-panel .private-admin-actions button{border:0;border-radius:8px;padding:.5rem .75rem;background:#eaf2e8;color:#28563a;text-decoration:none;font-weight:700;cursor:pointer}
+</style>
+
+      <p class="security-note">🔒 لا تمنح هذه الصفحة صلاحيات بحد ذاتها؛ يتم التحقق من دور admin في قاعدة البيانات عند كل عملية، كما تحمي سياسات التخزين والبيانات عمليات الرفع والحذف.</p>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=20261125-review1"></script>
+  <script src="admin.js?v=20261125-review1"></script>
+  <script src="admin-private-lessons.js?v=20261125-review1"></script>
+</body>
+</html>

@@ -1,0 +1,4118 @@
+/* Go SVT Maroc - Espace Élève - ملف مستقل للبود */
+(function () {
+    'use strict';
+
+    // Escape all values inserted into HTML. Stored data and imported JSON are untrusted.
+    const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[ch]));
+    const safeLink = value => {
+        const raw = String(value == null ? '' : value).trim();
+        try {
+            const url = new URL(raw, window.location.href);
+            return ['http:', 'https:'].includes(url.protocol) ? url.href : '#';
+        } catch (e) { return '#'; }
+    };
+    const makeId = () => {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') return 'profile_' + window.crypto.randomUUID();
+        return 'profile_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 12);
+    };
+
+    // ============================================
+    // 1. STORAGE SYSTEM (نظام التخزين)
+    // ============================================
+    const STORAGE_KEYS = {
+        PROFILES: 'gosvt_profiles',
+        CURRENT_PROFILE: 'gosvt_current_profile',
+        PROGRESS: 'gosvt_progress',
+        QUIZ_RESULTS: 'gosvt_quiz_results',
+        MISTAKES: 'gosvt_mistakes',
+        STREAK: 'gosvt_streak',
+        GOALS: 'gosvt_goals',
+        NOTES: 'gosvt_notes',
+        STUDY_PLAN: 'gosvt_study_plan',
+        LAST_VISIT: 'gosvt_last_visit',
+        DAILY_CHALLENGES: 'gosvt_daily_challenges'
+    };
+
+    const storage = {
+        get(key) {
+            try {
+                return JSON.parse(localStorage.getItem(key));
+            } catch (e) {
+                return null;
+            }
+        },
+        set(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                console.error('Storage error:', e);
+            }
+        }
+    };
+
+    // ============================================
+    // 1.1 PROFILE MANAGEMENT (إدارة الملفات الشخصية)
+    // ============================================
+    let currentProfileId = storage.get(STORAGE_KEYS.CURRENT_PROFILE) || 'default';
+
+    // Relit le profil actif depuis le localStorage (changement fait dans un autre onglet)
+    function syncCurrentProfile() {
+        // Comptes (student-account.js) : le profil de la session fait foi, même si un autre
+        // onglet a changé le profil "courant" stocké.
+        const acc = window.StudentAccount ? window.StudentAccount.activeProfileId() : null;
+        if (acc) {
+            if (acc !== currentProfileId && getProfiles()[acc]) currentProfileId = acc;
+            return currentProfileId;
+        }
+        const stored = storage.get(STORAGE_KEYS.CURRENT_PROFILE);
+        if (stored && stored !== currentProfileId && getProfiles()[stored]) {
+            currentProfileId = stored;
+        }
+        return currentProfileId;
+    }
+
+    function getProfiles() {
+        const stored = storage.get(STORAGE_KEYS.PROFILES);
+        if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
+            if (!stored.default) stored.default = {
+                id: 'default',
+                name: 'Élève par défaut',
+                createdAt: Date.now(),
+                lastActive: Date.now()
+            };
+            return stored;
+        }
+        return {
+            default: {
+                id: 'default',
+                name: 'Élève par défaut',
+                createdAt: Date.now(),
+                lastActive: Date.now()
+            }
+        };
+    }
+
+    function saveProfiles(profiles) {
+        storage.set(STORAGE_KEYS.PROFILES, profiles);
+    }
+
+    function getCurrentProfile() {
+        const profiles = getProfiles();
+        if (!profiles[currentProfileId]) {
+            currentProfileId = 'default';
+            storage.set(STORAGE_KEYS.CURRENT_PROFILE, currentProfileId);
+        }
+        return profiles[currentProfileId];
+    }
+
+    function createProfile(name) {
+        const cleanName = String(name == null ? '' : name).normalize('NFC').trim().replace(/\s+/g, ' ');
+        if (cleanName.length < 2 || cleanName.length > 40) {
+            throw new Error('Le nom du profil doit contenir entre 2 et 40 caractères.');
+        }
+        const profiles = getProfiles();
+        let newId;
+        do { newId = makeId(); } while (profiles[newId]);
+
+        profiles[newId] = {
+            id: newId,
+            name: cleanName,
+            createdAt: Date.now(),
+            lastActive: Date.now()
+        };
+        
+        saveProfiles(profiles);
+        return newId;
+    }
+
+    function switchProfile(profileId) {
+        const profiles = getProfiles();
+        if (profiles[profileId]) {
+            currentProfileId = profileId;
+            profiles[profileId].lastActive = Date.now();
+            saveProfiles(profiles);
+            storage.set(STORAGE_KEYS.CURRENT_PROFILE, currentProfileId);
+            return true;
+        }
+        return false;
+    }
+
+    function deleteProfile(profileId) {
+        if (profileId === 'default') {
+            return false; // Cannot delete default profile
+        }
+        
+        const profiles = getProfiles();
+        if (profiles[profileId]) {
+            delete profiles[profileId];
+            saveProfiles(profiles);
+            const prefix = profileId + '_';
+            Object.values(STORAGE_KEYS).forEach(key => {
+                if (key !== STORAGE_KEYS.PROFILES && key !== STORAGE_KEYS.CURRENT_PROFILE) {
+                    try { localStorage.removeItem(prefix + key); } catch (e) { /* storage unavailable */ }
+                }
+            });
+            
+            // Switch to default if current profile was deleted
+            if (currentProfileId === profileId) {
+                switchProfile('default');
+            }
+            return true;
+        }
+        return false;
+    }
+
+    function getProfileData(profileId) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId]) {
+            throw new Error('Profil introuvable.');
+        }
+        const prefix = profileId + '_';
+        const rawProgress = storage.get(prefix + STORAGE_KEYS.PROGRESS);
+        const progress = rawProgress && typeof rawProgress === 'object' && !Array.isArray(rawProgress) ? rawProgress : {};
+        ['lessons', 'exercises', 'tests'].forEach(function (k) {
+            if (!progress[k] || typeof progress[k] !== 'object' || Array.isArray(progress[k])) progress[k] = {};
+        });
+        const results = storage.get(prefix + STORAGE_KEYS.QUIZ_RESULTS);
+        const mistakes = storage.get(prefix + STORAGE_KEYS.MISTAKES);
+        const streak = storage.get(prefix + STORAGE_KEYS.STREAK);
+        const goals = storage.get(prefix + STORAGE_KEYS.GOALS);
+        const notes = storage.get(prefix + STORAGE_KEYS.NOTES);
+        const studyPlan = storage.get(prefix + STORAGE_KEYS.STUDY_PLAN);
+        const dailyChallenges = storage.get(prefix + STORAGE_KEYS.DAILY_CHALLENGES);
+        return {
+            progress: progress,
+            quizResults: Array.isArray(results) ? results : [],
+            mistakes: Array.isArray(mistakes) ? mistakes : [],
+            streak: streak && typeof streak === 'object' ? streak : { current: 0, best: 0, lastVisit: null },
+            goals: Array.isArray(goals) ? goals : [],
+            notes: Array.isArray(notes) ? notes.filter(n => n && typeof n === 'object') : [],
+            studyPlan: Array.isArray(studyPlan) ? studyPlan.filter(item => item && typeof item === 'object') : [],
+            dailyChallenges: dailyChallenges && typeof dailyChallenges === 'object' && !Array.isArray(dailyChallenges) ? dailyChallenges : {}
+        };
+    }
+
+    function mergeCloudLearningState(profileId, cloudState) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId] ||
+            !cloudState || typeof cloudState !== 'object' || Array.isArray(cloudState)) return;
+        const prefix = profileId + '_';
+        const local = getProfileData(profileId);
+        const remoteGoals = Array.isArray(cloudState.goals) ? cloudState.goals : [];
+        const goals = local.goals.slice();
+        const goalKey = function (goal) {
+            if (!goal || typeof goal !== 'object' || Array.isArray(goal)) return null;
+            if (goal.id != null && String(goal.id).trim()) return 'id:' + String(goal.id).trim();
+            const title = String(goal.title || goal.name || '').trim().toLocaleLowerCase();
+            const created = Number(goal.createdAt || goal.created_at) || 0;
+            return title ? 'legacy:' + title + ':' + created : null;
+        };
+        const goalIndexes = new Map();
+        goals.forEach(function (goal, index) {
+            const key = goalKey(goal);
+            if (key) goalIndexes.set(key, index);
+        });
+        remoteGoals.forEach(function (goal) {
+            const key = goalKey(goal);
+            if (!key) return;
+            const index = goalIndexes.get(key);
+            if (index === undefined) {
+                if (goals.length < 200) {
+                    goalIndexes.set(key, goals.length);
+                    goals.push(goal);
+                }
+                return;
+            }
+            const oldGoal = goals[index];
+            const oldUpdated = Number(oldGoal && (oldGoal.updatedAt || oldGoal.updated_at)) || 0;
+            const newUpdated = Number(goal && (goal.updatedAt || goal.updated_at)) || 0;
+            if (newUpdated > oldUpdated) goals[index] = goal;
+        });
+        const localStreak = local.streak && typeof local.streak === 'object' ? local.streak : {};
+        const remoteStreak = cloudState.streak && typeof cloudState.streak === 'object' && !Array.isArray(cloudState.streak) ? cloudState.streak : {};
+        const localVisit = Number(localStreak.lastVisit) || 0;
+        const remoteVisit = Number(remoteStreak.lastVisit) || 0;
+        const localCurrent = Number.isInteger(Number(localStreak.current)) && Number(localStreak.current) >= 0 ? Number(localStreak.current) : 0;
+        const remoteCurrent = Number.isInteger(Number(remoteStreak.current)) && Number(remoteStreak.current) >= 0 ? Number(remoteStreak.current) : 0;
+        const best = Math.max(
+            Number.isInteger(Number(localStreak.best)) && Number(localStreak.best) >= 0 ? Number(localStreak.best) : 0,
+            Number.isInteger(Number(remoteStreak.best)) && Number(remoteStreak.best) >= 0 ? Number(remoteStreak.best) : 0,
+            localCurrent, remoteCurrent
+        );
+        let current = localCurrent, lastVisit = localVisit || null;
+        if (remoteVisit > localVisit) { current = remoteCurrent; lastVisit = remoteVisit; }
+        else if (remoteVisit && remoteVisit === localVisit) current = Math.max(localCurrent, remoteCurrent);
+        const streak = { current, best, lastVisit };
+        if (JSON.stringify(goals) !== JSON.stringify(local.goals)) storage.set(prefix + STORAGE_KEYS.GOALS, goals);
+        if (JSON.stringify(streak) !== JSON.stringify(local.streak)) storage.set(prefix + STORAGE_KEYS.STREAK, streak);
+    }
+
+    function mergeCloudProgress(profileId, cloudProgress) {
+        if (!cloudProgress || typeof cloudProgress !== 'object' || Array.isArray(cloudProgress) ||
+            typeof profileId !== 'string' || !getProfiles()[profileId]) return;
+
+        const progressKey = profileId + '_' + STORAGE_KEYS.PROGRESS;
+        let progress;
+        const storedProgress = localStorage.getItem(progressKey);
+        if (storedProgress === null) {
+            progress = {};
+        } else {
+            try {
+                progress = JSON.parse(storedProgress);
+            } catch (e) {
+                // Do not replace an unreadable local record during cloud hydration.
+                return;
+            }
+            if (!progress || typeof progress !== 'object' || Array.isArray(progress)) return;
+        }
+
+        let changed = false;
+        ['lessons', 'exercises', 'tests'].forEach(function (bucket) {
+            const hasBucket = Object.prototype.hasOwnProperty.call(progress, bucket);
+            if (hasBucket && (!progress[bucket] || typeof progress[bucket] !== 'object' || Array.isArray(progress[bucket]))) {
+                return;
+            }
+
+            const incoming = cloudProgress[bucket];
+            if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return;
+            if (!hasBucket) progress[bucket] = {};
+
+            Object.keys(incoming).forEach(function (key) {
+                const remote = incoming[key];
+                if (!remote || typeof remote !== 'object' || Array.isArray(remote)) return;
+
+                const hasLocal = Object.prototype.hasOwnProperty.call(progress[bucket], key);
+                if (hasLocal && (!progress[bucket][key] || typeof progress[bucket][key] !== 'object' || Array.isArray(progress[bucket][key]))) {
+                    return;
+                }
+
+                const local = hasLocal ? progress[bucket][key] : { id: key };
+                let recordChanged = false;
+                if (remote.completed === true && local.completed !== true) {
+                    local.completed = true;
+                    recordChanged = true;
+                }
+                if ((typeof remote.cloudUpdatedAt === 'string' && remote.cloudUpdatedAt) ||
+                    (typeof remote.cloudUpdatedAt === 'number' && Number.isFinite(remote.cloudUpdatedAt))) {
+                    if (local.cloudUpdatedAt !== remote.cloudUpdatedAt) {
+                        local.cloudUpdatedAt = remote.cloudUpdatedAt;
+                        recordChanged = true;
+                    }
+                }
+                if (!hasLocal || recordChanged) {
+                    progress[bucket][key] = local;
+                    changed = true;
+                }
+            });
+        });
+
+        if (changed) storage.set(progressKey, progress);
+    }
+
+    // Persist cloud deletions locally so an offline delete cannot be undone by
+    // the next cloud restore. Queue entries are scoped to the authenticated UID.
+    const CLOUD_DELETE_QUEUE_PREFIX = 'gosvt_cloud_delete_queue:';
+
+    function readCloudDeleteQueue(uid) {
+        const value = uid ? storage.get(CLOUD_DELETE_QUEUE_PREFIX + uid) : null;
+        return {
+            notes: Array.isArray(value && value.notes) ? value.notes.filter(id => typeof id === 'string') : [],
+            studyPlan: Array.isArray(value && value.studyPlan) ? value.studyPlan.filter(id => typeof id === 'string') : []
+        };
+    }
+
+    function clearCloudDelete(uid, kind, id) {
+        const queue = readCloudDeleteQueue(uid);
+        queue[kind] = queue[kind].filter(item => item !== id);
+        if (queue.notes.length || queue.studyPlan.length) storage.set(CLOUD_DELETE_QUEUE_PREFIX + uid, queue);
+        else if (uid) {
+            try { localStorage.removeItem(CLOUD_DELETE_QUEUE_PREFIX + uid); } catch (_) {}
+        }
+    }
+
+    function queueCloudDeletion(kind, id, uid) {
+        if (!uid || !id || !['notes', 'studyPlan'].includes(kind)) return Promise.resolve();
+        const queue = readCloudDeleteQueue(uid);
+        if (!queue[kind].includes(String(id))) queue[kind].push(String(id));
+        storage.set(CLOUD_DELETE_QUEUE_PREFIX + uid, queue);
+        const method = kind === 'notes' ? 'deleteNote' : 'deleteStudyPlanItem';
+        if (!window.GoSVTCloud || typeof window.GoSVTCloud[method] !== 'function') return Promise.resolve();
+        return Promise.resolve().then(() => window.GoSVTCloud[method](String(id), uid)).then(deleted => {
+            if (deleted === true) clearCloudDelete(uid, kind, String(id));
+        }).catch(err => console.warn('[GoSVT] Cloud deletion queued for retry:', err && err.message));
+    }
+
+    function filterPendingCloudDeletions(uid, cloudNotes, cloudPlan) {
+        const queue = readCloudDeleteQueue(uid);
+        const noteIds = new Set(queue.notes);
+        const planIds = new Set(queue.studyPlan);
+        return {
+            notes: Array.isArray(cloudNotes) ? cloudNotes.filter(item => !item || !noteIds.has(String(item.id))) : cloudNotes,
+            studyPlan: Array.isArray(cloudPlan) ? cloudPlan.filter(item => !item || !planIds.has(String(item.id))) : cloudPlan
+        };
+    }
+
+    async function retryPendingCloudDeletions(uid) {
+        if (!uid || !window.GoSVTCloud) return;
+        const queue = readCloudDeleteQueue(uid);
+        const jobs = [
+            ...queue.notes.map(id => ['notes', 'deleteNote', id]),
+            ...queue.studyPlan.map(id => ['studyPlan', 'deleteStudyPlanItem', id])
+        ];
+        for (const [kind, method, id] of jobs) {
+            if (typeof window.GoSVTCloud[method] !== 'function') continue;
+            try {
+                const deleted = await window.GoSVTCloud[method](id, uid);
+                if (deleted === true) clearCloudDelete(uid, kind, id);
+            } catch (err) {
+                console.warn('[GoSVT] Pending cloud deletion will be retried:', err && err.message);
+            }
+        }
+    }
+
+    function applyCloudDeletions(profileId, deletions) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId] || !deletions) return;
+        const key = profileId + '_gosvt_cloud_tombstones';
+        const previous = storage.get(key) || {};
+        const all = {};
+        [['notes', STORAGE_KEYS.NOTES], ['studyPlan', STORAGE_KEYS.STUDY_PLAN]].forEach(function ([kind, storageKey]) {
+            all[kind] = Array.from(new Set([
+                ...(Array.isArray(previous[kind]) ? previous[kind] : []),
+                ...(Array.isArray(deletions[kind]) ? deletions[kind] : [])
+            ].filter(id => typeof id === 'string')));
+            const removed = new Set(all[kind]);
+            const items = storage.get(profileId + '_' + storageKey);
+            if (Array.isArray(items)) {
+                storage.set(profileId + '_' + storageKey, items.filter(item => !item || !removed.has(String(item.id))));
+            }
+        });
+        storage.set(key, all);
+    }
+
+    function mergeCloudCollections(profileId, cloudNotes, cloudPlan) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId]) return;
+        const prefix = profileId + '_';
+
+        function mergeCollection(storageKey, remoteItems, kind) {
+            if (!Array.isArray(remoteItems)) return;
+
+            const key = prefix + storageKey;
+            const stored = localStorage.getItem(key);
+            let localItems = [];
+            if (stored !== null) {
+                try {
+                    localItems = JSON.parse(stored);
+                } catch (e) {
+                    // Preserve unreadable local collections; cloud hydration must not erase them.
+                    return;
+                }
+                if (!Array.isArray(localItems)) return;
+            }
+
+            const tombstones = storage.get(profileId + '_gosvt_cloud_tombstones') || {};
+            const removed = new Set(tombstones[kind === 'note' ? 'notes' : 'studyPlan'] || []);
+            const merged = localItems.filter(item => !item || !removed.has(String(item.id)));
+            const positions = new Map();
+            merged.forEach(function (item, index) {
+                if (item && typeof item === 'object' && !Array.isArray(item) &&
+                    typeof item.id === 'string' && item.id.trim()) {
+                    const id = item.id.trim();
+                    if (!positions.has(id)) positions.set(id, index);
+                }
+            });
+
+            let changed = merged.length !== localItems.length;
+            remoteItems.forEach(function (remote) {
+                if (!remote || typeof remote !== 'object' || Array.isArray(remote) ||
+                    typeof remote.id !== 'string' || !remote.id.trim() || removed.has(remote.id.trim())) return;
+                if (kind === 'note' &&
+                    (typeof remote.title !== 'string' || typeof remote.body !== 'string')) return;
+                if (kind === 'plan' &&
+                    (typeof remote.title !== 'string' || typeof remote.date !== 'string')) return;
+
+                const id = remote.id.trim();
+                const index = positions.get(id);
+                if (index === undefined) {
+                    positions.set(id, merged.length);
+                    merged.push(remote);
+                    changed = true;
+                    return;
+                }
+
+                const local = merged[index];
+                if (!local || typeof local !== 'object' || Array.isArray(local)) return;
+                const localTime = Number(local.updatedAt || local.createdAt);
+                const remoteTime = Number(remote.updatedAt || remote.createdAt);
+                const safeLocalTime = Number.isFinite(localTime) ? localTime : 0;
+                const safeRemoteTime = Number.isFinite(remoteTime) ? remoteTime : 0;
+                if (safeRemoteTime > safeLocalTime) {
+                    merged[index] = remote;
+                    changed = true;
+                }
+            });
+
+            if (changed) storage.set(key, merged);
+        }
+
+        mergeCollection(STORAGE_KEYS.NOTES, cloudNotes, 'note');
+        mergeCollection(STORAGE_KEYS.STUDY_PLAN, cloudPlan, 'plan');
+    }
+
+    function mergeCloudQuizAttempts(profileId, cloudAttempts) {
+        if (typeof profileId !== 'string' || !getProfiles()[profileId] || !Array.isArray(cloudAttempts)) return;
+        const prefix = profileId + '_';
+
+        function readLocalArray(storageKey) {
+            const raw = localStorage.getItem(prefix + storageKey);
+            if (raw === null) return [];
+            try {
+                const value = JSON.parse(raw);
+                return Array.isArray(value) ? value : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        const localAttempts = readLocalArray(STORAGE_KEYS.QUIZ_RESULTS);
+        const localMistakes = readLocalArray(STORAGE_KEYS.MISTAKES);
+        const validCloudAttempts = [];
+        cloudAttempts.forEach(function (remote) {
+            if (!remote || typeof remote !== 'object' || Array.isArray(remote) ||
+                typeof remote.attemptId !== 'string' || !remote.attemptId.trim() || remote.attemptId.length > 200 ||
+                typeof remote.quizId !== 'string' || !remote.quizId.trim() || remote.quizId.length > 200) return;
+            const score = Number(remote.score);
+            const total = Number(remote.total);
+            const percentage = Number(remote.percentage);
+            const date = Number(remote.date);
+            if (!Number.isInteger(score) || !Number.isInteger(total) || total <= 0 || score < 0 || score > total ||
+                !Number.isFinite(percentage) || percentage < 0 || percentage > 100 ||
+                !Number.isFinite(date) || date <= 0) return;
+            validCloudAttempts.push({
+                attemptId: remote.attemptId.trim(),
+                quizId: remote.quizId.trim(),
+                score: score,
+                total: total,
+                percentage: percentage,
+                date: date,
+                mistakes: Array.isArray(remote.mistakes) ? remote.mistakes : []
+            });
+        });
+
+        if (Array.isArray(localAttempts)) {
+            const mergedAttempts = localAttempts.slice();
+            const attemptIds = new Set();
+            mergedAttempts.forEach(function (attempt) {
+                if (attempt && typeof attempt === 'object' && !Array.isArray(attempt) &&
+                    typeof attempt.attemptId === 'string' && attempt.attemptId.trim()) {
+                    attemptIds.add(attempt.attemptId.trim());
+                }
+            });
+            let attemptsChanged = false;
+            validCloudAttempts.forEach(function (attempt) {
+                if (attemptIds.has(attempt.attemptId)) return;
+                attemptIds.add(attempt.attemptId);
+                mergedAttempts.push(attempt);
+                attemptsChanged = true;
+            });
+            if (attemptsChanged) {
+                mergedAttempts.sort(function (a, b) {
+                    const aDate = a && typeof a === 'object' && Number.isFinite(Number(a.date)) ? Number(a.date) : 0;
+                    const bDate = b && typeof b === 'object' && Number.isFinite(Number(b.date)) ? Number(b.date) : 0;
+                    return aDate - bDate;
+                });
+                storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, mergedAttempts);
+            }
+        }
+
+        if (Array.isArray(localMistakes)) {
+            const mergedMistakes = localMistakes.slice();
+            const mistakeKeys = new Set();
+            mergedMistakes.forEach(function (mistake) {
+                if (!mistake || typeof mistake !== 'object' || Array.isArray(mistake)) return;
+                mistakeKeys.add([mistake.quizId, mistake.question, mistake.selected, mistake.correct, mistake.date].join('|'));
+            });
+            let mistakesChanged = false;
+            validCloudAttempts.forEach(function (attempt) {
+                attempt.mistakes.forEach(function (mistake) {
+                    if (!mistake || typeof mistake !== 'object' || Array.isArray(mistake) ||
+                        typeof mistake.question !== 'string' || !mistake.question.trim() ||
+                        typeof mistake.selected !== 'string' || !mistake.selected.trim() ||
+                        typeof mistake.correct !== 'string' || !mistake.correct.trim() ||
+                        mistake.selected.trim() === mistake.correct.trim()) return;
+                    const normalized = {
+                        question: mistake.question.slice(0, 2000),
+                        selected: mistake.selected.slice(0, 1000),
+                        correct: mistake.correct.slice(0, 1000),
+                        quizId: attempt.quizId,
+                        date: Number(mistake.date) > 0 && Number.isFinite(Number(mistake.date)) ? Number(mistake.date) : attempt.date
+                    };
+                    const key = [normalized.quizId, normalized.question, normalized.selected, normalized.correct, normalized.date].join('|');
+                    if (mistakeKeys.has(key)) return;
+                    mistakeKeys.add(key);
+                    mergedMistakes.push(normalized);
+                    mistakesChanged = true;
+                });
+            });
+            if (mistakesChanged) storage.set(prefix + STORAGE_KEYS.MISTAKES, mergedMistakes);
+        }
+    }
+
+    function saveProfileData(profileId, data) {
+        const previous = getProfileData(profileId);
+        const tombstones = storage.get(profileId + '_gosvt_cloud_tombstones') || {};
+        ['notes', 'studyPlan'].forEach(function (kind) {
+            const removed = new Set(tombstones[kind] || []);
+            data[kind] = (Array.isArray(data[kind]) ? data[kind] : []).filter(item => item && !removed.has(String(item.id)));
+        });
+        const changedItems = function (items, oldItems, key = 'id') {
+            const old = new Map((oldItems || []).filter(Boolean).map(item => [item[key], JSON.stringify(item)]));
+            return (items || []).filter(item => item && old.get(item[key]) !== JSON.stringify(item));
+        };
+        const prefix = profileId + '_';
+        storage.set(prefix + STORAGE_KEYS.PROGRESS, data.progress);
+        storage.set(prefix + STORAGE_KEYS.QUIZ_RESULTS, data.quizResults);
+        storage.set(prefix + STORAGE_KEYS.MISTAKES, data.mistakes);
+        storage.set(prefix + STORAGE_KEYS.STREAK, data.streak);
+        storage.set(prefix + STORAGE_KEYS.GOALS, data.goals);
+        storage.set(prefix + STORAGE_KEYS.NOTES, Array.isArray(data.notes) ? data.notes : []);
+        storage.set(prefix + STORAGE_KEYS.STUDY_PLAN, Array.isArray(data.studyPlan) ? data.studyPlan : []);
+        storage.set(prefix + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges && typeof data.dailyChallenges === 'object' ? data.dailyChallenges : {});
+        // Keep the offline cache, but sync only when this profile still belongs to
+        // the currently authenticated account. Pass its UID so delayed requests
+        // cannot be redirected to a different account after an account switch.
+        const account = window.StudentAccount;
+        const cloudUid = account && account.isLoggedIn() &&
+            account.activeProfileId() === profileId &&
+            account.getUser() && account.getUser().id;
+        if (window.GoSVTCloud && cloudUid) {
+            const progressDelta = {};
+            ['lessons', 'exercises', 'tests'].forEach(function (bucket) {
+                progressDelta[bucket] = Object.fromEntries(Object.entries(data.progress[bucket] || {})
+                    .filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(previous.progress[bucket][key])));
+            });
+            const jobs = [
+                ['progress', 'syncProgress', progressDelta],
+                ['notes', 'syncNotes', changedItems(data.notes, previous.notes)],
+                ['study plan', 'syncStudyPlan', changedItems(data.studyPlan, previous.studyPlan)],
+                ['quiz attempts', 'syncQuizAttempts', changedItems(data.quizResults, previous.quizResults, 'attemptId')]
+            ];
+            if (JSON.stringify([data.goals, data.streak]) !== JSON.stringify([previous.goals, previous.streak])) {
+                jobs.push(['learning state', 'syncLearningState', { goals: data.goals, streak: data.streak }]);
+            }
+            jobs.forEach(function (job) {
+                if (typeof window.GoSVTCloud[job[1]] !== 'function') return;
+                Promise.resolve().then(function () {
+                    return window.GoSVTCloud[job[1]](job[2], cloudUid);
+                }).catch(function (err) {
+                    console.warn('[GoSVT] Cloud ' + job[0] + ' sync deferred:', err && err.message);
+                    if (account.reportSyncError) account.reportSyncError(job[0], cloudUid);
+                });
+            });
+        }
+    }
+
+    // ============================================
+    // 2. LANGUAGE SYSTEM (نظام اللغة)
+    // ============================================
+    function lang() {
+        return document.documentElement.getAttribute('lang') === 'fr' ? 'fr' : 'ar';
+    }
+
+    function t(key) {
+        const currentLang = lang();
+        const texts = TEXTS[currentLang];
+        if (texts && texts[key]) {
+            return texts[key];
+        }
+        return key;
+    }
+
+    const TEXTS = {
+        ar: {
+            title: 'مساحتي',
+            dashboard: 'لوحة القيادة',
+            progress: 'المتابعة التربوية',
+            history: 'سجل التقييمات',
+            mistakes: 'أخطائي',
+            favorites: 'مفضلتي',
+            motivation: 'التحفيز',
+            planner: 'برنامج المراجعة',
+            notesTab: 'ملاحظاتي',
+            libraryTab: 'مواردي',
+            welcome: 'مرحباً بك في فضائك الدراسي',
+            continueLearning: 'تابع التعلم',
+            quickAccess: 'وصول سريع',
+            addTask: 'إضافة موعد مراجعة',
+            taskTitle: 'عنوان المراجعة',
+            taskDate: 'تاريخ المراجعة',
+            duration: 'المدة بالدقائق',
+            addNote: 'إضافة ملاحظة',
+            noteTitle: 'عنوان الملاحظة',
+            noteBody: 'اكتب ملاحظتك هنا...',
+            save: 'حفظ',
+            delete: 'حذف',
+            done: 'منجز',
+            pending: 'قيد الإنجاز',
+            noTasks: 'لا توجد مواعيد مراجعة بعد',
+            noNotes: 'لا توجد ملاحظات بعد',
+            resources: 'الدروس والموارد',
+            exercises: 'التمارين',
+            exams: 'الامتحانات',
+            interactiveQuiz: 'اختبارات تفاعلية',
+            summaries: 'الملخصات',
+            profiles: 'الملفات الشخصية',
+            settings: 'الإعدادات',
+            lessonsViewed: 'الدروس المشاهدة',
+            exercisesDone: 'التمارين التي تمت مشاهدتها',
+            testsTaken: 'الاختبارات المجراة',
+            averageScore: 'المعدل',
+            uniqueTests: 'اختبارات مختلفة',
+            globalProgress: 'نسبة إتمام الدروس التي شاهدتها',
+            completedLessons: 'الدروس المكتملة',
+            byTrack: 'حسب المستوى والشعبة',
+            pendingLessons: 'الدروس المتبقية',
+            markAsComplete: 'تحديد كمكتمل',
+            noData: 'لا توجد بيانات بعد',
+            streak: 'أيام متتالية',
+            goals: 'الأهداف التربوية',
+            encouragement: 'استمر في العمل الممتاز!',
+            date: 'التاريخ',
+            score: 'النتيجة',
+            best: 'الأفضل',
+            review: 'مراجعة',
+            retry: 'إعادة المحاولة',
+            addToFavorites: 'إضافة للمفضلة',
+            removeFromFavorites: 'حذف من المفضلة',
+            createProfile: 'إنشاء ملف شخصي',
+            switchProfile: 'تغيير الملف',
+            deleteProfile: 'حذف الملف',
+            profileName: 'اسم الملف',
+            currentProfile: 'الملف الحالي',
+            exportData: 'تصدير البيانات',
+            importData: 'استيراد البيانات',
+            confirmDelete: 'هل أنت متأكد من حذف هذا الملف؟',
+            profileCreated: 'تم إنشاء الملف بنجاح',
+            profileDeleted: 'تم حذف الملف',
+            profileSwitched: 'تم التبديل إلى الملف',
+            invalidFile: 'ملف JSON غير صالح',
+            confirmReplace: 'هذا الملف موجود بالفعل. هل تريد استبداله؟',
+            retryMistakes: 'إعادة الأسئلة الخاطئة فقط',
+            enterProfileName: 'أدخل اسم الملف الشخصي الجديد:',
+            mistakesLoaded: 'تم تحميل الأسئلة الخاطئة. أجب فقط على الأسئلة التي أخطأت فيها.'
+        },
+        fr: {
+            title: 'Mon espace',
+            dashboard: 'Tableau de bord',
+            progress: 'Suivi pédagogique',
+            history: 'Historique des évaluations',
+            mistakes: 'Mes erreurs',
+            favorites: 'Mes favoris',
+            motivation: 'Motivation',
+            planner: 'Mon planning',
+            notesTab: 'Mes notes',
+            libraryTab: 'Mes ressources',
+            welcome: 'Bienvenue dans votre espace d’apprentissage',
+            continueLearning: 'Continuer à apprendre',
+            quickAccess: 'Accès rapide',
+            addTask: 'Ajouter une séance',
+            taskTitle: 'Titre de la révision',
+            taskDate: 'Date de révision',
+            duration: 'Durée en minutes',
+            addNote: 'Ajouter une note',
+            noteTitle: 'Titre de la note',
+            noteBody: 'Écrivez votre note ici...',
+            save: 'Enregistrer',
+            delete: 'Supprimer',
+            done: 'Terminée',
+            pending: 'À faire',
+            noTasks: 'Aucune séance de révision pour le moment',
+            noNotes: 'Aucune note pour le moment',
+            resources: 'Cours et ressources',
+            exercises: 'Exercices',
+            exams: 'Examens',
+            interactiveQuiz: 'Quiz interactifs',
+            summaries: 'Résumés',
+            profiles: 'Profils',
+            settings: 'Paramètres',
+            lessonsViewed: 'Leçons consultées',
+            exercisesDone: 'Exercices consultés',
+            testsTaken: 'Tests effectués',
+            averageScore: 'Score moyen',
+            uniqueTests: 'Quiz différents',
+            globalProgress: 'Leçons consultées terminées',
+            completedLessons: 'Leçons terminées',
+            byTrack: 'Par niveau et filière',
+            pendingLessons: 'Leçons en attente',
+            markAsComplete: 'Marquer comme terminé',
+            noData: 'Aucune donnée disponible',
+            streak: 'Jours consécutifs',
+            goals: 'Objectifs pédagogiques',
+            encouragement: 'Continuez votre excellent travail!',
+            date: 'Date',
+            score: 'Score',
+            best: 'Meilleur',
+            review: 'Revoir',
+            retry: 'Réessayer',
+            addToFavorites: 'Ajouter aux favoris',
+            removeFromFavorites: 'Retirer des favoris',
+            createProfile: 'Créer un profil',
+            switchProfile: 'Changer de profil',
+            deleteProfile: 'Supprimer le profil',
+            profileName: 'Nom du profil',
+            currentProfile: 'Profil actuel',
+            exportData: 'Exporter les données',
+            importData: 'Importer les données',
+            confirmDelete: 'Êtes-vous sûr de vouloir supprimer ce profil ?',
+            profileCreated: 'Profil créé avec succès',
+            profileDeleted: 'Profil supprimé',
+            profileSwitched: 'Changement de profil effectué',
+            invalidFile: 'Fichier JSON invalide',
+            confirmReplace: 'Ce profil existe déjà. Voulez-vous le remplacer ?',
+            retryMistakes: 'Réessayer uniquement les erreurs',
+            enterProfileName: 'Entrez le nom du nouveau profil:',
+            mistakesLoaded: 'Questions incorrectes chargées. Répondez uniquement aux questions que vous aviez mal.'
+        }
+    };
+
+    // ============================================
+    // 3. PROGRESS TRACKING (تتبع التقدم)
+    // ============================================
+    // Les anciens appelants utilisaient le singulier ('lesson'...) alors que le
+    // stockage utilise 'lessons' / 'exercises' / 'tests'.
+    const PROGRESS_TYPE_ALIASES = {
+        lesson: 'lessons', lessons: 'lessons',
+        exercise: 'exercises', exercises: 'exercises',
+        exam: 'tests', exams: 'tests', test: 'tests', tests: 'tests'
+    };
+
+    // Clé stable d'un document : chemin décodé, NFC, sans "/" initial
+    function normalizeItemKey(item) {
+        let key = String(item == null ? '' : item);
+        key = key.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]+/i, '').replace(/^([^?#]*)[?#].*$/, function (m, path) {
+            return /%/.test(path) ? path : m; // ?/# ignorés seulement pour une URL encodée
+        });
+        try { key = decodeURIComponent(key); } catch (e) { /* déjà décodé */ }
+        return key.normalize('NFC').replace(/^\/+/, '');
+    }
+
+    // Sans compte connecté (quand student-account.js est présent) rien n'est enregistré.
+    function canTrack() {
+        if (window.StudentAccount && !window.StudentAccount.isLoggedIn()) return false;
+        syncCurrentProfile();
+        return true;
+    }
+
+    // Déduit catégorie / langue / niveau / filière d'un chemin "cours/francais/1BAC/1BACSE/x.pdf"
+    // (les dossiers d'examens "2BAC SM" sont reconnus après suppression des espaces)
+    const TRACK_CODE = /^(TC[SL]|1BAC(SE|SM|L)|2BAC(SVT|SP|SM))$/;
+    function parseContentPath(key) {
+        const segs = String(key || '').split('/').filter(Boolean);
+        const info = { category: segs[0] || '', lang: segs[1] || '', level: segs[2] || '', track: '' };
+        segs.slice(3, -1).some(function (d) {
+            const code = d.replace(/\s+/g, '').toUpperCase();
+            if (TRACK_CODE.test(code) && code.indexOf(info.level) === 0) { info.track = code; return true; }
+            return false;
+        });
+        return info;
+    }
+
+    // Enregistre la CONSULTATION (viewed) d'un contenu. Ne marque jamais "terminé".
+    // meta (optionnel) : { title, path }
+    function updateProgress(type, item, meta) {
+        if (!canTrack()) return null;
+        const category = PROGRESS_TYPE_ALIASES[type];
+        const key = normalizeItemKey(item);
+        if (!category || !key) return null;
+
+        syncCurrentProfile();
+        const profileData = getProfileData(currentProfileId);
+        const bucket = profileData.progress[category];
+        const now = Date.now();
+        meta = meta || {};
+
+        const hasEntry = Object.prototype.hasOwnProperty.call(bucket, key);
+        let entry = bucket[key];
+        // Do not overwrite an existing malformed legacy value: preserve it and
+        // skip this tracking update rather than silently replacing stored data.
+        if (hasEntry && (!entry || typeof entry !== 'object' || Array.isArray(entry))) {
+            return null;
+        }
+        const isNew = !hasEntry;
+        if (isNew) {
+            entry = bucket[key] = {
+                id: key,
+                completed: false,
+                firstViewed: now,
+                attempts: 0,
+                viewCount: 0
+            };
+        }
+        // Une entrée existante garde son état "terminé" ; on complète les métadonnées
+        entry.id = entry.id || key;
+        entry.title = meta.title || entry.title || key.split('/').pop().replace(/\.[^/.]+$/, '');
+        entry.path = meta.path ? normalizeItemKey(meta.path) : (entry.path || key);
+        entry.viewed = true;
+        const where = parseContentPath(entry.path);
+        entry.category = where.category; entry.lang = where.lang;
+        entry.level = where.level; entry.track = where.track;
+        entry.firstViewed = entry.firstViewed || entry.lastViewed || now;
+        entry.lastViewed = now;
+        entry.viewCount = (entry.viewCount || 0) + 1;
+        entry.attempts = (entry.attempts || 0) + 1;
+
+        saveProfileData(currentProfileId, profileData);
+        updateStreak();
+
+        try {
+            document.dispatchEvent(new CustomEvent('gosvt:progress-updated', {
+                detail: { profileId: currentProfileId, type: category, key: key, isNew: isNew }
+            }));
+        } catch (e) { /* ancien navigateur */ }
+        refreshStudentSpaceView();
+        return profileData.progress;
+    }
+
+    function markLessonComplete(lessonId) {
+        if (!canTrack()) return false;
+        const profileData = getProfileData(currentProfileId);
+        const lessons = profileData.progress.lessons;
+        if (!Object.prototype.hasOwnProperty.call(lessons, lessonId)) return false;
+        const entry = lessons[lessonId];
+        // Keep malformed legacy records untouched instead of throwing or
+        // replacing them while marking a lesson complete.
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+        entry.completed = true;
+        entry.completedAt = Date.now();
+        saveProfileData(currentProfileId, profileData);
+        updateStreak();
+        return true;
+    }
+
+    // Réaffiche l'espace élève (sans recharger la page) en conservant l'onglet interne actif
+    function refreshStudentSpaceView() {
+        const container = document.getElementById('student-space-content');
+        if (!container || !container.children.length) return; // sera rendu à l'ouverture de la section
+        // Preserve typed login fields while signed out, but switch to the dashboard immediately after a successful sign-in.
+        // Preserve credentials only when the actual login form is visible.
+        // The verification placeholder has no form; once auth becomes ready,
+        // it must be replaced with the login gate instead of remaining stuck.
+        if (container.querySelector('.gs-auth-form') &&
+            !(window.StudentAccount && window.StudentAccount.isLoggedIn())) return;
+        const active = container.querySelector('.space-tab.active');
+        const tabName = active ? active.dataset.tab : null;
+
+        // Keep the student's place when a form action refreshes the dashboard.
+        // Native <details> panels remain closed by default on a fresh visit, but
+        // any panels the student already opened stay open after saving/deleting.
+        const openTaskIndexes = [];
+        container.querySelectorAll('details.gs-student-task').forEach(function (task, index) {
+            if (task.open) openTaskIndexes.push(index);
+        });
+
+        renderStudentSpace();
+
+        if (tabName) {
+            container.querySelectorAll('.space-tab').forEach(function (b) {
+                const selected = b.dataset.tab === tabName;
+                b.classList.toggle('active', selected);
+                b.setAttribute('aria-selected', selected ? 'true' : 'false');
+                b.tabIndex = selected ? 0 : -1;
+            });
+            container.querySelectorAll('.space-panel').forEach(function (p) {
+                const selected = p.id === 'panel-' + tabName;
+                p.classList.toggle('active', selected);
+                p.hidden = !selected;
+                p.setAttribute('aria-hidden', selected ? 'false' : 'true');
+            });
+            // Re-activate through the normal tab path so a lazy panel is restored after refresh.
+            const restoredTab = container.querySelector('.space-tab[data-tab="' + tabName + '"]');
+            if (restoredTab) restoredTab.click();
+        }
+
+        const refreshedTasks = container.querySelectorAll('details.gs-student-task');
+        openTaskIndexes.forEach(function (index) {
+            if (refreshedTasks[index]) refreshedTasks[index].open = true;
+        });
+    }
+
+    // ============================================
+    // 4. QUIZ RESULTS (نتائج الاختبارات)
+    // ============================================
+    function saveQuizResult(quizId, score, totalQuestions, mistakes, attemptId, silentRefresh) {
+        if (!canTrack()) return null;
+        const id = String(quizId == null ? '' : quizId).trim();
+        const total = Number(totalQuestions);
+        const points = Number(score);
+        if (!id || id.length > 200 || !Number.isInteger(total) || total <= 0 ||
+            !Number.isInteger(points) || points < 0 || points > total) {
+            throw new Error('Résultat de quiz invalide.');
+        }
+        const profileData = getProfileData(currentProfileId);
+        const token = String(attemptId || makeId());
+        if (profileData.quizResults.some(r => r && r.attemptId === token)) {
+            return profileData.quizResults;
+        }
+        const safeMistakes = Array.isArray(mistakes) ? mistakes.slice(0, total).map(m => ({
+            question: String(m && m.question || '').slice(0, 2000),
+            selected: String(m && m.selected || '').slice(0, 1000),
+            correct: String(m && m.correct || '').slice(0, 1000),
+            quizId: id,
+            date: Date.now()
+        })) : [];
+        profileData.quizResults.push({
+            quizId: id,
+            attemptId: token,
+            score: points,
+            total: total,
+            percentage: Math.round((points / total) * 100),
+            date: Date.now(),
+            mistakes: safeMistakes
+        });
+        safeMistakes.forEach(mistake => profileData.mistakes.push(mistake));
+        saveProfileData(currentProfileId, profileData);
+        updateStreak();
+        if (!silentRefresh) refreshStudentSpaceView();
+        return profileData.quizResults;
+    }
+
+    // ============================================
+    // 5. STREAK TRACKING (تتبع الأيام المتتالية)
+    // ============================================
+    function updateStreak() {
+        if (!canTrack()) return;
+        const profileData = getProfileData(currentProfileId);
+        
+        const today = new Date().toDateString();
+        const lastVisit = profileData.streak.lastVisit ? new Date(profileData.streak.lastVisit).toDateString() : null;
+
+        if (lastVisit === today) {
+            // Already visited today - count only once
+            return profileData.streak;
+        }
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toDateString();
+
+        if (lastVisit === yesterdayStr) {
+            // Consecutive day
+            profileData.streak.current++;
+        } else if (lastVisit !== today) {
+            // Streak broken
+            profileData.streak.current = 1;
+        }
+
+        if (profileData.streak.current > profileData.streak.best) {
+            profileData.streak.best = profileData.streak.current;
+        }
+
+        profileData.streak.lastVisit = Date.now();
+        saveProfileData(currentProfileId, profileData);
+
+        return profileData.streak;
+    }
+
+
+    // Daily SVT challenge: one deterministic question per UTC date.
+    const DAILY_CHALLENGES = [
+        { ar: { q: 'ما العضية المسؤولة أساساً عن إنتاج الطاقة القابلة للاستعمال في الخلية؟', options: ['النواة', 'الميتوكندري', 'جهاز غولجي', 'الريبوسوم'], explanation: 'الميتوكندري يساهم في إنتاج ATP خلال التنفس الخلوي.' }, fr: { q: 'Quel organite joue un rôle majeur dans la production d’énergie utilisable par la cellule ?', options: ['Le noyau', 'La mitochondrie', 'L’appareil de Golgi', 'Le ribosome'], explanation: 'La mitochondrie participe à la production d’ATP lors de la respiration cellulaire.' }, answer: 1 },
+        { ar: { q: 'ما الغاز الذي تمتصه النباتات الخضراء خلال عملية التركيب الضوئي؟', options: ['الأكسجين', 'الآزوت', 'ثنائي أكسيد الكربون', 'الهيدروجين'], explanation: 'تمتص النباتات ثنائي أكسيد الكربون وتستعمله مع الماء والضوء لتركيب المادة العضوية.' }, fr: { q: 'Quel gaz les plantes vertes absorbent-elles pendant la photosynthèse ?', options: ['Le dioxygène', 'Le diazote', 'Le dioxyde de carbone', 'Le dihydrogène'], explanation: 'Les plantes utilisent le dioxyde de carbone, l’eau et la lumière pour fabriquer de la matière organique.' }, answer: 2 },
+        { ar: { q: 'أين يتم تبادل الغازات التنفسية بين الهواء والدم في الرئتين؟', options: ['القصبة الهوائية', 'الحويصلات الرئوية', 'الحنجرة', 'الشعب الرئيسية'], explanation: 'تسمح جدران الحويصلات الرئوية الرقيقة بانتشار الأكسجين وثنائي أكسيد الكربون بين الهواء والدم.' }, fr: { q: 'Où ont lieu les échanges gazeux entre l’air et le sang dans les poumons ?', options: ['La trachée', 'Les alvéoles pulmonaires', 'Le larynx', 'Les bronches principales'], explanation: 'Les parois fines des alvéoles permettent la diffusion du dioxygène et du dioxyde de carbone.' }, answer: 1 },
+        { ar: { q: 'ما الوحدة البنيوية والوظيفية الأساسية للكائنات الحية؟', options: ['النسيج', 'العضو', 'الخلية', 'الجهاز'], explanation: 'الخلية هي أصغر وحدة بنيوية ووظيفية للكائن الحي.' }, fr: { q: 'Quelle est l’unité structurale et fonctionnelle de base des êtres vivants ?', options: ['Le tissu', 'L’organe', 'La cellule', 'L’appareil'], explanation: 'La cellule est la plus petite unité structurale et fonctionnelle du vivant.' }, answer: 2 },
+        { ar: { q: 'ما اسم انتقال الماء عبر غشاء شبه منفذ من وسط أقل تركيزاً بالمواد المذابة إلى وسط أكثر تركيزاً؟', options: ['الانتشار', 'الأسموز', 'النقل النشيط', 'البلعمة'], explanation: 'الأسموز هو انتقال الماء عبر غشاء شبه منفذ وفق فرق تركيز المواد المذابة.' }, fr: { q: 'Comment appelle-t-on le passage de l’eau à travers une membrane semi-perméable vers le milieu le plus concentré en solutés ?', options: ['La diffusion', 'L’osmose', 'Le transport actif', 'La phagocytose'], explanation: 'L’osmose correspond au déplacement de l’eau à travers une membrane semi-perméable selon le gradient de concentration.' }, answer: 1 },
+        { ar: { q: 'ما الجزيئة التي تحمل المعلومة الوراثية عند معظم الكائنات الحية؟', options: ['ATP', 'DNA', 'الغلوكوز', 'الهيموغلوبين'], explanation: 'يحمل الحمض النووي DNA المعلومة الوراثية عند معظم الكائنات الحية.' }, fr: { q: 'Quelle molécule porte l’information génétique chez la plupart des êtres vivants ?', options: ['ATP', 'ADN', 'Glucose', 'Hémoglobine'], explanation: 'L’ADN porte l’information génétique chez la plupart des êtres vivants.' }, answer: 1 },
+        { ar: { q: 'أي مكوّن من الدم يساهم أساساً في نقل الأكسجين؟', options: ['الكريات الحمراء', 'الصفائح الدموية', 'الكريات البيضاء', 'البلازما فقط'], explanation: 'تحتوي الكريات الحمراء على الهيموغلوبين الذي يرتبط بالأكسجين ويساهم في نقله.' }, fr: { q: 'Quel élément du sang assure principalement le transport du dioxygène ?', options: ['Les globules rouges', 'Les plaquettes', 'Les globules blancs', 'Le plasma seul'], explanation: 'Les globules rouges contiennent l’hémoglobine qui fixe et transporte le dioxygène.' }, answer: 0 }
+    ];
+
+    function getDailyChallengeInfo() {
+        const dateParts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Africa/Casablanca', year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(new Date());
+        const dateValues = Object.fromEntries(dateParts.map(part => [part.type, part.value]));
+        const date = dateValues.year + '-' + dateValues.month + '-' + dateValues.day;
+        const dayNumber = Math.floor(Date.parse(date + 'T00:00:00Z') / 86400000);
+        const index = ((dayNumber % DAILY_CHALLENGES.length) + DAILY_CHALLENGES.length) % DAILY_CHALLENGES.length;
+        return { date: date, id: 'svt-daily-' + date, question: DAILY_CHALLENGES[index] };
+    }
+
+    function renderDailyChallenge() {
+        const info = getDailyChallengeInfo();
+        const record = getProfileData(currentProfileId).dailyChallenges[info.date];
+        const fr = lang() === 'fr';
+        const q = fr ? info.question.fr : info.question.ar;
+        const title = fr ? 'Le défi SVT du jour' : 'التحدي العلمي اليومي';
+        const intro = fr ? 'Une question courte pour entretenir votre curiosité scientifique.' : 'سؤال يومي قصير لتنمية فضولك العلمي وترسيخ مكتسباتك.';
+        const points = fr ? '10 points' : '10 نقاط';
+        let body = '';
+        if (record) {
+            const chosen = Number(record.selected_option);
+            const correct = record.is_correct === true;
+            body = `<div class="gs-daily-result ${correct ? 'is-correct' : 'is-wrong'}">
+                <strong>${correct ? (fr ? 'Bonne réponse ! +10 points' : 'إجابة صحيحة! +10 نقاط') : (fr ? 'Ce n’est pas la bonne réponse.' : 'ليست الإجابة الصحيحة.')}</strong>
+                <p>${fr ? 'Votre réponse' : 'إجابتك'} : ${escapeHtml(q.options[chosen] || '')}</p>
+                <p>${fr ? 'Réponse correcte' : 'الإجابة الصحيحة'} : ${escapeHtml(q.options[info.question.answer])}</p>
+                <small>${escapeHtml(q.explanation)}</small>
+                <span>${fr ? 'Défi déjà validé aujourd’hui' : 'لقد أجبت عن تحدي اليوم بالفعل'}</span>
+            </div>`;
+        } else {
+            body = `<div class="gs-daily-options">${q.options.map((option, index) => `<button type="button" class="gs-daily-option" data-daily-option="${index}"><span>${String.fromCharCode(65 + index)}</span>${escapeHtml(option)}</button>`).join('')}</div>
+                <p class="gs-daily-hint">${fr ? 'Choisissez une seule réponse. Vous ne pourrez répondre qu’une fois aujourd’hui.' : 'اختر إجابة واحدة فقط. يمكنك المشاركة مرة واحدة اليوم.'}</p>`;
+        }
+        return `<section class="gs-daily-challenge" id="gs-daily-challenge" data-challenge-date="${info.date}">
+            <div class="gs-daily-head"><div><span class="gs-eyebrow">${fr ? 'UN RENDEZ-VOUS SCIENTIFIQUE' : 'موعدك اليومي مع العلم'}</span><h3>🧠 ${title}</h3><p>${intro}</p></div><strong class="gs-daily-points">⭐ ${points}</strong></div>
+            <div class="gs-daily-question"><span>${fr ? 'QUESTION DU JOUR' : 'سؤال اليوم'}</span><h4>${escapeHtml(q.q)}</h4></div>
+            ${body}<p class="gs-daily-message" aria-live="polite"></p>
+        </section>`;
+    }
+
+    async function hydrateDailyChallenge() {
+        if (!window.GoSVTCloud || typeof window.GoSVTCloud.loadDailyChallenge !== 'function' ||
+            !(window.StudentAccount && window.StudentAccount.isLoggedIn())) return;
+        const account = window.StudentAccount;
+        const profileId = currentProfileId;
+        const user = account && account.getUser && account.getUser();
+        const studentId = user && user.id;
+        if (!studentId || !account.isLoggedIn()) return;
+        const info = getDailyChallengeInfo();
+        const cardBeforeSync = document.getElementById('gs-daily-challenge');
+        if (cardBeforeSync && cardBeforeSync.dataset.challengeDate === info.date) {
+            cardBeforeSync.dataset.challengeSync = 'pending';
+            cardBeforeSync.querySelectorAll('.gs-daily-option').forEach(option => { option.disabled = true; });
+            const message = cardBeforeSync.querySelector('.gs-daily-message');
+            if (message) message.textContent = lang() === 'fr'
+                ? 'Vérification de votre participation…'
+                : 'جارٍ التحقق من مشاركتك السابقة اليوم…';
+        }
+        const stillOwner = () => currentProfileId === profileId &&
+            window.StudentAccount && window.StudentAccount.isLoggedIn() &&
+            window.StudentAccount.getUser() && window.StudentAccount.getUser().id === studentId;
+        try {
+            const remote = await window.GoSVTCloud.loadDailyChallenge(info.date, studentId);
+            if (!stillOwner()) return;
+            if (!remote) {
+                const currentCard = document.getElementById('gs-daily-challenge');
+                if (currentCard && currentCard.dataset.challengeDate === info.date) {
+                    currentCard.dataset.challengeSync = 'ready';
+                    currentCard.querySelectorAll('.gs-daily-option').forEach(option => { option.disabled = false; });
+                    const message = currentCard.querySelector('.gs-daily-message');
+                    if (message) message.textContent = '';
+                }
+                return;
+            }
+            const data = getProfileData(profileId);
+            data.dailyChallenges[info.date] = remote;
+            storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
+            const card = document.getElementById('gs-daily-challenge');
+            if (card && card.dataset.challengeDate === info.date) {
+                // Update only the challenge card; rebuilding the whole student space causes visible flicker.
+                card.outerHTML = renderDailyChallenge();
+            }
+        } catch (err) {
+            console.warn('[GoSVT] Daily challenge restore deferred:', err && err.message);
+            const currentCard = document.getElementById('gs-daily-challenge');
+            if (stillOwner() && currentCard && currentCard.dataset.challengeDate === info.date) {
+                currentCard.dataset.challengeSync = 'ready';
+                currentCard.querySelectorAll('.gs-daily-option').forEach(option => { option.disabled = false; });
+                const message = currentCard.querySelector('.gs-daily-message');
+                if (message) message.textContent = lang() === 'fr'
+                    ? 'Vérification indisponible. Votre réponse sera vérifiée lors de son enregistrement.'
+                    : 'تعذر التحقق المسبق. سيتم التحقق من إجابتك عند تسجيلها.';
+            }
+        }
+    }
+
+    async function answerDailyChallenge(selectedOption, button) {
+        const account = window.StudentAccount;
+        if (!account || !account.isLoggedIn() || !account.getUser || !account.getUser()) return;
+        const profileId = currentProfileId;
+        const studentId = account.getUser().id;
+        const stillOwner = () => currentProfileId === profileId &&
+            window.StudentAccount && window.StudentAccount.isLoggedIn() &&
+            window.StudentAccount.getUser() && window.StudentAccount.getUser().id === studentId;
+        const info = getDailyChallengeInfo();
+        const data = getProfileData(profileId);
+        if (data.dailyChallenges[info.date]) return;
+        const option = Number(selectedOption);
+        if (!Number.isInteger(option) || option < 0 || option > 3) return;
+        const card = document.getElementById('gs-daily-challenge');
+        if (!card || card.dataset.challengeDate !== info.date || card.dataset.challengeSync === 'pending') return;
+        const message = card.querySelector('.gs-daily-message');
+        const buttons = Array.from(card.querySelectorAll('.gs-daily-option'));
+        buttons.forEach(item => { item.disabled = true; });
+        if (message) message.textContent = lang() === 'fr' ? 'Enregistrement de votre réponse...' : 'جارٍ تسجيل إجابتك...';
+        const correct = option === info.question.answer;
+        const payload = {
+            challenge_date: info.date,
+            challenge_id: info.id,
+            selected_option: option,
+            is_correct: correct,
+            points: correct ? 10 : 0,
+            answered_at: new Date().toISOString()
+        };
+        try {
+            if (!window.GoSVTCloud || typeof window.GoSVTCloud.submitDailyChallenge !== 'function') {
+                throw new Error('Cloud challenge service unavailable');
+            }
+            const saved = await window.GoSVTCloud.submitDailyChallenge(payload, studentId);
+            if (!stillOwner()) return;
+            data.dailyChallenges[info.date] = saved || payload;
+            storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
+            refreshStudentSpaceView();
+        } catch (err) {
+            if (!stillOwner()) return;
+            console.error('[GoSVT] Daily challenge submission failed:', err);
+            if (message) message.textContent = lang() === 'fr'
+                ? 'Impossible d’enregistrer votre réponse. Vérifiez la connexion puis réessayez.'
+                : 'تعذر تسجيل إجابتك. تحقق من الاتصال ثم أعد المحاولة.';
+            buttons.forEach(item => { item.disabled = false; });
+            try {
+                const existing = await window.GoSVTCloud.loadDailyChallenge(info.date, studentId);
+                if (existing && stillOwner()) {
+                    data.dailyChallenges[info.date] = existing;
+                    storage.set(profileId + '_' + STORAGE_KEYS.DAILY_CHALLENGES, data.dailyChallenges);
+                    refreshStudentSpaceView();
+                }
+            } catch (_) {}
+        }
+    }
+
+    // ============================================
+    // 6. DASHBOARD (لوحة القيادة)
+    // ============================================
+    // Keep dashboard and history metrics based on complete, dated quiz attempts only.
+    // This also protects imported legacy profiles from malformed result entries.
+    function getValidQuizResults(profileData) {
+        const results = profileData && Array.isArray(profileData.quizResults) ? profileData.quizResults : [];
+        return results.filter(result => {
+            if (!result || typeof result !== 'object' || Array.isArray(result)) return false;
+            const quizId = typeof result.quizId === 'string' ? result.quizId.trim() : '';
+            const percentage = Number(result.percentage);
+            const date = Number(result.date);
+            return quizId.length > 0 && quizId.length <= 200 &&
+                Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
+                Number.isFinite(date) && date > 0;
+        });
+    }
+
+    function getDashboardStats() {
+        syncCurrentProfile();
+        const profileData = getProfileData(currentProfileId);
+
+        // Count only actual records. Legacy/imported nulls, arrays and primitives
+        // must not inflate progress or cause the dashboard to throw.
+        const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
+        const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord);
+        const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord);
+        const lessonsViewed = lessonRecords.length;
+        const completedLessons = lessonRecords.filter(item => item.completed === true).length;
+        const exercisesDone = exerciseRecords.length;
+        const quizResults = getValidQuizResults(profileData);
+        const testsTaken = quizResults.length;
+
+        const totalScore = quizResults.reduce((sum, result) => sum + result.percentage, 0);
+        const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
+        const globalProgress = lessonsViewed > 0
+            ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
+        const streak = Number(profileData.streak.current);
+        const bestStreak = Number(profileData.streak.best);
+
+        return {
+            lessonsViewed,
+            completedLessons,
+            exercisesDone,
+            testsTaken,
+            averageScore,
+            globalProgress,
+            streak: Number.isFinite(streak) && streak >= 0 ? streak : 0,
+            bestStreak: Number.isFinite(bestStreak) && bestStreak >= 0 ? bestStreak : 0
+        };
+    }
+function getDashboardStats() {
+        syncCurrentProfile();
+        const profileData = getProfileData(currentProfileId);
+
+        // Count only actual records. Legacy/imported nulls, arrays and primitives
+        // must not inflate progress or cause the dashboard to throw.
+        const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
+        const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord);
+        const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord);
+        const lessonsViewed = lessonRecords.length;
+        const completedLessons = lessonRecords.filter(item => item.completed === true).length;
+        const exercisesDone = exerciseRecords.length;
+        const quizResults = getValidQuizResults(profileData);
+        const testsTaken = quizResults.length;
+
+        const totalScore = quizResults.reduce((sum, result) => sum + result.percentage, 0);
+        const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
+        const globalProgress = lessonsViewed > 0
+            ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
+        const streak = Number(profileData.streak.current);
+        const bestStreak = Number(profileData.streak.best);
+
+        return {
+            lessonsViewed,
+            completedLessons,
+            exercisesDone,
+            testsTaken,
+            averageScore,
+            globalProgress,
+            streak: Number.isFinite(streak) && streak >= 0 ? streak : 0,
+            bestStreak: Number.isFinite(bestStreak) && bestStreak >= 0 ? bestStreak : 0
+        };
+    }
+
+
+    // Pathway-specific progress uses saved path metadata only; quiz attempts remain global
+    // because legacy quiz results do not reliably carry level/track identifiers.
+    function getDashboardStatsForPath(level, track) {
+        syncCurrentProfile();
+        const profileData = getProfileData(currentProfileId);
+        const wantedLevel = String(level || '').toUpperCase();
+        const wantedTrack = String(track || '').replace(/\s+/g, '').toUpperCase();
+
+        // Count only actual records. Legacy/imported nulls, arrays and primitives
+        // must not inflate progress or cause the dashboard to throw.
+        const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
+        const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord).filter(item => item.level === wantedLevel && item.track === wantedTrack);
+        const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord).filter(item => item.level === wantedLevel && item.track === wantedTrack);
+        const lessonsViewed = lessonRecords.length;
+        const completedLessons = lessonRecords.filter(item => item.completed === true).length;
+        const exercisesDone = exerciseRecords.length;
+        const quizResults = getValidQuizResults(profileData);
+        const testsTaken = quizResults.length;
+
+        const totalScore = quizResults.reduce((sum, result) => sum + result.percentage, 0);
+        const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
+        const globalProgress = lessonsViewed > 0
+            ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
+        const streak = Number(profileData.streak.current);
+        const bestStreak = Number(profileData.streak.best);
+
+        return {
+            lessonsViewed,
+            completedLessons,
+            exercisesDone,
+            testsTaken,
+            averageScore,
+            globalProgress,
+            streak: Number.isFinite(streak) && streak >= 0 ? streak : 0,
+            bestStreak: Number.isFinite(bestStreak) && bestStreak >= 0 ? bestStreak : 0
+        };
+    }
+
+    // ============================================
+    // 7. EXPORT/IMPORT (تصدير واستيراد)
+    // ============================================
+    function exportProfileData(profileId) {
+        const profile = getProfiles()[profileId];
+        if (!profile) throw new Error('Profil introuvable.');
+        const profileData = getProfileData(profileId);
+        
+        const exportData = {
+            profile: profile,
+            data: profileData,
+            exportDate: Date.now(),
+            version: '1.0'
+        };
+        
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        const safeFileName = String(profile.name).replace(/[^\p{L}\p{N}_-]+/gu, '_').slice(0, 40);
+        a.download = `gosvt_profile_${safeFileName}_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importProfileData(jsonString) {
+        try {
+            if (typeof jsonString !== 'string' || jsonString.length > 5 * 1024 * 1024) {
+                throw new Error('Fichier trop volumineux ou invalide.');
+            }
+            const payload = JSON.parse(jsonString);
+            const p = payload && payload.profile;
+            const d = payload && payload.data;
+            if (!p || typeof p !== 'object' || typeof p.id !== 'string' ||
+                !/^profile_[a-zA-Z0-9_-]{1,100}$/.test(p.id) ||
+                typeof p.name !== 'string' || p.name.trim().length < 2 || p.name.length > 40 ||
+                !d || typeof d !== 'object' || !d.progress || typeof d.progress !== 'object' ||
+                !Array.isArray(d.quizResults) || !Array.isArray(d.mistakes) ||
+                !d.streak || typeof d.streak !== 'object' || !Array.isArray(d.goals)) {
+                throw new Error('Structure de sauvegarde invalide.');
+            }
+            if (payload.version !== '1.0') {
+                throw new Error('Version de sauvegarde non prise en charge.');
+            }
+            const normalized = {
+                progress: {
+                    lessons: d.progress.lessons && typeof d.progress.lessons === 'object' && !Array.isArray(d.progress.lessons) ? d.progress.lessons : {},
+                    exercises: d.progress.exercises && typeof d.progress.exercises === 'object' && !Array.isArray(d.progress.exercises) ? d.progress.exercises : {},
+                    tests: d.progress.tests && typeof d.progress.tests === 'object' && !Array.isArray(d.progress.tests) ? d.progress.tests : {}
+                },
+                quizResults: d.quizResults,
+                mistakes: d.mistakes,
+                streak: {
+                    current: Number.isInteger(d.streak.current) && d.streak.current >= 0 ? d.streak.current : 0,
+                    best: Number.isInteger(d.streak.best) && d.streak.best >= 0 ? d.streak.best : 0,
+                    lastVisit: Number.isFinite(d.streak.lastVisit) ? d.streak.lastVisit : null
+                },
+                goals: d.goals,
+                notes: Array.isArray(d.notes) ? d.notes.filter(n => n && typeof n === 'object').slice(0, 500) : [],
+                studyPlan: Array.isArray(d.studyPlan) ? d.studyPlan.filter(item => item && typeof item === 'object').slice(0, 500) : [],
+                dailyChallenges: d.dailyChallenges && typeof d.dailyChallenges === 'object' && !Array.isArray(d.dailyChallenges)
+                    ? d.dailyChallenges : {}
+            };
+            const profiles = getProfiles();
+            const existing = profiles[p.id];
+            if (existing && !confirm('Ce profil existe déjà. Voulez-vous remplacer ses données ?')) return false;
+            const safeProfile = {
+                id: p.id,
+                name: p.name.normalize('NFC').trim(),
+                createdAt: Number.isFinite(p.createdAt) ? p.createdAt : Date.now(),
+                lastActive: Date.now()
+            };
+            profiles[p.id] = safeProfile;
+            saveProfiles(profiles);
+            saveProfileData(p.id, normalized);
+            return true;
+        } catch (e) {
+            console.error('Import error:', e);
+            alert(t('invalidFile'));
+            return false;
+        }
+    }
+
+    // Badges are derived from real progress records. Those records are already synced to Supabase.
+    function renderAchievements() {
+        const data = getProfileData(currentProfileId);
+        const lessonsViewed = Object.keys(data.progress.lessons || {}).length;
+        const exercisesViewed = Object.keys(data.progress.exercises || {}).length;
+        const completedLessons = Object.values(data.progress.lessons || {}).filter(item => item && item.completed === true).length;
+        const badges = lang() === 'ar' ? [
+            { icon: '🌱', title: 'مستكشف صغير', detail: 'شاهدت أول درس في علوم الحياة والأرض', value: lessonsViewed, target: 1 },
+            { icon: '📚', title: 'محب المعرفة', detail: 'شاهدت خمسة دروس مختلفة', value: lessonsViewed, target: 5 },
+            { icon: '✏️', title: 'متدرب نشيط', detail: 'اطلعت على أول تمرين', value: exercisesViewed, target: 1 },
+            { icon: '✅', title: 'خطوة نحو الإتقان', detail: 'أكملت أول درس', value: completedLessons, target: 1 },
+            { icon: '🏅', title: 'باني المعرفة', detail: 'أكملت ثلاثة دروس', value: completedLessons, target: 3 }
+        ] : [
+            { icon: '🌱', title: 'Petit explorateur', detail: 'Vous avez consulté votre premier cours', value: lessonsViewed, target: 1 },
+            { icon: '📚', title: 'Curieux', detail: 'Vous avez consulté cinq cours différents', value: lessonsViewed, target: 5 },
+            { icon: '✏️', title: 'Entraînement actif', detail: 'Vous avez consulté votre premier exercice', value: exercisesViewed, target: 1 },
+            { icon: '✅', title: 'Vers la maîtrise', detail: 'Vous avez terminé votre premier cours', value: completedLessons, target: 1 },
+            { icon: '🏅', title: 'Bâtisseur du savoir', detail: 'Vous avez terminé trois cours', value: completedLessons, target: 3 }
+        ];
+        const earned = badges.filter(badge => badge.value >= badge.target).length;
+        const heading = lang() === 'ar' ? 'إنجازاتي وشاراتي' : 'Mes réussites et badges';
+        const subtitle = lang() === 'ar'
+            ? 'كل شارة تعكس خطوة حقيقية في مسارك الدراسي.'
+            : 'Chaque badge récompense une étape réelle de votre parcours.';
+        const status = lang() === 'ar' ? 'مكتسبة' : 'Obtenu';
+        const locked = lang() === 'ar' ? 'قيد الإنجاز' : 'À débloquer';
+        return `<section class="gs-achievements">
+            <div class="gs-achievements-heading">
+                <div><span class="gs-eyebrow">${lang() === 'ar' ? 'تقدمك يستحق التقدير' : 'VOS EFFORTS COMPTENT'}</span><h3>${heading}</h3><p>${subtitle}</p></div>
+                <div class="gs-achievements-count"><strong>${earned}/${badges.length}</strong><small>${lang() === 'ar' ? 'شارات مكتسبة' : 'badges obtenus'}</small></div>
+            </div>
+            <div class="gs-badges-grid">${badges.map(badge => {
+                const unlocked = badge.value >= badge.target;
+                const percent = Math.min(100, Math.round((badge.value / badge.target) * 100));
+                return `<article class="gs-badge-card ${unlocked ? 'is-earned' : 'is-locked'}">
+                    <span class="gs-badge-icon">${badge.icon}</span>
+                    <div class="gs-badge-copy"><strong>${badge.title}</strong><small>${badge.detail}</small>
+                    ${unlocked ? `<span class="gs-badge-status">${status} ✓</span>` : `<span class="gs-badge-status">${locked} · ${Math.min(badge.value, badge.target)}/${badge.target}</span><span class="gs-badge-track"><i style="width:${percent}%"></i></span>`}</div>
+                </article>`;
+            }).join('')}</div>
+        </section>`;
+    }
+
+    function renderStudyRecommendations() {
+        const data = getProfileData(currentProfileId);
+        const latestByQuiz = Object.create(null);
+        // Use the same validation rules as dashboard statistics so malformed
+        // imported legacy results cannot create misleading review recommendations.
+        getValidQuizResults(data).forEach(result => {
+            const quizId = result.quizId.trim();
+            const normalized = { ...result, quizId, percentage: Number(result.percentage), date: Number(result.date) };
+            if (!latestByQuiz[quizId] || normalized.date > latestByQuiz[quizId].date) {
+                latestByQuiz[quizId] = normalized;
+            }
+        });
+        const needsReview = Object.values(latestByQuiz)
+            .filter(result => result.percentage < 70)
+            .sort((a, b) => a.percentage - b.percentage)
+            .slice(0, 3);
+        const stats = getDashboardStats();
+        const nextStep = !stats.lessonsViewed
+            ? { href: '#cours', icon: '📖', ar: 'ابدأ بدرس واحد اليوم', fr: 'Commencez par un cours aujourd’hui', detailAr: 'اختر درساً لفهم فكرة جديدة قبل الانتقال إلى التمارين.', detailFr: 'Choisissez un cours pour comprendre une nouvelle notion avant les exercices.', actionAr: 'اكتشف الدروس', actionFr: 'Découvrir les cours' }
+            : stats.exercisesDone === 0
+                ? { href: '#exercices', icon: '🧩', ar: 'طبّق ما تعلمته', fr: 'Appliquez ce que vous avez appris', detailAr: 'التمارين تساعدك على تثبيت المفاهيم التي درستها.', detailFr: 'Les exercices vous aident à consolider les notions étudiées.', actionAr: 'انتقل إلى التمارين', actionFr: 'Accéder aux exercices' }
+                : !stats.testsTaken
+                    ? { href: '#quiz', icon: '⚡', ar: 'اختبر فهمك', fr: 'Testez votre compréhension', detailAr: 'جرّب اختباراً قصيراً لتحديد ما أتقنته وما يحتاج إلى مراجعة.', detailFr: 'Essayez un quiz court pour repérer ce qui est acquis et ce qui reste à revoir.', actionAr: 'ابدأ اختباراً', actionFr: 'Lancer un quiz' }
+                    : stats.averageScore < 70
+                        ? { href: '#quiz', icon: '🎯', ar: 'عزّز نتائجك بالمراجعة', fr: 'Renforcez vos acquis par la révision', detailAr: 'معدلك الحالي أقل من 70٪. أعد التدريب على الاختبارات وراجع المفاهيم التي تحتاج إلى ترسيخ قبل الانتقال إلى امتحان شامل.', detailFr: 'Votre moyenne actuelle est inférieure à 70 %. Reprenez les quiz et consolidez les notions à revoir avant de passer à un examen complet.', actionAr: 'واصل التدريب', actionFr: 'Continuer les quiz' }
+                        : { href: '#examens', icon: '🏆', ar: 'استعد للامتحان', fr: 'Préparez-vous aux examens', detailAr: 'انتقل إلى امتحان أو فرض للتدرب على توظيف مكتسباتك.', detailFr: 'Entraînez-vous avec un examen pour mobiliser vos acquis.', actionAr: 'تصفح الامتحانات', actionFr: 'Voir les examens' };
+        const nextStepCard = `<article class="gs-next-step-card">
+            <span class="gs-next-step-icon" aria-hidden="true">${nextStep.icon}</span>
+            <div class="gs-next-step-copy">
+                <strong>${lang() === 'ar' ? nextStep.ar : nextStep.fr}</strong>
+                <p>${lang() === 'ar' ? nextStep.detailAr : nextStep.detailFr}</p>
+                <a href="${nextStep.href}">${lang() === 'ar' ? nextStep.actionAr : nextStep.actionFr} ←</a>
+            </div>
+        </article>`;
+        if (!needsReview.length) return nextStepCard;
+
+        return `
+            <section class="gs-review-recommendations" aria-label="${lang() === 'ar' ? 'اختبارات مقترحة للمراجعة' : 'Quiz conseillés pour révision'}">
+                <div class="gs-review-recommendations-head">
+                    <span>🎯</span>
+                    <div>
+                        <strong>${lang() === 'ar' ? 'مراجعة مقترحة' : 'Révisions conseillées'}</strong>
+                        <p>${lang() === 'ar' ? 'راجع هذه المحاور لتعزيز مكتسباتك.' : 'Consolidez vos acquis sur ces thèmes.'}</p>
+                    </div>
+                </div>
+                <div class="gs-review-recommendations-list">
+                    ${needsReview.map(result => {
+                        const internalTargets = {
+                            'human-systems-atlas': 'gs-anatomy-title',
+                            'cell-photosynthesis-revision': 'gs-svt-revision-title'
+                        };
+                        const target = internalTargets[result.quizId];
+                        if (target) {
+                            const reviewName = getQuizDisplayName(result.quizId);
+                            const reviewAction = lang() === 'ar' ? 'انتقل إلى المراجعة' : 'Ouvrir la révision';
+                            const accessibleLabel = lang() === 'ar'
+                                ? reviewName + '، نتيجتك ' + result.percentage + ' بالمئة، ' + reviewAction
+                                : reviewName + ', votre résultat : ' + result.percentage + ' pour cent, ' + reviewAction;
+                            return '<button type="button" class="gs-review-recommendation gs-review-jump" data-study-anchor="' + target +
+                                '" aria-label="' + escapeHtml(accessibleLabel) + '">' +
+                                '<span>' + escapeHtml(reviewName) + '</span><strong>' + result.percentage + '%</strong>' +
+                                '<small>' + reviewAction + ' ←</small></button>';
+                        }
+                        const path = result.quizId.charAt(0) === '/' ? result.quizId.slice(1) : result.quizId;
+                        if (!path.startsWith('quiz/') || !path.toLowerCase().endsWith('.json') ||
+                            path.split('/').includes('..') || path.includes('?') || path.includes('#')) return '';
+                        const href = '/?quiz=' + encodeURIComponent(path) + '#quiz';
+                        const label = path.split('/').pop().slice(0, -5).replace(/[_-]/g, ' ');
+                        return '<a class="gs-review-recommendation" href="' + escapeHtml(href) + '">' +
+                            '<span>' + escapeHtml(label) + '</span><strong>' + result.percentage + '%</strong>' +
+                            '<small>' + (lang() === 'ar' ? 'أعد المراجعة' : 'Revoir') + ' ←</small></a>';
+                    }).join('')}
+                </div>
+            </section>${nextStepCard}`;
+    }
+
+    function renderPlantCellExplorer() {
+        const fr = lang() === 'fr';
+        const names = fr
+          ? {nucleus:'Noyau',chloroplast:'Chloroplaste',vacuole:'Vacuole',membrane:'Membrane plasmique',wall:'Paroi cellulaire'}
+          : {nucleus:'النواة',chloroplast:'البلاستيدة الخضراء',vacuole:'الفجوة العصارية',membrane:'الغشاء البلازمي',wall:'الجدار الخلوي'};
+        const intro = fr ? 'Sélectionnez un organite pour découvrir son rôle.' : 'اختر عضية من الرسم لاكتشاف دورها.';
+        const facts = fr
+          ? {nucleus:'Le noyau contient l’information génétique (ADN) et participe au contrôle des activités cellulaires.',chloroplast:'Les chloroplastes contiennent la chlorophylle et réalisent la photosynthèse grâce à l’énergie lumineuse.',vacuole:'La grande vacuole stocke notamment l’eau et contribue au maintien de la turgescence.',membrane:'La membrane plasmique délimite la cellule et régule les échanges avec le milieu.',wall:'La paroi cellulosique protège la cellule et lui donne soutien et forme.'}
+          : {nucleus:'تحتوي النواة على المعلومة الوراثية (ADN)، وتساهم في تنظيم أنشطة الخلية.',chloroplast:'تحتوي البلاستيدات الخضراء على اليخضور، وتنجز عملية التركيب الضوئي باستعمال الطاقة الضوئية.',vacuole:'تخزن الفجوة العصارية الماء ومواد مختلفة، وتساهم في الحفاظ على ضغط الامتلاء.',membrane:'يحيط الغشاء البلازمي بالخلية وينظم التبادلات بينها وبين الوسط الخارجي.',wall:'يوفر الجدار الخلوي دعامة وحماية للخلية ويساهم في الحفاظ على شكلها.'};
+        return `<section class="gs-cell-lab" aria-labelledby="gs-cell-lab-title">
+          <div class="gs-cell-lab-heading"><div><span class="gs-eyebrow">GO SVT MAROC · MINI LAB</span><h3 id="gs-cell-lab-title">${fr?'Explorez une cellule végétale':'استكشف الخلية النباتية'}</h3><p>${intro}</p></div><span class="gs-cell-lab-symbol" aria-hidden="true">🧫</span></div>
+          <div class="gs-cell-lab-layout">
+            <div class="gs-cell-illustration" aria-label="${fr?'Photographie réelle de cellules végétales':'صورة حقيقية لخلايا نباتية'}">
+              <a class="gs-real-science-photo gs-cell-photo-card" data-science-search="plant cell light microscopy real micrograph" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=plant%20cell%20light%20microscopy%20real%20micrograph" target="_blank" rel="noopener noreferrer">
+                <span class="gs-science-media-photo"><span>🧫</span><small>${fr?'Chargement de la microphotographie…':'جارٍ تحميل الصورة المجهرية الحقيقية…'}</small></span>
+                <span class="gs-real-photo-credit"><strong>${fr?'Photographie microscopique réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span>
+              </a>
+            </div>
+            <div class="gs-cell-controls">
+              ${Object.entries(names).map(([key,name],i)=>`<button type="button" class="gs-cell-part ${i===0?'is-active':''}" data-cell-part="${key}" aria-pressed="${i===0?'true':'false'}"><span>0${i+1}</span>${name}</button>`).join('')}
+            </div>
+          </div>
+          <div class="gs-cell-fact" aria-live="polite"><strong class="gs-cell-fact-title">${names.nucleus}</strong><p class="gs-cell-fact-text">${facts.nucleus}</p></div>
+          <p class="gs-cell-note">${fr?'Photographie réelle de cellules végétales ; les légendes expliquent les structures.':'صورة حقيقية لخلايا نباتية، وتوضح البطاقات أسماء البنيات ووظائفها.'}</p>
+        </section>`;
+    }
+
+    // Interactive photosynthesis lab: stage selector with bilingual explanations.
+    function renderPhotosynthesisLab() {
+        const fr = lang() === 'fr';
+        const stages = fr
+          ? [
+              ['light','L’énergie lumineuse','La chlorophylle des chloroplastes capte l’énergie lumineuse nécessaire à la photosynthèse.'],
+              ['water','L’eau et les sels minéraux','L’eau absorbée par les racines rejoint les feuilles grâce aux vaisseaux conducteurs.'],
+              ['co2','Le dioxyde de carbone','Le CO₂ de l’air entre principalement dans la feuille par les stomates.'],
+              ['sugar','La matière organique','Dans les chloroplastes, l’énergie lumineuse permet de fabriquer des sucres à partir de CO₂ et d’eau.'],
+              ['oxygen','Le dioxygène','Du dioxygène est libéré dans l’atmosphère au cours de la photosynthèse.']
+            ]
+          : [
+              ['light','الطاقة الضوئية','يلتقط اليخضور الموجود في البلاستيدات الخضراء الطاقة الضوئية اللازمة للتركيب الضوئي.'],
+              ['water','الماء والأملاح المعدنية','تمتص الجذور الماء والأملاح المعدنية، ثم تنتقل نحو الأوراق عبر الأوعية الناقلة.'],
+              ['co2','ثاني أكسيد الكربون','يدخل غاز CO₂ من الهواء إلى الورقة أساساً عبر الثغور.'],
+              ['sugar','المادة العضوية','تستعمل البلاستيدات الخضراء الطاقة الضوئية لتصنيع السكريات انطلاقاً من الماء وCO₂.'],
+              ['oxygen','غاز الأكسجين','ينطلق غاز الأكسجين إلى الوسط الخارجي خلال عملية التركيب الضوئي.']
+            ];
+        return `<section class="gs-photo-lab" aria-labelledby="gs-photo-lab-title">
+          <div class="gs-photo-heading">
+            <div><span class="gs-eyebrow">GO SVT MAROC · INTERACTIVE LAB</span>
+              <h3 id="gs-photo-lab-title">${fr?'Le laboratoire de la photosynthèse':'مختبر التركيب الضوئي'}</h3>
+              <p>${fr?'Explorez les éléments nécessaires et les produits de la photosynthèse.':'اكتشف العناصر الضرورية للتركيب الضوئي والنواتج المتكونة.'}</p></div>
+            <span class="gs-photo-badge" aria-hidden="true">☀️</span>
+          </div>
+          <div class="gs-photo-scene">
+            <div class="gs-photo-sun" aria-hidden="true">☀</div>
+            <a class="gs-photo-leaf gs-real-science-photo gs-photo-leaf-card" data-science-search="green leaf macro photography leaf veins" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=green%20leaf%20macro%20photography%20leaf%20veins" target="_blank" rel="noopener noreferrer" aria-label="${fr?'Photographie réelle d’une feuille':'صورة حقيقية لورقة نباتية'}">
+              <span class="gs-science-media-photo"><span>🍃</span><small>${fr?'Chargement de la photographie…':'جارٍ تحميل الصورة الحقيقية…'}</small></span>
+              <span class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</span>
+            </a>
+            <div class="gs-photo-flow gs-flow-water"><span>💧</span><b>H₂O</b><small>${fr?'Depuis les racines':'من الجذور'}</small></div>
+            <div class="gs-photo-flow gs-flow-co2"><span>🌫️</span><b>CO₂</b><small>${fr?'Depuis l’air':'من الهواء'}</small></div>
+            <div class="gs-photo-flow gs-flow-light"><span>☀️</span><b>${fr?'Lumière':'ضوء'}</b></div>
+            <div class="gs-photo-flow gs-flow-sugar"><span>🍃</span><b>${fr?'Sucres':'سكريات'}</b><small>${fr?'Matière organique':'مادة عضوية'}</small></div>
+            <div class="gs-photo-flow gs-flow-o2"><span>🫧</span><b>O₂</b><small>${fr?'Vers l’air':'نحو الهواء'}</small></div>
+          </div>
+          <div class="gs-photo-stage-list" role="group" aria-label="${fr?'Étapes de la photosynthèse':'مراحل التركيب الضوئي'}">
+            ${stages.map((stage,i)=>`<button type="button" class="gs-photo-stage ${i===0?'is-active':''}" data-photo-stage="${stage[0]}" aria-pressed="${i===0?'true':'false'}"><span>0${i+1}</span>${stage[1]}</button>`).join('')}
+          </div>
+          <div class="gs-photo-explanation" aria-live="polite"><strong class="gs-photo-fact-title">${stages[0][1]}</strong><p class="gs-photo-fact-text">${stages[0][2]}</p></div>
+          <div class="gs-photo-equation"><span>${fr?'Équation simplifiée':'المعادلة الإجمالية المبسطة'}</span><strong>6 CO₂ + 6 H₂O + lumière → C₆H₁₂O₆ + 6 O₂</strong></div>
+          <p class="gs-photo-note">${fr?'Photographie réelle d’une feuille ; les étapes ci-dessus expliquent le processus de photosynthèse.':'صورة حقيقية لورقة نباتية؛ وتوضح المراحل أعلاه عملية التركيب الضوئي.'}</p>
+        </section>`;
+    }
+
+    function renderLevelLearningPaths() {
+        const fr = lang() === 'fr';
+        const account = window.StudentAccount;
+        const academic = account && account.isLoggedIn && account.isLoggedIn() &&
+            typeof account.getProfile === 'function' ? account.getProfile() : null;
+        const level = String(academic && academic.study_level || '').toUpperCase();
+        const track = String(academic && academic.study_track || '').toUpperCase();
+        const trackNames = fr ? {
+            TCS:'Tronc commun scientifique', TCL:'Tronc commun lettres',
+            '1BACSE':'Sciences expérimentales', '1BACSM':'Sciences mathématiques', '1BACL':'Lettres',
+            '2BACSVT':'Sciences de la vie et de la Terre', '2BACSP':'Sciences physiques', '2BACSM':'Sciences mathématiques'
+        } : {
+            TCS:'الجذع المشترك العلمي', TCL:'الجذع المشترك الأدبي',
+            '1BACSE':'العلوم التجريبية', '1BACSM':'العلوم الرياضية', '1BACL':'الآداب',
+            '2BACSVT':'علوم الحياة والأرض', '2BACSP':'العلوم الفيزيائية', '2BACSM':'العلوم الرياضية'
+        };
+        const trackLabel = trackNames[track] || track;
+        const current = level.startsWith('2BAC') ? '2BAC' : level.startsWith('1BAC') ? '1BAC' : level === 'TC' ? 'TC' : '';
+        const paths = fr ? [
+            {id:'TC',title:'Tronc commun',desc:'Découvrir la cellule végétale, les observations microscopiques et la photosynthèse.',steps:[['gs-cell-lab-title','Cellule végétale'],['gs-microscope-title','Observer au microscope'],['gs-photo-lab-title','Photosynthèse']]},
+            {id:'1BAC',title:'1ère année Bac',desc:'Relier les cellules, les échanges et les grandes fonctions des systèmes du corps.',steps:[['gs-anatomy-title','Atlas du corps humain'],['gs-microscope-title','Préparations microscopiques'],['gs-svt-revision-title','Défi de révision']]},
+            {id:'2BAC',title:'2ème année Bac',desc:'Approfondir les facteurs de la photosynthèse et consolider les notions scientifiques.',steps:[['gs-experiment-title','Expérience virtuelle'],['gs-svt-revision-title','Défi cellule et photosynthèse'],['gs-svt-glossary-title','Glossaire scientifique']]}
+        ] : [
+            {id:'TC',title:'الجذع المشترك',desc:'اكتشاف الخلية النباتية والملاحظة المجهرية وعملية التركيب الضوئي.',steps:[['gs-cell-lab-title','استكشاف الخلية النباتية'],['gs-microscope-title','الملاحظة بالمجهر'],['gs-photo-lab-title','مراحل التركيب الضوئي']]},
+            {id:'1BAC',title:'الأولى بكالوريا',desc:'الربط بين الخلايا والتبادلات والوظائف الكبرى لأجهزة جسم الإنسان.',steps:[['gs-anatomy-title','أطلس جسم الإنسان'],['gs-microscope-title','التحضيرات المجهرية'],['gs-svt-revision-title','تحدي المراجعة']]},
+            {id:'2BAC',title:'الثانية بكالوريا',desc:'تعميق فهم عوامل التركيب الضوئي وترسيخ المفاهيم العلمية الأساسية.',steps:[['gs-experiment-title','التجربة الافتراضية'],['gs-svt-revision-title','تحدي الخلية والتركيب الضوئي'],['gs-svt-glossary-title','المعجم العلمي']]}
+        ];
+        const visiblePaths = current ? paths.filter(path => path.id === current) : paths;
+        return `<section class="gs-level-paths" aria-labelledby="gs-level-paths-title">
+          <div class="gs-level-paths-heading"><div><span class="gs-eyebrow">LEARNING PATH · PARCOURS SVT</span>
+            <h3 id="gs-level-paths-title">${fr?'Votre parcours de découverte':'مسارات الاستكشاف حسب المستوى'}</h3>
+            <p>${current ? (fr?'Parcours affiché selon le niveau de votre profil.':'يعرض هذا المسار وفق المستوى المسجل في ملفك الدراسي.') : (fr?'Choisissez un niveau pour accéder directement aux activités de découverte.':'اختر مستواك للوصول مباشرة إلى أنشطة الاستكشاف المناسبة.')}</p></div><span aria-hidden="true">🧭</span></div>
+          <div class="gs-level-paths-grid">${visiblePaths.map(path=>`<article class="gs-level-path-card ${current===path.id?'is-current':''}" data-path-level="${path.id}">
+            <div class="gs-level-path-top"><span>${path.id}</span>${current===path.id?`<small>${trackLabel?escapeHtml(trackLabel):(fr?'Votre niveau':'مستواك الدراسي')}</small>`:''}</div>
+            <h4>${path.title}</h4><p>${path.desc}</p>
+            <div class="gs-level-path-links">${path.steps.map(step=>`<button type="button" data-study-anchor="${step[0]}"><span>↗</span>${step[1]}</button>`).join('')}</div>
+          </article>`).join('')}</div>
+          <p class="gs-level-paths-note">${fr?'Ces parcours d’exploration sont complémentaires et ne remplacent pas le programme officiel. Pour les apprentissages évalués, consultez la bibliothèque et choisissez les cours, exercices et examens correspondant à votre niveau et à votre filière.':'هذه المسارات مخصصة للاستكشاف والتعلم المساعد، ولا تعوض البرنامج الرسمي. وللتعلم والتقويم، راجع مكتبة المحتوى واختر الدروس والتمارين والامتحانات المطابقة لمستواك ومسلكك الدراسي.'} <a href="#cours">${fr?'Ouvrir la bibliothèque de cours':'فتح مكتبة الدروس'} ↗</a></p>
+        </section>`;
+    }
+
+    function renderHumanSystemsAtlas() {
+        const fr = lang() === 'fr';
+        const data = fr ? {
+          digestive:['Système digestif','Transforme les aliments en nutriments absorbables.','Bouche → œsophage → estomac → intestin grêle → gros intestin.','Les nutriments traversent la paroi de l’intestin grêle et rejoignent le sang.'],
+          respiratory:['Système respiratoire','Assure les échanges gazeux entre l’air et le sang.','Fosses nasales → trachée → bronches → bronchioles → alvéoles.','Au niveau des alvéoles, le dioxygène diffuse vers le sang et le CO₂ en sort.'],
+          circulatory:['Système circulatoire','Transporte les gaz, nutriments et autres substances dans l’organisme.','Cœur + artères + capillaires + veines.','Le cœur propulse le sang dans deux circuits complémentaires : pulmonaire et général.'],
+          nervous:['Système nerveux','Reçoit, traite et transmet les messages nerveux.','Encéphale + moelle épinière + nerfs.','Les organes sensoriels détectent les stimuli ; les centres nerveux élaborent des réponses.']
+        } : {
+          digestive:['الجهاز الهضمي','يحول الأغذية إلى مغذيات قابلة للامتصاص.','الفم ← المريء ← المعدة ← الأمعاء الدقيقة ← الأمعاء الغليظة.','تعبر المغذيات جدار الأمعاء الدقيقة لتصل إلى الدم.'],
+          respiratory:['الجهاز التنفسي','يضمن التبادلات الغازية بين الهواء والدم.','التجاويف الأنفية ← القصبة الهوائية ← الشعب ← القصيبات ← الأسناخ الرئوية.','على مستوى الأسناخ ينتشر الأكسجين نحو الدم ويغادره ثاني أكسيد الكربون.'],
+          circulatory:['الجهاز الدوري','ينقل الغازات والمغذيات ومواد أخرى داخل الجسم.','القلب + الشرايين + الشعيرات الدموية + الأوردة.','يدفع القلب الدم عبر دورتين متكاملتين: الدورة الرئوية والدورة العامة.'],
+          nervous:['الجهاز العصبي','يستقبل الرسائل العصبية ويعالجها وينقلها.','الدماغ + النخاع الشوكي + الأعصاب.','تلتقط الأعضاء الحسية المنبهات، وتعالج المراكز العصبية المعلومات وتعد الاستجابات.']
+        };
+        const names = fr ? ['Digestif','Respiratoire','Circulatoire','Nerveux','Urinaire','Squelettique'] : ['الهضمي','التنفسي','الدوري','العصبي','البولي','الهيكلي'];
+        const icons = ['🥗','🫁','❤️','🧠','🫘','🦴'];
+        const keys = ['digestive','respiratory','circulatory','nervous','urinary','skeletal'];
+        const initial = data.digestive;
+        const photoTopics = fr ? [
+          ['digestive','Système digestif','Organes digestifs humains · photographie anatomique','human digestive system anatomy specimen','🥗'],
+          ['respiratory','Système respiratoire','Poumons et voies respiratoires · photographie anatomique','human lungs respiratory system anatomy specimen','🫁'],
+          ['circulatory','Système circulatoire','Cœur et vaisseaux sanguins · photographie anatomique','human heart cardiovascular anatomy specimen','❤️'],
+          ['nervous','Système nerveux','Encéphale et moelle épinière · photographie anatomique','human brain spinal cord anatomy specimen','🧠'],
+          ['urinary','Système urinaire','Reins et voies urinaires · photographie anatomique','human kidneys urinary system anatomy specimen','🫘'],
+          ['skeletal','Système squelettique','Os et articulations · photographie anatomique','human skeleton bones anatomy specimen','🦴']
+        ] : [
+          ['digestive','الجهاز الهضمي','أعضاء الجهاز الهضمي البشري · صورة تشريحية حقيقية','human digestive system anatomy specimen','🥗'],
+          ['respiratory','الجهاز التنفسي','الرئتان والمسالك التنفسية · صورة تشريحية حقيقية','human lungs respiratory system anatomy specimen','🫁'],
+          ['circulatory','الجهاز الدوري','القلب والأوعية الدموية · صورة تشريحية حقيقية','human heart cardiovascular anatomy specimen','❤️'],
+          ['nervous','الجهاز العصبي','الدماغ والنخاع الشوكي · صورة تشريحية حقيقية','human brain spinal cord anatomy specimen','🧠'],
+          ['urinary','الجهاز البولي','الكليتان والمسالك البولية · صورة تشريحية حقيقية','human kidneys urinary system anatomy specimen','🫘'],
+          ['skeletal','الجهاز الهيكلي','العظام والمفاصل · صورة تشريحية حقيقية','human skeleton bones anatomy specimen','🦴']
+        ];
+        return `<section class="gs-anatomy-atlas" aria-labelledby="gs-anatomy-title">
+          <div class="gs-anatomy-heading"><div><span class="gs-eyebrow">GO SVT MAROC · SCIENCE ATLAS</span>
+            <h3 id="gs-anatomy-title">${fr?'Atlas interactif du corps humain':'الأطلس التفاعلي لجسم الإنسان'}</h3>
+            <p>${fr?'Choisissez un système : explorez des photographies anatomiques réelles, avec leurs sources et licences.':'اختر جهازاً لاستكشاف صور تشريحية حقيقية موثقة المصدر والترخيص.'}</p></div><span class="gs-anatomy-mark" aria-hidden="true">📷</span></div>
+          <div class="gs-anatomy-photo-gallery" aria-label="${fr?'Photographies anatomiques réelles':'صور تشريحية حقيقية'}">
+            ${photoTopics.map((topic,i)=>`<a class="gs-anatomy-photo-card ${i===0?'is-active':''}" data-anatomy-photo="${topic[0]}" data-science-search="${topic[3]}" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=${encodeURIComponent(topic[3])}" target="_blank" rel="noopener noreferrer">
+              <span class="gs-science-media-photo"><span>${topic[4]}</span><small>${fr?'Chargement de la photo…':'جارٍ تحميل الصورة الحقيقية…'}</small></span>
+              <span class="gs-anatomy-photo-copy"><strong>${topic[1]}</strong><small>${topic[2]}</small><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span>
+            </a>`).join('')}
+          </div>
+          <div class="gs-anatomy-tabs" role="group" aria-label="${fr?'Systèmes du corps':'أجهزة الجسم'}">
+            ${keys.map((key,i)=>`<button type="button" class="gs-anatomy-tab ${i===0?'is-active':''}" data-anatomy-system="${key}" aria-pressed="${i===0?'true':'false'}"><span>${icons[i]}</span><b>${names[i]}</b></button>`).join('')}
+          </div>
+          <div class="gs-anatomy-detail" aria-live="polite">
+            <h4 class="gs-anatomy-name">${initial[0]}</h4><p class="gs-anatomy-function">${initial[1]}</p>
+            <div class="gs-anatomy-info"><span>🔎 ${fr?'Principaux organes':'أهم المكونات'}</span><p class="gs-anatomy-organs">${initial[2]}</p></div>
+            <div class="gs-anatomy-info"><span>💡 ${fr?'À retenir':'معلومة أساسية'}</span><p class="gs-anatomy-fact">${initial[3]}</p></div>
+          </div>
+          <p class="gs-anatomy-note">${fr?'Photographies pédagogiques, non destinées au diagnostic médical.':'صور تعليمية حقيقية، وليست مرجعاً للتشخيص الطبي.'}</p>
+        
+          <section class="gs-atlas-quiz" aria-labelledby="gs-atlas-quiz-title">
+            <div class="gs-atlas-quiz-heading"><div><span class="gs-eyebrow">QUICK CHECK · AUTOÉVALUATION</span>
+              <h4 id="gs-atlas-quiz-title">${fr?'Testez vos connaissances':'اختبر معلوماتك'}</h4>
+              <p>${fr?'Six questions courtes pour vérifier votre compréhension.':'ستة أسئلة قصيرة للتحقق من فهمك.'}</p></div><span aria-hidden="true">🎯</span></div>
+            <div class="gs-atlas-quiz-content" aria-live="polite"></div>
+          </section>
+</section>`;
+    }
+
+    function renderCellPhotosynthesisQuiz() {
+        const fr=lang()==='fr';
+        return `<section class="gs-svt-revision" aria-labelledby="gs-svt-revision-title">
+          <div class="gs-svt-revision-heading"><div><span class="gs-eyebrow">GO SVT MAROC · SMART REVISION</span>
+            <h3 id="gs-svt-revision-title">${fr?'Défi : cellule et photosynthèse':'تحدي الخلية والتركيب الضوئي'}</h3>
+            <p>${fr?'Cinq questions pour consolider les notions essentielles.':'خمسة أسئلة لترسيخ المفاهيم الأساسية.'}</p></div><span aria-hidden="true">🧠</span></div>
+          <div class="gs-svt-revision-content" aria-live="polite"></div>
+        </section>`;
+    }
+
+    function renderPhotosynthesisExperiment() {
+        const fr = lang() === 'fr';
+        return `<section class="gs-photosynthesis-experiment" aria-labelledby="gs-experiment-title">
+          <div class="gs-experiment-heading"><div><span class="gs-eyebrow">GO SVT MAROC · VIRTUAL EXPERIMENT</span>
+            <h3 id="gs-experiment-title">${fr?'Expérience virtuelle : facteurs de la photosynthèse':'تجربة افتراضية: عوامل التركيب الضوئي'}</h3>
+            <p>${fr?'Modifiez les conditions et observez quel facteur limite la vitesse relative de photosynthèse.':'غيّر الظروف ولاحظ العامل الذي يحد من الوتيرة النسبية للتركيب الضوئي.'}</p></div><span aria-hidden="true">🧪</span></div>
+          <div class="gs-experiment-grid">
+            <div class="gs-experiment-controls">
+              <label class="gs-experiment-control"><span><b>${fr?'Intensité lumineuse':'شدة الإضاءة'}</b><output data-experiment-value="light">70%</output></span><input type="range" min="0" max="100" step="5" value="70" data-experiment-input="light"><small>${fr?'Énergie lumineuse disponible':'الطاقة الضوئية المتاحة'}</small></label>
+              <label class="gs-experiment-control"><span><b>${fr?'CO₂ disponible':'تركيز CO₂ المتاح'}</b><output data-experiment-value="co2">65%</output></span><input type="range" min="0" max="100" step="5" value="65" data-experiment-input="co2"><small>${fr?'Disponibilité du dioxyde de carbone':'مدى توفر ثاني أكسيد الكربون'}</small></label>
+              <label class="gs-experiment-control"><span><b>${fr?'Température':'درجة الحرارة'}</b><output data-experiment-value="temperature">25°C</output></span><input type="range" min="5" max="45" step="1" value="25" data-experiment-input="temperature"><small>${fr?'Température du milieu':'درجة حرارة الوسط'}</small></label>
+              <button type="button" class="gs-experiment-reset">${fr?'Réinitialiser les conditions':'إعادة ضبط الظروف'}</button>
+            </div>
+            <div class="gs-experiment-result" aria-live="polite">
+              <div class="gs-experiment-result-top"><span>${fr?'Vitesse relative simulée':'الوتيرة النسبية المحاكاة'}</span><strong data-experiment-rate>65%</strong></div>
+              <div class="gs-experiment-meter"><span data-experiment-meter style="width:65%"></span></div>
+              <div class="gs-experiment-gauges"><div><span>${fr?'Lumière':'الضوء'}</span><b data-experiment-gauge="light">70%</b></div><div><span>CO₂</span><b data-experiment-gauge="co2">65%</b></div><div><span>${fr?'Capacité thermique':'ملاءمة الحرارة'}</span><b data-experiment-gauge="temperature">100%</b></div></div>
+              <div class="gs-experiment-limiter"><strong>${fr?'Facteur limitant':'العامل المحدِّد'}</strong><p data-experiment-limiter>${fr?'CO₂ disponible':'توفر CO₂'}</p></div>
+              <p class="gs-experiment-explain" data-experiment-explain>${fr?'Dans ce modèle, le CO₂ est le facteur le moins disponible et limite la vitesse relative.':'في هذا النموذج، يعد توفر CO₂ العامل الأقل، ولذلك يحد من الوتيرة النسبية.'}</p>
+            </div>
+          </div>
+          <p class="gs-experiment-note">${fr?'Modèle pédagogique simplifié : les valeurs sont relatives et illustratives, pas des mesures expérimentales. Les autres facteurs sont supposés constants.':'نموذج تعليمي مبسط: القيم نسبية وتوضيحية وليست قياسات تجريبية. نفترض ثبات العوامل الأخرى.'}</p>
+        </section>`;
+    }
+
+    function renderMicroscopeLab() {
+        const fr = lang() === 'fr';
+        const slides = fr ? [
+            {id:'onion',name:'Épiderme d’oignon',kind:'Cellules végétales',detail:'Observez des cellules jointives, de forme polygonale, limitées par une paroi cellulaire. La préparation peut être colorée pour mieux distinguer les structures.',observe:'Paroi cellulaire · organisation en mosaïque'},
+            {id:'stomata',name:'Stomates foliaires',kind:'Épiderme de feuille',detail:'Deux cellules de garde entourent un ostiole. Cette ouverture participe aux échanges gazeux et à la transpiration de la plante.',observe:'Cellules de garde · ostiole · échanges gazeux'},
+            {id:'blood',name:'Frottis sanguin',kind:'Cellules sanguines',detail:'Un frottis permet de distinguer de nombreux globules rouges et, plus rarement, des globules blancs. Les plaquettes sont de petits fragments cellulaires.',observe:'Globules rouges · globules blancs · plaquettes'},
+            {id:'leaf',name:'Cellules chlorophylliennes',kind:'Tissu végétal',detail:'Les cellules chlorophylliennes contiennent des chloroplastes. Ceux-ci captent l’énergie lumineuse utilisée lors de la photosynthèse.',observe:'Cellules végétales · chloroplastes · parois'}
+        ] : [
+            {id:'onion',name:'بشرة البصل',kind:'خلايا نباتية',detail:'لاحظ خلايا متراصة ذات أشكال متعددة الأضلاع، تحدها جدران خلوية واضحة. يمكن تلوين التحضير لتسهيل رؤية بعض البنيات.',observe:'الجدار الخلوي · تنظيم الخلايا كفسيفساء'},
+            {id:'stomata',name:'ثغور الورقة',kind:'بشرة ورقية',detail:'تحيط خليتان حارستان بفتحة ثغرية. تساهم هذه الفتحة في التبادلات الغازية وفي ظاهرة النتح لدى النبات.',observe:'الخلايا الحارسة · الفتحة الثغرية · التبادلات الغازية'},
+            {id:'blood',name:'لطاخة دموية',kind:'خلايا الدم',detail:'تسمح اللطاخة بتمييز عدد كبير من الكريات الحمراء، وعدد أقل من الكريات البيضاء. كما تظهر الصفائح الدموية على شكل أجزاء خلوية صغيرة.',observe:'كريات حمراء · كريات بيضاء · صفائح دموية'},
+            {id:'leaf',name:'خلايا يخضورية',kind:'نسيج نباتي',detail:'تحتوي الخلايا اليخضورية على بلاستيدات خضراء تلتقط الطاقة الضوئية المستعملة في عملية التركيب الضوئي.',observe:'خلايا نباتية · بلاستيدات خضراء · جدران خلوية'}
+        ];
+        const first = slides[0];
+        return `<section class="gs-microscope-lab" data-active-slide="onion" aria-labelledby="gs-microscope-title">
+          <div class="gs-micro-heading"><div><span class="gs-eyebrow">GO SVT MAROC · VIRTUAL MICROSCOPE</span>
+            <h3 id="gs-microscope-title">${fr?'Laboratoire du microscope':'مختبر المجهر الافتراضي'}</h3>
+            <p>${fr?'Choisissez une préparation : la microphotographie réelle est affichée en priorité, sans remplacer les spécimens par des dessins.':'اختر تحضيراً مجهرياً: ستظهر الصورة المجهرية الحقيقية أولاً، دون استبدال العينات برسوم تخطيطية.'}</p></div><span aria-hidden="true">🔬</span></div>
+          <div class="gs-micro-layout">
+            <div class="gs-micro-view"><div class="gs-micro-viewbar"><strong class="gs-micro-view-title">${first.name}</strong><div><button type="button" data-micro-zoom="out" aria-label="${fr?'Diminuer le zoom':'تصغير'}">−</button><span class="gs-micro-zoom-value">100%</span><button type="button" data-micro-zoom="in" aria-label="${fr?'Augmenter le zoom':'تكبير'}">+</button></div></div>
+              <div class="gs-micro-canvas"><div class="gs-micro-art"><div class="gs-micro-image-placeholder">${fr?'La microphotographie réelle se charge…':'جارٍ تحميل الصورة المجهرية الحقيقية…'}</div></div><span class="gs-micro-overlay">${fr?'Chargement de la microphotographie réelle…':'جارٍ تحميل الصورة المجهرية الحقيقية…'}</span></div>
+              <div class="gs-micro-viewfoot"><span class="gs-micro-kind">${first.kind}</span><button type="button" class="gs-micro-label-toggle" aria-pressed="false">${fr?'Afficher les repères':'إظهار البيانات'}</button></div>
+              <div class="gs-micro-real-sources" aria-label="${fr?'Microphotographies réelles':'صور مجهرية حقيقية'}">
+                <a class="gs-micro-source-card" data-micro-source="onion" data-science-search="onion epidermis cells light microscopy" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=onion%20epidermis%20cells%20light%20microscopy" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🧅</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
+                <a class="gs-micro-source-card" data-micro-source="stomata" data-science-search="leaf stomata light microscope" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=leaf%20stomata%20light%20microscope" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🍃</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
+                <a class="gs-micro-source-card" data-micro-source="blood" data-science-search="human blood smear microscope red white blood cells" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=human%20blood%20smear%20microscope" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🩸</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
+                <a class="gs-micro-source-card" data-micro-source="leaf" data-science-search="leaf mesophyll chloroplast microscope" href="https://commons.wikimedia.org/wiki/Special:MediaSearch?type=image&search=leaf%20mesophyll%20chloroplast%20microscope" target="_blank" rel="noopener noreferrer"><span class="gs-science-media-photo"><span>🌿</span><small>${fr?'Chargement…':'جارٍ التحميل…'}</small></span><span><strong>${fr?'Microphotographie réelle':'صورة مجهرية حقيقية'}</strong><small class="gs-science-media-credit">${fr?'Source et licence en cours de chargement':'جارٍ تحميل المصدر والترخيص'}</small></span></a>
+              </div>
+            </div>
+            <div class="gs-micro-side"><h4>${fr?'Préparations':'التحضيرات'}</h4>
+              <div class="gs-micro-slides">${slides.map((slide,i)=>`<button type="button" class="gs-micro-slide ${i===0?'is-active':''}" data-micro-slide="${slide.id}" aria-pressed="${i===0?'true':'false'}"><span>0${i+1}</span><b>${slide.name}</b><small>${slide.kind}</small></button>`).join('')}</div>
+              <div class="gs-micro-observation"><strong>${fr?'À observer':'ماذا تلاحظ؟'}</strong><p class="gs-micro-observe-text">${first.observe}</p><p class="gs-micro-detail-text">${first.detail}</p></div>
+            </div>
+          </div>
+          <p class="gs-micro-disclaimer">${fr?'Les microphotographies réelles sont prioritaires. Le schéma pédagogique reste disponible si une image ne peut pas être chargée ; les crédits et licences sont affichés sous chaque source.':'تعرض الصور المجهرية الحقيقية بشكل أساسي. ويظل الرسم التوضيحي متاحاً إذا تعذر تحميل صورة؛ كما تظهر بيانات المصدر والترخيص أسفل كل صورة.'}</p>
+        </section>`;
+    }
+
+    function renderScientificMediaLibrary() {
+        const fr=lang()==='fr';
+        const topics=fr?[
+          ['Microscopie végétale','Cellules végétales, chloroplastes et tissus observés au microscope','plant cell microscopy chloroplast'],
+          ['Stomates et feuilles','Photographies et micrographies des stomates et de l’épiderme foliaire','leaf stomata scanning electron microscopy'],
+          ['Sang et cellules','Globules rouges, globules blancs et frottis sanguins','human blood cells microscopy'],
+          ['Cœur et circulation','Photographies anatomiques et ressources visuelles sur le cœur','human heart anatomy specimen'],
+          ['Poumons et alvéoles','Images histologiques et micrographies des alvéoles pulmonaires','lung alveoli histology microscopy'],
+          ['Fossiles et biodiversité','Fossiles, organismes et traces de l’histoire de la vie','fossils biodiversity paleontology']
+        ]:[
+          ['مجهر الخلية النباتية','صور مجهرية للخلايا النباتية والبلاستيدات والأنسجة','plant cell microscopy chloroplast'],
+          ['الثغور والأوراق','صور ومجاهر إلكترونية للثغور وبشرة الورقة','leaf stomata scanning electron microscopy'],
+          ['الدم والخلايا','صور كريات الدم الحمراء والبيضاء واللطاخات الدموية','human blood cells microscopy'],
+          ['القلب والدورة الدموية','صور تشريحية وموارد بصرية حول القلب','human heart anatomy specimen'],
+          ['الرئتان والأسناخ','صور نسيجية ومجهرية للأسناخ الرئوية','lung alveoli histology microscopy'],
+          ['المستحاثات والتنوع الحيوي','مستحاثات وكائنات وآثار تاريخ الحياة','fossils biodiversity paleontology']
+        ];
+        const icons=['🔬','🍃','🩸','❤️','🫁','🦴'];
+        return `<section class="gs-science-media" aria-labelledby="gs-science-media-title">
+          <div class="gs-science-media-heading"><div><span class="gs-eyebrow">OPEN SCIENCE · MEDIA COLLECTION</span>
+            <h3 id="gs-science-media-title">${fr?'Photographies scientifiques avec crédits':'صور علمية حقيقية مع توثيق مصادرها'}</h3>
+            <p>${fr?'Images chargées depuis Wikimedia Commons avec auteur, licence et lien vers la fiche originale.':'صور تُحمّل مباشرة من ويكيميديا كومنز مع إظهار صاحب الصورة وترخيصها ورابط الملف الأصلي.'}</p></div><span class="gs-science-media-mark" aria-hidden="true">📷</span></div>
+          <div class="gs-science-media-grid">${topics.map((topic,i)=>`<a class="gs-science-media-card" data-science-search="${escapeHtml(topic[2])}" href="#" aria-label="${escapeHtml(topic[0])}"><span class="gs-science-media-photo" aria-hidden="true"><span>${icons[i]}</span><small>${fr?'Chargement…':'جارٍ تحميل الصورة…'}</small></span><span class="gs-science-media-copy"><strong>${topic[0]}</strong><small>${topic[1]}</small><em>${fr?'Explorer la collection':'استكشاف المجموعة'} <span aria-hidden="true">↗</span></em><small class="gs-science-media-credit">${fr?'Source et licence affichées après chargement':'سيظهر المصدر والترخيص بعد التحميل'}</small></span></a>`).join('')}</div>
+          <section class="ri-gallery" aria-label="معرض الصور العلمية حسب الموضوع">
+             <h4>استكشف صوراً علمية إضافية</h4>
+             <div class="ri-gallery-grid">
+               <div data-real-images="genetics" data-real-images-sub="dna"></div>
+               <div data-real-images="ecology" data-real-images-sub="ecosystem"></div>
+               <div data-real-images="geology" data-real-images-sub="rock"></div>
+               <div data-real-images="cell" data-real-images-sub="plant"></div>
+               <div data-real-images="cell" data-real-images-sub="animal"></div>
+               <div data-real-images="cell" data-real-images-sub="mitosis"></div>
+               <div data-real-images="respiratory" data-real-images-sub="alveoli"></div>
+             </div>
+           </section>
+           <p class="gs-science-media-license">${fr?'Les métadonnées de licence proviennent de la fiche Wikimedia Commons de chaque fichier. Respectez les conditions indiquées avant toute réutilisation.':'تُستخرج بيانات الترخيص من صفحة كل ملف على ويكيميديا كومنز. يجب احترام شروط الترخيص قبل إعادة استخدام أي صورة.'}</p>
+        </section>`;
+    }
+
+    function setScienceDiagramFallback(card, fr, query) {
+        const photo = card.querySelector('.gs-science-media-photo');
+        const credit = card.querySelector('.gs-science-media-credit');
+        if (!photo) return;
+        const kind = /plant cell|chloroplast/i.test(query) ? 'cell' :
+            /stomata|leaf/i.test(query) ? 'leaf' :
+            /blood/i.test(query) ? 'blood' :
+            /heart/i.test(query) ? 'heart' :
+            /lung|alveoli/i.test(query) ? 'lung' : 'fossil';
+        const diagrams = {
+            cell: {title:fr?'Cellule végétale — schéma':'الخلية النباتية — رسم توضيحي', shapes:'<rect x="80" y="54" width="340" height="205" rx="42" fill="#e6f5d9" stroke="#47854a" stroke-width="9"/><rect x="98" y="72" width="304" height="169" rx="34" fill="#f5ffeb" stroke="#86bd75" stroke-width="4"/><ellipse cx="245" cy="155" rx="45" ry="37" fill="#b7a2e6" stroke="#6c50a0" stroke-width="4"/><circle cx="253" cy="154" r="12" fill="#68469b"/>'+Array.from({length:7},(_,n)=>'<ellipse cx="'+(135+n*38)+'" cy="'+(95+(n%2)*120)+'" rx="16" ry="8" fill="#6ab66a" stroke="#327e40" stroke-width="3"/>').join('')},
+            leaf: {title:fr?'Stomate et cellules de garde':'الثغر والخلايا الحارسة', shapes:'<path d="M120 170 Q200 40 350 115 Q320 255 145 235Z" fill="#b7e4a3" stroke="#3b8d4e" stroke-width="6"/><path d="M150 215Q235 170 330 120" fill="none" stroke="#57975a" stroke-width="5"/><ellipse cx="235" cy="173" rx="40" ry="22" fill="#f7fff0" stroke="#22743a" stroke-width="6"/><ellipse cx="198" cy="173" rx="28" ry="38" fill="#4ca66b"/><ellipse cx="272" cy="173" rx="28" ry="38" fill="#4ca66b"/>'},
+            blood:{title:fr?'Cellules sanguines':'خلايا الدم',shapes:Array.from({length:9},(_,n)=>'<ellipse cx="'+(115+(n%3)*120)+'" cy="'+(90+Math.floor(n/3)*80)+'" rx="37" ry="24" fill="#e85e67" stroke="#b93a43" stroke-width="3"/><ellipse cx="'+(115+(n%3)*120)+'" cy="'+(90+Math.floor(n/3)*80)+'" rx="18" ry="9" fill="#c94250"/>').join('')+'<circle cx="350" cy="210" r="28" fill="#8c70c4" stroke="#634694" stroke-width="4"/>'},
+            heart:{title:fr?'Cœur — circulation':'القلب — الدورة الدموية',shapes:'<path d="M250 215 C80 120 160 60 220 105 C265 60 345 90 330 145 C320 180 285 205 250 235Z" fill="#e55b63" stroke="#9e3340" stroke-width="5"/><path d="M230 110 L230 65 M285 115 L310 55" stroke="#4c82c5" stroke-width="18" stroke-linecap="round"/><path d="M160 160 Q95 210 120 250 M325 150 Q400 210 380 250" fill="none" stroke="#4b91cf" stroke-width="12"/>'},
+            lung:{title:fr?'Alvéoles pulmonaires':'الأسناخ الرئوية',shapes:'<path d="M245 70 L245 150 M245 110 L190 140 M245 110 L300 140" stroke="#d45d82" stroke-width="18" stroke-linecap="round"/><path d="M190 140 Q100 80 105 215 Q120 280 215 230Z M300 140 Q390 80 395 215 Q380 280 285 230Z" fill="#f7b4c9" stroke="#c96388" stroke-width="5"/>'+Array.from({length:12},(_,n)=>'<circle cx="'+(130+(n%4)*65)+'" cy="'+(155+Math.floor(n/4)*35)+'" r="18" fill="#fff0f5" stroke="#ca6d90" stroke-width="3"/>').join('')},
+            fossil:{title:fr?'Fossiles et biodiversité':'المستحاثات والتنوع الحيوي',shapes:'<path d="M80 210 Q160 150 240 210 T420 210" fill="none" stroke="#b88754" stroke-width="24"/><path d="M100 100 Q170 80 250 115 T420 100" fill="none" stroke="#d9a66f" stroke-width="24"/><path d="M180 145 Q200 95 245 110 Q290 125 270 170 Q240 195 210 170Z" fill="#f4e1bb" stroke="#8f7047" stroke-width="6"/><path d="M220 125 Q240 145 220 160 Q200 170 205 145 Q215 135 220 125Z" fill="none" stroke="#8f7047" stroke-width="5"/>'}
+        };
+        const d=diagrams[kind];
+        const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 300"><rect width="500" height="300" rx="22" fill="#f5fbf6"/>'+d.shapes+'<text x="250" y="280" font-size="19" font-family="Arial,sans-serif" font-weight="bold" fill="#245c37" text-anchor="middle">'+d.title+'</text></svg>';
+        const img=document.createElement('img'); img.alt=d.title; img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); img.style.cssText='width:100%;height:100%;object-fit:contain'; photo.replaceChildren(img);
+        card.dataset.previewUnavailable='false'; card.dataset.previewFallback='diagram'; card.dataset.realImageUrl='';
+        card.href='#';card.removeAttribute('target');
+        if(credit)credit.textContent=fr?'Schéma pédagogique (illustration, non photographie)':'رسم تعليمي توضيحي (ليس صورة حقيقية)';
+    }
+
+    // Reuse the scientific-media catalogue across dashboard renders. Re-fetching
+    // this JSON on every tab switch or progress update adds avoidable network work.
+    let scienceMediaCataloguePromise = null;
+    async function getScienceMediaCatalogue() {
+        if (!scienceMediaCataloguePromise) {
+            scienceMediaCataloguePromise = fetch(
+                new URL('science-media.json', document.baseURI).href,
+                { cache: 'default', headers: { Accept: 'application/json' } }
+            ).then(async function(response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const catalogue = await response.json();
+                return catalogue && catalogue.items ? catalogue.items : {};
+            }).catch(function(error) {
+                scienceMediaCataloguePromise = null; // Allow a later retry after a network failure.
+                console.warn('[GO SVT science catalogue]', error);
+                return {};
+            });
+        }
+        return scienceMediaCataloguePromise;
+    }
+
+    async function loadScientificMediaImages(root) {
+        const selector = '.gs-science-media-card[data-science-search], .gs-micro-source-card[data-science-search], .gs-anatomy-photo-card[data-science-search], .gs-real-science-photo[data-science-search]';
+        const cards = Array.from(root.querySelectorAll(selector)).filter(card => !card.closest('details:not([open])'));
+        if (!cards.length) return;
+        const fr = lang() === 'fr';
+        // Display self-contained diagrams immediately, then upgrade to cached photos.
+        cards.forEach(card => setScienceDiagramFallback(card, fr, card.getAttribute('data-science-search') || ''));
+        const items = await getScienceMediaCatalogue();
+        await Promise.all(cards.map(async function(card) {
+            const query=card.getAttribute('data-science-search')||'';
+            const photo=card.querySelector('.gs-science-media-photo');
+            const credit=card.querySelector('.gs-science-media-credit');
+            if(!photo||!query)return;
+            const item=items[query];
+            const microscopyQuery=/microscopy|microscope|micrograph|histology/i.test(query);
+            // Microscopy cards only accept catalog entries explicitly screened by the build metadata filter.
+            if(!item||!item.image_url||!item.source_url||(microscopyQuery&&item.is_micrograph!==true)||(microscopyQuery&&item.metadata_screened!==true)||!item.author||!item.license||/licence non indiqu|license not indicated/i.test(item.license)){setScienceDiagramFallback(card,fr,query);return;}
+            try {
+                const imageUrl=new URL(item.image_url, document.baseURI), sourceUrl=new URL(item.source_url), originalUrl=item.original_url?new URL(item.original_url):imageUrl;
+                const localCached = imageUrl.origin === location.origin && imageUrl.pathname.includes('/science-media-cache/');
+                const commonsImage = imageUrl.hostname === 'upload.wikimedia.org';
+                if((!localCached&&!commonsImage)||(!localCached&&originalUrl.hostname!=='upload.wikimedia.org')||sourceUrl.hostname!=='commons.wikimedia.org')throw new Error('Wikimedia URL invalid');
+                const img=document.createElement('img');img.src=imageUrl.href;img.alt=item.title||'Scientific image';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
+                img.addEventListener('error',()=>setScienceDiagramFallback(card,fr,query),{once:true});
+                photo.replaceChildren(img);card.dataset.realImageUrl=imageUrl.href;card.dataset.originalFileUrl=originalUrl.href;card.dataset.sourcePageUrl=sourceUrl.href;
+                card.dataset.scienceTitle=item.title||'';card.dataset.scienceDescription=item.description||'';card.dataset.scienceDate=item.date_taken||'';card.dataset.scienceDimensions=(item.width&&item.height)?(item.width+' × '+item.height+' px'):'';card.dataset.scienceMime=item.mime||'';card.dataset.scienceCredit=item.credit||'';
+                card.href='#';card.removeAttribute('target');card.removeAttribute('rel');
+                if(credit)credit.textContent='© '+(item.author||'')+' · '+(item.license||'');
+            }catch(error){setScienceDiagramFallback(card,fr,query);}
+        }));
+    }
+
+function openScientificPhotoPreview(card){
+ const imageUrl=card.dataset.realImageUrl;
+ const sourceUrl=card.dataset.sourcePageUrl;
+ if(!imageUrl||!sourceUrl)return;
+ let dialog=document.getElementById('gs-science-photo-dialog');
+ if(!dialog){
+  dialog=document.createElement('dialog');dialog.id='gs-science-photo-dialog';
+  dialog.innerHTML='<div class="gs-photo-dialog-shell"><button type="button" class="gs-photo-dialog-close" aria-label="Close">×</button><img class="gs-photo-dialog-image" alt=""><div class="gs-photo-dialog-caption"></div><div class="gs-photo-dialog-links"><a class="gs-photo-dialog-source" target="_blank" rel="noopener noreferrer"></a><a class="gs-photo-dialog-original" target="_blank" rel="noopener noreferrer"></a></div></div>';
+  const style=document.createElement('style');
+  style.textContent='#gs-science-photo-dialog{width:min(94vw,1200px);max-width:94vw;max-height:92vh;padding:0;border:0;border-radius:18px;background:#fff;color:#183326;box-shadow:0 24px 80px #0007}#gs-science-photo-dialog::backdrop{background:#07170fdd;backdrop-filter:blur(4px)}#gs-science-photo-dialog .gs-photo-dialog-shell{position:relative;display:grid;gap:12px;padding:18px;justify-items:center}#gs-science-photo-dialog .gs-photo-dialog-image{display:block;max-width:100%;max-height:72vh;width:auto;height:auto;object-fit:contain}#gs-science-photo-dialog .gs-photo-dialog-caption{font-size:.85rem;line-height:1.7;text-align:start;color:#496353;max-width:900px;width:100%;overflow-wrap:anywhere}#gs-science-photo-dialog .gs-photo-dialog-title{font-weight:800;color:#183326;font-size:1rem;text-align:center;margin-bottom:4px}#gs-science-photo-dialog .gs-photo-dialog-links{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}#gs-science-photo-dialog .gs-photo-dialog-source,#gs-science-photo-dialog .gs-photo-dialog-original{display:inline-flex;padding:9px 14px;border-radius:999px;background:#eaf4ec;color:#17623a;font-weight:700;text-decoration:none}#gs-science-photo-dialog .gs-photo-dialog-close{position:absolute;z-index:1;inset-block-start:8px;inset-inline-end:8px;width:40px;height:40px;border:0;border-radius:50%;background:#173d2b;color:#fff;font-size:28px;cursor:pointer}';
+  document.head.appendChild(style);document.body.appendChild(dialog);
+  dialog.querySelector('.gs-photo-dialog-close').addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
+ }
+ const image=dialog.querySelector('.gs-photo-dialog-image');
+ image.src=imageUrl;image.alt=card.querySelector('img')?.alt||card.getAttribute('aria-label')||'Scientific photograph';
+ const caption=dialog.querySelector('.gs-photo-dialog-caption');
+ const facts=[card.dataset.scienceTitle,card.dataset.scienceDescription,(document.documentElement.lang==='fr'?'Auteur : ':'المؤلف: ')+(card.querySelector('.gs-science-media-credit,.lab-photo-credit')?.textContent||''),card.dataset.scienceDate?(document.documentElement.lang==='fr'?'Date de prise de vue : ':'تاريخ الالتقاط: ')+card.dataset.scienceDate:'',card.dataset.scienceDimensions?(document.documentElement.lang==='fr'?'Dimensions : ':'الأبعاد: ')+card.dataset.scienceDimensions:'',card.dataset.scienceMime?(document.documentElement.lang==='fr'?'Format : ':'الصيغة: ')+card.dataset.scienceMime:'',card.dataset.scienceCredit?(document.documentElement.lang==='fr'?'Crédit : ':'بيانات الإسناد: ')+card.dataset.scienceCredit:''].filter(Boolean);
+ caption.replaceChildren(...facts.map((value,index)=>{const line=document.createElement('div');line.textContent=value;if(index===0)line.className='gs-photo-dialog-title';return line;}));
+ const source=dialog.querySelector('.gs-photo-dialog-source');
+ source.href=sourceUrl;source.textContent=document.documentElement.lang==='fr'?'Voir la source et la licence sur Wikimedia Commons':'عرض المصدر والترخيص على ويكيميديا كومنز';
+ const original=dialog.querySelector('.gs-photo-dialog-original');
+ original.href=card.dataset.originalFileUrl||imageUrl;
+ original.textContent=document.documentElement.lang==='fr'?'Ouvrir le fichier original':'فتح ملف الصورة الأصلي';
+ if(!dialog.open)dialog.showModal();
+}
+
+    if (!document.documentElement.dataset.gsPhotoPreviewBound) {
+        document.addEventListener('click', function(event) {
+            const card = event.target.closest('.gs-science-media-card, .gs-micro-source-card, .gs-anatomy-photo-card, .gs-real-science-photo');
+            if (!card) return;
+            // Keep the card in-site even when its remote preview could not load.
+            // Always keep clicks inside the learner space. Only verified photos
+            // open the in-page modal; fallback diagrams never navigate.
+            event.preventDefault();
+            if (!card.dataset.realImageUrl || card.dataset.previewFallback === 'diagram') return;
+            openScientificPhotoPreview(card);
+        });
+        document.documentElement.dataset.gsPhotoPreviewBound = 'true';
+    }
+
+    function renderScienceMemoryCards() {
+        const fr=lang()==='fr';
+        return `<section class="gs-memory-deck" aria-labelledby="gs-memory-title">
+          <div class="gs-memory-heading"><div><span class="gs-eyebrow">SMART STUDY · FLASHCARDS</span>
+            <h3 id="gs-memory-title">${fr?'Cartes mémoire SVT':'بطاقات الذاكرة في علوم الحياة والأرض'}</h3>
+            <p>${fr?'Révisez les notions essentielles : réfléchissez, révélez, puis passez à la carte suivante.':'راجع المفاهيم الأساسية: فكر في الإجابة، اكشفها، ثم انتقل إلى البطاقة التالية.'}</p></div><span aria-hidden="true">🗂️</span></div>
+          <div class="gs-memory-card" aria-live="polite">
+            <div class="gs-memory-card-top"><span class="gs-memory-category"></span><span class="gs-memory-counter"></span></div>
+            <div class="gs-memory-art" aria-hidden="true"><span class="gs-memory-art-icon"></span></div>
+            <h4 class="gs-memory-question"></h4>
+            <div class="gs-memory-answer" hidden></div>
+            <div class="gs-memory-actions"><button type="button" class="gs-memory-reveal">${fr?'Révéler la réponse':'اكشف الإجابة'}</button><div><button type="button" class="gs-memory-prev" aria-label="${fr?'Carte précédente':'البطاقة السابقة'}">←</button><button type="button" class="gs-memory-next">${fr?'Suivante':'التالية'} →</button></div></div>
+            <div class="gs-memory-progress" role="progressbar" aria-label="${fr?'Progression des cartes':'تقدم البطاقات'}" aria-valuemin="0" aria-valuemax="8" aria-valuenow="1"><span></span></div>
+          </div>
+          <p class="gs-memory-tip">${fr?'Astuce : essayez de répondre avant de révéler le verso.':'نصيحة: حاول الإجابة من ذاكرتك قبل كشف الوجه الآخر للبطاقة.'}</p>
+        </section>`;
+    }
+
+    function renderSvtGlossary() {
+        const fr=lang()==='fr';
+        return `<section class="gs-svt-glossary" aria-labelledby="gs-svt-glossary-title">
+          <div class="gs-svt-glossary-heading"><div><span class="gs-eyebrow">SVT · MINI DICTIONNAIRE</span>
+            <h3 id="gs-svt-glossary-title">${fr?'Dictionnaire scientifique interactif':'المعجم العلمي التفاعلي'}</h3>
+            <p>${fr?'Recherchez rapidement les termes scientifiques et leurs définitions.':'ابحث بسرعة عن المصطلحات العلمية ومعانيها.'}</p></div><span aria-hidden="true">📚</span></div>
+          <label class="gs-svt-glossary-search"><span aria-hidden="true">⌕</span><input type="search" class="gs-svt-glossary-input" placeholder="${fr?'Rechercher un terme…':'ابحث عن مصطلح علمي…'}" autocomplete="off"><kbd>⌕</kbd></label>
+          <div class="gs-svt-glossary-meta" aria-live="polite"></div>
+          <div class="gs-svt-glossary-results"></div>
+        </section>`;
+    }
+
+    function renderDashboard(includeAccountBar = true) {
+        const stats = getDashboardStats();
+        const studentTaskCategoryMap = {"Accès rapide":"learning","استكشف الخلية":"biology","مختبر التركيب الضوئي":"biology","اختبر فهمك للخلية والتركيب الضوئي":"biology","أطلس أجهزة جسم الإنسان":"biology","مسارات التعلم حسب المستوى":"learning","المختبر المجهري":"biology","تجربة التركيب الضوئي":"biology","مكتبة الصور العلمية":"media","بطاقات الذاكرة العلمية":"learning","قاموس مصطلحات علوم الحياة والأرض":"learning","مساري الدراسي":"learning","تحدي اليوم":"learning","توصيات التعلم":"learning","ملخص نشاطك الدراسي":"tracking","Accès rapide":"learning"};
+        const taskGroup = (icon, titleAr, titleFr, content) => {
+            const title = lang() === 'fr' ? titleFr : titleAr;
+            const openHint = lang() === 'fr' ? 'Cliquer pour afficher' : 'اضغط لعرض المحتوى';
+            const taskKey = {"استكشف الخلية":"cell","مختبر التركيب الضوئي":"photosynthesis","اختبر فهمك للخلية والتركيب الضوئي":"quiz","أطلس أجهزة جسم الإنسان":"human","مسارات التعلم حسب المستوى":"paths","المختبر المجهري":"microscope","تجربة التركيب الضوئي":"photo-experiment","مكتبة الصور العلمية":"scientific-media","بطاقات الذاكرة العلمية":"memory","قاموس مصطلحات علوم الحياة والأرض":"glossary","مساري الدراسي":"personal-path","تحدي اليوم":"daily","توصيات التعلم":"recommendations","ملخص نشاطك الدراسي":"activity","Accès rapide":"quick-access"}[titleAr] || {"Accès rapide":"quick-access"}[titleFr] || '';
+            const taskCategory = studentTaskCategoryMap[titleAr] || studentTaskCategoryMap[titleFr || ''] || '';
+            return `<details class="gs-student-task" data-task-key="${taskKey}" data-task-category="${taskCategory}"><summary><span class="gs-student-task-icon" aria-hidden="true">${icon}</span><span class="gs-student-task-title">${title}</span><span class="gs-student-task-hint">${openHint}</span><span class="gs-student-task-chevron" aria-hidden="true">⌄</span></summary><div class="gs-student-task-body">${content}</div></details>`;
+        };
+        const profiles = getProfiles();
+        const currentProfile = getCurrentProfile();
+        
+        let profilesOptions = '';
+        Object.entries(profiles).forEach(([id, profile]) => {
+            const isActive = id === currentProfileId;
+            profilesOptions += `<option value="${escapeHtml(id)}" ${isActive ? 'selected' : ''}>${escapeHtml(profile.name)}</option>`;
+        });
+
+        const accountBar = includeAccountBar && window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
+        const academic = window.StudentAccount && window.StudentAccount.getProfile ? window.StudentAccount.getProfile() : null;
+        const academicNames = {
+            TCS: ['الجذع المشترك العلمي', 'Tronc commun scientifique'],
+            TCL: ['الجذع المشترك الأدبي', 'Tronc commun lettres'],
+            '1BACSE': ['الأولى باكالوريا - علوم تجريبية', '1ère Bac - Sciences expérimentales'],
+            '1BACSM': ['الأولى باكالوريا - علوم رياضية', '1ère Bac - Sciences mathématiques'],
+            '1BACL': ['الأولى باكالوريا - آداب', '1ère Bac - Lettres'],
+            '2BACSVT': ['الثانية باكالوريا - علوم الحياة والأرض', '2ème Bac - SVT'],
+            '2BACSP': ['الثانية باكالوريا - علوم فيزيائية', '2ème Bac - Sciences physiques'],
+            '2BACSM': ['الثانية باكالوريا - علوم رياضية', '2ème Bac - Sciences mathématiques']
+        };
+        const academicName = academic && academicNames[academic.study_track]
+            ? (lang() === 'ar' ? academicNames[academic.study_track][0] : academicNames[academic.study_track][1]) : '';
+        const academicBanner = academicName
+            ? `<div class="gs-student-level">🎓 <span>${lang() === 'ar' ? 'مستواك الدراسي:' : 'Votre niveau :'}</span> <strong>${escapeHtml(academicName)}</strong></div>` : '';
+        // Category hub: keep task panels organized and open each category on its own page.
+        const hub = `<section class="gs-student-category-hub" aria-labelledby="gs-student-category-title">
+            <div class="gs-student-category-heading">
+                <span class="gs-eyebrow">GO SVT MAROC · ESPACE ÉLÈVE</span>
+                <h3 id="gs-student-category-title">${lang() === 'ar' ? 'اكتشف مساحتي' : 'Explorez votre espace'}</h3>
+                <p>${lang() === 'ar' ? 'اختر تصنيفاً لعرض مهامه في صفحة مستقلة.' : 'Choisissez une catégorie pour afficher ses activités sur une page dédiée.'}</p>
+            </div>
+            <div class="gs-student-category-grid">
+                <a class="gs-student-category-card" href="student-task-categories.html?category=biology&lang=${lang()}">
+                    <span class="gs-student-category-icon" aria-hidden="true">🧬</span>
+                    <strong>${lang() === 'ar' ? 'مختبرات علوم الحياة' : 'Laboratoires de biologie'}</strong>
+                    <small>${lang() === 'ar' ? 'الخلية والتركيب الضوئي وجسم الإنسان والتجارب' : 'Cellule, photosynthèse, corps humain et expériences'}</small>
+                    <span class="gs-student-category-link">${lang() === 'ar' ? 'فتح التصنيف ←' : 'Ouvrir la catégorie ←'}</span>
+                </a>
+                <a class="gs-student-category-card" href="student-task-categories.html?category=learning&lang=${lang()}">
+                    <span class="gs-student-category-icon" aria-hidden="true">🧠</span>
+                    <strong>${lang() === 'ar' ? 'أدوات التعلم' : 'Outils d’apprentissage'}</strong>
+                    <small>${lang() === 'ar' ? 'المسارات والبطاقات والقاموس والتحديات' : 'Parcours, cartes mémoire, glossaire et défis'}</small>
+                    <span class="gs-student-category-link">${lang() === 'ar' ? 'فتح التصنيف ←' : 'Ouvrir la catégorie ←'}</span>
+                </a>
+                <a class="gs-student-category-card" href="student-task-categories.html?category=media&lang=${lang()}">
+                    <span class="gs-student-category-icon" aria-hidden="true">🖼️</span>
+                    <strong>${lang() === 'ar' ? 'المكتبة العلمية' : 'Médiathèque scientifique'}</strong>
+                    <small>${lang() === 'ar' ? 'الصور العلمية والموارد البصرية' : 'Images et ressources visuelles'}</small>
+                    <span class="gs-student-category-link">${lang() === 'ar' ? 'فتح التصنيف ←' : 'Ouvrir la catégorie ←'}</span>
+                </a>
+                <a class="gs-student-category-card" href="student-task-categories.html?category=tracking&lang=${lang()}">
+                    <span class="gs-student-category-icon" aria-hidden="true">📊</span>
+                    <strong>${lang() === 'ar' ? 'تتبعي وإنجازاتي' : 'Suivi et progrès'}</strong>
+                    <small>${lang() === 'ar' ? 'التقدم الدراسي والنتائج والنشاط' : 'Progression, résultats et activité'}</small>
+                    <span class="gs-student-category-link">${lang() === 'ar' ? 'فتح التصنيف ←' : 'Ouvrir la catégorie ←'}</span>
+                </a>
+            </div>
+        </section>`;
+        const html = `
+            ${accountBar ? `<div class="gs-account-topbar" aria-label="${lang() === 'ar' ? 'الحساب وتسجيل الخروج' : 'Compte et déconnexion'}">${accountBar}</div>` : ''}
+            <div class="dashboard-header">
+                ${!(window.StudentAccount && window.StudentAccount.isLoggedIn()) ? `<div class="profile-selector">
+                    <label>${t('currentProfile')}:</label>
+                    <select id="profile-select">${profilesOptions}</select>
+                    <button class="btn-create-profile" onclick="promptCreateProfile()">+ ${t('createProfile')}</button>
+                </div>` : ''}
+                <div class="data-actions">
+                    <button class="btn-export" onclick="handleExport()">${t('exportData')}</button>
+                    <button class="btn-import" onclick="handleImport()">${t('importData')}</button>
+                    <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImportFile(this)">
+                </div>
+            </div>
+            <section class="gs-student-welcome">
+                <div class="gs-welcome-copy"><span class="gs-eyebrow">GO SVT MAROC · ESPACE ÉLÈVE</span>
+                <h2>${lang() === 'ar' ? 'مرحباً ' + escapeHtml(currentProfile.name) + '، مستعد لاكتشاف جديد؟' : 'Bonjour ' + escapeHtml(currentProfile.name) + ', prêt à découvrir ?'}</h2>
+                <p>${lang() === 'ar' ? 'رحلتك في علوم الحياة والأرض تبدأ بخطوة صغيرة اليوم: افهم درساً، أنجز تمريناً، واكتشف مدى تقدمك.' : 'Un petit pas aujourd’hui : comprendre une leçon, faire un exercice et mesurer vos progrès.'}</p>
+                <div class="gs-welcome-tags"><span>🧬 ${lang() === 'ar' ? 'افهم' : 'Comprendre'}</span><span>🔬 ${lang() === 'ar' ? 'استكشف' : 'Explorer'}</span><span>🎯 ${lang() === 'ar' ? 'أتقن' : 'Maîtriser'}</span></div></div>
+                <a class="gs-primary-link" href="#cours">${lang() === 'ar' ? 'ابدأ التعلم الآن' : 'Commencer'} <span aria-hidden="true">←</span></a>
+            </section>
+            <nav class="gs-student-quick-actions" aria-label="${lang() === 'ar' ? 'وصول سريع إلى أقسام التعلم' : 'Accès rapide aux sections d’apprentissage'}">
+                <a href="#cours"><span aria-hidden="true">📖</span><strong>${lang() === 'ar' ? 'الدروس' : 'Cours'}</strong></a>
+                <a href="#exercices" aria-label="${lang() === 'ar' ? 'الانتقال إلى قسم التمارين' : 'Accéder aux exercices'}" title="${lang() === 'ar' ? 'التمارين' : 'Exercices'}"><span aria-hidden="true">🧩</span><strong>${lang() === 'ar' ? 'التمارين' : 'Exercices'}</strong></a>
+                <a href="#quiz" aria-label="${lang() === 'ar' ? 'الانتقال إلى الاختبارات التفاعلية' : 'Accéder aux quiz interactifs'}" title="${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}"><span aria-hidden="true">⚡</span><strong>${lang() === 'ar' ? 'اختبر نفسك' : 'Quiz'}</strong></a>
+                <a href="#examens" aria-label="${lang() === 'ar' ? 'الانتقال إلى قسم الامتحانات' : 'Accéder aux examens'}" title="${lang() === 'ar' ? 'الامتحانات' : 'Examens'}"><span aria-hidden="true">🏆</span><strong>${lang() === 'ar' ? 'الامتحانات' : 'Examens'}</strong></a>
+            </nav>
+            ${academicBanner}
+            ${hub}
+            ${taskGroup('🧫', 'استكشف الخلية', 'Explorer la cellule', renderPlantCellExplorer())}
+            ${taskGroup('🌿', 'مختبر التركيب الضوئي', 'Laboratoire de photosynthèse', renderPhotosynthesisLab())}
+            ${taskGroup('🧪', 'اختبر فهمك للخلية والتركيب الضوئي', 'Tester vos connaissances : cellule et photosynthèse', renderCellPhotosynthesisQuiz())}
+            ${taskGroup('🫀', 'أطلس أجهزة جسم الإنسان', 'Atlas des systèmes du corps humain', renderHumanSystemsAtlas())}
+            ${taskGroup('🧭', 'مسارات التعلم حسب المستوى', 'Parcours selon le niveau', renderLevelLearningPaths())}
+            ${taskGroup('🔬', 'المختبر المجهري', 'Laboratoire microscopique', renderMicroscopeLab())}
+            ${taskGroup('☀️', 'تجربة التركيب الضوئي', 'Expérience de photosynthèse', renderPhotosynthesisExperiment())}
+            ${taskGroup('🖼️', 'مكتبة الصور العلمية', 'Médiathèque scientifique', renderScientificMediaLibrary())}
+            ${taskGroup('🧠', 'بطاقات الذاكرة العلمية', 'Cartes mémoire scientifiques', renderScienceMemoryCards())}
+            ${taskGroup('📖', 'قاموس مصطلحات علوم الحياة والأرض', 'Glossaire des SVT', renderSvtGlossary())}
+            ${taskGroup('🌱', 'مساري الدراسي', 'Mon parcours d’apprentissage', `<div class="gs-learning-path">
+                <div class="gs-path-heading"><div><span class="gs-eyebrow">${lang() === 'ar' ? 'مسارك الدراسي' : 'VOTRE PARCOURS'}</span><h3>${lang() === 'ar' ? 'كل خطوة تقربك من الإتقان' : 'Chaque étape vous rapproche de la maîtrise'}</h3></div><span class="gs-path-mark">🌱</span></div>
+                <div class="gs-path-steps">
+                    <a href="#cours"><span class="gs-path-icon">📖</span><strong>${lang() === 'ar' ? 'أفهم الدرس' : 'Comprendre'}</strong><small>${lang() === 'ar' ? 'دروس وملخصات' : 'Cours et résumés'}</small></a>
+                    <a href="#exercices"><span class="gs-path-icon">🧩</span><strong>${lang() === 'ar' ? 'أطبق ما تعلمت' : 'Appliquer'}</strong><small>${lang() === 'ar' ? 'تمارين متدرجة' : 'Exercices progressifs'}</small></a>
+                    <a href="#quiz"><span class="gs-path-icon">⚡</span><strong>${lang() === 'ar' ? 'أختبر نفسي' : 'Me tester'}</strong><small>${lang() === 'ar' ? 'اختبارات تفاعلية' : 'Quiz interactifs'}</small></a>
+                    <a href="#examens"><span class="gs-path-icon">🏆</span><strong>${lang() === 'ar' ? 'أستعد للامتحان' : 'Me préparer'}</strong><small>${lang() === 'ar' ? 'فروض وامتحانات' : 'Devoirs et examens'}</small></a>
+                </div>
+            </div>`)}
+            ${taskGroup('📅', 'تحدي اليوم', 'Défi du jour', renderDailyChallenge())}
+            ${taskGroup('🎯', 'توصيات التعلم', 'Recommandations d’apprentissage', renderStudyRecommendations())}
+            ${taskGroup('⚡', t('quickAccess'), 'Accès rapide', `<div class="gs-quick-links">
+                <a href="#cours"><span>📚</span>${t('resources')}</a>
+                <a href="#exercices"><span>✏️</span>${t('exercises')}</a>
+                <a href="#examens"><span>📝</span>${t('exams')}</a>
+                <a href="#quiz"><span>❓</span>${t('interactiveQuiz')}</a>
+                <a href="#resumes"><span>📋</span>${t('summaries')}</a>
+            </div>`)}
+            ${taskGroup('📊', 'ملخص نشاطك الدراسي', 'Résumé de votre activité', `<h3 class="gs-section-title">${lang() === 'ar' ? 'ملخص نشاطك الدراسي' : 'Votre activité scolaire'}</h3>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-value">${stats.lessonsViewed}</div>
+                    <div class="stat-label">${t('lessonsViewed')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value">${stats.completedLessons}</div>
+                    <div class="stat-label">${t('completedLessons')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✏️</div>
+                    <div class="stat-value">${stats.exercisesDone}</div>
+                    <div class="stat-label">${t('exercisesDone')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value">${stats.testsTaken}</div>
+                    <div class="stat-label">${t('testsTaken')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value">${stats.averageScore}%</div>
+                    <div class="stat-label">${t('averageScore')}</div>
+                </div>
+                <div class="stat-card" title="${lang() === 'ar' ? 'النسبة = عدد الدروس المكتملة ÷ عدد الدروس التي شاهدتها × 100' : 'Pourcentage = leçons terminées ÷ leçons consultées × 100'}" aria-label="${lang() === 'ar' ? 'نسبة إتمام الدروس التي شاهدتها: ' + stats.globalProgress + ' بالمئة. تحسب بقسمة الدروس المكتملة على الدروس التي شاهدتها.' : 'Leçons consultées terminées : ' + stats.globalProgress + ' pour cent. Calculé en divisant les leçons terminées par les leçons consultées.'}">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value">${stats.globalProgress}%</div>
+                    <div class="stat-label">${t('globalProgress')}</div>
+                </div>
+            </div>
+            ${renderAchievements()}`)}
+        `;
+        return html;
+    }
+
+    // Profile management functions exposed globally
+    window.promptCreateProfile = function() {
+        const name = prompt(t('enterProfileName'));
+        if (name && name.trim()) {
+            const newId = createProfile(name.trim());
+            switchProfile(newId);
+            renderStudentSpace();
+            alert(t('profileCreated'));
+        }
+    };
+
+    window.handleExport = function() {
+        exportProfileData(currentProfileId);
+    };
+
+    window.handleImport = function() {
+        document.getElementById('import-file').click();
+    };
+
+    window.handleImportFile = function(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (importProfileData(e.target.result)) {
+                alert(t('Données importées avec succès'));
+                renderStudentSpace();
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    // Profile selector change handler
+    document.addEventListener('change', function(e) {
+        if (e.target.id === 'profile-select') {
+            switchProfile(e.target.value);
+            renderStudentSpace();
+        }
+    });
+
+    // ============================================
+    // 7. PEDAGOGICAL FOLLOW-UP (المتابعة التربوية)
+    // ============================================
+    function renderProgress() {
+        const profileData = getProfileData(currentProfileId);
+        const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
+        const lessons = Object.entries(profileData.progress.lessons || {}).filter(([id, data]) => isRecord(data));
+        const exercises = Object.values(profileData.progress.exercises || {}).filter(isRecord);
+        const completed = lessons.filter(([id, data]) => data.completed === true);
+        const pending = lessons.filter(([id, data]) => data.completed !== true);
+        const completionRate = lessons.length ? Math.round(completed.length / lessons.length * 100) : 0;
+        const isFr = lang() === 'fr';
+        const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+        let html = '<div class="progress-section">';
+        html += `<section class="gs-progress-overview" aria-label="${isFr ? 'Vue d’ensemble de votre progression' : 'نظرة عامة على تقدمك'}">
+            <div class="gs-progress-overview-head">
+                <div><span class="gs-eyebrow">${isFr ? 'VOTRE PARCOURS' : 'مسارك الدراسي'}</span>
+                <h3>${isFr ? 'Votre progression' : 'تقدمك الدراسي'}</h3>
+                <p>${isFr ? 'Un aperçu de votre activité enregistrée.' : 'ملخص لنشاطك الدراسي المسجل.'}</p></div>
+                <strong class="gs-progress-rate">${completionRate}%</strong>
+            </div>
+            <div class="gs-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${completionRate}" aria-label="${isFr ? 'Taux de leçons terminées' : 'نسبة الدروس المكتملة'}"><span style="width:${completionRate}%"></span></div>
+            <div class="gs-progress-metrics">
+                <div><strong>${completed.length}</strong><span>${isFr ? 'Leçons terminées' : 'دروس مكتملة'}</span></div>
+                <div><strong>${pending.length}</strong><span>${isFr ? 'À terminer' : 'دروس قيد الإنجاز'}</span></div>
+                <div><strong>${exercises.length}</strong><span>${isFr ? 'Exercices consultés' : 'تمارين تمت متابعتها'}</span></div>
+            </div>
+            <p class="gs-progress-footnote">${lessons.length ? (isFr ? 'Calculé à partir des leçons enregistrées dans votre espace.' : 'يُحتسب اعتماداً على الدروس المسجلة في مساحتك.') : (isFr ? 'Votre progression apparaîtra ici dès que vous commencerez à consulter des leçons.' : 'سيظهر تقدمك هنا بمجرد البدء في متابعة الدروس.')}</p>
+        </section>`;
+        
+        html += '<h3>✅ ' + t('completedLessons') + '</h3>';
+        html += '<div class="lesson-list">';
+        completed.forEach(([id, data]) => {
+            html += `
+                <div class="lesson-item completed">
+                    <span title="${esc(id)}">${esc(data.title || id)}</span>
+                    <span class="lesson-date">${Number(data.completedAt) > 0 && Number.isFinite(Number(data.completedAt)) ? new Date(Number(data.completedAt)).toLocaleDateString() : (isFr ? 'Terminée' : 'مكتمل')}</span>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        html += '<h3>⏳ ' + t('pendingLessons') + '</h3>';
+        html += '<div class="lesson-list">';
+        pending.forEach(([id, data]) => {
+            html += `
+                <div class="lesson-item pending">
+                    <span title="${esc(id)}">${esc(data.title || id)}</span>
+                    <button class="btn-complete" data-lesson="${esc(id)}">${t('markAsComplete')}</button>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        // Répartition des leçons consultées par niveau / filière / langue (affichage seulement)
+        const groups = {};
+        lessons.forEach(([id, data]) => {
+            const w = parseContentPath(data.path || id);
+            if (!w.level) return;
+            const langName = w.lang === 'arabe' ? 'العربية' : (w.lang === 'francais' ? 'Français' : w.lang);
+            const label = [w.level, w.track, langName].filter(Boolean).join(' · ');
+            groups[label] = (groups[label] || 0) + 1;
+        });
+        const labels = Object.keys(groups).sort();
+        if (labels.length) {
+            html += '<h3>🧭 ' + t('byTrack') + '</h3><div class="lesson-list">';
+            labels.forEach(label => {
+                html += `<div class="lesson-item"><span dir="auto">${esc(label)}</span><span class="lesson-date">${groups[label]}</span></div>`;
+            });
+            html += '</div>';
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    // ============================================
+    // 8. QUIZ HISTORY (سجل التقييمات)
+    // ============================================
+    function getQuizDisplayName(quizId) {
+        const labels = {
+            'human-systems-atlas': {ar:'أطلس أجهزة جسم الإنسان',fr:'Atlas des systèmes du corps humain'},
+            'cell-photosynthesis-revision': {ar:'تحدي الخلية والتركيب الضوئي',fr:'Défi cellule et photosynthèse'}
+        };
+        const entry = labels[String(quizId || '')];
+        return entry ? entry[lang()] : escapeHtml(quizId || '');
+    }
+
+    function renderHistory() {
+        const profileData = getProfileData(currentProfileId);
+        const results = getValidQuizResults(profileData);
+
+        if (results.length === 0) {
+            return `<p class="no-data">${t('noData')}</p>`;
+        }
+
+        const sorted = [...results].sort((a, b) => b.date - a.date);
+        const bestScores = Object.create(null);
+        sorted.forEach(r => {
+            if (!bestScores[r.quizId] || r.percentage > bestScores[r.quizId].percentage) {
+                bestScores[r.quizId] = r;
+            }
+        });
+
+        const uniqueTests = new Set(sorted.map(r => r.quizId)).size;
+        const average = Math.round(sorted.reduce((sum, r) => sum + r.percentage, 0) / sorted.length);
+        const best = Math.max(...sorted.map(r => r.percentage));
+
+        let html = `
+            <div class="dashboard-grid history-summary" aria-label="${lang() === 'ar' ? 'ملخص نتائج الاختبارات' : 'Résumé des résultats des quiz'}">
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value">${sorted.length}</div>
+                    <div class="stat-label">${t('testsTaken')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value">${average}%</div>
+                    <div class="stat-label">${t('averageScore')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value">${best}%</div>
+                    <div class="stat-label">${t('best')}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value">${uniqueTests}</div>
+                    <div class="stat-label">${t('uniqueTests')}</div>
+                </div>
+            </div>
+            <h3 class="gs-section-title">${lang() === 'ar' ? 'أحدث المحاولات' : 'Tentatives récentes'}</h3>
+        `;
+
+        let listHtml = '<div class="history-list">';
+        sorted.slice(0, 10).forEach(r => {
+            const isBest = bestScores[r.quizId] === r;
+            listHtml += `
+                <div class="history-item ${isBest ? 'best' : ''}">
+                    <div class="history-info">
+                        <span class="history-quiz">${getQuizDisplayName(r.quizId)}</span>
+                        <span class="history-date">${new Date(r.date).toLocaleDateString(lang() === 'ar' ? 'ar-MA' : 'fr-MA')}</span>
+                    </div>
+                    <div class="history-score">
+                        <span class="score-value">${r.percentage}%</span>
+                        ${isBest ? '<span class="best-badge">🏆 ' + t('best') + '</span>' : ''}
+                    </div>
+                </div>
+            `;
+        });
+        html += listHtml + '</div>';
+
+        if (sorted.length > 10) {
+            html += `<p class="history-more">${lang() === 'ar'
+                ? 'يتم عرض أحدث 10 محاولات من أصل ' + sorted.length + ' محاولة. جميع النتائج محفوظة.'
+                : 'Affichage des 10 dernières tentatives sur ' + sorted.length + '. Tous les résultats sont conservés.'}</p>`;
+        }
+        return html;
+    }
+    // ============================================
+    // 9. MISTAKES (أخطائي)
+    // ============================================
+    function renderMistakes() {
+        const profileData = getProfileData(currentProfileId);
+        // Render only usable mistake records; leave the stored history untouched.
+        const mistakes = (Array.isArray(profileData.mistakes) ? profileData.mistakes : [])
+            .filter(mistake => mistake && typeof mistake === 'object' && !Array.isArray(mistake) &&
+                typeof mistake.quizId === 'string' && mistake.quizId.trim() && mistake.quizId.trim().length <= 200 &&
+                typeof mistake.question === 'string' && mistake.question.trim() &&
+                typeof mistake.selected === 'string' && mistake.selected.trim() &&
+                typeof mistake.correct === 'string' && mistake.correct.trim() &&
+                mistake.selected.trim() !== mistake.correct.trim());
+
+        if (mistakes.length === 0) {
+            return `<p class="no-data">${t('noData')}</p>`;
+        }
+
+        // Group validated mistakes by quiz ID without trusting stored object keys.
+        const mistakesByQuiz = Object.create(null);
+        mistakes.forEach(mistake => {
+            const quizId = mistake.quizId.trim();
+            if (!mistakesByQuiz[quizId]) mistakesByQuiz[quizId] = [];
+            mistakesByQuiz[quizId].push(mistake);
+        });
+
+        let html = '<div class="mistakes-list">';
+        Object.entries(mistakesByQuiz).forEach(([quizId, quizMistakes]) => {
+            const attempts = getValidQuizResults(profileData)
+                .filter(result => result.quizId === quizId)
+                .sort((a, b) => a.date - b.date);
+            const latest = attempts.length ? attempts[attempts.length - 1] : null;
+            const previous = attempts.length > 1 ? attempts[attempts.length - 2] : null;
+            const best = attempts.reduce((value, result) => Math.max(value, result.percentage), 0);
+            const change = latest && previous ? latest.percentage - previous.percentage : null;
+            const trend = change === null
+                ? t('لا تتوفر مقارنة بعد', 'Pas encore de comparaison')
+                : change > 0
+                    ? (lang() === 'ar' ? 'تحسن +' + change + ' نقطة' : 'Progression +' + change + ' pts')
+                    : change < 0
+                        ? (lang() === 'ar' ? 'تراجع ' + change + ' نقطة' : 'Baisse ' + change + ' pts')
+                        : t('نتيجة مستقرة', 'Résultat stable');
+            html += `
+                <div class="mistake-quiz-group">
+                    <div class="mistake-quiz-header">
+                        <span>${getQuizDisplayName(quizId)}</span>
+                        <button class="btn-retry-mistakes" data-quiz-id="${escapeHtml(quizId)}">${t('retryMistakes')}</button>
+                    </div>
+                    <div class="gs-mistake-progress">
+                        <span>${lang() === 'ar' ? 'المحاولات:' : 'Tentatives :'} <strong>${attempts.length}</strong></span>
+                        <span>${lang() === 'ar' ? 'آخر نتيجة:' : 'Dernier score :'} <strong>${latest ? latest.percentage + '%' : '—'}</strong></span>
+                        <span>${lang() === 'ar' ? 'أفضل نتيجة:' : 'Meilleur score :'} <strong>${attempts.length ? best + '%' : '—'}</strong></span>
+                        <span>${trend}</span>
+                    </div>
+                    ${quizMistakes.map(mistake => `
+                        <div class="mistake-item">
+                            <div class="mistake-question">${escapeHtml(mistake.question || 'Question')}</div>
+                            <div class="mistake-details">
+                                <span class="mistake-quiz">${getQuizDisplayName(mistake.quizId)}</span>
+                                <span class="mistake-date">${Number.isFinite(Number(mistake.date)) && Number(mistake.date) > 0 ? new Date(Number(mistake.date)).toLocaleDateString() : '—'}</span>
+                            </div>
+                            <div class="mistake-answers">
+                                <div class="mistake-wrong">❌ ${t('Réponse choisie:')} ${escapeHtml(mistake.selected)}</div>
+                                <div class="mistake-correct">✅ ${t('Bonne réponse:')} ${escapeHtml(mistake.correct)}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        return html;
+    }
+
+    function retryMistakes(quizId) {
+        const profileId = currentProfileId;
+        const profileData = getProfileData(profileId);
+        const quizMistakes = (Array.isArray(profileData.mistakes) ? profileData.mistakes : [])
+            .filter(m => m && m.quizId === quizId &&
+                typeof m.question === 'string' && m.question.trim() &&
+                typeof m.selected === 'string' && m.selected.trim() &&
+                typeof m.correct === 'string' && m.correct.trim() &&
+                m.selected.trim() !== m.correct.trim());
+        if (quizMistakes.length === 0) return;
+
+        // Launch a focused interactive review directly from the saved mistakes.
+        // No sessionStorage hand-off is needed, so another account cannot inherit it.
+        if (!window.GoSVTQuiz || typeof window.GoSVTQuiz.reviewMistakes !== 'function') {
+            alert(t('تعذر فتح مراجعة الأخطاء الآن.', 'La révision des erreurs est indisponible pour le moment.'));
+            return;
+        }
+        if (currentProfileId !== profileId) return;
+        window.location.hash = 'quiz';
+        window.GoSVTQuiz.reviewMistakes(quizMistakes);
+    }
+
+    // ============================================
+    // 10. FAVORITES INTEGRATION (تكامل المفضلة)
+    // ============================================
+    function renderFavorites() {
+        // Read through the account-aware favorites module. The shared legacy
+        // key can belong to another signed-in tab, so use it only as a fallback.
+        const storedFavorites = window.GoSVTStudyFavorites &&
+            typeof window.GoSVTStudyFavorites.get === 'function'
+            ? window.GoSVTStudyFavorites.get()
+            : storage.get('gosvt-favs');
+        const favs = Array.isArray(storedFavorites)
+            ? storedFavorites.filter(path => typeof path === 'string' && path.trim())
+            : [];
+
+        if (favs.length === 0) {
+            return `<p class="no-data">${t('noData')}</p>`;
+        }
+
+        let html = '<div class="favorites-list">';
+        favs.forEach(path => {
+            const filename = path.split('/').pop();
+            const title = typeof getFileTitle === 'function'
+                ? getFileTitle(filename)
+                : filename.replace(/\\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+            html += `
+                <div class="favorite-item">
+                    <a href="${escapeHtml(safeLink(path))}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
+                    <button type="button" class="btn-remove-fav" data-path="${escapeHtml(path)}">${t('removeFromFavorites')}</button>
+                </div>
+            `;
+        });
+        html += '</div>';
+        return html;
+    }
+
+    // Keep the student-space list aligned with the favorites format used by study.js.
+    function bindFavoritesPanel(panel) {
+        if (!panel) return;
+        panel.querySelectorAll('.btn-remove-fav').forEach(button => {
+            button.addEventListener('click', function () {
+                const path = this.dataset.path;
+                if (window.GoSVTStudyFavorites && typeof window.GoSVTStudyFavorites.remove === 'function') {
+                    // Remove from the active account's own list, never from the
+                    // shared legacy key that another signed-in tab may overwrite.
+                    window.GoSVTStudyFavorites.remove(path);
+                } else {
+                    const storedFavorites = storage.get('gosvt-favs');
+                    const favs = Array.isArray(storedFavorites) ? storedFavorites : [];
+                    storage.set('gosvt-favs', favs.filter(item => item !== path));
+                }
+                panel.innerHTML = renderFavorites();
+                bindFavoritesPanel(panel);
+            });
+        });
+    }
+
+
+
+    // ============================================
+    // 11. MOTIVATION (التحفيز)
+    // ============================================
+    function renderMotivation() {
+        const profileData = getProfileData(currentProfileId);
+        const streak = profileData.streak || { current: 0, best: 0 };
+        const goals = Array.isArray(profileData.goals) ? profileData.goals : [];
+        const completedGoals = goals.filter(goal => goal && goal.completed).length;
+        const goalCount = goals.length;
+        const isFr = lang() === 'fr';
+        const goalTitle = goal => String(goal && (goal.title || goal.name || goal.text) || '');
+        const goalRows = goals.map((goal, index) => {
+            if (goal == null) return '';
+            const id = String(goal && typeof goal === 'object' ? goal.id || '' : '');
+            const title = escapeHtml(goalTitle(goal) || (typeof goal === 'string' ? goal : ''));
+            if (!title) return '';
+            const done = !!(goal && typeof goal === 'object' && goal.completed);
+            return '<li class="gs-goal-item' + (done ? ' is-done' : '') + '">' +
+                '<span class="gs-goal-status">' + (done ? '✓' : '○') + '</span>' +
+                '<span class="gs-goal-title">' + title + '</span>' +
+                '<button type="button" class="gs-goal-toggle" data-goal-index="' + index + '"' +
+                (id ? ' data-goal-id="' + escapeHtml(id) + '"' : '') +
+                ' aria-label="' + (done ? (isFr ? 'Marquer comme non terminé' : 'إعادة فتح الهدف') : (isFr ? 'Marquer comme terminé' : 'تحديد الهدف كمكتمل')) + '">' +
+                (done ? (isFr ? 'À reprendre' : 'إعادة فتح') : (isFr ? 'Terminé' : 'إتمام')) + '</button>' +
+                '</li>';
+        }).join('');
+
+        const messages = {
+            ar: [
+                'أداء رائع! استمر!',
+                'أنت تقدم بشكل ممتاز!',
+                'لا تتوقف، النجاح قريب!',
+                'أنت بطل حقيقي!',
+                'عمل جيد جداً!'
+            ],
+            fr: [
+                'Excellent travail! Continue!',
+                'Tu progresses magnifiquement!',
+                'Ne t\'arrête pas, le succès est proche!',
+                'Tu es un vrai champion!',
+                'Très bon travail!'
+            ]
+        };
+
+        const randomMessage = messages[lang()][Math.floor(Math.random() * messages[lang()].length)];
+
+        let html = `
+            <div class="motivation-section">
+                <div class="streak-display">
+                    <div class="streak-icon">🔥</div>
+                    <div class="streak-value">${streak.current}</div>
+                    <div class="streak-label">${t('streak')}</div>
+                    <div class="streak-best">Meilleur: ${streak.best}</div>
+                </div>
+                <div class="encouragement-message">
+                    <p>💪 ${randomMessage}</p>
+                </div>
+            </div>
+            <section class="gs-goals-module" aria-labelledby="gs-goals-heading">
+                <div class="gs-goals-heading">
+                    <div><h3 id="gs-goals-heading">${isFr ? 'Mes objectifs d’apprentissage' : 'أهدافي التعليمية'}</h3>
+                    <p>${isFr ? 'Avance à ton rythme, un objectif à la fois.' : 'تقدم وفق وتيرتك، هدفاً بعد هدف.'}</p></div>
+                    <span class="gs-goals-count">${completedGoals}/${goalCount} ${isFr ? 'terminés' : 'مكتملة'}</span>
+                </div>
+                <div class="gs-goals-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${goalCount ? Math.round(completedGoals / goalCount * 100) : 0}">
+                    <span style="width:${goalCount ? Math.round(completedGoals / goalCount * 100) : 0}%"></span>
+                </div>
+                <form class="gs-goal-form">
+                    <label for="gs-new-goal">${isFr ? 'Nouvel objectif' : 'هدف جديد'}</label>
+                    <input id="gs-new-goal" name="goal" type="text" maxlength="120" required placeholder="${isFr ? 'Ex. Réviser la photosynthèse' : 'مثال: مراجعة درس التركيب الضوئي'}">
+                    <button type="submit">${isFr ? 'Ajouter' : 'إضافة الهدف'}</button>
+                    <p class="gs-goal-feedback" role="status" aria-live="polite"></p>
+                </form>
+                ${goalRows ? '<ul class="gs-goals-list">' + goalRows + '</ul>' : '<p class="gs-goals-empty">' + (isFr ? 'Aucun objectif pour le moment. Ajoute ton premier objectif !' : 'لا توجد أهداف بعد. أضف هدفك الأول وابدأ التقدم!') + '</p>'}
+            </section>
+        `;
+
+        return html;
+    }
+
+    function bindGoalControls(panel) {
+        if (!panel) return;
+        const form = panel.querySelector('.gs-goal-form');
+        if (form) form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const input = form.querySelector('[name="goal"]');
+            const title = String(input && input.value || '').trim();
+            if (!title || title.length > 120) return;
+            const data = getProfileData(currentProfileId);
+            const goals = Array.isArray(data.goals) ? data.goals.slice() : [];
+            const feedback = form.querySelector('.gs-goal-feedback');
+            if (goals.length >= 200) {
+                if (feedback) feedback.textContent = lang() === 'fr'
+                    ? 'La limite de 200 objectifs est atteinte. Termine un objectif existant avant d’en ajouter un autre.'
+                    : 'بلغت الحد الأقصى وهو 200 هدف. يمكنك متابعة أهدافك الحالية قبل إضافة المزيد.';
+                return;
+            }
+            const now = Date.now();
+            const id = 'goal_' + (window.crypto && typeof window.crypto.randomUUID === 'function'
+                ? window.crypto.randomUUID()
+                : now.toString(36) + '_' + Math.random().toString(36).slice(2, 10));
+            goals.push({ id, title, completed: false, createdAt: now, updatedAt: now });
+            data.goals = goals;
+            saveProfileData(currentProfileId, data);
+            panel.innerHTML = renderMotivation();
+            bindGoalControls(panel);
+        });
+        panel.querySelectorAll('.gs-goal-toggle').forEach(button => button.addEventListener('click', function() {
+            const goalId = this.dataset.goalId;
+            const goalIndex = Number(this.dataset.goalIndex);
+            const data = getProfileData(currentProfileId);
+            const goals = Array.isArray(data.goals) ? data.goals.slice() : [];
+            const index = Number.isInteger(goalIndex) && goalIndex >= 0 && goalIndex < goals.length
+                ? goalIndex
+                : goals.findIndex(goal => goal && String(goal.id || '') === goalId);
+            if (index < 0 || index >= goals.length) return;
+            const previous = goals[index];
+            const previousTitle = typeof previous === 'string' ? previous : String(previous && (previous.title || previous.name || previous.text) || '');
+            goals[index] = Object.assign({}, previous && typeof previous === 'object' ? previous : {}, {
+                id: previous && typeof previous === 'object' && previous.id ? previous.id :
+                    'goal_legacy_' + index + '_' + (Number(previous && (previous.createdAt || previous.created_at)) || 0),
+                title: previousTitle,
+                completed: !(previous && typeof previous === 'object' && previous.completed),
+                updatedAt: Date.now()
+            });
+            data.goals = goals;
+            saveProfileData(currentProfileId, data);
+            panel.innerHTML = renderMotivation();
+            bindGoalControls(panel);
+        }));
+    }
+
+    // ============================================
+    // 12. MAIN RENDER (العرض الرئيسي)
+    // ============================================
+    window.renderStudentSpaceContent = function() {
+        renderStudentSpace();
+    };
+
+
+    // ============================================
+    // 11.1 STUDY PLANNER + PERSONAL NOTES
+    // ============================================
+    function renderPlanner() {
+        const data = getProfileData(currentProfileId);
+        const today = new Date();
+        const todayKey = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+        const items = [...data.studyPlan].sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+        const rows = items.map(item => {
+            const date = String(item.date || '');
+            const overdue = !item.completed && /^\d{4}-\d{2}-\d{2}$/.test(date) && date < todayKey;
+            const dueToday = !item.completed && date === todayKey;
+            const status = item.completed
+                ? (lang() === 'ar' ? 'مكتملة' : 'Terminée')
+                : overdue
+                    ? (lang() === 'ar' ? 'متأخرة' : 'En retard')
+                    : dueToday
+                        ? (lang() === 'ar' ? 'موعدها اليوم' : "Aujourd’hui")
+                        : (lang() === 'ar' ? 'قادمة' : 'À venir');
+            return `
+            <article class="gs-plan-item ${item.completed ? 'is-done' : ''} ${overdue ? 'is-overdue' : ''} ${dueToday ? 'is-due-today' : ''}">
+                <div class="gs-plan-date">${escapeHtml(date)}</div>
+                <div class="gs-plan-main"><strong>${escapeHtml(item.title || '')}</strong>
+                    <small>${Number(item.duration) || 30} ${lang() === 'ar' ? 'دقيقة' : 'min'} · ${status}</small></div>
+                <div class="gs-plan-actions">
+                    <button type="button" class="gs-task-toggle" data-task-id="${escapeHtml(item.id)}">${item.completed ? '↩' : '✓'}</button>
+                    <button type="button" class="gs-task-delete" data-task-id="${escapeHtml(item.id)}" aria-label="${t('delete')}">×</button>
+                </div>
+            </article>`;
+        }).join('');
+        return `<div class="gs-module">
+            <h2>${t('planner')}</h2>
+            <form id="gs-plan-form" class="gs-entry-form">
+                <label>${t('taskTitle')}<input name="title" maxlength="120" required></label>
+                <label>${t('taskDate')}<input name="date" type="date" required></label>
+                <label>${t('duration')}<input name="duration" type="number" min="5" max="600" value="30"></label>
+                <button type="submit">${t('addTask')}</button>
+            </form>
+            <div class="gs-plan-list">${rows || `<p class="no-data">${t('noTasks')}</p>`}</div>
+        </div>`;
+    }
+
+    function renderNotes() {
+        const data = getProfileData(currentProfileId);
+        const rows = [...data.notes].sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0))
+            .map(note => `<article class="gs-note-card">
+                <div class="gs-note-heading"><strong>${escapeHtml(note.title || '')}</strong>
+                <button type="button" class="gs-note-delete" data-note-id="${escapeHtml(note.id)}" aria-label="${t('delete')}">×</button></div>
+                <p>${escapeHtml(note.body || '').replace(/\n/g, '<br>')}</p>
+                <small>${note.updatedAt ? new Date(note.updatedAt).toLocaleDateString() : ''}</small>
+            </article>`).join('');
+        return `<div class="gs-module">
+            <h2>${t('notesTab')}</h2>
+            <form id="gs-note-form" class="gs-note-form">
+                <label>${t('noteTitle')}<input name="title" maxlength="120" required></label>
+                <label>${t('noteBody')}<textarea name="body" rows="4" maxlength="5000" required placeholder="${t('noteBody')}"></textarea></label>
+                <button type="submit">${t('save')}</button>
+            </form>
+            <div class="gs-notes-grid">${rows || `<p class="no-data">${t('noNotes')}</p>`}</div>
+        </div>`;
+    }
+
+    function bindPlannerAndNotes(container) {
+        const planForm = container.querySelector('#gs-plan-form');
+        if (planForm) planForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const form = new FormData(planForm);
+            const title = String(form.get('title') || '').trim();
+            const date = String(form.get('date') || '');
+            if (!title || !date) return;
+            const data = getProfileData(currentProfileId);
+            const now = Date.now();
+            data.studyPlan.push({ id: makeId(), title: title.slice(0, 120), date, duration: Math.min(600, Math.max(5, Number(form.get('duration')) || 30)), completed: false, createdAt: now, updatedAt: now });
+            saveProfileData(currentProfileId, data);
+            refreshStudentSpaceView();
+        });
+        const noteForm = container.querySelector('#gs-note-form');
+        if (noteForm) noteForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const form = new FormData(noteForm);
+            const title = String(form.get('title') || '').trim();
+            const body = String(form.get('body') || '').trim();
+            if (!title || !body) return;
+            const data = getProfileData(currentProfileId);
+            data.notes.unshift({ id: makeId(), title: title.slice(0, 120), body: body.slice(0, 5000), createdAt: Date.now(), updatedAt: Date.now() });
+            saveProfileData(currentProfileId, data);
+            refreshStudentSpaceView();
+        });
+        container.querySelectorAll('.gs-task-toggle').forEach(button => button.addEventListener('click', function () {
+            const data = getProfileData(currentProfileId);
+            const item = data.studyPlan.find(x => x.id === this.dataset.taskId);
+            if (item) { item.completed = !item.completed; item.updatedAt = Date.now(); }
+            saveProfileData(currentProfileId, data); refreshStudentSpaceView();
+        }));
+        container.querySelectorAll('.gs-task-delete').forEach(button => button.addEventListener('click', function () {
+            const data = getProfileData(currentProfileId);
+            const deletedId = this.dataset.taskId;
+            data.studyPlan = data.studyPlan.filter(x => x.id !== deletedId);
+            saveProfileData(currentProfileId, data);
+            const account = window.StudentAccount;
+            const uid = account && account.isLoggedIn() && account.getUser() && account.getUser().id;
+            queueCloudDeletion('studyPlan', deletedId, uid);
+            refreshStudentSpaceView();
+        }));
+        container.querySelectorAll('.gs-note-delete').forEach(button => button.addEventListener('click', function () {
+            const data = getProfileData(currentProfileId);
+            const deletedId = this.dataset.noteId;
+            data.notes = data.notes.filter(x => x.id !== deletedId);
+            saveProfileData(currentProfileId, data);
+            const account = window.StudentAccount;
+            const uid = account && account.isLoggedIn() && account.getUser() && account.getUser().id;
+            queueCloudDeletion('notes', deletedId, uid);
+            refreshStudentSpaceView();
+        }));
+    }
+
+
+    async function renderManagerStudentRegistry(container) {
+        const fr = document.documentElement.lang === 'fr';
+        const tr = (ar, french) => fr ? french : ar;
+        container.innerHTML = `
+          <div class="student-space gs-manager-space">
+            <section class="gs-manager-hero">
+              <div><span class="gs-manager-kicker">GO SVT MAROC · ADMIN</span>
+                <h3>${tr('فضاء مدير مساحتي','Espace gestionnaire de Mon espace')}</h3>
+                <p>${tr('متابعة حسابات التلاميذ المسجلين ومستوياتهم ومسالكهم الدراسية.','Suivi des comptes élèves inscrits, de leurs niveaux et filières.')}</p>
+              </div>
+              <div class="gs-manager-account-actions" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <span class="gs-manager-icon" aria-hidden="true">🎓</span>
+                <button type="button" class="gs-manager-logout" id="gs-manager-logout" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border:1px solid #d97757;border-radius:12px;background:#fff7f3;color:#9b341d;font:700 14px inherit;cursor:pointer;white-space:nowrap">🚪 ${tr('تسجيل الخروج','Se déconnecter')}</button>
+              </div>
+            </section>
+            <section class="gs-manager-card">
+              <div class="gs-manager-heading"><div><h4>${tr('التلاميذ المسجلون','Élèves inscrits')}</h4>
+                <p>${tr('هذه البيانات خاصة بحساب المدير فقط.','Ces informations sont réservées au compte gestionnaire.')}</p></div>
+                <button type="button" class="gs-manager-refresh" id="gs-manager-refresh">↻ ${tr('تحديث','Actualiser')}</button>
+              </div>
+              <div class="gs-manager-stats"><div><strong id="gs-manager-count">—</strong><span>${tr('إجمالي التلاميذ','Total élèves')}</span></div><div><strong id="gs-manager-shown">—</strong><span>${tr('نتائج معروضة','Résultats affichés')}</span></div></div>
+              <div class="gs-manager-tools"><input id="gs-manager-search" type="search" placeholder="${tr('ابحث بالاسم أو البريد الإلكتروني','Rechercher par nom ou e-mail')}" aria-label="${tr('البحث عن تلميذ','Rechercher un élève')}">
+                <select id="gs-manager-level" aria-label="${tr('تصفية حسب المستوى','Filtrer par niveau')}">
+                  <option value="">${tr('جميع المستويات','Tous les niveaux')}</option><option value="TC">TC — ${tr('الجذع المشترك','Tronc commun')}</option><option value="1BAC">1BAC — ${tr('الأولى باكالوريا','1ère Bac')}</option><option value="2BAC">2BAC — ${tr('الثانية باكالوريا','2ème Bac')}</option>
+                </select></div>
+              <p class="gs-manager-status" id="gs-manager-status" aria-live="polite">${tr('جارٍ تحميل القائمة…','Chargement de la liste…')}</p>
+              <div class="gs-manager-list" id="gs-manager-list"></div>
+            </section>
+          </div>`;
+        const logoutButton = container.querySelector('#gs-manager-logout');
+        if (logoutButton) logoutButton.addEventListener('click', async () => {
+          logoutButton.disabled = true;
+          logoutButton.textContent = tr('جارٍ تسجيل الخروج…','Déconnexion…');
+          try {
+            const account = window.StudentAccount;
+            if (account && typeof account.logout === 'function') {
+              await account.logout();
+            } else if (window.supabaseClient) {
+              const { error } = await window.supabaseClient.auth.signOut();
+              if (error) throw error;
+            }
+          } catch (error) {
+            console.error('[GoSVT] Manager sign out failed:', error);
+            logoutButton.disabled = false;
+            logoutButton.textContent = '🚪 ' + tr('إعادة المحاولة','Réessayer');
+          }
+        });
+        const list=container.querySelector('#gs-manager-list'), status=container.querySelector('#gs-manager-status');
+        const search=container.querySelector('#gs-manager-search'), levelFilter=container.querySelector('#gs-manager-level');
+        let students=[];
+        const levelNames={TC:tr('الجذع المشترك','Tronc commun'),'1BAC':tr('الأولى باكالوريا','1ère Bac'),'2BAC':tr('الثانية باكالوريا','2ème Bac')};
+        const trackNames={TCS:tr('الجذع المشترك العلمي','Tronc commun scientifique'),TCL:tr('الجذع المشترك الأدبي','Tronc commun lettres'), '1BACSE':tr('العلوم التجريبية','Sciences expérimentales'),'1BACSM':tr('العلوم الرياضية','Sciences mathématiques'),'1BACL':tr('الآداب','Lettres'),'2BACSVT':tr('علوم الحياة والأرض','Sciences de la vie et de la Terre'),'2BACSP':tr('العلوم الفيزيائية','Sciences physiques'),'2BACSM':tr('العلوم الرياضية','Sciences mathématiques')};
+        function render(){
+          const q=search.value.trim().toLocaleLowerCase(), lv=levelFilter.value;
+          const rows=students.filter(s=>(!lv||s.study_level===lv)&&(!q||[s.display_name,s.email].some(v=>String(v||'').toLocaleLowerCase().includes(q))));
+          container.querySelector('#gs-manager-count').textContent=String(students.length);
+          container.querySelector('#gs-manager-shown').textContent=String(rows.length);
+          list.replaceChildren();
+          if(!rows.length){const p=document.createElement('p');p.className='gs-manager-empty';p.textContent=students.length?tr('لا توجد نتائج مطابقة.','Aucun résultat correspondant.'):tr('لا يوجد تلاميذ مسجلون بعد.','Aucun élève inscrit pour le moment.');list.append(p);return;}
+          rows.forEach(s=>{
+            const card=document.createElement('article');card.className='gs-manager-student';
+            const identity=document.createElement('div');identity.className='gs-manager-identity';
+            const name=document.createElement('strong');name.textContent=s.display_name||tr('دون اسم','Sans nom');
+            const email=document.createElement('a');email.href='mailto:'+encodeURIComponent(s.email||'');email.textContent=s.email||'—';
+            const date=document.createElement('small');const d=s.registered_at?new Date(s.registered_at):null;date.textContent=tr('تاريخ التسجيل: ','Inscription : ')+(d&&!Number.isNaN(d.getTime())?d.toLocaleString(fr?'fr-FR':'ar-MA'):'—');
+            identity.append(name,email,date);
+            const academic=document.createElement('div');academic.className='gs-manager-academic';
+            const lv=document.createElement('span');lv.textContent=levelNames[s.study_level]||s.study_level||tr('مستوى غير محدد','Niveau non renseigné');
+            const track=document.createElement('span');track.textContent=trackNames[s.study_track]||s.study_track||tr('مسلك غير محدد','Filière non renseignée');
+            const verified=document.createElement('small');verified.className=s.email_confirmed?'is-confirmed':'is-pending';verified.textContent=s.email_confirmed?tr('البريد مؤكد','E-mail confirmé'):tr('بانتظار تأكيد البريد','E-mail à confirmer');
+            academic.append(lv,track,verified);card.append(identity,academic);list.append(card);
+          });
+        }
+        async function load(){
+          status.textContent=tr('جارٍ تحميل القائمة…','Chargement de la liste…');
+          const {data,error}=await window.supabaseClient.rpc('gosvt_admin_student_registry');
+          if(error){status.textContent=tr('تعذر تحميل القائمة: ','Impossible de charger la liste : ')+error.message;return;}
+          students=Array.isArray(data)?data:[];status.textContent='';render();
+        }
+        search.addEventListener('input',render);levelFilter.addEventListener('change',render);
+        container.querySelector('#gs-manager-refresh').addEventListener('click',load);
+        await load();
+    }
+
+    function renderStudentSpace() {
+        const container = document.getElementById('student-space-content');
+        if (!container) return;
+        if (window.StudentAccount && !window.StudentAccount.isLoggedIn()) {
+            window.StudentAccount.renderGate(container);
+            return;
+        }
+
+        // Teacher and administrator accounts must not render the student dashboard.
+        // Keep all existing student data intact; this is a presentation/role separation only.
+        const activeProfile = window.StudentAccount && window.StudentAccount.getProfile
+            ? window.StudentAccount.getProfile()
+            : null;
+        if (activeProfile && activeProfile.role === 'admin') {
+            renderManagerStudentRegistry(container);
+            return;
+        }
+        if (activeProfile && activeProfile.role === 'teacher') {
+            const isArabic = document.documentElement.dir === 'rtl';
+            container.innerHTML = '<div class="student-space" role="status"><p>' +
+                (isArabic ? 'فضاء الأستاذ — أدوات التدبير التربوي متاحة من مساحة الأستاذ.' : 'Espace enseignant — les outils pédagogiques sont disponibles dans votre espace enseignant.') +
+                '</p></div>';
+            return;
+        }
+
+        syncCurrentProfile();
+
+        const panelTask = (icon, titleAr, titleFr, content) => {
+            const title = lang() === 'fr' ? titleFr : titleAr;
+            return `<section class="gs-student-panel-content"><header class="gs-student-panel-heading"><span class="gs-student-panel-icon" aria-hidden="true">${icon}</span><h2>${title}</h2></header><div class="gs-student-panel-body">${content}</div></section>`;
+        };
+
+        const accountBar = window.StudentAccount && window.StudentAccount.isLoggedIn() ? window.StudentAccount.renderBar() : '';
+        let html = `
+            <div class="student-space gs-student-shell">
+                <header class="gs-student-shell-header">
+                    ${accountBar ? `<div class="gs-account-topbar">${accountBar}</div>` : ''}
+                    <div class="gs-student-shell-title">
+                        <span class="gs-eyebrow">GO SVT MAROC · ESPACE ÉLÈVE</span>
+                        <h2>${lang() === 'ar' ? 'مساحتي التعليمية' : 'Mon espace d’apprentissage'}</h2>
+                        <p>${lang() === 'ar' ? 'اختر أحد الأقسام لعرض محتواه.' : 'Choisissez une rubrique pour afficher son contenu.'}</p>
+                    </div>
+                </header>
+                <nav class="space-nav" aria-label="${lang() === 'ar' ? 'أقسام مساحة التلميذ' : 'Sections de l’espace élève'}">
+                    <button id="student-tab-3d-lab" class="space-tab" type="button" aria-controls="panel-3d-lab" aria-expanded="false" data-tab="3d-lab">🧬 ${lang() === 'ar' ? 'المختبر ثلاثي الأبعاد' : 'Laboratoire 3D'}</button>
+                    <button id="student-tab-dashboard" class="space-tab" type="button" aria-controls="panel-dashboard" aria-expanded="false" data-tab="dashboard">🏠 ${t('dashboard')}</button>
+                    <button id="student-tab-progress" class="space-tab" type="button" aria-controls="panel-progress" aria-expanded="false" data-tab="progress">📈 ${t('progress')}</button>
+                    <button id="student-tab-history" class="space-tab" type="button" aria-controls="panel-history" aria-expanded="false" data-tab="history">🕘 ${t('history')}</button>
+                    <button id="student-tab-mistakes" class="space-tab" type="button" aria-controls="panel-mistakes" aria-expanded="false" data-tab="mistakes">🧩 ${t('mistakes')}</button>
+                    <button id="student-tab-favorites" class="space-tab" type="button" aria-controls="panel-favorites" aria-expanded="false" data-tab="favorites">⭐ ${t('favorites')}</button>
+                    <button id="student-tab-motivation" class="space-tab" type="button" aria-controls="panel-motivation" aria-expanded="false" data-tab="motivation">🏅 ${t('motivation')}</button>
+                    <button id="student-tab-planner" class="space-tab" type="button" aria-controls="panel-planner" aria-expanded="false" data-tab="planner">🗓 ${t('planner')}</button>
+                    <button id="student-tab-notes" class="space-tab" type="button" aria-controls="panel-notes" aria-expanded="false" data-tab="notes">🗒 ${t('notesTab')}</button>
+                </nav>
+                <main class="space-content">
+                    <section class="space-panel" id="panel-3d-lab" aria-hidden="true" hidden><div class="gs-student-panel-content"><header class="gs-student-panel-heading"><span class="gs-student-panel-icon" aria-hidden="true">🧬</span><h2>${lang() === 'ar' ? 'المختبر التفاعلي ثلاثي الأبعاد' : 'Laboratoire interactif 3D'}</h2></header><div class="gs-student-panel-body"><section class="gs-3d-lab" aria-label="${lang() === 'ar' ? 'نموذج ثلاثي الأبعاد لأعضاء الجسم' : 'Modèle 3D des organes'}"><div class="gs-3d-intro"><div><span class="gs-eyebrow">GO SVT MAROC · IMMERSIVE SCIENCE</span><h3>${lang() === 'ar' ? 'استكشف جسم الإنسان' : 'Explorez le corps humain'}</h3><p>${lang() === 'ar' ? 'اسحب لتدوير النموذج، واستخدم عجلة الفأرة للتقريب، ثم اختر عضواً لمعرفة دوره.' : 'Faites glisser pour tourner, utilisez la molette pour zoomer et sélectionnez un organe pour découvrir son rôle.'}</p></div><span aria-hidden="true">🔬</span></div><div class="gs-3d-system-nav" role="group" aria-label="${lang() === 'ar' ? 'استكشاف أجهزة الجسم' : 'Explorer les systèmes du corps'}"><button type="button" data-3d-system="circulatory" class="is-active" aria-pressed="true">🫀 ${lang() === 'ar' ? 'الدوراني' : 'Circulatoire'}</button><button type="button" data-3d-system="respiratory" aria-pressed="false">🫁 ${lang() === 'ar' ? 'التنفسي' : 'Respiratoire'}</button><button type="button" data-3d-system="nervous" aria-pressed="false">🧠 ${lang() === 'ar' ? 'العصبي' : 'Nerveux'}</button><button type="button" data-3d-system="digestive" aria-pressed="false">🍽️ ${lang() === 'ar' ? 'الهضمي' : 'Digestif'}</button><button type="button" data-3d-system="urinary" aria-pressed="false">🫘 ${lang() === 'ar' ? 'البولي' : 'Urinaire'}</button></div><div class="gs-3d-workspace"><div class="gs-3d-view"><div class="gs-3d-loading" role="status">${lang() === 'ar' ? 'جارٍ إعداد النموذج ثلاثي الأبعاد…' : 'Préparation du modèle 3D…'}</div><canvas class="gs-3d-canvas" aria-label="${lang() === 'ar' ? 'نموذج ثلاثي الأبعاد تفاعلي' : 'Modèle 3D interactif'}"></canvas><div class="gs-3d-controls"><button type="button" data-3d-action="reset" title="${lang() === 'ar' ? 'إعادة العرض' : 'Réinitialiser'}">↺</button><button type="button" data-3d-action="zoom-in" aria-label="${lang() === 'ar' ? 'تكبير' : 'Zoom avant'}">＋</button><button type="button" data-3d-action="zoom-out" aria-label="${lang() === 'ar' ? 'تصغير' : 'Zoom arrière'}">－</button></div><span class="gs-3d-hint">${lang() === 'ar' ? 'اسحب النموذج · انقر على عضو' : 'Glisser pour tourner · cliquer un organe'}</span></div><aside class="gs-3d-info" aria-live="polite"><span class="gs-3d-info-kicker">${lang() === 'ar' ? 'العضو المحدد' : 'ORGANE SÉLECTIONNÉ'}</span><h4 data-3d-name>${lang() === 'ar' ? 'القلب' : 'Le cœur'}</h4><p data-3d-description>${lang() === 'ar' ? 'يضخ الدم إلى مختلف أنحاء الجسم، ويساهم في ضمان وصول الأكسجين والمواد الغذائية إلى الخلايا.' : 'Il propulse le sang dans l’organisme et permet l’apport d’oxygène et de nutriments aux cellules.'}</p><div class="gs-3d-fact"><b>${lang() === 'ar' ? 'وظيفته الأساسية' : 'Fonction principale'}</b><span data-3d-function>${lang() === 'ar' ? 'ضخ الدم والمحافظة على الدورة الدموية.' : 'Propulser le sang et maintenir la circulation.'}</span></div><div class="gs-3d-organ-list"><b>${lang() === 'ar' ? 'اختر عضواً' : 'Choisir un organe'}</b><div><button type="button" data-3d-organ="heart" class="is-active">❤️ ${lang() === 'ar' ? 'القلب' : 'Cœur'}</button><button type="button" data-3d-organ="lungs">🫁 ${lang() === 'ar' ? 'الرئتان' : 'Poumons'}</button><button type="button" data-3d-organ="brain">🧠 ${lang() === 'ar' ? 'الدماغ' : 'Cerveau'}</button><button type="button" data-3d-organ="liver">🟤 ${lang() === 'ar' ? 'الكبد' : 'Foie'}</button><button type="button" data-3d-organ="stomach">🟠 ${lang() === 'ar' ? 'المعدة' : 'Estomac'}</button><button type="button" data-3d-organ="kidneys">🫘 ${lang() === 'ar' ? 'الكليتان' : 'Reins'}</button><button type="button" data-3d-organ="intestines">〰️ ${lang() === 'ar' ? 'الأمعاء' : 'Intestins'}</button><button type="button" data-3d-organ="spinal-cord">🧠 ${lang() === 'ar' ? 'النخاع الشوكي' : 'Moelle épinière'}</button><button type="button" data-3d-organ="trachea">🫁 ${lang() === 'ar' ? 'القصبة الهوائية' : 'Trachée'}</button><button type="button" data-3d-organ="bladder">💧 ${lang() === 'ar' ? 'المثانة' : 'Vessie'}</button></div></div></aside></div><p class="gs-3d-disclaimer">${lang() === 'ar' ? 'نموذج تعليمي مبسط، لا يمثل الأطلس التشريحي الدقيق ولا يُستخدم لأغراض التشخيص الطبي.' : 'Modèle pédagogique simplifié, non destiné au diagnostic médical.'}</p></section></div></div></section>
+                    <section class="space-panel" id="panel-dashboard" aria-hidden="true" hidden>${renderDashboard(false)}</section>
+                    <section class="space-panel" id="panel-progress" aria-hidden="true" hidden data-lazy-panel="progress"></section>
+                    <section class="space-panel" id="panel-history" aria-hidden="true" hidden data-lazy-panel="history"></section>
+                    <section class="space-panel" id="panel-mistakes" aria-hidden="true" hidden data-lazy-panel="mistakes"></section>
+                    <section class="space-panel" id="panel-favorites" aria-hidden="true" hidden data-lazy-panel="favorites"></section>
+                    <section class="space-panel" id="panel-motivation" aria-hidden="true" hidden data-lazy-panel="motivation"></section>
+                    <section class="space-panel" id="panel-planner" aria-hidden="true" hidden data-lazy-panel="planner"></section>
+                    <section class="space-panel" id="panel-notes" aria-hidden="true" hidden data-lazy-panel="notes"></section>
+                </main>
+            </div>
+        `;
+
+        container.innerHTML = html;
+        // The 3D lab is intentionally mounted only when the learner opens its tab.
+        const taskParams = new URLSearchParams(window.location.search);
+        const studentCategory = taskParams.get('studentCategory');
+        const studentTaskKey = taskParams.get('studentTask');
+        if (studentCategory || studentTaskKey) {
+            document.body.classList.add('gs-standalone-student-task');
+            let standaloneStyle = document.getElementById('gs-standalone-student-task-style');
+            if (!standaloneStyle) {
+                standaloneStyle = document.createElement('style');
+                standaloneStyle.id = 'gs-standalone-student-task-style';
+                standaloneStyle.textContent = `
+                    body.gs-standalone-student-task .header,
+                    body.gs-standalone-student-task .footer,
+                    body.gs-standalone-student-task > nav,
+                    body.gs-standalone-student-task > footer,
+                    body.gs-standalone-student-task .section:not(#student-space) { display:none !important; }
+                    body.gs-standalone-student-task #student-space { display:block !important; min-height:100vh; padding:18px 0 50px; background:#f3f8f4; }
+                    body.gs-standalone-student-task #student-space > .container > .section-title { display:none !important; }
+                    body.gs-standalone-student-task #student-space-content .dashboard-header,
+                    body.gs-standalone-student-task #student-space-content .space-nav,
+                    body.gs-standalone-student-task #student-space-content .gs-student-welcome,
+                    body.gs-standalone-student-task #student-space-content .gs-student-category-hub,
+                    body.gs-standalone-student-task #student-space-content .data-actions { display:none !important; }
+                    body.gs-standalone-student-task #student-space-content .space-panel:not(#panel-dashboard) { display:none !important; }
+                    body.gs-standalone-student-task #student-space-content #panel-dashboard { display:block !important; }
+                    body.gs-standalone-student-task #student-space-content .gs-standalone-task-back { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 16px; padding:14px 18px; background:#fff; border:1px solid #dce9de; border-radius:16px; }
+                    body.gs-standalone-student-task #student-space-content .gs-standalone-task-back a { display:inline-block; padding:10px 15px; border-radius:11px; background:#246b48; color:#fff; text-decoration:none; font-weight:800; }
+                    body.gs-standalone-student-task #student-space-content .gs-standalone-task-unavailable { margin:18px 0; padding:24px; border:1px solid #f0d4a4; border-radius:16px; background:#fffaf0; color:#624b22; }
+                    body.gs-standalone-student-task #student-space-content .gs-standalone-task-unavailable a { display:inline-block; margin-top:10px; padding:10px 14px; border-radius:10px; background:#246b48; color:#fff; text-decoration:none; font-weight:800; }
+                    body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] { margin-top:0; }
+                    body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] > summary { display:none !important; }
+                    body.gs-standalone-student-task #student-space-content details.gs-student-task[data-task-key] > .gs-student-task-body { display:block !important; }
+                `;
+                document.head.appendChild(standaloneStyle);
+            }
+            const taskLanguage = taskParams.get('lang') === 'fr' ? 'fr' : lang();
+            const back = document.createElement('div');
+            back.className = 'gs-standalone-task-back';
+            const backLabel = document.createElement('strong');
+            backLabel.textContent = taskLanguage === 'fr' ? 'GO SVT Maroc · Activité' : 'GO SVT Maroc · المهمة';
+            const backLink = document.createElement('a');
+            backLink.href = 'student-task-categories.html?category=' + encodeURIComponent(studentCategory || 'learning') + '&lang=' + encodeURIComponent(taskLanguage);
+            backLink.textContent = taskLanguage === 'fr' ? '← Retour à la liste des activités' : '← العودة إلى قائمة المهام';
+            back.append(backLabel, backLink);
+            container.insertBefore(back, container.firstChild);
+
+            const taskNodes = Array.from(container.querySelectorAll('details.gs-student-task[data-task-key]'));
+            taskNodes.forEach(node => { node.hidden = studentTaskKey ? node.dataset.taskKey !== studentTaskKey : node.dataset.taskCategory !== studentCategory; });
+            const targetTask = taskNodes.find(node => node.dataset.taskKey === studentTaskKey);
+            if (targetTask) {
+                targetTask.open = true;
+                targetTask.scrollIntoView({behavior:'smooth',block:'center'});
+            } else if (studentTaskKey) {
+                const unavailable = document.createElement('section');
+                unavailable.className = 'gs-standalone-task-unavailable';
+                unavailable.setAttribute('role', 'status');
+                const unavailableTitle = document.createElement('h2');
+                unavailableTitle.textContent = taskLanguage === 'fr' ? 'Activité introuvable' : 'تعذر العثور على هذه المهمة';
+                const unavailableMessage = document.createElement('p');
+                unavailableMessage.textContent = taskLanguage === 'fr'
+                    ? 'Ce lien est peut-être ancien ou l’activité a été déplacée vers une autre catégorie.'
+                    : 'قد يكون رابط المهمة قديماً أو أن المهمة نُقلت إلى تصنيف آخر.';
+                const unavailableLink = document.createElement('a');
+                unavailableLink.href = 'student-task-categories.html?category=' + encodeURIComponent(studentCategory || 'learning') + '&lang=' + encodeURIComponent(taskLanguage);
+                unavailableLink.textContent = taskLanguage === 'fr' ? 'Retour à la liste des activités' : 'العودة إلى قائمة المهام';
+                unavailable.append(unavailableTitle, unavailableMessage, unavailableLink);
+                container.appendChild(unavailable);
+            }
+            const hubNode = container.querySelector('.gs-student-category-hub');
+            if (hubNode && studentTaskKey) hubNode.hidden = true;
+        }
+        // Scientific media inside collapsed activities is upgraded only when that activity opens.
+        if (container.dataset.gsLazyScienceMediaBound !== 'true') {
+            container.dataset.gsLazyScienceMediaBound = 'true';
+            container.addEventListener('toggle', function(event) {
+                const disclosure = event.target;
+                if (disclosure && disclosure.tagName === 'DETAILS' && disclosure.open) {
+                    loadScientificMediaImages(disclosure);
+                }
+            }, true);
+        }
+        loadScientificMediaImages(container);
+        if (container.dataset.gsStudyJumpsBound !== 'true') {
+            container.dataset.gsStudyJumpsBound = 'true';
+            container.addEventListener('click', function(event) {
+                const jump = event.target.closest('[data-study-anchor]');
+                if (!jump || !container.contains(jump)) return;
+                const target = container.querySelector('#' + jump.dataset.studyAnchor);
+                if (target) {
+                    // Open every containing disclosure before scrolling to content.
+                    let disclosure = target.closest('details');
+                    while (disclosure) {
+                        disclosure.open = true;
+                        disclosure = disclosure.parentElement && disclosure.parentElement.closest('details');
+                    }
+                    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
+                    target.setAttribute('tabindex','-1');
+                    target.focus({preventScroll:true});
+                }
+            });
+        }
+        const experimentRoot = container.querySelector('.gs-photosynthesis-experiment');
+        if (experimentRoot) {
+            const inputs = Array.from(experimentRoot.querySelectorAll('[data-experiment-input]'));
+            const updateExperiment = function() {
+                const values = {};
+                inputs.forEach(input => { values[input.dataset.experimentInput] = Number(input.value); });
+                const temperature = values.temperature;
+                const thermalCapacity = temperature <= 10 ? temperature * 5 :
+                    temperature <= 25 ? 50 + (temperature - 10) * (50 / 15) :
+                    temperature <= 35 ? 100 - (temperature - 25) * 3 :
+                    Math.max(10, 70 - (temperature - 35) * 5);
+                const factors = [
+                    {key:'light',value:values.light,label:lang()==='fr'?'la lumière':'الضوء'},
+                    {key:'co2',value:values.co2,label:'CO₂'},
+                    {key:'temperature',value:Math.round(thermalCapacity),label:lang()==='fr'?'la température':'درجة الحرارة'}
+                ];
+                const limiting = factors.reduce((lowest,item)=>item.value<lowest.value?item:lowest,factors[0]);
+                const rate = Math.max(0,Math.min(100,Math.round(Math.min(...factors.map(item=>item.value)))));
+                inputs.forEach(input => {
+                    const key=input.dataset.experimentInput;
+                    const output=experimentRoot.querySelector('[data-experiment-value="'+key+'"]');
+                    if(output) output.textContent=key==='temperature'?values[key]+'°C':values[key]+'%';
+                    const gauge=experimentRoot.querySelector('[data-experiment-gauge="'+key+'"]');
+                    if(gauge) gauge.textContent=(key==='temperature'?Math.round(thermalCapacity):values[key])+'%';
+                });
+                const rateNode=experimentRoot.querySelector('[data-experiment-rate]');
+                const meter=experimentRoot.querySelector('[data-experiment-meter]');
+                const limiter=experimentRoot.querySelector('[data-experiment-limiter]');
+                const explanation=experimentRoot.querySelector('[data-experiment-explain]');
+                if(rateNode) rateNode.textContent=rate+'%';
+                if(meter) meter.style.width=rate+'%';
+                if(limiter) limiter.textContent=limiting.label;
+                if(explanation) explanation.textContent=lang()==='fr'
+                    ? 'Dans ce modèle, '+limiting.label+' constitue le facteur le moins favorable et limite la vitesse relative.'
+                    : 'في هذا النموذج، تمثل '+limiting.label+' العامل الأقل ملاءمة، ولذلك يحد من الوتيرة النسبية.';
+            };
+            experimentRoot.addEventListener('input',updateExperiment);
+            const reset=experimentRoot.querySelector('.gs-experiment-reset');
+            if(reset) reset.addEventListener('click',function(){
+                inputs.forEach(input=>{input.value=input.dataset.experimentInput==='light'?'70':input.dataset.experimentInput==='co2'?'65':'25';});
+                updateExperiment();
+            });
+            updateExperiment();
+        }
+        const microscopeData = {
+            onion: {name: lang()==='fr'?'Épiderme d’oignon':'بشرة البصل',kind: lang()==='fr'?'Cellules végétales':'خلايا نباتية',observe: lang()==='fr'?'Paroi cellulaire · organisation en mosaïque':'الجدار الخلوي · تنظيم الخلايا كفسيفساء',detail: lang()==='fr'?'Cellules jointives, de forme polygonale, limitées par une paroi visible.':'خلايا متراصة متعددة الأضلاع تحدها جدران خلوية واضحة.'},
+            stomata: {name: lang()==='fr'?'Stomates foliaires':'ثغور الورقة',kind: lang()==='fr'?'Épiderme de feuille':'بشرة ورقية',observe: lang()==='fr'?'Cellules de garde · ostiole · échanges gazeux':'الخلايا الحارسة · الفتحة الثغرية · التبادلات الغازية',detail: lang()==='fr'?'Deux cellules de garde entourent une ouverture qui participe aux échanges gazeux.':'تحيط خليتان حارستان بفتحة تساهم في التبادلات الغازية والنتح.'},
+            blood: {name: lang()==='fr'?'Frottis sanguin':'لطاخة دموية',kind: lang()==='fr'?'Cellules sanguines':'خلايا الدم',observe: lang()==='fr'?'Globules rouges · globules blancs · plaquettes':'كريات حمراء · كريات بيضاء · صفائح دموية',detail: lang()==='fr'?'Le frottis distingue les globules rouges, quelques globules blancs et les plaquettes.':'تظهر في اللطاخة الكريات الحمراء وبعض الكريات البيضاء والصفائح الدموية.'},
+            leaf: {name: lang()==='fr'?'Cellules chlorophylliennes':'خلايا يخضورية',kind: lang()==='fr'?'Tissu végétal':'نسيج نباتي',observe: lang()==='fr'?'Cellules végétales · chloroplastes · parois':'خلايا نباتية · بلاستيدات خضراء · جدران',detail: lang()==='fr'?'Les chloroplastes captent l’énergie lumineuse utilisée pour la photosynthèse.':'تلتقط البلاستيدات الخضراء الطاقة الضوئية اللازمة للتركيب الضوئي.'}
+        };
+        let microscopeZoom = 100;
+        let microscopeCurrent = microscopeData.onion;
+        const microscopeRoot = container.querySelector('.gs-microscope-lab');
+        if (microscopeRoot) {
+            microscopeRoot.addEventListener('click', function(event) {
+                const slideButton = event.target.closest('[data-micro-slide]');
+                if (slideButton) {
+                    const slide = microscopeData[slideButton.dataset.microSlide];
+                    if (!slide) return;
+                    microscopeCurrent = slide;
+                    microscopeRoot.dataset.activeSlide = slideButton.dataset.microSlide;
+                    microscopeRoot.querySelectorAll('[data-micro-slide]').forEach(function(button) {
+                        const active = button === slideButton;
+                        button.classList.toggle('is-active', active);
+                        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+                    });
+                    microscopeRoot.querySelector('.gs-micro-view-title').textContent = slide.name;
+                    microscopeRoot.querySelector('.gs-micro-kind').textContent = slide.kind;
+                    microscopeRoot.querySelector('.gs-micro-observe-text').textContent = slide.observe;
+                    microscopeRoot.querySelector('.gs-micro-detail-text').textContent = slide.detail;
+                    const art = microscopeRoot.querySelector('.gs-micro-art');
+                    const overlay = microscopeRoot.querySelector('.gs-micro-overlay');
+                    const sourceCard = Array.from(microscopeRoot.querySelectorAll('[data-micro-source]')).find(card => card.dataset.microSource === slideButton.dataset.microSlide);
+                    const sourceImage = sourceCard && sourceCard.querySelector('.gs-science-media-photo img');
+                    if (sourceImage && art) {
+                        const preview = sourceImage.cloneNode();
+                        preview.style.width = '100%';
+                        preview.style.height = '100%';
+                        preview.style.objectFit = 'contain';
+                        preview.style.display = 'block';
+                        art.replaceChildren(preview);
+                        art.classList.add('is-real-photo');
+                        if (overlay) overlay.textContent = lang()==='fr'?'Microphotographie réelle':'صورة مجهرية حقيقية';
+                    } else if (art) {
+                        art.innerHTML = '<div class="gs-micro-image-placeholder">' + (lang()==='fr'?'Aucune microphotographie disponible pour le moment.':'لا تتوفر صورة مجهرية لهذا التحضير حالياً.') + '</div>';
+                        art.classList.remove('is-real-photo');
+                        if (overlay) overlay.textContent = lang()==='fr'?'Photographie réelle indisponible':'الصورة الحقيقية غير متاحة حالياً';
+                    }
+                }
+                const zoomButton = event.target.closest('[data-micro-zoom]');
+                if (zoomButton) {
+                    microscopeZoom = Math.max(80, Math.min(160, microscopeZoom + (zoomButton.dataset.microZoom === 'in' ? 20 : -20)));
+                    const art = microscopeRoot.querySelector('.gs-micro-art');
+                    if (art) art.style.transform = 'scale(' + microscopeZoom / 100 + ')';
+                    microscopeRoot.querySelector('.gs-micro-zoom-value').textContent = microscopeZoom + '%';
+                }
+                const labelButton = event.target.closest('.gs-micro-label-toggle');
+                if (labelButton) {
+                    const active = labelButton.getAttribute('aria-pressed') !== 'true';
+                    labelButton.setAttribute('aria-pressed', active ? 'true' : 'false');
+                    microscopeRoot.classList.toggle('show-micro-labels', active);
+                    const overlay = microscopeRoot.querySelector('.gs-micro-overlay');
+                    if (overlay) overlay.textContent = active ? microscopeCurrent.observe : (microscopeRoot.querySelector('.gs-micro-art') && microscopeRoot.querySelector('.gs-micro-art').classList.contains('is-real-photo') ? (lang()==='fr'?'Microphotographie réelle':'صورة مجهرية حقيقية') : (lang()==='fr'?'Photographie réelle indisponible':'الصورة الحقيقية غير متاحة حالياً'));
+                    labelButton.textContent = lang()==='fr' ? (active?'Masquer les repères':'Afficher les repères') : (active?'إخفاء البيانات':'إظهار البيانات');
+                }
+            });
+        }
+
+        const cellFacts = {
+            nucleus: [lang()==='fr'?'Noyau':'النواة', lang()==='fr'?'Le noyau contient l’information génétique (ADN) et participe au contrôle des activités cellulaires.':'تحتوي النواة على المعلومة الوراثية (ADN)، وتساهم في تنظيم أنشطة الخلية.'],
+            chloroplast: [lang()==='fr'?'Chloroplaste':'البلاستيدة الخضراء', lang()==='fr'?'Les chloroplastes contiennent la chlorophylle et réalisent la photosynthèse grâce à l’énergie lumineuse.':'تحتوي البلاستيدات الخضراء على اليخضور، وتنجز عملية التركيب الضوئي باستعمال الطاقة الضوئية.'],
+            vacuole: [lang()==='fr'?'Vacuole':'الفجوة العصارية', lang()==='fr'?'La grande vacuole stocke notamment l’eau et contribue au maintien de la turgescence.':'تخزن الفجوة العصارية الماء ومواد مختلفة، وتساهم في الحفاظ على ضغط الامتلاء.'],
+            membrane: [lang()==='fr'?'Membrane plasmique':'الغشاء البلازمي', lang()==='fr'?'La membrane plasmique délimite la cellule et régule les échanges avec le milieu.':'يحيط الغشاء البلازمي بالخلية وينظم التبادلات بينها وبين الوسط الخارجي.'],
+            wall: [lang()==='fr'?'Paroi cellulaire':'الجدار الخلوي', lang()==='fr'?'La paroi cellulosique protège la cellule et lui donne soutien et forme.':'يوفر الجدار الخلوي دعامة وحماية للخلية ويساهم في الحفاظ على شكلها.']
+        };
+        container.querySelectorAll('.gs-cell-part').forEach(button => button.addEventListener('click', function () {
+            const fact = cellFacts[this.dataset.cellPart];
+            if (!fact) return;
+            container.querySelectorAll('.gs-cell-part').forEach(item => {
+                const active = item === this;
+                item.classList.toggle('is-active', active);
+                item.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            const title = container.querySelector('.gs-cell-fact-title');
+            const body = container.querySelector('.gs-cell-fact-text');
+            if (title) title.textContent = fact[0];
+            if (body) body.textContent = fact[1];
+        }));
+        const photoFacts = {
+            light: [lang()==='fr'?'L’énergie lumineuse':'الطاقة الضوئية', lang()==='fr'?'La chlorophylle des chloroplastes capte l’énergie lumineuse nécessaire à la photosynthèse.':'يلتقط اليخضور الموجود في البلاستيدات الخضراء الطاقة الضوئية اللازمة للتركيب الضوئي.'],
+            water: [lang()==='fr'?'L’eau et les sels minéraux':'الماء والأملاح المعدنية', lang()==='fr'?'L’eau absorbée par les racines rejoint les feuilles grâce aux vaisseaux conducteurs.':'تمتص الجذور الماء والأملاح المعدنية، ثم تنتقل نحو الأوراق عبر الأوعية الناقلة.'],
+            co2: [lang()==='fr'?'Le dioxyde de carbone':'ثاني أكسيد الكربون', lang()==='fr'?'Le CO₂ de l’air entre principalement dans la feuille par les stomates.':'يدخل غاز CO₂ من الهواء إلى الورقة أساساً عبر الثغور.'],
+            sugar: [lang()==='fr'?'La matière organique':'المادة العضوية', lang()==='fr'?'Dans les chloroplastes, l’énergie lumineuse permet de fabriquer des sucres à partir de CO₂ et d’eau.':'تستعمل البلاستيدات الخضراء الطاقة الضوئية لتصنيع السكريات انطلاقاً من الماء وCO₂.'],
+            oxygen: [lang()==='fr'?'Le dioxygène':'غاز الأكسجين', lang()==='fr'?'Du dioxygène est libéré dans l’atmosphère au cours de la photosynthèse.':'ينطلق غاز الأكسجين إلى الوسط الخارجي خلال عملية التركيب الضوئي.']
+        };
+        container.querySelectorAll('.gs-photo-stage').forEach(button => button.addEventListener('click', function () {
+            const fact = photoFacts[this.dataset.photoStage];
+            if (!fact) return;
+            container.querySelectorAll('.gs-photo-stage').forEach(item => {
+                const active = item === this;
+                item.classList.toggle('is-active', active);
+                item.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            const title = container.querySelector('.gs-photo-fact-title');
+            const body = container.querySelector('.gs-photo-fact-text');
+            if (title) title.textContent = fact[0];
+            if (body) body.textContent = fact[1];
+            const scene = container.querySelector('.gs-photo-scene');
+            if (scene) {
+                scene.dataset.activeStage = this.dataset.photoStage;
+                scene.classList.remove('gs-photo-pulse');
+                void scene.offsetWidth;
+                scene.classList.add('gs-photo-pulse');
+            }
+        }));
+        const cellPhotoQuestions = lang()==='fr' ? [
+          {q:'Quel organite contient la chlorophylle ?',a:['Le noyau','Le chloroplaste','La vacuole'],c:1,e:'Les chloroplastes contiennent les pigments chlorophylliens.'},
+          {q:'Quel est le rôle principal de la paroi cellulosique ?',a:['Protéger et soutenir la cellule','Produire les protéines','Stocker l’ADN'],c:0,e:'La paroi donne une forme et une résistance à la cellule végétale.'},
+          {q:'Quel gaz est utilisé pendant la photosynthèse ?',a:['Le dioxygène','Le dioxyde de carbone','L’azote'],c:1,e:'Le CO₂ est utilisé avec l’eau pour fabriquer de la matière organique.'},
+          {q:'Quelle énergie alimente la photosynthèse ?',a:['L’énergie lumineuse','L’énergie sonore','La chaleur seule'],c:0,e:'La chlorophylle capte l’énergie lumineuse.'},
+          {q:'Quel gaz est libéré pendant la photosynthèse ?',a:['Le dioxyde de carbone','Le méthane','Le dioxygène'],c:2,e:'Le dioxygène est libéré dans le milieu extérieur.'}
+        ] : [
+          {q:'ما العضية التي تحتوي على اليخضور؟',a:['النواة','البلاستيدة الخضراء','الفجوة العصارية'],c:1,e:'تحتوي البلاستيدات الخضراء على الأصباغ اليخضورية.'},
+          {q:'ما الدور الأساسي للجدار السيليلوزي؟',a:['حماية الخلية ودعامتها','إنتاج البروتينات','تخزين ADN'],c:0,e:'يساهم الجدار في إعطاء الخلية النباتية شكلها ومقاومتها.'},
+          {q:'ما الغاز المستعمل خلال التركيب الضوئي؟',a:['الأكسجين','ثاني أكسيد الكربون','الآزوت'],c:1,e:'يستعمل CO₂ مع الماء لإنتاج المادة العضوية.'},
+          {q:'ما مصدر الطاقة الضروري للتركيب الضوئي؟',a:['الطاقة الضوئية','الطاقة الصوتية','الحرارة وحدها'],c:0,e:'يلتقط اليخضور الطاقة الضوئية.'},
+          {q:'ما الغاز الذي ينطلق خلال التركيب الضوئي؟',a:['ثاني أكسيد الكربون','الميثان','الأكسجين'],c:2,e:'ينطلق غاز الأكسجين إلى الوسط الخارجي.'}
+        ];
+        const revisionRoot=container.querySelector('.gs-svt-revision-content');
+        if(revisionRoot){
+            let index=0,score=0,answered=false,mistakes=[],saved=false;
+            const draw=()=>{
+                if(index>=cellPhotoQuestions.length){
+                    if(!saved){
+                        saved=true;
+                        try { saveQuizResult('cell-photosynthesis-revision',score,cellPhotoQuestions.length,mistakes,null,true); }
+                        catch(error){ console.warn('[GoSVT] Revision result not saved:',error&&error.message); }
+                    }
+                    revisionRoot.innerHTML=`<div class="gs-svt-revision-result"><span>🌟</span><strong>${lang()==='fr'?'Résultat':'النتيجة'} : ${score}/5</strong><p>${score===5?(lang()==='fr'?'Bravo, sans faute !':'أحسنت! إجابات صحيحة بالكامل.'):lang()==='fr'?'Continuez à réviser pour renforcer vos acquis.':'واصل المراجعة لترسيخ مكتسباتك.'}</p><button type="button" data-svt-restart>${lang()==='fr'?'Rejouer':'إعادة التحدي'}</button></div>`;
+                    return;
+                }
+                answered=false;
+                const q=cellPhotoQuestions[index];
+                revisionRoot.innerHTML=`<div class="gs-svt-revision-meta"><span>${lang()==='fr'?'Question':'السؤال'} ${index+1}/5</span><span>${lang()==='fr'?'Score':'النقاط'} : ${score}</span></div><div class="gs-svt-revision-track"><span style="width:${index/5*100}%"></span></div><h4>${q.q}</h4><div class="gs-svt-revision-options">${q.a.map((a,i)=>`<button type="button" data-svt-answer="${i}">${a}</button>`).join('')}</div><p class="gs-svt-revision-feedback" aria-live="polite"></p><button type="button" data-svt-next hidden>${index===4?(lang()==='fr'?'Voir le résultat':'عرض النتيجة'):(lang()==='fr'?'Continuer':'متابعة')}</button>`;
+            };
+            revisionRoot.addEventListener('click',event=>{
+                const answer=event.target.closest('[data-svt-answer]');
+                if(answer&&!answered){
+                    answered=true;
+                    const q=cellPhotoQuestions[index],choice=Number(answer.dataset.svtAnswer);
+                    if(choice===q.c)score++;
+                    else mistakes.push({question:q.q,selected:q.a[choice],correct:q.a[q.c]});
+                    revisionRoot.querySelectorAll('[data-svt-answer]').forEach((button,i)=>{
+                        button.disabled=true;
+                        if(i===q.c)button.classList.add('is-correct');
+                        else if(i===choice)button.classList.add('is-incorrect');
+                    });
+                    const feedback=revisionRoot.querySelector('.gs-svt-revision-feedback');
+                    if(feedback)feedback.textContent=(choice===q.c?(lang()==='fr'?'Bonne réponse ! ':'إجابة صحيحة! '):(lang()==='fr'?'À revoir. ':'راجع هذه الإجابة. '))+q.e;
+                    const next=revisionRoot.querySelector('[data-svt-next]');
+                    if(next)next.hidden=false;
+                }
+                if(event.target.closest('[data-svt-next]')&&answered){index++;draw();}
+                if(event.target.closest('[data-svt-restart]')){index=0;score=0;mistakes=[];saved=false;draw();}
+            });
+            draw();
+        }
+        const glossaryTerms = lang()==='fr' ? [
+          ['Absorption intestinale','Passage des nutriments de l’intestin grêle vers le milieu intérieur.','Digestion'],
+          ['Alvéole pulmonaire','Petite structure du poumon où se réalisent les échanges gazeux.','Respiration'],
+          ['Biodiversité','Diversité des êtres vivants, des gènes et des écosystèmes.','Écologie'],
+          ['Capillaire sanguin','Très petit vaisseau où se déroulent de nombreux échanges avec les tissus.','Circulation'],
+          ['Chlorophylle','Pigment qui absorbe une partie de l’énergie lumineuse utilisée en photosynthèse.','Végétaux'],
+          ['Chloroplaste','Organite des cellules végétales où se déroule la photosynthèse.','Cellule'],
+          ['Enzyme','Molécule, généralement protéique, qui accélère une réaction biologique.','Digestion'],
+          ['Écosystème','Ensemble formé par un milieu et les êtres vivants qui y interagissent.','Écologie'],
+          ['Gène','Portion d’ADN portant une information héréditaire.','Génétique'],
+          ['Hématie','Globule rouge spécialisé dans le transport des gaz respiratoires.','Sang'],
+          ['Membrane plasmique','Enveloppe qui délimite la cellule et contrôle les échanges.','Cellule'],
+          ['Métabolisme','Ensemble des réactions chimiques qui se déroulent dans une cellule ou un organisme.','Cellule'],
+          ['Nutriment','Substance simple utilisable par l’organisme après la digestion ou directement absorbée.','Digestion'],
+          ['Photosynthèse','Processus par lequel les organismes chlorophylliens produisent de la matière organique grâce à la lumière.','Végétaux'],
+          ['Stomate','Pore de l’épiderme végétal participant aux échanges gazeux et à la transpiration.','Végétaux'],
+          ['Synapse','Zone de communication fonctionnelle entre deux neurones ou entre un neurone et une cellule cible.','Nerfs']
+        ] : [
+          ['الامتصاص المعوي','انتقال المغذيات من الأمعاء الدقيقة إلى الوسط الداخلي.','الهضم'],
+          ['السنخ الرئوي','بنية صغيرة في الرئة تتم على مستواها التبادلات الغازية.','التنفس'],
+          ['التنوع الحيوي','تنوع الكائنات الحية والمورثات والأنظمة البيئية.','البيئة'],
+          ['الشعيرة الدموية','وعاء دموي دقيق تتم عبر جداره مبادلات عديدة مع الأنسجة.','الدورة الدموية'],
+          ['اليخضور','صبغة تمتص جزءاً من الطاقة الضوئية المستعملة في التركيب الضوئي.','النباتات'],
+          ['البلاستيدة الخضراء','عضية في الخلايا النباتية تتم داخلها عملية التركيب الضوئي.','الخلية'],
+          ['الإنزيم','جزيئة غالباً ما تكون بروتينية تسرّع تفاعلاً بيولوجياً.','الهضم'],
+          ['النظام البيئي','مجموعة تضم وسطاً طبيعياً والكائنات الحية التي تتفاعل داخله.','البيئة'],
+          ['المورثة','جزء من ADN يحمل معلومة وراثية.','الوراثة'],
+          ['كرية الدم الحمراء','خلية دموية متخصصة في نقل الغازات التنفسية.','الدم'],
+          ['الغشاء الهيولي','غلاف يحدد الخلية وينظم المبادلات بينها وبين الوسط.','الخلية'],
+          ['الأيض','مجموع التفاعلات الكيميائية التي تحدث داخل الخلية أو الكائن الحي.','الخلية'],
+          ['المغذي','مادة بسيطة يستعملها الجسم بعد الهضم أو يمتصها مباشرة.','الهضم'],
+          ['التركيب الضوئي','عملية تنتج بها الكائنات اليخضورية مادة عضوية باستعمال الطاقة الضوئية.','النباتات'],
+          ['الثغر','فتحة في بشرة الورقة تساهم في التبادلات الغازية والنتح.','النباتات'],
+          ['المشبك العصبي','منطقة اتصال وظيفي بين عصبونين أو بين عصبون وخلية مستهدفة.','الجهاز العصبي']
+        ];
+        const glossaryRoot=container.querySelector('.gs-svt-glossary');
+        if(glossaryRoot){
+            const search=glossaryRoot.querySelector('.gs-svt-glossary-input');
+            const results=glossaryRoot.querySelector('.gs-svt-glossary-results');
+            const meta=glossaryRoot.querySelector('.gs-svt-glossary-meta');
+            const renderGlossary=()=>{
+                const query=search.value.trim().toLocaleLowerCase();
+                const filtered=glossaryTerms.filter(term=>term.join(' ').toLocaleLowerCase().includes(query));
+                meta.textContent=(lang()==='fr'?'Résultats : ':'النتائج: ')+filtered.length+' / '+glossaryTerms.length;
+                results.innerHTML=filtered.length?filtered.map((term,index)=>`<article class="gs-svt-glossary-term"><div class="gs-svt-glossary-term-top"><h4>${term[0]}</h4><span>${term[2]}</span></div><p>${term[1]}</p></article>`).join(''):`<p class="gs-svt-glossary-empty">${lang()==='fr'?'Aucun terme trouvé. Essayez un autre mot.':'لم يتم العثور على مصطلح. جرب كلمة أخرى.'}</p>`;
+            };
+            search.addEventListener('input',renderGlossary);
+            renderGlossary();
+        }
+        const memoryDeckData = lang()==='fr' ? [
+          ['Cellule végétale','Quelle structure entoure la membrane et soutient la cellule ?','La paroi cellulosique, qui protège et soutient la cellule végétale.','🧫'],
+          ['Chloroplaste','Quel pigment capte principalement l’énergie lumineuse ?','La chlorophylle, présente dans les membranes des thylakoïdes.','🍃'],
+          ['Photosynthèse','Quels sont les deux réactifs minéraux de la photosynthèse ?','L’eau (H₂O) et le dioxyde de carbone (CO₂), en présence de lumière.','☀️'],
+          ['Échanges gazeux','Où se déroulent les échanges gazeux dans les poumons ?','Au niveau des alvéoles pulmonaires, en contact avec les capillaires.','🫁'],
+          ['Digestion','Où la majorité des nutriments sont-ils absorbés ?','Dans l’intestin grêle, à travers sa paroi riche en villosités.','🥗'],
+          ['Circulation','Quel est le rôle principal du cœur ?','Propulser le sang dans les circuits pulmonaire et général.','❤️'],
+          ['Système nerveux','Quel est le rôle de la moelle épinière ?','Transmettre les messages nerveux entre l’encéphale et les nerfs, et participer aux réflexes.','🧠'],
+          ['Biodiversité','Que révèle l’étude des fossiles ?','Elle renseigne sur les êtres vivants du passé et l’évolution de la biodiversité.','🦴']
+        ] : [
+          ['الخلية النباتية','ما البنية التي تحيط بالغشاء وتدعم الخلية؟','الجدار السيليلوزي، الذي يحمي الخلية النباتية ويساهم في دعمها.','🧫'],
+          ['البلاستيدة الخضراء','ما الصبغة التي تلتقط الطاقة الضوئية أساساً؟','اليخضور الموجود في أغشية التيلاكويدات.','🍃'],
+          ['التركيب الضوئي','ما المادتان المعدنيتان الأوليتان في التركيب الضوئي؟','الماء H₂O وثاني أكسيد الكربون CO₂ بوجود الضوء.','☀️'],
+          ['التبادلات الغازية','أين تتم التبادلات الغازية في الرئتين؟','على مستوى الأسناخ الرئوية المحاطة بالشعيرات الدموية.','🫁'],
+          ['الهضم','أين يتم امتصاص معظم المغذيات؟','في الأمعاء الدقيقة عبر جدارها الغني بالزغابات المعوية.','🥗'],
+          ['الدورة الدموية','ما الدور الأساسي للقلب؟','دفع الدم عبر الدورة الرئوية والدورة العامة.','❤️'],
+          ['الجهاز العصبي','ما دور النخاع الشوكي؟','نقل الرسائل العصبية بين الدماغ وأعصاب الجسم والمساهمة في المنعكسات.','🧠'],
+          ['التنوع الحيوي','ماذا تكشف دراسة المستحاثات؟','تقدم معلومات عن الكائنات الحية في الماضي وتطور التنوع الحيوي.','🦴']
+        ];
+        const memoryRoot=container.querySelector('.gs-memory-deck');
+        if(memoryRoot){
+            let memoryIndex=0,revealed=false;
+            const updateMemoryCard=()=>{
+                const card=memoryDeckData[memoryIndex];
+                memoryRoot.querySelector('.gs-memory-category').textContent=card[0];
+                memoryRoot.querySelector('.gs-memory-counter').textContent=(lang()==='fr'?'Carte':'بطاقة')+' '+(memoryIndex+1)+' / '+memoryDeckData.length;
+                memoryRoot.querySelector('.gs-memory-art-icon').textContent=card[3];
+                memoryRoot.querySelector('.gs-memory-question').textContent=card[1];
+                const answer=memoryRoot.querySelector('.gs-memory-answer');
+                answer.textContent=card[2];
+                answer.hidden=!revealed;
+                memoryRoot.querySelector('.gs-memory-reveal').textContent=revealed?(lang()==='fr'?'Masquer la réponse':'إخفاء الإجابة'):(lang()==='fr'?'Révéler la réponse':'اكشف الإجابة');
+                const progress=memoryRoot.querySelector('.gs-memory-progress');
+                progress.setAttribute('aria-valuenow',String(memoryIndex+1));
+                progress.querySelector('span').style.width=((memoryIndex+1)/memoryDeckData.length*100)+'%';
+                memoryRoot.querySelector('.gs-memory-prev').disabled=memoryIndex===0;
+                memoryRoot.querySelector('.gs-memory-next').textContent=memoryIndex===memoryDeckData.length-1?(lang()==='fr'?'Recommencer':'من البداية')+' ↻':(lang()==='fr'?'Suivante':'التالية')+' →';
+            };
+            memoryRoot.addEventListener('click',event=>{
+                if(event.target.closest('.gs-memory-reveal')){revealed=!revealed;updateMemoryCard();}
+                if(event.target.closest('.gs-memory-prev')&&memoryIndex>0){memoryIndex--;revealed=false;updateMemoryCard();}
+                if(event.target.closest('.gs-memory-next')){memoryIndex=memoryIndex===memoryDeckData.length-1?0:memoryIndex+1;revealed=false;updateMemoryCard();}
+            });
+            updateMemoryCard();
+        }
+        const anatomyFacts = {
+          digestive: lang()==='fr'?['Système digestif','Transforme les aliments en nutriments absorbables.','Bouche → œsophage → estomac → intestin grêle → gros intestin.','Les nutriments traversent la paroi de l’intestin grêle et rejoignent le sang.']:['الجهاز الهضمي','يحول الأغذية إلى مغذيات قابلة للامتصاص.','الفم ← المريء ← المعدة ← الأمعاء الدقيقة ← الأمعاء الغليظة.','تعبر المغذيات جدار الأمعاء الدقيقة لتصل إلى الدم.'],
+          respiratory: lang()==='fr'?['Système respiratoire','Assure les échanges gazeux entre l’air et le sang.','Fosses nasales → trachée → bronches → bronchioles → alvéoles.','Au niveau des alvéoles, le dioxygène diffuse vers le sang et le CO₂ en sort.']:['الجهاز التنفسي','يضمن التبادلات الغازية بين الهواء والدم.','التجاويف الأنفية ← القصبة الهوائية ← الشعب ← القصيبات ← الأسناخ الرئوية.','على مستوى الأسناخ ينتشر الأكسجين نحو الدم ويغادره ثاني أكسيد الكربون.'],
+          circulatory: lang()==='fr'?['Système circulatoire','Transporte les gaz, nutriments et autres substances dans l’organisme.','Cœur + artères + capillaires + veines.','Le cœur propulse le sang dans deux circuits complémentaires : pulmonaire et général.']:['الجهاز الدوري','ينقل الغازات والمغذيات ومواد أخرى داخل الجسم.','القلب + الشرايين + الشعيرات الدموية + الأوردة.','يدفع القلب الدم عبر دورتين متكاملتين: الدورة الرئوية والدورة العامة.'],
+          nervous: lang()==='fr'?['Système nerveux','Reçoit, traite et transmet les messages nerveux.','Encéphale + moelle épinière + nerfs.','Les organes sensoriels détectent les stimuli ; les centres nerveux élaborent des réponses.']:['الجهاز العصبي','يستقبل الرسائل العصبية ويعالجها وينقلها.','الدماغ + النخاع الشوكي + الأعصاب.','تلتقط الأعضاء الحسية المنبهات، وتعالج المراكز العصبية المعلومات وتعد الاستجابات.'],
+          urinary: lang()==='fr'?['Système urinaire','Filtre le sang et participe à l’équilibre hydrique et minéral.','Reins + uretères + vessie + urètre.','Les reins produisent l’urine ; les uretères la conduisent vers la vessie.']:['الجهاز البولي','يرشح الدم ويساهم في توازن الماء والأملاح المعدنية.','الكليتان + الحالبان + المثانة + الإحليل.','تنتج الكليتان البول الذي ينتقل عبر الحالبين إلى المثانة.'],
+          skeletal: lang()==='fr'?['Système squelettique','Soutient le corps, protège certains organes et participe aux mouvements.','Os + articulations + cartilages.','Les muscles agissent sur les os au niveau des articulations pour produire les mouvements.']:['الجهاز الهيكلي','يدعم الجسم ويحمي بعض الأعضاء ويساهم في الحركة.','العظام + المفاصل + الغضاريف.','تؤثر العضلات في العظام عند المفاصل لإحداث الحركة.']
+        };
+        container.querySelectorAll('.gs-anatomy-tab').forEach(button => button.addEventListener('click', function () {
+            const fact = anatomyFacts[this.dataset.anatomySystem];
+            if (!fact) return;
+            container.querySelectorAll('.gs-anatomy-photo-card').forEach(card => {
+                const activePhoto = card.dataset.anatomyPhoto === this.dataset.anatomySystem;
+                card.classList.toggle('is-active', activePhoto);
+                card.setAttribute('aria-pressed', activePhoto ? 'true' : 'false');
+            });
+            container.querySelectorAll('.gs-anatomy-tab').forEach(item => {
+                const active = item === this;
+                item.classList.toggle('is-active', active);
+                item.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            const fields = ['.gs-anatomy-name','.gs-anatomy-function','.gs-anatomy-organs','.gs-anatomy-fact'];
+            fields.forEach((selector,index) => {
+                const element = container.querySelector(selector);
+                if (element) element.textContent = fact[index];
+            });
+        }));
+        const atlasQuiz = lang()==='fr' ? [
+          {q:'Quel organe absorbe la majorité des nutriments ?',a:['L’estomac','L’intestin grêle','Le gros intestin'],c:1,e:'La paroi de l’intestin grêle assure l’essentiel de l’absorption des nutriments.'},
+          {q:'Où se déroulent les échanges gazeux pulmonaires ?',a:['Dans les alvéoles','Dans la trachée','Dans le diaphragme'],c:0,e:'Les alvéoles offrent une grande surface d’échange avec les capillaires sanguins.'},
+          {q:'Quel organe propulse le sang ?',a:['Le foie','Le poumon','Le cœur'],c:2,e:'Le cœur est une pompe musculaire qui propulse le sang dans les vaisseaux.'},
+          {q:'Quelle structure relie l’encéphale aux nerfs du corps ?',a:['La moelle épinière','L’œsophage','La trachée'],c:0,e:'La moelle épinière appartient au système nerveux central et communique avec les nerfs.'},
+          {q:'Quel organe produit l’urine ?',a:['La vessie','Les reins','Les uretères'],c:1,e:'Les reins filtrent le sang et produisent l’urine.'},
+          {q:'Quel ensemble protège notamment le cerveau ?',a:['La cage thoracique','Le bassin','Le crâne'],c:2,e:'Le crâne entoure et protège l’encéphale.'}
+        ] : [
+          {q:'ما العضو الذي يمتص معظم المغذيات؟',a:['المعدة','الأمعاء الدقيقة','الأمعاء الغليظة'],c:1,e:'يتم معظم امتصاص المغذيات عبر جدار الأمعاء الدقيقة.'},
+          {q:'أين تتم التبادلات الغازية الرئوية؟',a:['في الأسناخ الرئوية','في القصبة الهوائية','في الحجاب الحاجز'],c:0,e:'توفر الأسناخ الرئوية سطحاً واسعاً للتبادل مع الشعيرات الدموية.'},
+          {q:'ما العضو الذي يدفع الدم داخل الأوعية؟',a:['الكبد','الرئة','القلب'],c:2,e:'القلب مضخة عضلية تدفع الدم عبر الأوعية الدموية.'},
+          {q:'ما البنية التي تصل الدماغ بأعصاب الجسم؟',a:['النخاع الشوكي','المريء','القصبة الهوائية'],c:0,e:'ينتمي النخاع الشوكي إلى الجهاز العصبي المركزي ويتواصل مع الأعصاب.'},
+          {q:'ما العضو الذي ينتج البول؟',a:['المثانة','الكليتان','الحالبان'],c:1,e:'ترشح الكليتان الدم وتنتجان البول.'},
+          {q:'ما الجزء الذي يحمي الدماغ؟',a:['القفص الصدري','الحوض','الجمجمة'],c:2,e:'تحيط الجمجمة بالدماغ وتوفر له الحماية.'}
+        ];
+        const quizRoot = container.querySelector('.gs-atlas-quiz-content');
+        if (quizRoot) {
+            let quizIndex = 0, quizScore = 0, quizAnswered = false, quizMistakes = [], quizSaved = false;
+            const renderQuizStep = () => {
+                if (quizIndex >= atlasQuiz.length) {
+                    if (!quizSaved) {
+                        quizSaved = true;
+                        try { saveQuizResult('human-systems-atlas', quizScore, atlasQuiz.length, quizMistakes, null, true); }
+                        catch (error) { console.warn('[GoSVT] Atlas result not saved:', error && error.message); }
+                    }
+                    quizRoot.innerHTML = `<div class="gs-atlas-quiz-result"><span aria-hidden="true">🏅</span><strong>${lang()==='fr'?'Votre résultat':'نتيجتك'} : ${quizScore}/${atlasQuiz.length}</strong><p>${quizScore===atlasQuiz.length?(lang()==='fr'?'Excellent ! Toutes les réponses sont correctes.':'ممتاز! جميع إجاباتك صحيحة.'):lang()==='fr'?'Relisez les explications et réessayez pour progresser.':'راجع الشروحات وحاول مجدداً لتحسين نتيجتك.'}</p><button type="button" class="gs-atlas-quiz-restart">${lang()==='fr'?'Recommencer':'إعادة المحاولة'}</button></div>`;
+                    return;
+                }
+                const question = atlasQuiz[quizIndex];
+                quizAnswered = false;
+                quizRoot.innerHTML = `<div class="gs-atlas-quiz-progress"><span>${lang()==='fr'?'Question':'السؤال'} ${quizIndex+1}/${atlasQuiz.length}</span><span>${lang()==='fr'?'Score':'النقاط'} : ${quizScore}</span></div><div class="gs-atlas-quiz-track"><span style="width:${(quizIndex/atlasQuiz.length)*100}%"></span></div><h5 class="gs-atlas-question">${question.q}</h5><div class="gs-atlas-options">${question.a.map((answer,i)=>`<button type="button" class="gs-atlas-option" data-atlas-answer="${i}">${answer}</button>`).join('')}</div><div class="gs-atlas-feedback" aria-live="polite"></div><button type="button" class="gs-atlas-next" hidden>${quizIndex===atlasQuiz.length-1?(lang()==='fr'?'Voir le résultat':'عرض النتيجة'):(lang()==='fr'?'Question suivante':'السؤال التالي')}</button>`;
+            };
+            quizRoot.addEventListener('click',event=>{
+                const answerButton=event.target.closest('[data-atlas-answer]');
+                if(answerButton && !quizAnswered){
+                    quizAnswered=true;
+                    const selected=Number(answerButton.dataset.atlasAnswer),question=atlasQuiz[quizIndex],correct=selected===question.c;
+                    if(correct) quizScore++;
+                    else quizMistakes.push({question:question.q,selected:question.a[selected],correct:question.a[question.c]});
+                    quizRoot.querySelectorAll('.gs-atlas-option').forEach((option,i)=>{
+                        option.disabled=true;
+                        if(i===question.c) option.classList.add('is-correct');
+                        else if(i===selected) option.classList.add('is-incorrect');
+                    });
+                    const feedback=quizRoot.querySelector('.gs-atlas-feedback');
+                    if(feedback) feedback.textContent=(correct?(lang()==='fr'?'Bonne réponse ! ':'إجابة صحيحة! '):(lang()==='fr'?'Pas tout à fait. ':'ليست الإجابة الصحيحة. '))+question.e;
+                    const next=quizRoot.querySelector('.gs-atlas-next');
+                    if(next) next.hidden=false;
+                }
+                if(event.target.closest('.gs-atlas-next') && quizAnswered){quizIndex++;renderQuizStep();}
+                if(event.target.closest('.gs-atlas-quiz-restart')){quizIndex=0;quizScore=0;quizMistakes=[];quizSaved=false;renderQuizStep();}
+            });
+            renderQuizStep();
+        }
+        hydrateDailyChallenge();
+        container.querySelectorAll('.gs-daily-option').forEach(button => {
+            button.addEventListener('click', function () { answerDailyChallenge(this.dataset.dailyOption, this); });
+        });
+
+        // Render secondary panels only when the learner opens them.
+        // This avoids computing progress/history/notes/favorites on the initial dashboard render.
+        function ensureStudentPanel(tabName, forceRefresh) {
+            const panel = container.querySelector('#panel-' + tabName + '[data-lazy-panel]');
+            if (!panel) return;
+            if (panel.dataset.loaded === 'true' && !forceRefresh) return;
+            let content = '';
+            switch (tabName) {
+                case 'progress':
+                    content = panelTask('📈', 'تقدمي الدراسي', 'Ma progression', renderProgress());
+                    break;
+                case 'history':
+                    content = panelTask('🕘', 'سجل الاختبارات', 'Historique des quiz', renderHistory());
+                    break;
+                case 'mistakes':
+                    content = panelTask('🧩', 'مراجعة أخطائي', 'Révision de mes erreurs', renderMistakes());
+                    break;
+                case 'favorites':
+                    content = panelTask('⭐', 'مواردي المفضلة', 'Mes favoris', renderFavorites());
+                    break;
+                case 'motivation':
+                    content = panelTask('🏅', 'التحفيز والأهداف', 'Motivation et objectifs', renderMotivation());
+                    break;
+                case 'planner':
+                    content = panelTask('🗓', 'خطة المراجعة', 'Mon planning de révision', renderPlanner());
+                    break;
+                case 'notes':
+                    content = panelTask('🗒', 'ملاحظاتي', 'Mes notes', renderNotes());
+                    break;
+                default:
+                    return;
+            }
+            panel.innerHTML = content;
+            panel.dataset.loaded = 'true';
+            if (tabName === 'favorites') bindFavoritesPanel(panel);
+            if (tabName === 'motivation') bindGoalControls(panel);
+            if (tabName === 'planner' || tabName === 'notes') bindPlannerAndNotes(panel);
+            if (tabName === 'mistakes') {
+                panel.querySelectorAll('.btn-retry-mistakes').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        retryMistakes(this.dataset.quizId);
+                    });
+                });
+            }
+        }
+
+        // Add event listeners
+        const studentTabs = Array.from(container.querySelectorAll('.space-tab'));
+        function activateStudentTab(tab, moveFocus) {
+            const tabName = tab.dataset.tab;
+            studentTabs.forEach(function (item) {
+                const selected = item === tab;
+                item.classList.toggle('active', selected);
+                item.setAttribute('aria-expanded', selected ? 'true' : 'false');
+            });
+            container.querySelectorAll('.space-panel').forEach(function (panel) {
+                const selected = panel.id === 'panel-' + tabName;
+                panel.classList.toggle('active', selected);
+                panel.hidden = !selected;
+                panel.setAttribute('aria-hidden', selected ? 'false' : 'true');
+            });
+            if (moveFocus) tab.focus();
+        }
+        studentTabs.forEach(tab => {
+            tab.addEventListener('keydown', function(event) {
+                const index = studentTabs.indexOf(this);
+                let nextIndex = null;
+                const isRtl = getComputedStyle(this.parentElement).direction === 'rtl';
+                if (event.key === 'ArrowRight') nextIndex = (index + (isRtl ? -1 : 1) + studentTabs.length) % studentTabs.length;
+                else if (event.key === 'ArrowLeft') nextIndex = (index + (isRtl ? 1 : -1) + studentTabs.length) % studentTabs.length;
+                else if (event.key === 'Home') nextIndex = 0;
+                else if (event.key === 'End') nextIndex = studentTabs.length - 1;
+                if (nextIndex !== null) {
+                    event.preventDefault();
+                    activateStudentTab(studentTabs[nextIndex], true);
+                    studentTabs[nextIndex].click();
+                }
+            });
+            tab.addEventListener('click', function(event) {
+                const tabName = this.dataset.tab;
+                activateStudentTab(this, false);
+                // Force-refresh favorites only after a real user activation.
+                // Synthetic clicks used to restore the previous tab after a
+                // dashboard refresh must not rebuild the favorites list again.
+                ensureStudentPanel(tabName, tabName === 'favorites' && !!(event && event.isTrusted));
+
+                // Build the WebGL scene only when requested. Keeping the 3D lab
+                // lazy avoids blocking the initial student dashboard on devices
+                // with limited graphics or memory resources.
+                if (tabName === '3d-lab' && window.GOSVT3DLab) {
+                    const labPanel = container.querySelector('#panel-3d-lab');
+                    if (labPanel) window.GOSVT3DLab.mount(labPanel);
+                }
+
+
+            });
+        });
+
+        // Mark lesson as complete
+        container.querySelectorAll('.btn-complete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lessonId = this.dataset.lesson;
+                if (markLessonComplete(lessonId)) {
+                    // Preserve the active tab and expanded learning tasks after completion.
+                    refreshStudentSpaceView();
+                }
+            });
+        });
+
+        // Retry mistakes
+        container.querySelectorAll('.btn-retry-mistakes').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const quizId = this.dataset.quizId;
+                retryMistakes(quizId);
+            });
+        });
+    }
+
+    // ============================================
+    // 13. CSS STYLES (التنسيقات)
+    // ============================================
+    const styles = document.createElement('style');
+    styles.textContent = `
+        .student-space {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .space-nav {
+            display: flex;
+            gap: 0.65rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: stretch;
+        }
+        .space-tab {
+            min-height: 48px;
+            padding: 0.72rem 1.25rem;
+            background: linear-gradient(120deg, #f2f7f3, #e4eee8);
+            color: #244b40;
+            border: 1px solid rgba(45, 90, 71, 0.18);
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(20, 55, 43, 0.08);
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .space-tab:hover {
+            background: linear-gradient(120deg, #e5f0e8, #d6e6dc);
+            transform: translateY(-1px);
+            box-shadow: 0 7px 16px rgba(20, 55, 43, 0.12);
+        }
+        .space-tab.active {
+            background: linear-gradient(115deg, #173f35, #477a66);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.28);
+            box-shadow: 0 7px 18px rgba(20, 55, 43, 0.2);
+        }
+        .space-tab:focus-visible {
+            outline: 3px solid #b4d6bd;
+            outline-offset: 3px;
+        }
+        html.gs-dark .space-tab {
+            background: linear-gradient(120deg, #263b30, #314b3d);
+            color: #e5f1e8;
+            border-color: rgba(190, 220, 198, 0.2);
+        }
+        html.gs-dark .space-tab:hover {
+            background: linear-gradient(120deg, #304b3b, #3b5c49);
+        }
+        html.gs-dark .space-tab.active {
+            background: linear-gradient(115deg, #315f4c, #527f68);
+            color: #fff;
+        }
+        html.gs-dark .space-tab:focus-visible {
+            outline-color: #a7d4b4;
+        }
+        @media (max-width: 560px) {
+            .space-nav { gap: 0.5rem; margin-bottom: 1.35rem; }
+            .space-tab { flex: 1 1 calc(50% - 0.5rem); padding: 0.7rem 0.75rem; }
+        }
+        .space-panel {
+            display: none;
+        }
+        .space-panel.active {
+            display: block;
+        }
+        .space-panel:focus-visible {
+            outline: 3px solid #b7791f;
+            outline-offset: 4px;
+            border-radius: 12px;
+        }
+        html.gs-dark .space-panel:focus-visible {
+            outline-color: #a7d4b4;
+        }
+        .student-space :is(button:not(.space-tab), a, input, select, textarea, [role="button"]):focus-visible {
+            outline: 3px solid #b7791f;
+            outline-offset: 3px;
+        }
+        html.gs-dark .student-space :is(button:not(.space-tab), a, input, select, textarea, [role="button"]):focus-visible {
+            outline-color: #a7d4b4;
+        }
+        /* Image-inspired task cards: rich green overlays, glass icon tile and rounded edges. */
+        .gs-student-task{margin:1rem 0;border:1px solid rgba(255,255,255,.58);border-radius:23px;background:#fff;overflow:hidden;box-shadow:0 9px 24px rgba(20,55,43,.12);transition:transform .22s ease,box-shadow .22s ease}
+        .gs-student-task>summary{position:relative;isolation:isolate;display:flex;align-items:center;gap:.9rem;min-height:112px;padding:1rem 1.2rem;cursor:pointer;list-style:none;color:#fff;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.42);background-color:#244b40;background-image:radial-gradient(ellipse at 82% 18%,rgba(210,231,207,.22),transparent 34%),linear-gradient(112deg,rgba(7,43,35,.91),rgba(35,83,68,.68) 58%,rgba(172,195,183,.55))}
+        .gs-student-task>summary:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.42;background:repeating-linear-gradient(135deg,transparent 0 18px,rgba(255,255,255,.045) 19px 20px),radial-gradient(ellipse at 12% 110%,rgba(0,0,0,.42),transparent 55%);pointer-events:none}
+        .gs-student-task:nth-of-type(5n+2)>summary{background-image:radial-gradient(circle at 78% 25%,rgba(210,226,215,.28),transparent 32%),linear-gradient(115deg,rgba(27,70,59,.92),rgba(115,151,137,.76))}
+        .gs-student-task:nth-of-type(5n+3)>summary{background-image:radial-gradient(circle at 75% 15%,rgba(81,68,160,.42),transparent 36%),linear-gradient(115deg,rgba(3,35,31,.97),rgba(13,67,56,.78))}
+        .gs-student-task:nth-of-type(5n+4)>summary{background-image:radial-gradient(ellipse at 75% 20%,rgba(204,221,213,.26),transparent 38%),linear-gradient(115deg,rgba(20,54,51,.94),rgba(95,126,119,.72))}
+        .gs-student-task:nth-of-type(5n)>summary{background-image:radial-gradient(ellipse at 80% 15%,rgba(183,210,177,.32),transparent 34%),linear-gradient(115deg,rgba(22,66,48,.94),rgba(119,153,137,.76))}
+        .gs-student-task>summary::-webkit-details-marker{display:none}
+        .gs-student-task>summary:focus-visible{outline:3px solid #b9e4a8;outline-offset:-4px}
+        .gs-student-task-icon{position:relative;display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(255,255,255,.42);border-radius:19px;background:rgba(235,245,239,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);backdrop-filter:blur(8px);font-size:1.65rem;text-shadow:none}
+        .gs-student-task-title{flex:1;min-width:0;font-size:1.18rem;line-height:1.5}
+        .gs-student-task-hint{flex:0 0 auto;padding:.38rem .68rem;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(235,245,239,.17);color:#fff;font-size:.72rem;font-weight:700;white-space:nowrap;text-shadow:none}
+        .gs-student-task[open] .gs-student-task-hint{display:none}
+        .gs-student-task-chevron{font-size:1.35rem;color:#fff;transition:transform .2s ease}
+        .gs-student-task[open]>summary{border-bottom:1px solid #e5eee0}
+        .gs-student-task[open] .gs-student-task-chevron{transform:rotate(180deg)}
+        .gs-student-task-body{padding:1rem;background:#fff;text-shadow:none}
+        html.gs-dark .gs-student-task{background:#1c2b20;border-color:#405a43}
+        html.gs-dark .gs-student-task>summary{color:#fff}
+        html.gs-dark .gs-student-task[open]>summary{border-color:#405a43}
+        html.gs-dark .gs-student-task-body{background:#1c2b20}
+        .gs-student-task>summary:hover{filter:brightness(1.08)}
+        html.gs-dark .gs-student-task>summary:hover{filter:brightness(1.12)}
+        @media(max-width:560px){.gs-student-task>summary{min-height:94px;padding:.8rem}.gs-student-task-body{padding:.7rem}}
+        @media(max-width:420px){
+            .gs-student-task>summary{min-height:84px;gap:.55rem;padding:.7rem}
+            .gs-student-task-icon{flex-basis:48px;width:48px;height:48px;border-radius:15px;font-size:1.35rem}
+            .gs-student-task-title{font-size:1rem;line-height:1.4}
+            .gs-student-task-hint{padding:.25rem .42rem;font-size:.62rem}
+            .gs-student-task-chevron{font-size:1.1rem}
+        }
+        @media(prefers-reduced-motion:reduce){.gs-student-task,.gs-student-task-chevron{transition:none}}
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d5a27;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .progress-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        .gs-progress-overview{margin-bottom:1.5rem;padding:1.25rem;border:1px solid #e4ecdf;border-radius:14px;background:linear-gradient(135deg,#f7fbf4,#fff)}
+        .gs-progress-overview-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+        .gs-progress-overview-head h3{margin:.25rem 0;font-size:1.2rem;color:#294d2b}
+        .gs-progress-overview-head p{margin:.25rem 0;color:#71806d}
+        .gs-progress-rate{font-size:2rem;color:#2d6a35}
+        .gs-progress-track{height:11px;margin:1rem 0;background:#e5ecdf;border-radius:20px;overflow:hidden}
+        .gs-progress-track span{display:block;height:100%;background:linear-gradient(90deg,#75ad57,#2e7d43);border-radius:20px;transition:width .25s ease}
+        .gs-progress-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+        .gs-progress-metrics div{display:flex;flex-direction:column;gap:.2rem;padding:.8rem;background:#fff;border:1px solid #edf1e9;border-radius:10px}
+        .gs-progress-metrics strong{font-size:1.35rem;color:#315c34}
+        .gs-progress-metrics span{font-size:.88rem;color:#697767}
+        .gs-progress-footnote{margin:.8rem 0 0;color:#788575;font-size:.85rem}
+        @media(max-width:560px){.gs-progress-overview{padding:1rem}.gs-progress-metrics{grid-template-columns:1fr}.gs-progress-overview-head{align-items:flex-start}}
+
+        .lesson-list {
+            margin-top: 1rem;
+        }
+        .lesson-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+        }
+        .lesson-item.completed {
+            background: #e8f5e9;
+        }
+        .lesson-item.pending {
+            background: #fff3e0;
+        }
+        .btn-complete {
+            padding: 0.5rem 1rem;
+            background: #2d5a27;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .history-list {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .history-item.best {
+            background: #fff9c4;
+            border: 2px solid #ffc107;
+        }
+        .history-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .score-value {
+            font-weight: 700;
+            color: #2d5a27;
+        }
+        .best-badge {
+            font-size: 0.8rem;
+        }
+        .mistakes-list {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        .mistake-item {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #ffebee;
+            border-radius: 8px;
+        }
+        .mistake-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .btn-review, .btn-retry {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-review {
+            background: #2196f3;
+            color: white;
+        }
+        .btn-retry {
+            background: #ff9800;
+            color: white;
+        }
+        .favorites-list {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        .favorite-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .favorite-item a {
+            color: #2d5a27;
+            text-decoration: none;
+        }
+        .btn-remove-fav {
+            padding: 0.5rem 1rem;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .motivation-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+        }
+        .streak-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .streak-icon {
+            font-size: 3rem;
+        }
+        .streak-value {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+        .streak-label {
+            font-size: 1.2rem;
+        }
+        .streak-best {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .encouragement-message {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .gs-goals-module{margin-top:1.25rem;padding:1.35rem;background:#fff;border:1px solid #e4eadf;border-radius:16px;color:#294d2b;text-align:start;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+        .gs-goals-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+        .gs-goals-heading h3{margin:0;font-size:1.15rem}.gs-goals-heading p{margin:.35rem 0;color:#71806d}
+        .gs-goals-count{padding:.4rem .7rem;border-radius:20px;background:#edf6e9;color:#315b31;font-weight:700;white-space:nowrap}
+        .gs-goals-progress{height:8px;margin:.9rem 0 1rem;background:#edf0ea;border-radius:10px;overflow:hidden}.gs-goals-progress span{display:block;height:100%;background:#4f9a52;border-radius:10px;transition:width .2s ease}
+        .gs-goal-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.55rem;align-items:end;margin:.8rem 0 1rem}
+        .gs-goal-form label{grid-column:1/-1;font-weight:700;color:#425442}
+        .gs-goal-form input{min-width:0;padding:.75rem;border:1px solid #d8dfd3;border-radius:8px;font:inherit}
+        .gs-goal-form button,.gs-goal-toggle{padding:.7rem .9rem;border:0;border-radius:8px;background:#2d5a27;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+        .gs-goals-list{list-style:none;padding:0;margin:0}.gs-goal-item{display:flex;align-items:center;gap:.7rem;padding:.8rem .2rem;border-top:1px solid #edf0ea}
+        .gs-goal-status{font-size:1.2rem;color:#4b8a48;font-weight:800}.gs-goal-title{flex:1;overflow-wrap:anywhere}.gs-goal-item.is-done .gs-goal-title{text-decoration:line-through;color:#879184}
+        .gs-goal-item.is-done .gs-goal-status{color:#23834b}.gs-goal-toggle{padding:.45rem .7rem;background:#eaf2e7;color:#285329;font-size:.88rem}
+        .gs-goals-empty{padding:.9rem;text-align:center;color:#71806d;background:#f7faf5;border-radius:10px}
+        @media(max-width:560px){.gs-goals-module{padding:1rem}.gs-goals-heading{align-items:flex-start;flex-direction:column}.gs-goal-form{grid-template-columns:1fr}.gs-goal-form label{grid-column:auto}.gs-goal-item{align-items:flex-start;flex-wrap:wrap}.gs-goal-title{min-width:65%}}
+
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+            font-style: italic;
+        }
+
+        .gs-student-level{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;padding:.75rem 1rem;margin:.8rem 0 1rem;border:1px solid #dcebd5;border-radius:10px;background:#f5faf1;color:#315b31}
+        .gs-student-level strong{font-weight:800}
+        .gs-student-welcome{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:1.6rem 1.8rem;margin-bottom:1.5rem;border-radius:18px;background:linear-gradient(120deg,#edf6e9,#f4f8ef);border:1px solid #dcebd5}
+        .gs-student-welcome h2{margin:.4rem 0;color:#244d27;font-size:1.5rem}.gs-student-welcome p{margin:.3rem 0;color:#526451}
+        .gs-eyebrow{font-size:.72rem;letter-spacing:.08em;font-weight:700;color:#54834c}
+        .gs-primary-link{display:inline-block;background:#2d5a27;color:#fff!important;text-decoration:none;padding:.8rem 1.1rem;border-radius:10px;white-space:nowrap;font-weight:700}
+        .gs-section-title{margin:1.4rem 0 .8rem;color:#294d2b}
+        .gs-quick-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.8rem;margin-bottom:1.4rem}
+        .gs-quick-links a{display:flex;align-items:center;gap:.65rem;padding:1rem;background:#fff;border:1px solid #e5ebdf;border-radius:12px;text-decoration:none;color:#294d2b;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+        .gs-quick-links a span{font-size:1.35rem}
+        .gs-module{background:#fff;border:1px solid #e6e9e2;border-radius:16px;padding:1.3rem;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+        .gs-entry-form,.gs-note-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.8rem;align-items:end;padding:1rem;background:#f7faf5;border-radius:12px;margin:1rem 0}
+        .gs-entry-form label,.gs-note-form label{display:flex;flex-direction:column;gap:.35rem;font-weight:600;color:#425442}
+        .gs-entry-form input,.gs-note-form input,.gs-note-form textarea{width:100%;box-sizing:border-box;padding:.7rem;border:1px solid #d8dfd3;border-radius:8px;font:inherit;background:#fff}
+        .gs-entry-form button,.gs-note-form button{padding:.75rem 1rem;border:0;border-radius:8px;background:#2d5a27;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+        .gs-plan-item{display:flex;align-items:center;gap:1rem;padding:.85rem;border-bottom:1px solid #edf0ea}
+        .gs-plan-item.is-done{opacity:.65}.gs-plan-item.is-done .gs-plan-main strong{text-decoration:line-through}
+        .gs-plan-date{min-width:112px;color:#477344;font-weight:700}.gs-plan-main{display:flex;flex:1;flex-direction:column;gap:.2rem}.gs-plan-main small,.gs-note-card small{color:#788274}
+        .gs-plan-actions{display:flex;gap:.4rem}.gs-plan-actions button,.gs-note-heading button{border:0;border-radius:7px;padding:.45rem .7rem;cursor:pointer;background:#eaf2e7;color:#285329;font-weight:700}
+        .gs-plan-actions .gs-task-delete,.gs-note-heading button{background:#fff0ee;color:#a33}
+        .gs-notes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
+        .gs-note-card{padding:1rem;border:1px solid #e5eadf;border-radius:12px;background:#fff;min-width:0}
+        .gs-note-heading{display:flex;align-items:center;justify-content:space-between;gap:.5rem}.gs-note-card p{white-space:normal;overflow-wrap:anywhere;line-height:1.7}
+        /* Keep account access at the very top of the student workspace. */
+        .student-space .gs-account-topbar{display:flex;align-items:center;justify-content:flex-end;gap:12px;width:100%;margin:0 0 14px;padding:12px 16px;background:#fff;border:1px solid #e2eae0;border-radius:15px;box-shadow:0 4px 14px rgba(24,57,37,.06);box-sizing:border-box}
+        .student-space .gs-account-topbar>*{max-width:100%}
+        .student-space .dashboard-header{margin-top:0}
+        html[dir="ltr"] .student-space .gs-account-topbar{justify-content:flex-start}
+        @media(max-width:560px){.student-space .gs-account-topbar{padding:10px;gap:8px;flex-wrap:wrap}}
+        /* Modern learning dashboard refresh */
+        .student-space{max-width:1280px;padding:clamp(1rem,2.5vw,2rem);color:#20352c}
+        .space-nav{position:relative;gap:.55rem;padding:.55rem;margin:0 0 1.35rem;background:#f4f7f2;border:1px solid #e5ece3;border-radius:16px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin;scroll-padding-inline:.55rem;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+        .space-tab{scroll-snap-align:start;touch-action:pan-x}
+        .space-tab:focus-visible{outline:3px solid #d18a24;outline-offset:2px;position:relative;z-index:1}
+        .space-tab{flex:0 0 auto;padding:.72rem 1.05rem;border:1px solid transparent;border-radius:11px;background:transparent;color:#52665a;white-space:nowrap}
+        .space-tab:hover{background:#e8f0e5;transform:translateY(-1px)}
+        .space-tab.active{background:linear-gradient(135deg,#236b43,#174c35);color:#fff;box-shadow:0 5px 14px rgba(28,91,57,.2)}
+        .gs-student-welcome{position:relative;overflow:hidden;min-height:180px;padding:clamp(1.4rem,3vw,2.2rem);border:0;border-radius:22px;background:radial-gradient(circle at 12% 15%,rgba(255,255,255,.22),transparent 27%),linear-gradient(115deg,#123f35 0%,#236b4b 58%,#6b9c56 100%);box-shadow:0 12px 30px rgba(27,82,57,.15);color:#fff}
+        .gs-student-welcome:after{content:"🧬";position:absolute;right:8%;bottom:-30px;font-size:9rem;opacity:.10;transform:rotate(-18deg);pointer-events:none}
+        [dir="rtl"] .gs-student-welcome:after{right:auto;left:8%}
+        .gs-student-welcome h2{position:relative;z-index:1;margin:.5rem 0;color:#fff;font-size:clamp(1.3rem,2.6vw,1.9rem);line-height:1.5}
+        .gs-student-welcome p{position:relative;z-index:1;max-width:680px;color:rgba(255,255,255,.86);line-height:1.9}
+        .gs-eyebrow{color:#c8e8b7;letter-spacing:.07em}
+        .gs-primary-link{position:relative;z-index:2;background:#fff;color:#19553a!important;border-radius:12px;padding:.85rem 1.2rem;box-shadow:0 5px 14px rgba(0,0,0,.12);transition:transform .2s,box-shadow .2s}
+        .gs-primary-link:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.18)}
+        .gs-welcome-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+        .gs-welcome-tags span{padding:.35rem .75rem;border:1px solid rgba(255,255,255,.25);border-radius:99px;background:rgba(255,255,255,.12);font-size:.83rem;color:#fff}
+        .gs-learning-path{margin:1.2rem 0 1.5rem;padding:1.2rem;border:1px solid #e4ece1;border-radius:19px;background:linear-gradient(145deg,#fff,#f7faf5)}
+        .gs-path-heading{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
+        .gs-path-heading h3{margin:.25rem 0;color:#244d37;font-size:1.12rem}
+        .gs-path-mark{font-size:2rem}
+        .gs-path-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
+        .gs-path-steps a{display:flex;min-width:0;flex-direction:column;gap:.35rem;padding:1rem;border:1px solid #e7eee4;border-radius:14px;background:#fff;color:#294b37;text-decoration:none;transition:transform .2s,border-color .2s,box-shadow .2s}
+        .gs-path-steps a:hover{transform:translateY(-3px);border-color:#a8c9a2;box-shadow:0 8px 18px rgba(37,83,49,.09)}
+        .gs-path-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#edf6e9;font-size:1.35rem}
+        .gs-path-steps strong{font-size:.96rem}.gs-path-steps small{color:#718074;line-height:1.5}
+        .gs-section-title{margin:1.6rem 0 .85rem;color:#244d37;font-size:1.12rem}
+        .gs-quick-links a{border-radius:14px;transition:transform .2s,border-color .2s,box-shadow .2s}
+        .gs-quick-links a:hover{transform:translateY(-3px);border-color:#b7d1b0;box-shadow:0 8px 18px rgba(37,83,49,.09)}
+        .dashboard-grid{gap:.85rem}
+        .stat-card{position:relative;overflow:hidden;border:1px solid #e8eee5;border-radius:16px;box-shadow:0 4px 14px rgba(24,57,37,.055);transition:transform .2s,box-shadow .2s}
+        .stat-card:hover{transform:translateY(-3px);box-shadow:0 9px 20px rgba(24,57,37,.10)}
+        .stat-icon{display:inline-grid;place-items:center;width:48px;height:48px;border-radius:14px;background:#eff6ec}
+        .stat-value{color:#236b43}
+        .space-content{animation:gsSpaceIn .28s ease both}
+        .space-panel.active{animation:gsSpaceIn .25s ease both}
+        .gs-module,.progress-section,.history-list,.mistakes-list,.favorites-list{border:1px solid #e8eee5;border-radius:16px;box-shadow:0 4px 14px rgba(24,57,37,.045)}
+        .gs-daily-challenge{margin:1.35rem 0;padding:1.25rem;border:1px solid #dce9d8;border-radius:18px;background:linear-gradient(145deg,#f7fbf5,#fff);box-shadow:0 5px 18px rgba(24,57,37,.045)}
+        .gs-daily-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}.gs-daily-head h3{margin:.3rem 0;color:#244d37;font-size:1.15rem}.gs-daily-head p{margin:.25rem 0;color:#718074;font-size:.88rem;line-height:1.6}
+        .gs-daily-points{flex:0 0 auto;padding:.55rem .8rem;border-radius:12px;background:#edf5e9;color:#32633b;font-size:.85rem;white-space:nowrap}
+        .gs-daily-question{margin:1rem 0 .8rem;padding:1rem;border-radius:13px;background:#fff;border:1px solid #e7eee4}.gs-daily-question>span{font-size:.7rem;font-weight:700;color:#71906d}.gs-daily-question h4{margin:.4rem 0 0;color:#294d36;line-height:1.8;font-size:1rem}
+        .gs-daily-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}.gs-daily-option{display:flex;align-items:center;gap:.7rem;padding:.8rem;border:1px solid #e1e9dd;border-radius:11px;background:#fff;color:#304b38;text-align:start;font:inherit;cursor:pointer;transition:border-color .2s,transform .2s}.gs-daily-option:hover:not(:disabled){border-color:#78a875;transform:translateY(-2px)}.gs-daily-option:disabled{opacity:.65;cursor:default}.gs-daily-option span{display:grid;place-items:center;flex:0 0 29px;width:29px;height:29px;border-radius:9px;background:#edf5e9;color:#32633b;font-weight:700}
+        .gs-daily-hint,.gs-daily-message{margin:.7rem 0 0;color:#788274;font-size:.8rem}.gs-daily-result{padding:1rem;border-radius:12px;background:#f5f8f3;border:1px solid #dce9d8}.gs-daily-result.is-correct{background:#f0f8ed;border-color:#cce3c5}.gs-daily-result.is-wrong{background:#fff8ed;border-color:#f0dfc4}.gs-daily-result strong{color:#285c36}.gs-daily-result p{margin:.4rem 0;color:#425442}.gs-daily-result small{display:block;line-height:1.7;color:#596b59}.gs-daily-result span{display:block;margin-top:.6rem;font-size:.78rem;color:#718074}
+        @media(max-width:560px){.gs-daily-head{flex-direction:column}.gs-daily-options{grid-template-columns:1fr}.gs-daily-points{align-self:flex-start}}
+        .gs-achievements{margin-top:1.5rem;padding:1.25rem;background:linear-gradient(135deg,#f7fbf5,#fff);border:1px solid #e2ecdf;border-radius:18px}
+        .gs-achievements-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+        .gs-achievements-heading h3{margin:.25rem 0;color:#244d37;font-size:1.15rem}
+        .gs-achievements-heading p{margin:0;color:#718074;font-size:.88rem}
+        .gs-achievements-count{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding:.55rem .9rem;background:#eaf4e7;border-radius:13px;color:#28623e}
+        .gs-achievements-count strong{font-size:1.25rem}.gs-achievements-count small{font-size:.72rem}
+        .gs-badges-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.75rem}
+        .gs-badge-card{display:flex;align-items:center;gap:.8rem;min-width:0;padding:.85rem;background:#fff;border:1px solid #e5ece2;border-radius:14px}
+        .gs-badge-card.is-earned{border-color:#c9dfc4;background:#fbfef9}
+        .gs-badge-card.is-locked{opacity:.78}
+        .gs-badge-icon{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:13px;background:#eef5eb;font-size:1.55rem;filter:grayscale(.75)}
+        .gs-badge-card.is-earned .gs-badge-icon{background:#e3f2dd;filter:none}
+        .gs-badge-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:.2rem}
+        .gs-badge-copy strong{color:#294d36;font-size:.9rem}
+        .gs-badge-copy small{color:#718074;font-size:.76rem;line-height:1.45}
+        .gs-badge-status{color:#56805b;font-size:.72rem;font-weight:700}
+        .gs-badge-card.is-locked .gs-badge-status{color:#8b9188}
+        .gs-badge-track{height:5px;overflow:hidden;background:#edf0eb;border-radius:8px}
+        .gs-badge-track i{display:block;height:100%;background:#78ad70;border-radius:8px}
+        @media(max-width:520px){.gs-achievements{padding:.9rem}.gs-achievements-heading{align-items:flex-start}.gs-badges-grid{grid-template-columns:1fr}}
+        @media(prefers-reduced-motion:reduce){
+            .student-space *, .student-space *::before, .student-space *::after{
+                animation-duration:.01ms!important;
+                animation-iteration-count:1!important;
+                transition-duration:.01ms!important;
+                scroll-behavior:auto!important;
+            }
+        }
+        @keyframes gsSpaceIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        @media(max-width:800px){.gs-path-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:520px){.gs-path-steps{grid-template-columns:1fr 1fr}.gs-path-steps a{padding:.8rem}.gs-student-welcome:after{font-size:6rem;right:2%}[dir="rtl"] .gs-student-welcome:after{right:auto;left:2%}}
+        @media (max-width: 768px) {
+            .gs-student-welcome{align-items:flex-start;flex-direction:column}
+            .gs-plan-item{align-items:flex-start;flex-wrap:wrap}
+            .gs-plan-date{min-width:100%}
+            .gs-entry-form,.gs-note-form{grid-template-columns:1fr}
+
+            .student-space {
+                padding: 1rem;
+            }
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .space-nav {
+                gap: 0.25rem;
+            }
+            .space-tab {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+        @media (forced-colors: active) {
+            .space-tab:focus-visible,
+            .space-panel:focus-visible,
+            .gs-student-task > summary:focus-visible {
+                outline: 2px solid Highlight !important;
+                outline-offset: 3px;
+            }
+        }
+        /* Dashboard-style cards for the student-space sections. */
+        .student-space .space-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin:0 0 1.5rem;padding:0;overflow:visible;flex-wrap:initial;border:0;background:transparent;scroll-snap-type:none}
+        .student-space .space-tab{display:flex;align-items:center;justify-content:center;min-width:0;min-height:76px;padding:14px 16px;border:1px solid rgba(255,255,255,.42);border-radius:17px;background:linear-gradient(115deg,#174a3c,#638b76);color:#fff;white-space:normal;text-align:center;line-height:1.7;font-weight:800;box-shadow:0 8px 20px rgba(20,55,43,.13);scroll-snap-align:unset;touch-action:manipulation}
+        .student-space .space-tab:hover{background:linear-gradient(115deg,#103c31,#477a66);color:#fff;transform:translateY(-2px);box-shadow:0 12px 24px rgba(20,55,43,.18)}
+        .student-space .space-tab.active{background:linear-gradient(115deg,#103d32,#2d7259);color:#fff;border-color:#b8d6c2;box-shadow:0 10px 24px rgba(17,74,57,.24)}
+        html.gs-dark .student-space .space-tab{background:linear-gradient(115deg,#263f34,#456c56);color:#fff}
+        html.gs-dark .student-space .space-tab.active{background:linear-gradient(115deg,#174d3b,#34785a);color:#fff}
+        @media(max-width:560px){.student-space .space-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.student-space .space-tab{min-height:70px;padding:11px 8px;font-size:.88rem}}
+        @media(max-width:360px){.student-space .space-nav{grid-template-columns:1fr}}
+        /* Compact navigation buttons matching the site's top navigation; panels stay closed until selected. */
+        .student-space .space-nav{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px;margin:0 0 18px;padding:10px;background:#f4f7f2;border:1px solid #e5ece3;border-radius:14px;overflow:visible}
+        .student-space .space-tab{display:inline-flex;flex:0 1 auto;align-items:center;justify-content:center;width:auto;min-width:0;min-height:40px;padding:8px 14px;border:1px solid #dce7dd;border-radius:10px;background:#fff;color:#365847;box-shadow:0 2px 6px rgba(20,55,43,.06);font-size:.92rem;font-weight:700;line-height:1.35;white-space:nowrap}
+        .student-space .space-tab:hover{background:#eaf2e9;color:#174c35;transform:translateY(-1px);box-shadow:0 4px 10px rgba(20,55,43,.09)}
+        .student-space .space-tab.active{background:linear-gradient(120deg,#236b43,#174c35);border-color:#236b43;color:#fff;box-shadow:0 4px 10px rgba(28,91,57,.16)}
+        .student-space .space-panel[hidden]{display:none!important}
+        .student-space .space-panel:not([hidden]){display:block}
+        .student-space .gs-student-panel-content{margin:0;padding:0;background:transparent}
+        .student-space .gs-student-panel-heading{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:13px 16px;border:1px solid #e3ebe1;border-radius:13px;background:#fff}
+        .student-space .gs-student-panel-heading h2{margin:0;color:#244d37;font-size:1.12rem;font-weight:800}
+        .student-space .gs-student-panel-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:10px;background:#edf5e9;font-size:1.2rem}
+        .student-space .gs-student-panel-body{min-width:0}
+        html.gs-dark .student-space .space-nav{background:#202e26;border-color:#35483a}
+        html.gs-dark .student-space .space-tab{background:#293a30;border-color:#405846;color:#e5f1e8}
+        html.gs-dark .student-space .space-tab.active{background:linear-gradient(120deg,#236b43,#174c35);color:#fff}
+        html.gs-dark .student-space .gs-student-panel-heading{background:#25372c;border-color:#405846}
+        html.gs-dark .student-space .gs-student-panel-heading h2{color:#e5f1e8}
+        @media(max-width:560px){.student-space .space-nav{gap:7px;padding:8px}.student-space .space-tab{min-height:38px;padding:7px 10px;font-size:.84rem;white-space:normal}}
+    `;
+    document.head.appendChild(styles);
+
+    // ============================================
+    // 14. INITIALIZATION (التهيئة)
+    // ============================================
+    function init() {
+        // Standalone activities inherit the language selected on the category page.
+        // Do not override the site's normal language outside standalone task routes.
+        const initialTaskParams = new URLSearchParams(window.location.search);
+        const requestedTaskLanguage = initialTaskParams.get('lang');
+        if ((initialTaskParams.has('studentCategory') || initialTaskParams.has('studentTask')) &&
+            (requestedTaskLanguage === 'ar' || requestedTaskLanguage === 'fr')) {
+            document.documentElement.lang = requestedTaskLanguage;
+            document.documentElement.dir = requestedTaskLanguage === 'fr' ? 'ltr' : 'rtl';
+        }
+
+        // Refresh when the active profile changes in another tab, including
+        // quiz history, mistakes, notes, study plans and goals (not only progress).
+        window.addEventListener('storage', function (e) {
+            const activeId = syncCurrentProfile();
+            const activePrefix = activeId + '_';
+            const isActiveProfileData = typeof e.key === 'string' && e.key.startsWith(activePrefix);
+            if (!e.key || e.key === STORAGE_KEYS.CURRENT_PROFILE ||
+                e.key === STORAGE_KEYS.PROFILES || isActiveProfileData) {
+                refreshStudentSpaceView();
+            }
+        });
+
+        // Coalesce navigation signals: the hash and active-class observers can
+        // fire for the same click. Building the full learning workspace is
+        // expensive, so render it once after navigation settles.
+        let studentSpaceRenderTimer = null;
+        function scheduleStudentSpaceRender(force) {
+            if (studentSpaceRenderTimer !== null) clearTimeout(studentSpaceRenderTimer);
+            studentSpaceRenderTimer = setTimeout(function() {
+                studentSpaceRenderTimer = null;
+                const container = document.getElementById('student-space-content');
+                if (!container) return;
+
+                // Re-entering the student section is navigation, not a request
+                // to rebuild its entire dashboard. A full rebuild recreates
+                // every card and listener and can stall the main thread on
+                // slower devices. Data/form actions use refreshStudentSpaceView;
+                // language changes explicitly request a fresh render below.
+                if (!force && container.querySelector('.gs-student-shell')) return;
+
+                renderStudentSpace();
+            }, 90);
+        }
+
+        // Render only when the learner actually opens this section.
+        window.addEventListener('hashchange', function() {
+            if (window.location.hash.substring(1) === 'student-space') {
+                scheduleStudentSpaceRender();
+            }
+        });
+
+        const initialHash = window.location.hash.substring(1);
+        const studentSpaceSection = document.getElementById('student-space');
+        if (initialHash === 'student-space' ||
+            (studentSpaceSection && studentSpaceSection.classList.contains('active'))) {
+            scheduleStudentSpaceRender();
+        }
+
+        // Fallback for navigation systems that activate the section without a hash.
+        const sectionObserver = new MutationObserver(function(mutations) {
+            if (mutations.some(function(mutation) {
+                return mutation.target.id === 'student-space' &&
+                    mutation.target.classList.contains('active');
+            })) scheduleStudentSpaceRender();
+        });
+
+        if (studentSpaceSection) {
+            sectionObserver.observe(studentSpaceSection, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        // Listen for language changes via lang button click
+        const langBtn = document.querySelector('.lang-switcher');
+        if (langBtn) {
+            langBtn.addEventListener('click', function() {
+                setTimeout(function() {
+                    const container = document.getElementById('student-space-content');
+                    if (container && container.children.length > 0 &&
+                        document.getElementById('student-space')?.classList.contains('active')) {
+                        scheduleStudentSpaceRender(true);
+                    }
+                }, 100);
+            });
+        }
+
+        // Also observe document for lang attribute changes
+        const langObserver = new MutationObserver(function() {
+            const container = document.getElementById('student-space-content');
+            const section = document.getElementById('student-space');
+            if (container && container.children.length > 0 &&
+                section && section.classList.contains('active')) {
+                // Language changes require rebuilding translated interface text.
+                scheduleStudentSpaceRender(true);
+            }
+        });
+
+        // Observe only the language attribute; unrelated root attributes are irrelevant.
+        langObserver.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['lang']
+        });
+
+        // Avoid constructing the full learning workspace on ordinary page load.
+        const container = document.getElementById('student-space-content');
+        if (container && studentSpaceSection && studentSpaceSection.classList.contains('active')) {
+            scheduleStudentSpaceRender();
+        }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Expose functions globally for integration with other systems
+    window.StudentSpace = {
+        updateProgress,
+        markLessonComplete,
+        saveQuizResult,
+        updateStreak,
+        getDashboardStats,
+        getDashboardStatsForPath,
+        renderStudentSpace,
+        refresh: refreshStudentSpaceView,
+        createProfile,
+        deleteProfile,
+        switchProfile,
+        getCurrentProfile,
+        getProfiles,
+        getProfileData,
+        mergeCloudProgress,
+        mergeCloudLearningState,
+        mergeCloudCollections,
+        applyCloudDeletions,
+        filterPendingCloudDeletions,
+        retryPendingCloudDeletions,
+        mergeCloudQuizAttempts,
+        exportProfileData,
+        importProfileData,
+        retryMistakes
+    };
+
+})();

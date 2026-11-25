@@ -1,0 +1,274 @@
+{
+  "repository": "https://github.com/aitenajar-creator/go-svt-maroc",
+  "base_commit": "83ade7b4c7cfccbea96716dc46e58da30fe51342",
+  "original_review_commit": "fa933268f63ddb1fd67ceea4d5d5cce86954bc4e",
+  "created_at": "2026-11-25T00:39:52.571751+00:00",
+  "remote_status": "NOT_UPLOADED_NO_AUTHENTICATED_GITHUB_SESSION",
+  "production_migrations": "NOT_EXECUTED",
+  "production_testing": "NOT_EXECUTED",
+  "full_jekyll_build": "NOT_EXECUTED_LOCALLY",
+  "unit_and_database_tests_passed": 34,
+  "browser_tests_passed": 4,
+  "patch_apply_check": "PASSED_AND_BYTE_VERIFIED",
+  "open_requirement": "Review and supply the real MAIN database baseline; test migrations on staging before deploying the frontend.",
+  "checks": [
+    {
+      "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exit_code": 0
+    },
+    {
+      "command": "npm test",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run test:browser",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -B scripts/check-site.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -B scripts/check-migration-rls.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -B scripts/check-teacher-community-security.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -B scripts/check-seo-indexing.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -B scripts/check-basic-accessibility.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -B scripts/migration-plan.py --check",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/pages.yml",
+      "sha256": "672d5cb63990206420a86b7346ef8f6ca79294db7eaf14345bc670f21f1eba8b"
+    },
+    {
+      "path": ".github/workflows/validate-site.yml",
+      "sha256": "bf5f762dd2d22a4a3a105fe8f981d86b2898eed3c780ea4d07ed3811993b12af"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "e2c63310c5701379562aea95d2d07f971de3ca919516d6580acf0510c5809679"
+    },
+    {
+      "path": "AUDIT_TEST_SUITE.js",
+      "sha256": "ae7dd8c8978479116d2e50d6f12889f78b8477878e10697fb68e36e820310473"
+    },
+    {
+      "path": "README.md",
+      "sha256": "b57140507a84ca33e669b6ed242dde170f0c1dbc3e850d79fab00d5f82a5c3f2"
+    },
+    {
+      "path": "SUPABASE_CONNECTION_AR.md",
+      "sha256": "147cd5ac4be6a332714b698196f9fcd078827e4e3e6e0daeb6b715a55d9bb50d"
+    },
+    {
+      "path": "TEACHER_CLASSROOM_SETUP_AR.md",
+      "sha256": "f94248cd0c9020cce27c633134bc4d919c7d0f1f85a90dafa3a80303135bae9b"
+    },
+    {
+      "path": "TEACHER_COMMUNITY_SETUP_AR.md",
+      "sha256": "c0afa94e92ff132d8b37aa39c4e734bb6dee9441776f346140b722768566a59c"
+    },
+    {
+      "path": "_config.yml",
+      "sha256": "762183c3016caa03121d12c32045189c0dbfe3d65de078e25deae207c13c8a67"
+    },
+    {
+      "path": "_tools/build_service_worker.py",
+      "sha256": "2e36a05d1ffcde87a887d382fc54f963625793b7ef76dd73561efae583ea9f57"
+    },
+    {
+      "path": "admin-private-lessons.js",
+      "sha256": "384f8de323161f2ae149a7e66b20173ec82b48e411293372a10b8bfe1e4223b8"
+    },
+    {
+      "path": "admin.html",
+      "sha256": "9be35b89fddfe490c4d40e20e7b89ac23e118f47351754ad5e0e8834820a402a"
+    },
+    {
+      "path": "admin.js",
+      "sha256": "4c6776c99acaa0b1ff9cb9808cf6ab34bc3360a7489d5b2f4e59b97708d2026a"
+    },
+    {
+      "path": "config.local.example.json",
+      "sha256": "e2f6bcde7213b4c6c0cc816c0e1b5f414c2f2051c0864e7b414de0295bc58b6a"
+    },
+    {
+      "path": "docs/DATABASE_DEPLOYMENT_AR.md",
+      "sha256": "2ecdf13dea9d5b36bcf6df93d097c3ebb42c6657d1ed7b4401766d772bffa0f6"
+    },
+    {
+      "path": "docs/REVIEW_IMPROVEMENTS_AR.md",
+      "sha256": "8175c81dde5b07774e4868fd762a10b5c2b5dcc487a16e9902cc1324a8f9288c"
+    },
+    {
+      "path": "index.html",
+      "sha256": "6a4edc2b93d86209df99e7d8a3e412c7971cd64660a3f3d5d8c7ad84dea26633"
+    },
+    {
+      "path": "learn.js",
+      "sha256": "4cb77837945f396d6a147e5f016f243acd90a82bcb70aa23da48966fb00b4492"
+    },
+    {
+      "path": "lesson-reader.html",
+      "sha256": "eb316afe11e4cff817357c7811223b26b4b5666a8aa86a9baa7440d58215595b"
+    },
+    {
+      "path": "lesson-reader.js",
+      "sha256": "b30768ce43101aff5eddab88ea52d6de8fded9f666f479437e2cfa4aa8c32ad5"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "cabd1b42b141b48ac68530dbd21423540f0fa814e7d6e7abd14116cf6ef78340"
+    },
+    {
+      "path": "package.json",
+      "sha256": "2ae10a69eb8311da59538c65320f2b6134bf6a7fb8a372791f03e2d2abfbcba6"
+    },
+    {
+      "path": "playwright.config.cjs",
+      "sha256": "44e32b3c84093661cc91057ec55266e9448b6de6f3ce03c668a923741fe7aba4"
+    },
+    {
+      "path": "private-student-lessons.js",
+      "sha256": "c0d4ab0da3348da0bae85ece665e29429c9a41c627e34d2958998edc17396254"
+    },
+    {
+      "path": "scripts/check-basic-accessibility.py",
+      "sha256": "0804eb256231668521b80df3d6884d3758163b769fc9fa608200ee26a1e5463c"
+    },
+    {
+      "path": "scripts/check-site.py",
+      "sha256": "76f00e970247578754721c876149de99a4bd11afcb63d9fbc6755425f30a465b"
+    },
+    {
+      "path": "scripts/migration-plan.py",
+      "sha256": "831c120d65c2736411746f59f3a27439da5e6908959cef6345e3d7618f27023c"
+    },
+    {
+      "path": "scripts/serve-local.py",
+      "sha256": "30523d1b25bca7f18f316fd6db226f0c4e685ac1eee497a7e7a4d4a2ddb51651"
+    },
+    {
+      "path": "scripts/site_files.py",
+      "sha256": "0f4f6e98ed68b2caa79b36ccc83dbd95d5b7707ea4645ba887619d0102819e71"
+    },
+    {
+      "path": "student-account.js",
+      "sha256": "c759d9e9d7b0812f43d166794bae4d0567d00f66eb6e59b77e4909c686b75563"
+    },
+    {
+      "path": "student-learning-journey.js",
+      "sha256": "25bb8482ff5cc63a63cb4ea9e17b283540a00a920fa9072e507e1db148dbfdb1"
+    },
+    {
+      "path": "student-space.js",
+      "sha256": "ca0b5f54cbfede40e78f37ba542cebf8c88313051b86a0793780f0c99d44caf9"
+    },
+    {
+      "path": "study.js",
+      "sha256": "7ab324bfb0f92e32fffa614783b1e4967202ec53d70929595052362cc274a873"
+    },
+    {
+      "path": "supabase-config.js",
+      "sha256": "4db2e359d8b2c407f59457650196629381fa338acf6a756c14469020c2bcf4ac"
+    },
+    {
+      "path": "supabase/migrations/20261125000100_student_collection_deletions.sql",
+      "sha256": "9ccb7a404a496a357a2aef659947ff250fe07ca0e8ee15cd91f03266af895d18"
+    },
+    {
+      "path": "supabase/migrations/20261125000200_per_lesson_objectives.sql",
+      "sha256": "de268cdf899ff8090b2ad8082b1da67a1754364382eddeb22e3c834f8eaa9a59"
+    },
+    {
+      "path": "supabase/migrations/20261125000300_atomic_teacher_question_replies.sql",
+      "sha256": "6239643872c645c87e71ed005496b5037a183a2ee46c745248c42892525a3d07"
+    },
+    {
+      "path": "supabase/project-manifest.json",
+      "sha256": "0ad590061075cbc78ce44e36dde14a72db67a63aa06075b7b8c37cf646221b11"
+    },
+    {
+      "path": "sw.js",
+      "sha256": "c990074aa6aede71050fc5622baf70d98b65d517719b9e03a8646e533777f0a0"
+    },
+    {
+      "path": "teacher-classroom.js",
+      "sha256": "301132fbe5a2890138a69a75244c8cb6064b4d70d41f47167e026c528f4ac3b3"
+    },
+    {
+      "path": "teacher-community-config.js",
+      "sha256": "6087821f7d7b0df79c4c872f490a9f21c5141b2cd31cf2f9ab56037700129f38"
+    },
+    {
+      "path": "teacher-community.html",
+      "sha256": "db8d58213aea414e350c822467cc74519bf293b8cf16d0befc818e8b27b16697"
+    },
+    {
+      "path": "teacher-community.js",
+      "sha256": "1155b0e5278030274a0e44e87f75066c4f5d2e8e3fdf3d2c4db6dae3056fa1e1"
+    },
+    {
+      "path": "tests/browser/auth-fixture.cjs",
+      "sha256": "57a137d6ea1035784b023f8d12e47940622e6c011df005ad8f4aac4f17cd6761"
+    },
+    {
+      "path": "tests/browser/pagination.spec.cjs",
+      "sha256": "3025adab335cc7fe91bf937fcd17f1875a8b31ea198777587e638ee5346560ff"
+    },
+    {
+      "path": "tests/browser/site.spec.cjs",
+      "sha256": "86182990b0d5996d1d1ddbf5bf5c92a3fd881788bb1092e17c3046e1ff95637f"
+    },
+    {
+      "path": "tests/build.test.cjs",
+      "sha256": "611de54e76471f590821f088ab92949a3ee4cec806253925fb4080b53e5ae84a"
+    },
+    {
+      "path": "tests/classroom-admin.test.cjs",
+      "sha256": "70b0e5eb96c9bd14c7fefafca7109c898f3bed90557f31b69390559baee4c077"
+    },
+    {
+      "path": "tests/database.test.cjs",
+      "sha256": "814595fcd1b6460a254727a54d232b85436995cf5be599e9f4f1c0324f3ae5ff"
+    },
+    {
+      "path": "tests/fixtures/database.sql",
+      "sha256": "925a8dde6d6b7dc2feb1ef6156c51a1af2d6d94b5d59e5f5d9f4d6c0ddde32eb"
+    },
+    {
+      "path": "tests/helpers.cjs",
+      "sha256": "3ec31334aefe108ba5dfb501c1d0803568067505aaafe4dab1d05f1cef152fd1"
+    },
+    {
+      "path": "tests/quiz.test.cjs",
+      "sha256": "326769317ffa1f38592c8fd6703f67edb8f5cbb0d812a7222618d5d148e2afab"
+    },
+    {
+      "path": "tests/reader-offline.test.cjs",
+      "sha256": "50f07e2e10e214f8613bbf08969055f362d78e9ba5fa1cfeef52e7691bce0150"
+    },
+    {
+      "path": "tests/student-sync.test.cjs",
+      "sha256": "5e281bc2f5d013d6f93de5a541401231dc2b9e9c07245bb2399356793d4e3945"
+    }
+  ]
+}

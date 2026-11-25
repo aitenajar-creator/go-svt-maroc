@@ -1,0 +1,268 @@
+$ npm ci --ignore-scripts --no-audit --no-fund
+
+added 4 packages in 786ms
+
+
+$ npm test
+
+> go-svt-maroc@1.0.0 test
+> node --test tests/*.test.cjs
+
+TAP version 13
+# Subtest: service-worker release stamping is deterministic and includes assets and worker logic
+ok 1 - service-worker release stamping is deterministic and includes assets and worker logic
+  ---
+  duration_ms: 159.355371
+  type: 'test'
+  ...
+# Subtest: submission filters and pagination are sent to the database
+ok 2 - submission filters and pagination are sent to the database
+  ---
+  duration_ms: 36.551457
+  type: 'test'
+  ...
+# Subtest: reply retries retain the same idempotency token and use one RPC
+ok 3 - reply retries retain the same idempotency token and use one RPC
+  ---
+  duration_ms: 4.288578
+  type: 'test'
+  ...
+# Subtest: community reset erases administrative lists and hides the admin panel
+ok 4 - community reset erases administrative lists and hides the admin panel
+  ---
+  duration_ms: 1.767028
+  type: 'test'
+  ...
+# Subtest: admin reset clears cached identities, exports and visible lists
+ok 5 - admin reset clears cached identities, exports and visible lists
+  ---
+  duration_ms: 1.358523
+  type: 'test'
+  ...
+# Subtest: role-request CSV has a real UTF-8 BOM and CRLF records
+ok 6 - role-request CSV has a real UTF-8 BOM and CRLF records
+  ---
+  duration_ms: 1.258496
+  type: 'test'
+  ...
+# Subtest: the CI load-order guard checks cache-busted script URLs
+ok 7 - the CI load-order guard checks cache-busted script URLs
+  ---
+  duration_ms: 121.792451
+  type: 'test'
+  ...
+# Subtest: new MAIN migrations run against an isolated PostgreSQL fixture
+    # Subtest: legacy objective backfill keeps valid indices without altering the old JSON
+    ok 1 - legacy objective backfill keeps valid indices without altering the old JSON
+      ---
+      duration_ms: 5.090968
+      type: 'test'
+      ...
+    # Subtest: deletion is idempotent and a stale upsert cannot resurrect a note
+    ok 2 - deletion is idempotent and a stale upsert cannot resurrect a note
+      ---
+      duration_ms: 22.278105
+      type: 'test'
+      ...
+    # Subtest: a deletion before first upload blocks a delayed planner upload
+    ok 3 - a deletion before first upload blocks a delayed planner upload
+      ---
+      duration_ms: 3.801813
+      type: 'test'
+      ...
+    # Subtest: a queued deletion is rejected when the expected identity has changed
+    ok 4 - a queued deletion is rejected when the expected identity has changed
+      ---
+      duration_ms: 3.546468
+      type: 'test'
+      ...
+    # Subtest: RLS keeps deletion markers and objective rows owner-scoped
+    ok 5 - RLS keeps deletion markers and objective rows owner-scoped
+      ---
+      duration_ms: 3.90762
+      type: 'test'
+      ...
+    # Subtest: saving a second lesson preserves the first lesson objectives
+    ok 6 - saving a second lesson preserves the first lesson objectives
+      ---
+      duration_ms: 11.737533
+      type: 'test'
+      ...
+    # Subtest: reply retries save one message and do not replay an old status
+    ok 7 - reply retries save one message and do not replay an old status
+      ---
+      duration_ms: 10.598816
+      type: 'test'
+      ...
+    # Subtest: a status-update failure rolls back the inserted reply
+    ok 8 - a status-update failure rolls back the inserted reply
+      ---
+      duration_ms: 5.830873
+      type: 'test'
+      ...
+    # Subtest: reply RPC checks both the current identity and question authorization
+    ok 9 - reply RPC checks both the current identity and question authorization
+      ---
+      duration_ms: 3.260967
+      type: 'test'
+      ...
+    # Subtest: anonymous callers do not receive RPC execution rights
+    ok 10 - anonymous callers do not receive RPC execution rights
+      ---
+      duration_ms: 4.262639
+      type: 'test'
+      ...
+    # Subtest: account deletion cascades without recreating a tombstone for a removed user
+    ok 11 - account deletion cascades without recreating a tombstone for a removed user
+      ---
+      duration_ms: 4.480245
+      type: 'test'
+      ...
+    1..11
+ok 8 - new MAIN migrations run against an isolated PostgreSQL fixture
+  ---
+  duration_ms: 2495.444745
+  type: 'test'
+  ...
+# Subtest: late quiz responses cannot replace a more recent selection
+ok 9 - late quiz responses cannot replace a more recent selection
+  ---
+  duration_ms: 22.632714
+  type: 'test'
+  ...
+# Subtest: closing a loading quiz invalidates its pending response
+ok 10 - closing a loading quiz invalidates its pending response
+  ---
+  duration_ms: 1.142983
+  type: 'test'
+  ...
+# Subtest: identity changes discard the active attempt and scores remain owner-scoped
+ok 11 - identity changes discard the active attempt and scores remain owner-scoped
+  ---
+  duration_ms: 6.380862
+  type: 'test'
+  ...
+# Subtest: reader load and resize retain the saved resume position
+ok 12 - reader load and resize retain the saved resume position
+  ---
+  duration_ms: 21.008969
+  type: 'test'
+  ...
+# Subtest: objectives save only the current lesson row
+ok 13 - objectives save only the current lesson row
+  ---
+  duration_ms: 2.786497
+  type: 'test'
+  ...
+# Subtest: failed completion persistence shows an error instead of success
+ok 14 - failed completion persistence shows an error instead of success
+  ---
+  duration_ms: 1.427404
+  type: 'test'
+  ...
+# Subtest: offline fallback prefers fresh runtime assets to initial shell assets
+ok 15 - offline fallback prefers fresh runtime assets to initial shell assets
+  ---
+  duration_ms: 6.773093
+  type: 'test'
+  ...
+# Subtest: remote deletion markers remove cached notes and reject stale hydration
+ok 16 - remote deletion markers remove cached notes and reject stale hydration
+  ---
+  duration_ms: 27.134513
+  type: 'test'
+  ...
+# Subtest: an unrelated progress save does not re-upload unchanged notes
+ok 17 - an unrelated progress save does not re-upload unchanged notes
+  ---
+  duration_ms: 8.35305
+  type: 'test'
+  ...
+# Subtest: first account claims guest favorites without giving them to the next account
+ok 18 - first account claims guest favorites without giving them to the next account
+  ---
+  duration_ms: 1.66044
+  type: 'test'
+  ...
+# Subtest: a failed learning-state read does not discard four successful datasets
+ok 19 - a failed learning-state read does not discard four successful datasets
+  ---
+  duration_ms: 5.148621
+  type: 'test'
+  ...
+# Subtest: a failed deletion-marker read blocks only deletable collections
+ok 20 - a failed deletion-marker read blocks only deletable collections
+  ---
+  duration_ms: 2.996565
+  type: 'test'
+  ...
+# Subtest: the account uses the server academic profile, not editable signup metadata
+ok 21 - the account uses the server academic profile, not editable signup metadata
+  ---
+  duration_ms: 3.640385
+  type: 'test'
+  ...
+# Subtest: same-account token refresh and repeated sign-in preserve the workspace
+ok 22 - same-account token refresh and repeated sign-in preserve the workspace
+  ---
+  duration_ms: 3.379971
+  type: 'test'
+  ...
+# Subtest: resource recommendations fall back to the language that has content
+ok 23 - resource recommendations fall back to the language that has content
+  ---
+  duration_ms: 2.448498
+  type: 'test'
+  ...
+1..23
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3314.32186
+
+
+$ npm run test:browser
+
+> go-svt-maroc@1.0.0 test:browser
+> playwright test
+
+
+Running 4 tests using 1 worker
+
+  ✓  1 tests/browser/pagination.spec.cjs:4:1 › all 151 submissions remain reachable and pending filtering runs before paging (449ms)
+  ✓  2 tests/browser/site.spec.cjs:20:1 › the existing standalone audit suite passes in a real browser (150ms)
+  ✓  3 tests/browser/site.spec.cjs:29:1 › login, token refresh with a draft, and logout use the real UI (760ms)
+  ✓  4 tests/browser/site.spec.cjs:46:1 › partial cloud failure retains quiz history and offers retry (602ms)
+
+  4 passed (2.9s)
+
+
+$ python3 -B scripts/check-site.py
+Site JSON, JavaScript (including inline scripts), asset paths and script order passed.
+
+
+$ python3 -B scripts/check-migration-rls.py
+RLS migration coverage check passed for 23 public tables and student grading-column restrictions.
+
+
+$ python3 -B scripts/check-teacher-community-security.py
+Teacher-community security regression check passed.
+
+
+$ python3 -B scripts/check-seo-indexing.py
+SEO and private-page indexing checks passed.
+
+
+$ python3 -B scripts/check-basic-accessibility.py
+Basic accessibility checks passed across 13 HTML pages.
+
+
+$ python3 -B scripts/migration-plan.py --check
+Each of 56 migrations is assigned to exactly one project. This does not validate the missing production baseline.
+
+
+$ git diff --check
