@@ -343,10 +343,11 @@
       if (!rows.length) return;
       for (const item of rows) {
         if (JSON.stringify(item).length > 10000) throw new Error('الملاحظة تتجاوز الحد المسموح للتخزين السحابي.');
-        const { error } = await client.rpc('gosvt_upsert_student_collection_item', {
+        const { data, error } = await client.rpc('gosvt_upsert_student_collection_item', {
           p_collection: 'notes', p_item_key: item.id, p_expected_student_id: studentId, p_item: item
         });
         if (error) throw error;
+        if (data === false) throw new Error('الملاحظة محذوفة سابقاً في السحابة؛ لن تتم استعادتها من نسخة قديمة.');
       }
     },
 
@@ -418,10 +419,11 @@
         }));
       if (!rows.length) return;
       for (const item of rows) {
-        const { error } = await client.rpc('gosvt_upsert_student_collection_item', {
+        const { data, error } = await client.rpc('gosvt_upsert_student_collection_item', {
           p_collection: 'studyPlan', p_item_key: item.id, p_expected_student_id: studentId, p_item: item
         });
         if (error) throw error;
+        if (data === false) throw new Error('عنصر خطة الدراسة محذوف سابقاً في السحابة؛ لن تتم استعادته من نسخة قديمة.');
       }
     },
 
