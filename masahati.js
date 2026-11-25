@@ -40,7 +40,10 @@ const FILE_ICON = { pdf: '📕', html: '🌐', htm: '🌐', doc: '📘', docx: '
 const S = { view: 'home', sub: {}, busy: false, sess: null, flash: null, idx: null, quizList: null, quizCache: {}, qmap: null, lv0: null, bdg0: null, learn: { cat: 'cours', lang: 'all', status: 'all', q: '' } };
 
 function account() { const a = SA(); return a && a.isLoggedIn() && a.getProfile ? a.getProfile() : null; }
+// Keep the browser-local profile ID for local storage. Authenticated learners use
+// one stable cloud profile key so a fresh browser can restore the same account state.
 function pid() { try { return SS().getCurrentProfile().id; } catch (e) { return 'default'; } }
+function cloudPid() { return cloudUid() ? 'account-default' : pid(); }
 function data() { return SS().getProfileData(pid()); }
 function levelInfo() {
   const p = account() || {}, ps = PS();
@@ -64,16 +67,16 @@ function PS() {
   return _ps;
 }
 function cloudUid() { const a = SA(); return a && a.isLoggedIn() && a.getUser() ? a.getUser().id : null; }
-function sameCloudContext(uid, profileId) {
-  return !!uid && cloudUid() === uid && pid() === profileId;
+function sameCloudContext(uid, localProfileId, cloudProfileId) {
+  return !!uid && cloudUid() === uid && pid() === localProfileId && cloudPid() === cloudProfileId;
 }
 function savePS() {
-  const ps = PS(), profileId = pid(), uid = cloudUid();
+  const ps = PS(), localProfileId = pid(), cloudProfileId = cloudPid(), uid = cloudUid();
   ps.u = Date.now();
-  try { localStorage.setItem(profileId + '_gosvt_masahati', JSON.stringify(ps)); } catch (e) {}
+  try { localStorage.setItem(localProfileId + '_gosvt_masahati', JSON.stringify(ps)); } catch (e) {}
   const snapshot = JSON.parse(JSON.stringify(ps));
   clearTimeout(_saveT);
-  _saveT = setTimeout(() => { pushRemote(snapshot, uid, profileId); }, 2500);
+  _saveT = setTimeout(() => { pushRemote(snapshot, uid, localProfileId, cloudProfileId); }, 2500);
 }
 function stateBytes(state) {
   const json = JSON.stringify(state);
@@ -81,14 +84,14 @@ function stateBytes(state) {
     ? new TextEncoder().encode(json).length
     : unescape(encodeURIComponent(json)).length;
 }
-async function pushRemote(snapshot, uid, profileId) {
-  if (!snapshot || !sameCloudContext(uid, profileId)) return false;
+async function pushRemote(snapshot, uid, localProfileId, cloudProfileId) {
+  if (!snapshot || !sameCloudContext(uid, localProfileId, cloudProfileId)) return false;
   const c = window.supabaseClient;
   if (!c) return false;
-  const contextKey = cloudContextKey(uid, profileId);
+  const contextKey = cloudContextKey(uid, cloudProfileId, localProfileId);
   if (!_hydratedUsers.has(contextKey)) {
     await pullRemote();
-    if (!_hydratedUsers.has(contextKey) || !sameCloudContext(uid, profileId)) return false;
+    if (!_hydratedUsers.has(contextKey) || !sameCloudContext(uid, localProfileId, cloudProfileId)) return false;
   }
   const current = PS();
   const state = current.u > (snapshot.u || 0) ? JSON.parse(JSON.stringify(current)) : snapshot;
@@ -96,10 +99,10 @@ async function pushRemote(snapshot, uid, profileId) {
     console.warn('[Masahati] State exceeds the 1 MiB cloud limit; local copy retained.');
     return false;
   }
-  if (!sameCloudContext(uid, profileId)) return false;
+  if (!sameCloudContext(uid, localProfileId, cloudProfileId)) return false;
   try {
     const result = await c.from('student_platform_state').upsert({
-      student_id: uid, profile_id: profileId, state, updated_at: new Date().toISOString()
+      student_id: uid, profile_id: cloudProfileId, state, updated_at: new Date().toISOString()
     }, { onConflict: 'student_id,profile_id' });
     if (result && result.error) throw result.error;
     return true;
@@ -109,18 +112,18 @@ async function pushRemote(snapshot, uid, profileId) {
   }
 }
 async function pullRemote() {
-  const c = window.supabaseClient, uid = cloudUid(), profileId = pid();
+  const c = window.supabaseClient, uid = cloudUid(), localProfileId = pid(), cloudProfileId = cloudPid();
   if (!c || !uid) return false;
-  const contextKey = cloudContextKey(uid, profileId);
+  const contextKey = cloudContextKey(uid, cloudProfileId, localProfileId);
   if (_hydratedUsers.has(contextKey)) return true;
   if (_pullingUsers.has(contextKey)) return _pullingUsers.get(contextKey);
   const task = (async () => {
     const localAtStart = JSON.parse(JSON.stringify(PS()));
     try {
       const result = await c.from('student_platform_state')
-        .select('state').eq('student_id', uid).eq('profile_id', profileId).maybeSingle();
+        .select('state').eq('student_id', uid).eq('profile_id', cloudProfileId).maybeSingle();
       if (result && result.error) throw result.error;
-      if (!sameCloudContext(uid, profileId)) return false;
+      if (!sameCloudContext(uid, localProfileId, cloudProfileId)) return false;
       const localNow = PS();
       const changedDuringRead = (localNow.u || 0) > (localAtStart.u || 0);
       const row = result && result.data;
@@ -128,15 +131,15 @@ async function pullRemote() {
         const remote = row.state;
         if ((remote.u || 0) > (localNow.u || 0)) {
           _ps = Object.assign({}, localNow, remote);
-          _psPid = profileId;
-          try { localStorage.setItem(profileId + '_gosvt_masahati', JSON.stringify(_ps)); } catch (e) {}
+          _psPid = localProfileId;
+          try { localStorage.setItem(localProfileId + '_gosvt_masahati', JSON.stringify(_ps)); } catch (e) {}
           if (!S.busy) mountAgain();
         }
       }
       _hydratedUsers.add(contextKey);
       const localIsNewer = !row || !row.state || changedDuringRead ||
         (localNow.u || 0) > ((row.state && row.state.u) || 0);
-      if (localIsNewer) await pushRemote(localNow, uid, profileId);
+      if (localIsNewer) await pushRemote(localNow, uid, localProfileId, cloudProfileId);
       return true;
     } catch (e) {
       console.warn('[Masahati] Cloud restore failed; local copy retained.', e && e.message);
