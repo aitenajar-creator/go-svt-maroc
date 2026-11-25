@@ -8,8 +8,10 @@ create function auth.uid() returns uuid language sql stable as $$
 $$;
 grant usage on schema auth, public to authenticated;
 grant execute on function auth.uid() to authenticated;
+grant select on public.profiles to authenticated;
 create table public.profiles(id uuid primary key references auth.users(id), role text not null);
 create table public.private_student_lessons(id uuid primary key, title text, is_published boolean not null default true);
+grant select on public.private_student_lessons to authenticated;
 create table public.student_notes(student_id uuid references auth.users(id) on delete cascade, content_key text, note text, updated_at timestamptz not null default now(), primary key(student_id,content_key));
 create table public.student_study_plan(student_id uuid references auth.users(id) on delete cascade, item_key text, title text, updated_at timestamptz not null default now(), primary key(student_id,item_key));
 alter table public.student_notes enable row level security;
