@@ -1193,12 +1193,13 @@
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
         const wantedLevel = String(level || '').trim().toUpperCase();
-        const wantedTrack = String(track || '').replace(/\\s+/g, '').toUpperCase();
+        const wantedTrack = String(track || '').replace(/\s+/g, '').toUpperCase();
 
         const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
         const matchesPathway = item =>
+            !!wantedLevel && !!wantedTrack &&
             String(item.level || '').trim().toUpperCase() === wantedLevel &&
-            String(item.track || '').replace(/\\s+/g, '').toUpperCase() === wantedTrack;
+            String(item.track || '').replace(/\s+/g, '').toUpperCase() === wantedTrack;
         const lessonRecords = Object.values(profileData.progress.lessons)
             .filter(isProgressRecord).filter(matchesPathway);
         const exerciseRecords = Object.values(profileData.progress.exercises)
