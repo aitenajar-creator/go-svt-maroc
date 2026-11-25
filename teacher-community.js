@@ -436,10 +436,13 @@
       try { downloadTab.opener = null; } catch (_) {}
       try { downloadTab.document.title = 'جارٍ تجهيز التنزيل…'; } catch (_) {}
     }
+    const session = captureCommunitySession();
     try {
       const r = resources.find(x => x.id === id) || await findResource(id);
+      if (!communitySessionIsCurrent(session)) return;
       if (!r) throw new Error('لم يتم العثور على الملف.');
       const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90, { download: r.file_name });
+      if (!communitySessionIsCurrent(session)) return;
       if (error) throw error;
       // Accept only a signed URL served by this community's configured Supabase project.
       // A malformed or unexpected redirect must never be opened as a download target.
@@ -468,14 +471,17 @@
       try { previewTab.opener = null; } catch (_) {}
       try { previewTab.document.title = 'جارٍ تجهيز المعاينة…'; } catch (_) {}
     }
+    const session = captureCommunitySession();
     try {
       const r = resources.find(x => x.id === id) || await findResource(id);
+      if (!communitySessionIsCurrent(session)) return;
       if (!r) throw new Error('لم يتم العثور على الملف.');
       const previewableTypes = ['application/pdf','image/jpeg','image/png','image/webp'];
       if (!previewableTypes.includes(r.mime_type)) {
         throw new Error('المعاينة متاحة حالياً لملفات PDF والصور فقط.');
       }
       const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90);
+      if (!communitySessionIsCurrent(session)) return;
       if (error) throw error;
       let signedUrl;
       try {
@@ -498,7 +504,9 @@
   let editingResourceId = null, editInProgress = false;
   async function openEditResource(id) {
     if (!user) throw new Error('سجّل الدخول أولاً.');
+    const session = captureCommunitySession();
     const r = resources.find(x => x.id === id) || await findResource(id);
+    if (!communitySessionIsCurrent(session)) return;
     if (!r) throw new Error('لم يتم العثور على الوثيقة.');
     const canEdit = isAdmin || (r.owner_id === user.id && member && member.status === 'approved');
     if (!canEdit) throw new Error('لا تملك صلاحية تعديل بيانات هذه الوثيقة.');
@@ -608,10 +616,14 @@
     await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdmin() : Promise.resolve()]);
   }
   async function toggleShare(id) {
-    const r = await findResource(id); if (!r) return;
+    const session = captureCommunitySession();
+    const r = await findResource(id);
+    if (!communitySessionIsCurrent(session) || !r) return;
     if (r.owner_id !== user.id && !isAdmin) throw new Error('لا يمكنك تعديل ملف أستاذ آخر.');
+    if (!communitySessionIsCurrent(session)) return;
     const updated = await client.from('teacher_community_resources').update({is_shared:!r.is_shared,updated_at:new Date().toISOString()})
       .eq('id',id).select('id').maybeSingle();
+    if (!communitySessionIsCurrent(session)) return;
     if (updated.error) throw updated.error;
     if (!updated.data) throw new Error('لم يتم تغيير حالة المشاركة؛ قد تكون العضوية معلقة أو لم تعد تملك صلاحية تعديل هذه الوثيقة.');
     await Promise.all([loadLibrary(),loadMyResources()]);
