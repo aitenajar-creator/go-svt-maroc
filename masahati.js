@@ -56,7 +56,7 @@ function levelInfo() {
 let _ps = null, _psPid = null, _saveT = null;
 const _hydratedUsers = new Set();
 const _pullingUsers = new Map();
-const cloudContextKey = (uid, profileId) => JSON.stringify([uid, profileId]);
+const cloudContextKey = (uid, cloudProfileId, localProfileId) => JSON.stringify([uid, cloudProfileId, localProfileId]);
 const psKey = () => pid() + '_gosvt_masahati';
 function PS() {
   if (_ps && _psPid === pid()) return _ps;
