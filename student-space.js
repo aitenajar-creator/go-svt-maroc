@@ -1159,47 +1159,7 @@
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
 
-        // Count only actual records. Legacy/imported nulls, arrays and primitives
-        // must not inflate progress or cause the dashboard to throw.
-        const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
-        const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord);
-        const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord);
-        const lessonsViewed = lessonRecords.length;
-        const completedLessons = lessonRecords.filter(item => item.completed === true).length;
-        const exercisesDone = exerciseRecords.length;
-        // Only attempts carrying explicit pathway metadata belong in pathway-scoped
-        // guidance. Legacy attempts remain visible in global history/analytics, but
-        // must not steer recommendations for a different level or track.
-        const quizResults = getValidQuizResults(profileData).filter(result =>
-            String(result.level || '').trim().toUpperCase() === wantedLevel &&
-            String(result.track || '').replace(/\\s+/g, '').toUpperCase() === wantedTrack
-        );
-        const testsTaken = quizResults.length;
-
-        const totalScore = quizResults.reduce((sum, result) => sum + result.percentage, 0);
-        const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
-        const globalProgress = lessonsViewed > 0
-            ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
-        const streak = Number(profileData.streak.current);
-        const bestStreak = Number(profileData.streak.best);
-
-        return {
-            lessonsViewed,
-            completedLessons,
-            exercisesDone,
-            testsTaken,
-            averageScore,
-            globalProgress,
-            streak: Number.isFinite(streak) && streak >= 0 ? streak : 0,
-            bestStreak: Number.isFinite(bestStreak) && bestStreak >= 0 ? bestStreak : 0
-        };
-    }
-function getDashboardStats() {
-        syncCurrentProfile();
-        const profileData = getProfileData(currentProfileId);
-
-        // Count only actual records. Legacy/imported nulls, arrays and primitives
-        // must not inflate progress or cause the dashboard to throw.
+        // Global history: include all valid attempts, including legacy records.
         const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
         const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord);
         const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord);
@@ -1208,8 +1168,7 @@ function getDashboardStats() {
         const exercisesDone = exerciseRecords.length;
         const quizResults = getValidQuizResults(profileData);
         const testsTaken = quizResults.length;
-
-        const totalScore = quizResults.reduce((sum, result) => sum + result.percentage, 0);
+        const totalScore = quizResults.reduce((sum, result) => sum + Number(result.percentage), 0);
         const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
         const globalProgress = lessonsViewed > 0
             ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
@@ -1228,27 +1187,29 @@ function getDashboardStats() {
         };
     }
 
-
-    // Pathway-specific progress uses saved path metadata only; quiz attempts remain global
-    // because legacy quiz results do not reliably carry level/track identifiers.
+    // Pathway statistics use only records explicitly tagged for the selected
+    // level and track. Untagged historical quiz attempts remain in global history.
     function getDashboardStatsForPath(level, track) {
         syncCurrentProfile();
         const profileData = getProfileData(currentProfileId);
-        const wantedLevel = String(level || '').toUpperCase();
-        const wantedTrack = String(track || '').replace(/\s+/g, '').toUpperCase();
+        const wantedLevel = String(level || '').trim().toUpperCase();
+        const wantedTrack = String(track || '').replace(/\\s+/g, '').toUpperCase();
 
-        // Count only actual records. Legacy/imported nulls, arrays and primitives
-        // must not inflate progress or cause the dashboard to throw.
         const isProgressRecord = item => !!item && typeof item === 'object' && !Array.isArray(item);
-        const lessonRecords = Object.values(profileData.progress.lessons).filter(isProgressRecord).filter(item => item.level === wantedLevel && item.track === wantedTrack);
-        const exerciseRecords = Object.values(profileData.progress.exercises).filter(isProgressRecord).filter(item => item.level === wantedLevel && item.track === wantedTrack);
+        const matchesPathway = item =>
+            String(item.level || '').trim().toUpperCase() === wantedLevel &&
+            String(item.track || '').replace(/\\s+/g, '').toUpperCase() === wantedTrack;
+        const lessonRecords = Object.values(profileData.progress.lessons)
+            .filter(isProgressRecord).filter(matchesPathway);
+        const exerciseRecords = Object.values(profileData.progress.exercises)
+            .filter(isProgressRecord).filter(matchesPathway);
+        const quizResults = getValidQuizResults(profileData).filter(matchesPathway);
+
         const lessonsViewed = lessonRecords.length;
         const completedLessons = lessonRecords.filter(item => item.completed === true).length;
         const exercisesDone = exerciseRecords.length;
-        const quizResults = getValidQuizResults(profileData);
         const testsTaken = quizResults.length;
-
-        const totalScore = quizResults.reduce((sum, result) => sum + result.percentage, 0);
+        const totalScore = quizResults.reduce((sum, result) => sum + Number(result.percentage), 0);
         const averageScore = testsTaken > 0 ? Math.round(totalScore / testsTaken) : 0;
         const globalProgress = lessonsViewed > 0
             ? Math.round((completedLessons / lessonsViewed) * 100) : 0;
