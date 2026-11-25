@@ -17,6 +17,12 @@
   let sessionGeneration = 0;
   let authorizationKey = null;
 
+  function captureCommunitySession() {
+    return { user, generation: sessionGeneration };
+  }
+  function communitySessionIsCurrent(snapshot) {
+    return !!(snapshot && snapshot.user && user && snapshot.user.id === user.id && snapshot.generation === sessionGeneration);
+  }
   function clearCommunityView() {
     resources = [];
     ['tc-resource-grid','tc-my-resources','tc-admin-members','tc-admin-resources','tc-admin-activity'].forEach(id => {
@@ -235,6 +241,7 @@
   }
   async function loadLibrary(reset = true) {
     if (!user || !(isAdmin || (member && member.status === 'approved'))) return;
+    const session = captureCommunitySession();
     if (libraryLoading) {
       // Queue a fresh query when search/category changes during an active request.
       // Ignore duplicate pagination clicks so the same range is never appended twice.
@@ -282,7 +289,7 @@
       const { data, error } = await query
         .order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
-      if (requestId !== libraryRequest) return;
+      if (requestId !== libraryRequest || !communitySessionIsCurrent(session)) return;
       if (error) {
         $('tc-library-state').hidden = false;
         $('tc-library-state').textContent = 'تعذر تحميل المكتبة: ' + error.message;
@@ -332,6 +339,7 @@
   }
   async function updateMyStats() {
     if (!user) return;
+    const session = captureCommunitySession();
     const ids = ['total','shared','private','hidden'];
     ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '…'; });
     try {
@@ -342,6 +350,7 @@
         base().eq('status','published').eq('is_shared',false),
         base().eq('status','hidden')
       ]);
+      if (!communitySessionIsCurrent(session)) return;
       const failed = results.find(result => result.error);
       if (failed) throw failed.error;
       results.forEach((result,index) => {
@@ -357,6 +366,7 @@
   }
   async function loadMyResources(reset = true) {
     if (!user) return;
+    const session = captureCommunitySession();
     if (myLoading) {
       // A successful upload/delete may request a refresh while pagination is
       // still in flight. Queue that refresh instead of silently dropping it.
@@ -383,6 +393,7 @@
       const ascending = sort === 'oldest' || sort === 'title';
       const { data, error } = await query.order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
+      if (!communitySessionIsCurrent(session)) return;
       if (error) {
         $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.';
         if (reset) $('tc-my-resources').innerHTML = retry;
@@ -596,6 +607,7 @@
   async function loadAdmin(reset = true, only = 'both') {
     const loadMembers = only !== 'resources', loadResources = only !== 'members';
     if (!isAdmin) return;
+    const session = captureCommunitySession();
     if ((loadMembers && adminMembersLoading) || (loadResources && adminResourcesLoading)) {
       if (reset && loadResources) adminResourcesRefreshPending = true;
       return;
@@ -635,6 +647,7 @@
       only === 'members' ? Promise.resolve({data:[],error:null}) : adminResourceQuery.order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(adminResourcesOffset, adminResourcesOffset + PAGE_SIZE - 1)
     ]);
+    if (!communitySessionIsCurrent(session)) return;
     const memberPage = members.error ? [] : (members.data || []);
     const resourcePage = docs.error ? [] : (docs.data || []);
     let resourceOwners = {};
@@ -643,6 +656,7 @@
       const ownerResult = ownerIds.length
         ? await client.from('teacher_community_members').select('user_id,display_name,professional_title,school_name').in('user_id', ownerIds)
         : {data:[],error:null};
+      if (!communitySessionIsCurrent(session)) return;
       if (ownerResult.error) console.warn('[Teacher community admin resource owners]', ownerResult.error);
       else resourceOwners = Object.fromEntries((ownerResult.data || []).map(m => [m.user_id, m]));
     }
@@ -769,6 +783,7 @@
   }
   async function loadAdminActivity(reset = true) {
     if (!isAdmin) return;
+    const session = captureCommunitySession();
     if (adminActivityLoading) {
       if (reset) adminActivityRefreshPending = true;
       return;
@@ -796,6 +811,7 @@
       if (activitySearch) activityQuery = activityQuery.ilike('resource_title', '%' + activitySearch + '%');
       if (actorSearch) {
         const actorIds = await findActivityActorIds(actorSearch);
+        if (!communitySessionIsCurrent(session)) return;
         if (!actorIds.length) {
           adminActivityOffset = 0; adminActivityMore = false;
           panel.innerHTML = '<div class="tc-state">لا توجد عمليات باسم المنفذ يطابق البحث.</div>';
@@ -809,12 +825,14 @@
         .order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(start,start + PAGE_SIZE - 1);
       if (error) throw error;
+      if (!communitySessionIsCurrent(session)) return;
       const page = data || [];
       const personIds = [...new Set(page.flatMap(row => [row.actor_id,row.owner_id]).filter(Boolean))];
       let people = {};
       if (personIds.length) {
         const peopleResult = await client.from('teacher_community_members')
           .select('user_id,display_name,professional_title,school_name').in('user_id',personIds);
+        if (!communitySessionIsCurrent(session)) return;
         if (peopleResult.error) console.warn('[Teacher community activity people]',peopleResult.error);
         else people = Object.fromEntries((peopleResult.data || []).map(person => [person.user_id,person]));
       }
