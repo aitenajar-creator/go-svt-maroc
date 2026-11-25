@@ -73,6 +73,11 @@ jobs:
           source: ./
           destination: ./_site
 
+      # The Jekyll action writes root-owned files into _site. Normalize ownership
+      # once before any subsequent artifact updates.
+      - name: Normalize Pages artifact ownership
+        run: sudo chown -R "$(id -u):$(id -g)" _site
+
       # Keep the public browser configuration in the artifact. Jekyll may omit
       # this root-level runtime file when processing repository ignore rules.
       - name: Include public Supabase browser configuration
@@ -96,7 +101,6 @@ jobs:
           with open("dates.json", "w", encoding="utf-8") as output:
               json.dump(dates, output, ensure_ascii=False)
           PY
-          sudo chown -R "$(id -u):$(id -g)" _site
           cp dates.json _site/dates.json
 
       - name: Stamp release-scoped offline caches
