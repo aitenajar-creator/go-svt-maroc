@@ -2773,6 +2773,13 @@ function openScientificPhotoPreview(card){
             return;
         }
 
+        // Optional Masahati experience: delegate only when its assets are loaded
+        // and it explicitly accepts this student account. Otherwise keep the
+        // established student dashboard as the safe fallback.
+        if (window.Masahati && typeof window.Masahati.mount === 'function' && window.Masahati.mount(container)) {
+            return;
+        }
+
         syncCurrentProfile();
 
         const panelTask = (icon, titleAr, titleFr, content) => {
@@ -4049,6 +4056,7 @@ function openScientificPhotoPreview(card){
         getCurrentProfile,
         getProfiles,
         getProfileData,
+        saveProfileData,
         mergeCloudProgress,
         mergeCloudLearningState,
         mergeCloudCollections,
