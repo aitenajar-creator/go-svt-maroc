@@ -108,3 +108,19 @@ test('teacher actions stop before work when the active account changes',()=>{
   const pinWrite=block.indexOf(".from('teacher_question_pins').delete()",pinRead);
   assert(pinRead>=0&&pinGuard>pinRead&&pinWrite>pinGuard,'pin changes must revalidate the session after the lookup and before writing');
 });
+
+test('classroom roster and student reports discard stale account responses',()=>{
+  const block=between(source('teacher-classroom.js'),'  async function act(button)','  async function refreshPanel');
+  for(const marker of [
+    "client.rpc('gosvt_teacher_class_roster'",
+    "client.from('teacher_assignments').select('id,title,due_at')",
+    "client.from('teacher_assignment_submissions').select('assignment_id,student_id,submitted_at,score')",
+    "client.rpc('gosvt_teacher_student_assignment_trend'",
+    "client.from('teacher_student_support_plans').select('id,title,actions,success_criteria,due_at,status,created_at')",
+    "client.from('teacher_student_notes').select('id,note,note_type,created_at,teacher_id')"
+  ]){
+    const request=block.indexOf(marker);
+    const guard=block.indexOf('if(!actionSessionIsCurrent(user))return;',request);
+    assert(request>=0&&guard>request,'the active account must be revalidated after '+marker);
+  }
+});
