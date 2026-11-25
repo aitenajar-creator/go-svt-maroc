@@ -79,3 +79,13 @@ test('thread responses are discarded when the signed-in account changes during l
   await b.context.renderThread('question');
   assert.equal(host.innerHTML,'');
 });
+
+test('classroom session guard rejects stale users and detached panels',()=>{
+  const panel=node();
+  const b=browser({StudentAccount:{isLoggedIn:()=>true,getUser:()=>({id:'account-b'})}});
+  b.run(between(source('teacher-classroom.js'),'  function sessionIsCurrent(user,host)','  async function profileFor'));
+  assert.equal(b.context.sessionIsCurrent({id:'account-a'},panel),false);
+  assert.equal(b.context.sessionIsCurrent({id:'account-b'},panel),true);
+  panel.isConnected=false;
+  assert.equal(b.context.sessionIsCurrent({id:'account-b'},panel),false);
+});
