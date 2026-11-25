@@ -60,7 +60,7 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
 
     await t.test('lesson objectives are limited to published lessons and student accounts',async()=>{
       await as(student);
-      await db.query('insert into public.student_lesson_objectives(student_id,lesson_id,checked_indices) values($1,$2,$3)',[student,first,[3]]);
+      await db.query('insert into public.student_lesson_objectives(student_id,lesson_id,checked_indices) values($1,$2,$3) on conflict(student_id,lesson_id) do update set checked_indices=excluded.checked_indices',[student,first,[3]]);
       const unpublished='10000000-0000-0000-0000-000000000003';
       await assert.rejects(
         db.query('insert into public.student_lesson_objectives(student_id,lesson_id,checked_indices) values($1,$2,$3)',[student,unpublished,[0]]),
