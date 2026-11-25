@@ -36,6 +36,7 @@ function harness({readResult={data:null,error:null},writeResult={error:null}}={}
     setTimeout(fn){const id=++timerId;timers.set(id,fn);return id;},
     clearTimeout(id){timers.delete(id);},
     pid:()=>currentPid,
+    cloudPid:()=>currentUid ? 'account-default' : currentPid,
     today:()=>20261125,
     SA:()=>({isLoggedIn:()=>!!currentUid,getUser:()=>({id:currentUid})}),
     S:{busy:false},
@@ -71,14 +72,14 @@ test('Supabase upsert errors are detected and reported as failure',async()=>{
   const h=harness({readResult:{data:{state:{u:0}},error:null},writeResult:{error:{message:'RLS denied'}}});
   assert.equal(await h.api.pullRemote(),true);
   // Explicitly exercise the writer after hydration.
-  const ok=await h.api.pushRemote({u:Date.now(),cards:{x:1}},'user-1','profile-1');
+  const ok=await h.api.pushRemote({u:Date.now(),cards:{x:1}},'user-1','profile-1','account-default');
   assert.equal(ok,false);
 });
 
 test('successful empty read hydrates and seeds local state only after the read',async()=>{
   const h=harness({readResult:{data:null,error:null}});
   assert.equal(await h.api.pullRemote(),true);
-  assert.deepEqual(Array.from(h.api.hydrated()),[JSON.stringify(['user-1','profile-1'])]);
+  assert.deepEqual(Array.from(h.api.hydrated()),[JSON.stringify(['user-1','account-default','profile-1'])]);
   assert.equal(h.writes.length,1);
   assert.equal(h.writes[0].student_id,'user-1');
   assert.equal(h.writes[0].profile_id,'account-default');
@@ -103,7 +104,7 @@ test('oversized state is rejected before a cloud upsert', async()=>{
   const h=harness({readResult:{data:{state:{u:0}},error:null}});
   assert.equal(await h.api.pullRemote(),true);
   h.writes.length=0;
-  const ok=await h.api.pushRemote({u:Date.now(),payload:'x'.repeat(1024*1024+10)},'user-1','profile-1');
+  const ok=await h.api.pushRemote({u:Date.now(),payload:'x'.repeat(1024*1024+10)},'user-1','profile-1','account-default');
   assert.equal(ok,false);
   assert.equal(h.writes.length,0);
 });
