@@ -22,7 +22,7 @@ begin
   if p_expected_student_id is distinct from v_student then
     raise exception 'session_changed' using errcode = '42501';
   end if;
-  if p_collection not in ('notes', 'studyPlan')
+  if p_collection is null or p_collection not in ('notes', 'studyPlan')
      or p_item_key is null or char_length(p_item_key) not between 1 and 500
      or p_item is null or jsonb_typeof(p_item) <> 'object' then
     raise exception 'invalid_collection_item' using errcode = '22023';
