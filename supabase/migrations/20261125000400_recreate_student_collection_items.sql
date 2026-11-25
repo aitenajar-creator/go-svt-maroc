@@ -66,7 +66,7 @@ begin
       set note = excluded.note, updated_at = excluded.updated_at
       where excluded.updated_at >= public.student_notes.updated_at;
   else
-    if coalesce(p_item->>'date','') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2} then
+    if coalesce(p_item->>'date','') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then
       raise exception 'invalid_study_plan_date' using errcode = '22023';
     end if;
     insert into public.student_study_plan(
