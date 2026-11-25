@@ -68,7 +68,7 @@ test('a successful retry clears the previous synchronization error',async()=>{
   f.c.GoSVTCloud.loadLearningState=async()=>({goals:[],streak:{current:0,best:0,lastVisit:null}});
   await f.c.StudentAccount.refreshProfile();await flush();
   assert.equal(f.c.StudentAccount.getSyncStatus().phase,'ready');
-  assert.deepEqual(f.c.StudentAccount.getSyncStatus().failures,[]);
+  assert.equal(f.c.StudentAccount.getSyncStatus().failures.length,0);
 });
 
 test('the account uses the server academic profile, not editable signup metadata',async()=>{
