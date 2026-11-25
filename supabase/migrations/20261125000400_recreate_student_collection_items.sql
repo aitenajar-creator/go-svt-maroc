@@ -66,7 +66,29 @@ begin
       set note = excluded.note, updated_at = excluded.updated_at
       where excluded.updated_at >= public.student_notes.updated_at;
   else
-    if coalesce(p_item->>'date','') !~ '^\\d{4}-\\d{2}-\\d{2}$' then
+    if coalesce(p_item->>'date','') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2} then
+      raise exception 'invalid_study_plan_date' using errcode = '22023';
+    end if;
+    insert into public.student_study_plan(
+      student_id, item_key, title, scheduled_date, duration_minutes, completed, created_at, updated_at
+    ) values (
+      v_student, p_item_key, left(coalesce(p_item->>'title',''),120),
+      (p_item->>'date')::date,
+      least(600, greatest(5, coalesce((p_item->>'duration')::integer,30))),
+      coalesce((p_item->>'completed')::boolean,false), v_created_at, v_updated_at
+    )
+    on conflict (student_id, item_key) do update set
+      title = excluded.title, scheduled_date = excluded.scheduled_date,
+      duration_minutes = excluded.duration_minutes, completed = excluded.completed,
+      updated_at = excluded.updated_at
+    where excluded.updated_at >= public.student_study_plan.updated_at;
+  end if;
+  return true;
+end;
+$function$;
+revoke all on function public.gosvt_upsert_student_collection_item(text,text,uuid,jsonb) from public, anon;
+grant execute on function public.gosvt_upsert_student_collection_item(text,text,uuid,jsonb) to authenticated;
+ then
       raise exception 'invalid_study_plan_date' using errcode = '22023';
     end if;
     insert into public.student_study_plan(
