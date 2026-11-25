@@ -65,3 +65,17 @@ test('the CI load-order guard checks cache-busted script URLs',()=>{
     assert.notEqual(result.status,0);assert((result.stdout+result.stderr).includes('must precede'));
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('thread responses are discarded when the signed-in account changes during loading',async()=>{
+  const host=node();let calls=0;
+  const b=browser({
+    document:Object.assign({},browser().context.document,{getElementById:id=>id==='gs-cl-thread-question'?host:null}),
+    currentUser:async()=>({id:++calls===1?'teacher-a':'teacher-b'}),
+    StudentAccount:{getUser:()=>({id:'teacher-b'})},
+    client:{from:()=>query({data:[{id:'message',sender_id:'teacher-a',body:'private thread',created_at:'2026-01-01T00:00:00Z'}],error:null})},
+    tr:(_,fr)=>fr,esc:value=>String(value)
+  });
+  b.run(between(source('teacher-classroom.js'),'  async function renderThread(id)','  function profileForNotePermission'));
+  await b.context.renderThread('question');
+  assert.equal(host.innerHTML,'');
+});
