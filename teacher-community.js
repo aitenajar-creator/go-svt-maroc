@@ -505,6 +505,7 @@
   async function openEditResource(id) {
     if (!user) throw new Error('سجّل الدخول أولاً.');
     const session = captureCommunitySession();
+    if (!communitySessionIsCurrent(session)) return;
     const r = resources.find(x => x.id === id) || await findResource(id);
     if (!communitySessionIsCurrent(session)) return;
     if (!r) throw new Error('لم يتم العثور على الوثيقة.');
@@ -535,6 +536,7 @@
     submit.disabled = true; submit.textContent = 'جارٍ حفظ التعديلات...';
     if (closeButton) closeButton.disabled = true;
     try {
+      if (!communitySessionIsCurrent(session)) return;
       const updated = await client.from('teacher_community_resources').update({
         title, description, category, is_shared: $('tc-edit-share').checked,
         updated_at: new Date().toISOString()
