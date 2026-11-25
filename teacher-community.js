@@ -1084,11 +1084,19 @@
     if (closeButton) closeButton.disabled = true;
     const session = captureCommunitySession();
     try {
+      // Never start a storage mutation from a session that has already expired.
+      if (!communitySessionIsCurrent(session)) return;
       // Keep path generation inside the guarded upload flow so any runtime error
       // still reaches finally and releases the dialog and submit-button locks.
       const path = user.id + '/' + crypto.randomUUID() + '.' + ext;
       const upload = await client.storage.from('teacher-community').upload(path,file,{contentType:mimeType,upsert:false});
-      if (!communitySessionIsCurrent(session)) return;
+      if (!communitySessionIsCurrent(session)) {
+        // The shared client may now carry another user's token. Do not attempt
+        // removal under that identity; the owner-scoped Storage policy must
+        // remain authoritative. Record the exact orphan path for admin cleanup.
+        if (!upload.error) console.warn('[Teacher community] Upload completed after its session expired; owner-scoped cleanup is required:', path);
+        return;
+      }
       if (upload.error) throw upload.error;
       const row = {owner_id:user.id,title,description:$('tc-file-description').value.trim(),category:$('tc-file-category').value,
         file_name:file.name,mime_type:mimeType,size_bytes:file.size,storage_path:path,
@@ -1105,12 +1113,17 @@
       }
       $('tc-upload-form').reset(); updateSelectedFileHint(); $('tc-upload-dialog').close();
       await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
-    } catch(err) { message('tc-upload-message',err.message || 'فشل رفع الملف.'); }
+    } catch(err) {
+      if (communitySessionIsCurrent(session)) message('tc-upload-message',err.message || 'فشل رفع الملف.');
+    }
     finally {
       uploadInProgress = false;
-      submit.disabled=false;
-      submit.textContent='رفع وحفظ الوثيقة';
-      if (closeButton) closeButton.disabled = false;
+      // Do not let an old upload repaint controls belonging to a new account.
+      if (communitySessionIsCurrent(session)) {
+        submit.disabled=false;
+        submit.textContent='رفع وحفظ الوثيقة';
+        if (closeButton) closeButton.disabled = false;
+      }
     }
   }
   async function handleAdminAction(e) {
