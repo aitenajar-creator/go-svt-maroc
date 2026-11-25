@@ -23,20 +23,40 @@ function withTimeout(promise,label,ms=15000){
   new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' — timeout')),ms);})
  ]).finally(()=>clearTimeout(timer));
 }
+function watchLessonSession(client,userId){
+ let activeUserId=userId,generation=0,subscription=null;
+ if(client&&client.auth&&typeof client.auth.onAuthStateChange==='function'){
+  const result=client.auth.onAuthStateChange(function(_event,session){
+   const nextUserId=session&&session.user&&session.user.id||null;
+   if(nextUserId!==activeUserId){activeUserId=nextUserId;generation++;}
+  });
+  subscription=result&&result.data&&result.data.subscription||null;
+ }
+ const capturedGeneration=generation;
+ return {
+  isCurrent:()=>activeUserId===userId&&generation===capturedGeneration,
+  unsubscribe:()=>{if(subscription&&typeof subscription.unsubscribe==='function')subscription.unsubscribe();}
+ };
+}
+let lessonSessionIsCurrent=()=>true;
 async function start(){
   if(!client){say(window.GoSVTAuthConfigError||'تعذر تهيئة خدمة تسجيل الدخول. أعد تحميل الصفحة وحاول مجدداً.');return;}
   say('جارٍ التحقق من جلسة تسجيل الدخول…');
   const authResult=await withTimeout(client.auth.getUser(),'auth.getUser',15000);
   const user=authResult&&authResult.data&&authResult.data.user;
   if(authResult.error||!user){say('انتهت جلسة الدخول أو لم يتم تسجيل الدخول. ارجع إلى مساحة التلميذ وسجّل الدخول مجدداً.');return;}
+  const lessonSession=watchLessonSession(client,user.id);
+  lessonSessionIsCurrent=()=>lessonSession.isCurrent();
   say('تم التحقق من الحساب. جارٍ التحقق من الصلاحيات…');
   const profileResult=await withTimeout(client.from('profiles').select('role').eq('id',user.id).maybeSingle(),'profiles query',15000);
+  if(!lessonSessionIsCurrent()){say('تغير الحساب أثناء تحميل الدرس. ارجع إلى مساحة التلميذ وافتح الدرس من جديد.');return;}
   const profile=profileResult.data;
   if(profileResult.error||!profile||!['student','admin'].includes(profile.role)){say('ليس لديك إذن لقراءة هذا الدرس.');return;}
   const id=new URLSearchParams(location.search).get('id');
   if(!id){say('لم يتم تحديد الدرس.');return;}
   say('تم التحقق من الصلاحيات. جارٍ تحميل محتوى الدرس…');
   const lessonResult=await withTimeout(client.from('private_student_lessons').select('id,title,content_html').eq('id',id).maybeSingle(),'lesson query',20000);
+  if(!lessonSessionIsCurrent()){say('تغير الحساب أثناء تحميل الدرس. ارجع إلى مساحة التلميذ وافتح الدرس من جديد.');return;}
   const lesson=lessonResult.data;
   if(lessonResult.error||!lesson){say('هذا الدرس غير متاح لحسابك أو لم يعد منشوراً.');return;}
  $('lesson-title').textContent=lesson.title;
@@ -64,6 +84,7 @@ async function start(){
  for(const img of privateImages){
    const assetPath=img.getAttribute('data-private-asset');
    const {data:asset,error:assetError}=await client.storage.from('private-lesson-assets').createSignedUrl(assetPath,3600);
+   if(!lessonSessionIsCurrent())return;
    if(!assetError&&asset?.signedUrl) img.setAttribute('src',asset.signedUrl);
    else img.replaceWith(doc.createTextNode('تعذر تحميل هذه الوثيقة المصورة حالياً.'));
  }
@@ -101,6 +122,7 @@ async function start(){
   (async function(){
    try{
     const result=await client.from('student_lesson_objectives').select('checked_indices').eq('student_id',user.id).eq('lesson_id',id).maybeSingle();
+    if(!lessonSessionIsCurrent())return;
     if(result.error)throw result.error;
     savedObjectives=Array.isArray(result.data&&result.data.checked_indices)?result.data.checked_indices:[];
     const checks=list.querySelectorAll('input[type="checkbox"]');
@@ -109,6 +131,7 @@ async function start(){
     renderObjectiveProgress();
     status.textContent='Progression synchronisée avec votre compte.';
    }catch(loadError){
+    if(!lessonSessionIsCurrent())return;
     status.textContent='Impossible de charger la progression. Rechargez la page avant de modifier les objectifs.';
     console.warn('Impossible de charger les objectifs du cours',loadError);
    }
@@ -116,6 +139,11 @@ async function start(){
   let objectiveSaveQueue=Promise.resolve();
   let objectiveSaveVersion=0;
   list.addEventListener('change',function(){
+   if(!lessonSessionIsCurrent()){
+    status.textContent='تغير الحساب. أعد فتح الدرس من مساحة التلميذ قبل حفظ التقدم.';
+    list.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.disabled=true);
+    return;
+   }
    renderObjectiveProgress();
    const checks=Array.from(list.querySelectorAll('input[type="checkbox"]'));
    savedObjectives=checks.map((cb,i)=>cb.checked?i:null).filter(i=>i!==null);
@@ -124,10 +152,13 @@ async function start(){
    status.textContent='Enregistrement…';
    // Serialize writes so rapid checkbox changes cannot finish out of order.
    objectiveSaveQueue=objectiveSaveQueue.catch(()=>{}).then(async()=>{
+    if(!lessonSessionIsCurrent())return;
     const result=await client.from('student_lesson_objectives').upsert({student_id:user.id,lesson_id:id,checked_indices:snapshot,updated_at:new Date().toISOString()},{onConflict:'student_id,lesson_id'});
+    if(!lessonSessionIsCurrent())return;
     if(result.error)throw result.error;
     if(version===objectiveSaveVersion)status.textContent='Progression enregistrée dans votre compte.';
    }).catch(saveError=>{
+    if(!lessonSessionIsCurrent())return;
     if(version===objectiveSaveVersion)status.textContent='Échec de sauvegarde. Vérifiez votre connexion puis réessayez.';
     console.error('Impossible de sauvegarder les objectifs du cours',saveError);
    });
@@ -268,6 +299,11 @@ async function start(){
  const submit=quiz.querySelector('#gs-checkpoint-submit');
  submit.addEventListener('click',async()=>{
   if(submit.disabled)return;
+  if(!lessonSessionIsCurrent()){
+   quiz.querySelectorAll('input,button').forEach(control=>control.disabled=true);
+   quiz.querySelector('#gs-checkpoint-feedback').textContent='تغير الحساب. أعد فتح الدرس من مساحة التلميذ قبل تسجيل الإنجاز.';
+   return;
+  }
   const feedback=quiz.querySelector('#gs-checkpoint-feedback');
   let score=0,complete=true;
   bank.forEach((q,i)=>{const selected=form.querySelector('input[name="q'+i+'"]:checked');if(!selected){complete=false;return;}if(Number(selected.value)===q.correct)score++;});
@@ -277,9 +313,11 @@ async function start(){
   submit.disabled=true;
   try{
    const result=await client.from('student_progress').upsert({student_id:user.id,content_key:'private-lesson:'+id,content_type:'lesson',completed:true,updated_at:new Date().toISOString()},{onConflict:'student_id,content_key,content_type'});
+   if(!lessonSessionIsCurrent())return;
    if(result.error)throw result.error;
    feedback.insertAdjacentHTML('beforeend','<p>تم تسجيل إنجاز الدرس في حسابك.</p>');
   }catch(error){
+   if(!lessonSessionIsCurrent())return;
    feedback.insertAdjacentHTML('beforeend','<p role="alert">تعذر حفظ إنجاز الدرس. نتيجتك ظاهرة أعلاه؛ اضغط التصحيح مجدداً لإعادة محاولة الحفظ.</p>');
    console.warn('[GoSVT reader] Completion save failed:',error);
   }finally{submit.disabled=false;}
@@ -287,5 +325,5 @@ async function start(){
  }
 
 }
-start().catch(e=>{console.error('[GoSVT lesson reader] initialization failed:',e);say(e&&String(e.message||e).includes('timeout')?'استغرق الاتصال وقتاً أطول من اللازم. تحقق من الإنترنت ثم أعد تحميل الدرس.':'تعذر تحميل الدرس بسبب خطأ في الاتصال. أعد المحاولة، وإذا تكرر الخطأ تواصل مع الإدارة.');});
+start().catch(e=>{if(!lessonSessionIsCurrent())return;console.error('[GoSVT lesson reader] initialization failed:',e);say(e&&String(e.message||e).includes('timeout')?'استغرق الاتصال وقتاً أطول من اللازم. تحقق من الإنترنت ثم أعد تحميل الدرس.':'تعذر تحميل الدرس بسبب خطأ في الاتصال. أعد المحاولة، وإذا تكرر الخطأ تواصل مع الإدارة.');});
 })();
