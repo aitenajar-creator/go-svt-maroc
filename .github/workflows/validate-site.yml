@@ -58,3 +58,41 @@ jobs:
 
       - name: Run browser regression tests with mocked services
         run: npm run test:browser
+
+      # Build the same static artifact that Pages will publish. Source checks alone
+      # cannot catch Liquid/Jekyll failures or broken generated asset references.
+      - name: Generate SEO pages
+        run: python3 _tools/build_seo.py
+
+      - name: Build science media catalogue
+        run: python3 _tools/build_science_media.py
+
+      - name: Build GitHub Pages artifact
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Add deployment dates metadata
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          log = subprocess.run(
+              ["git", "-c", "core.quotepath=off", "log", "--diff-filter=A", "--format=@%ct", "--name-only"],
+              capture_output=True, encoding="utf-8", check=True).stdout
+          dates, timestamp = {}, 0
+          for line in log.splitlines():
+              if line.startswith("@"):
+                  timestamp = int(line[1:])
+              elif line.strip():
+                  dates.setdefault("/" + line.strip(), timestamp)
+          with open("dates.json", "w", encoding="utf-8") as output:
+              json.dump(dates, output, ensure_ascii=False)
+          PY
+          cp dates.json _site/dates.json
+
+      - name: Stamp release-scoped offline caches
+        run: python3 _tools/build_service_worker.py _site
+
+      - name: Validate the exact Pages artifact
+        run: python3 scripts/check-site.py _site --built
