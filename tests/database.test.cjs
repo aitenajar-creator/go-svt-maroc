@@ -15,12 +15,34 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
   const send=(body,token,expected=teacher)=>db.query('select public.gosvt_send_teacher_reply($1,$2,$3,$4) as id',[question,body,token,expected]);
   try{
     await db.exec(source('tests/fixtures/database.sql'));
-    for(const file of ['20261116000000_student_learning_state.sql','20261121000100_student_lesson_objectives.sql','20261125000100_student_collection_deletions.sql','20261125000200_per_lesson_objectives.sql','20261125000300_atomic_teacher_question_replies.sql','20261125000400_recreate_student_collection_items.sql']){
+    for(const file of ['20261116000000_student_learning_state.sql','20261121000100_student_lesson_objectives.sql','20261125000100_student_collection_deletions.sql','20261125000200_per_lesson_objectives.sql','20261125000300_atomic_teacher_question_replies.sql','20261125000400_recreate_student_collection_items.sql','20261125000500_student_platform_state_profile_scope.sql']){
       if(file==='20261125000200_per_lesson_objectives.sql'){
         await db.query('insert into public.student_learning_state(student_id,lesson_objectives) values($1,$2)',[student,JSON.stringify({['private-lesson:'+first]:[0,0,'invalid',999],['private-lesson:'+second]:[1]})]);
       }
       await db.exec(source('supabase/migrations/'+file));
     }
+    await t.test('Masahati cloud state isolates profiles and authenticated owners',async()=>{
+      await as(student);
+      await db.query('insert into public.student_platform_state(student_id,profile_id,state) values($1,$2,$3),($1,$4,$5)',[student,'profile_one',{cards:{a:1}},'profile_two',{lab:{b:2}}]);
+      assert.equal((await db.query('select count(*)::int as n from public.student_platform_state')).rows[0].n,2);
+      await as(other);
+      assert.equal((await db.query('select * from public.student_platform_state')).rows.length,0);
+      await assert.rejects(
+        db.query('insert into public.student_platform_state(student_id,profile_id,state) values($1,$2,$3)',[student,'profile_other',{}]),
+        /row-level security/
+      );
+      await as(student);
+      await assert.rejects(
+        db.query('insert into public.student_platform_state(student_id,profile_id,state) values($1,$2,$3)',[student,'',{}]),
+        /check constraint/
+      );
+      await assert.rejects(
+        db.query('insert into public.student_platform_state(student_id,profile_id,state) values($1,$2,$3)',[student,'profile_array',[]]),
+        /check constraint/
+      );
+      await db.exec('reset role; set role anon;');
+      await assert.rejects(db.query('select * from public.student_platform_state'),/permission denied/);
+    });
     await t.test('legacy objective backfill keeps valid indices without altering the old JSON',async()=>{
       const rows=(await db.query('select checked_indices from public.student_lesson_objectives order by lesson_id')).rows;
       assert.deepEqual(rows.map(row=>row.checked_indices),[[0],[1]]);
