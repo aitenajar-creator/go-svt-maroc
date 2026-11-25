@@ -179,3 +179,20 @@ test('teacher community mutations revalidate the account around writes',()=>{
     assert(block.indexOf(responseMarker,request)>=0,'expected response handling after '+requestMarker);
   }
 });
+
+
+test('teacher community preview, download, edit and sharing stop on stale sessions',()=>{
+  const community=source('teacher-community.js');
+  for(const [start,end,request] of [
+    ['async function downloadResource(id)','async function previewResource(id)','createSignedUrl'],
+    ['async function previewResource(id)','let editingResourceId','createSignedUrl'],
+    ['async function openEditResource(id)','async function handleEditResource(e)','showModal'],
+    ['async function toggleShare(id)','async function loadAdmin(reset = true, only = \'both\')','update({is_shared:']
+  ]){
+    const block=between(community,'  '+start,'  '+end);
+    const requestAt=block.indexOf(request);
+    const guardBefore=block.lastIndexOf('communitySessionIsCurrent(session)',requestAt);
+    const guardAfter=block.indexOf('communitySessionIsCurrent(session)',requestAt);
+    assert(requestAt>=0&&guardBefore>=0&&guardAfter>requestAt,'resource action must validate its session around '+request);
+  }
+});
