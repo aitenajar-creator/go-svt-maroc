@@ -1,6 +1,7 @@
 # Keep tooling, test data, local settings and database source out of the public artifact.
 exclude:
   - node_modules
+  - design-upgrade-v2
   - tests
   - test-runner.html
   - AUDIT_TEST_SUITE.js
