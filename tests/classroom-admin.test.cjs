@@ -186,7 +186,7 @@ test('teacher community preview, download, edit and sharing stop on stale sessio
   for(const [start,end,request] of [
     ['async function downloadResource(id)','async function previewResource(id)','createSignedUrl'],
     ['async function previewResource(id)','let editingResourceId','createSignedUrl'],
-    ['async function openEditResource(id)','async function handleEditResource(e)','showModal'],
+    ['async function openEditResource(id)','async function handleEditResource(e)','await findResource(id)'],
     ['async function toggleShare(id)','async function loadAdmin(reset = true, only = \'both\')','update({is_shared:']
   ]){
     const block=between(community,'  '+start,'  '+end);
