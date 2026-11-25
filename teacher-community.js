@@ -443,10 +443,10 @@
     const session = captureCommunitySession();
     try {
       const r = resources.find(x => x.id === id) || await findResource(id);
-      if (!communitySessionIsCurrent(session)) return;
+      if (!communitySessionIsCurrent(session)) { if (downloadTab && !downloadTab.closed) downloadTab.close(); return; }
       if (!r) throw new Error('لم يتم العثور على الملف.');
       const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90, { download: r.file_name });
-      if (!communitySessionIsCurrent(session)) return;
+      if (!communitySessionIsCurrent(session)) { if (downloadTab && !downloadTab.closed) downloadTab.close(); return; }
       if (error) throw error;
       // Accept only a signed URL served by this community's configured Supabase project.
       // A malformed or unexpected redirect must never be opened as a download target.
@@ -478,14 +478,14 @@
     const session = captureCommunitySession();
     try {
       const r = resources.find(x => x.id === id) || await findResource(id);
-      if (!communitySessionIsCurrent(session)) return;
+      if (!communitySessionIsCurrent(session)) { if (previewTab && !previewTab.closed) previewTab.close(); return; }
       if (!r) throw new Error('لم يتم العثور على الملف.');
       const previewableTypes = ['application/pdf','image/jpeg','image/png','image/webp'];
       if (!previewableTypes.includes(r.mime_type)) {
         throw new Error('المعاينة متاحة حالياً لملفات PDF والصور فقط.');
       }
       const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90);
-      if (!communitySessionIsCurrent(session)) return;
+      if (!communitySessionIsCurrent(session)) { if (previewTab && !previewTab.closed) previewTab.close(); return; }
       if (error) throw error;
       let signedUrl;
       try {
