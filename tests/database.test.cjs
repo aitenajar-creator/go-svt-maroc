@@ -64,6 +64,27 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
       assert.equal((await db.query("select * from public.student_study_plan where item_key='plan-retired'")).rows.length,0);
       assert.equal((await db.query("select * from public.student_collection_tombstones where item_key='plan-retired'")).rows.length,1);
     });
+    await t.test('a genuinely recreated note and planner item use fresh keys after deletion',async()=>{
+      await as(student);
+      await remove('notes','note-retired');
+      await remove('studyPlan','plan-retired');
+      const now=Date.now();
+      const note={id:'note-recreated',title:'New note',body:'Created again intentionally',createdAt:now,updatedAt:now};
+      const plan={id:'plan-recreated',title:'New task',date:'2026-12-01',duration:30,completed:false,createdAt:now,updatedAt:now};
+      const noteResult=await db.query(
+        'select public.gosvt_upsert_student_collection_item($1,$2,$3,$4::jsonb) as saved',
+        ['notes',note.id,student,JSON.stringify(note)]
+      );
+      const planResult=await db.query(
+        'select public.gosvt_upsert_student_collection_item($1,$2,$3,$4::jsonb) as saved',
+        ['studyPlan',plan.id,student,JSON.stringify(plan)]
+      );
+      assert.equal(noteResult.rows[0].saved,true);
+      assert.equal(planResult.rows[0].saved,true);
+      assert.equal((await db.query("select count(*)::int as n from public.student_notes where content_key='note-recreated'")).rows[0].n,1);
+      assert.equal((await db.query("select count(*)::int as n from public.student_study_plan where item_key='plan-recreated'")).rows[0].n,1);
+      assert.equal((await db.query("select count(*)::int as n from public.student_collection_tombstones where item_key in ('note-retired','plan-retired')")).rows[0].n,2);
+    });
     await t.test('a queued deletion is rejected when the expected identity has changed',async()=>{
       await as(other);await assert.rejects(remove('notes','note-1',student),/session_changed/);
       assert.equal((await db.query('select * from public.student_collection_tombstones')).rows.length,0);
