@@ -78,6 +78,30 @@ begin
   end if;
 end $$;
 
+do $
+declare
+  student_id_attnum smallint;
+begin
+  select attnum into student_id_attnum
+  from pg_attribute
+  where attrelid = 'public.student_platform_state'::regclass
+    and attname = 'student_id'
+    and not attisdropped;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.student_platform_state'::regclass
+      and contype = 'f'
+      and conkey = array[student_id_attnum]::smallint[]
+      and confrelid = 'auth.users'::regclass
+  ) then
+    alter table public.student_platform_state
+      add constraint student_platform_state_student_id_fkey
+      foreign key (student_id) references auth.users(id) on delete cascade;
+  end if;
+end $;
+
 alter table public.student_platform_state enable row level security;
 
 drop policy if exists student_platform_state_select_own on public.student_platform_state;
