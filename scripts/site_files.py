@@ -2,7 +2,7 @@
 from pathlib import Path
 import os
 
-EXCLUDED = {"node_modules", "tests", "test-results", "playwright-report", "_site", "__pycache__", ".git", ".jekyll-cache"}
+EXCLUDED = {"node_modules", "design-upgrade-v2", "tests", "test-results", "playwright-report", "_site", "__pycache__", ".git", ".jekyll-cache"}
 
 def site_files(root, suffix=None):
     root = Path(root)
