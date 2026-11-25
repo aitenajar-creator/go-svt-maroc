@@ -36,6 +36,16 @@ test('failed completion persistence shows an error instead of success',async()=>
   assert(!output.includes('تم تسجيل إنجاز'));assert.equal(submit.disabled,false);
 });
 
+
+test('completion cleanup does not update controls after the lesson session becomes stale',async()=>{
+  const submit=node(),feedback=node();let current=true;
+  feedback.insertAdjacentHTML=()=>{};
+  const b=browser({user:{id:'student'},id:'lesson',lessonSessionIsCurrent:()=>current,quiz:{querySelector:selector=>selector==='#gs-checkpoint-submit'?submit:feedback},form:{querySelector:()=>({value:'0'})},bank:[1,2,3].map(n=>({correct:0,why:'Fixture '+n})),client:{from:()=>({upsert:async()=>{current=false;return {error:null};}})}});
+  b.run(between(source('lesson-reader.js')," const submit=quiz.querySelector('#gs-checkpoint-submit');",'\\n }\\n\\n}\\nstart()'));
+  await submit.handlers.click();
+  assert.equal(submit.disabled,true,'stale completion cleanup must not re-enable the old session control');
+});
+
 test('offline fallback prefers fresh runtime assets to initial shell assets',async()=>{
   const handlers={},stores=new Map();
   function cache(name){if(!stores.has(name))stores.set(name,new Map());const store=stores.get(name);return {match:async request=>store.get(typeof request==='string'?request:request.url)?.clone(),put:async(request,response)=>store.set(typeof request==='string'?request:request.url,response.clone())};}
