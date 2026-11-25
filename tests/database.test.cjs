@@ -132,6 +132,7 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
     await t.test('account deletion cascades without recreating a tombstone for a removed user',async()=>{
       const disposable='00000000-0000-0000-0000-000000000004';
       await db.exec('reset role;');await db.query('insert into auth.users values($1)',[disposable]);
+      await db.query("insert into public.profiles(id,role) values($1,'student')",[disposable]);
       await db.query('insert into public.student_notes(student_id,content_key,note) values($1,$2,$3)',[disposable,'live-note','Fixture']);
       await db.query('delete from auth.users where id=$1',[disposable]);
       assert.equal((await db.query('select * from public.student_notes where student_id=$1',[disposable])).rows.length,0);
