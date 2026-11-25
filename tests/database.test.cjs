@@ -177,3 +177,69 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
     });
   }finally{await db.close();}
 });
+
+
+test('Masahati migration upgrades a legacy student_id-only table without losing state',async()=>{
+  const db=new PGlite();
+  try{
+    await db.exec(`
+      create schema auth;
+      create role anon;
+      create role authenticated;
+      create table auth.users(id uuid primary key);
+      create function auth.uid() returns uuid language sql stable as $$
+        select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
+      $$;
+      grant usage on schema auth, public to authenticated;
+      grant execute on function auth.uid() to authenticated;
+      insert into auth.users values
+        ('00000000-0000-0000-0000-000000000001'),
+        ('00000000-0000-0000-0000-000000000002');
+      -- Simulate the earlier one-row-per-account table. It has no profile_id
+      -- and intentionally lacks an FK so the migration must add that guard.
+      create table public.student_platform_state(
+        student_id uuid primary key,
+        state jsonb not null default '{}'::jsonb,
+        updated_at timestamptz not null default now()
+      );
+      insert into public.student_platform_state(student_id,state)
+      values('00000000-0000-0000-0000-000000000001','{"progress":{"lesson-1":true}}'::jsonb);
+    `);
+    await db.exec(source('supabase/migrations/20261125000500_student_platform_state_profile_scope.sql'));
+    const saved=(await db.query(
+      "select profile_id,state from public.student_platform_state where student_id=$1",
+      ['00000000-0000-0000-0000-000000000001']
+    )).rows[0];
+    assert.equal(saved.profile_id,'default');
+    assert.deepEqual(saved.state,{progress:{'lesson-1':true}});
+    const primaryKey=(await db.query(`
+      select array_agg(a.attname order by k.ordinality) as columns
+      from pg_constraint c
+      cross join lateral unnest(c.conkey) with ordinality k(attnum,ordinality)
+      join pg_attribute a on a.attrelid=c.conrelid and a.attnum=k.attnum
+      where c.conrelid='public.student_platform_state'::regclass and c.contype='p'
+      group by c.oid
+    `)).rows[0];
+    assert.deepEqual(primaryKey.columns,['student_id','profile_id']);
+    assert.equal((await db.query(`
+      select count(*)::int as n from pg_constraint
+      where conrelid='public.student_platform_state'::regclass
+        and contype='f' and confrelid='auth.users'::regclass
+    `)).rows[0].n,1);
+    assert.equal((await db.query(`
+      select column_default from information_schema.columns
+      where table_schema='public' and table_name='student_platform_state'
+        and column_name='profile_id'
+    `)).rows[0].column_default,null);
+    await db.exec("select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false); set role authenticated;");
+    await db.query(
+      "insert into public.student_platform_state(student_id,profile_id,state) values($1,$2,$3)",
+      ['00000000-0000-0000-0000-000000000001','account-default',{synced:true}]
+    );
+    assert.equal((await db.query('select count(*)::int as n from public.student_platform_state')).rows[0].n,2);
+    await db.exec("reset role; select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false); set role authenticated;");
+    assert.equal((await db.query('select * from public.student_platform_state')).rows.length,0);
+  }finally{
+    await db.close();
+  }
+});
