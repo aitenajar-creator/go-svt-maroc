@@ -96,3 +96,15 @@ test('teacher pin loading stops when the account disappears during inbox loading
   const query=block.indexOf("client.from('teacher_question_pins')");
   assert(guard>=0&&query>guard,'the active account must be revalidated before querying its pins');
 });
+
+test('teacher actions stop before work when the active account changes',()=>{
+  const block=between(source('teacher-classroom.js'),'  async function act(button)','  async function refreshPanel');
+  const user=block.indexOf('const user=await currentUser()');
+  const guard=block.indexOf('if(!actionSessionIsCurrent(user))return;');
+  const firstAction=block.indexOf("if(action==='refresh-panel')");
+  assert(user>=0&&guard>user&&firstAction>guard,'actions must verify the captured user against the active session before dispatch');
+  const pinRead=block.indexOf(".from('teacher_question_pins').select('question_id')");
+  const pinGuard=block.indexOf('if(!actionSessionIsCurrent(user))return;',pinRead);
+  const pinWrite=block.indexOf(".from('teacher_question_pins').delete()",pinRead);
+  assert(pinRead>=0&&pinGuard>pinRead&&pinWrite>pinGuard,'pin changes must revalidate the session after the lookup and before writing');
+});
