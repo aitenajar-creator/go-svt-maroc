@@ -156,3 +156,16 @@
 - [Supabase: Repair the migration history table](https://supabase.com/docs/reference/cli/supabase-migration-repair)
 
 هذا التقرير توثيق للتدقيق فقط، ولا يغيّر أي إعداد أو بيانات في Supabase.
+## تتبع المصدر التاريخي في Git — 25 نوفمبر 2026
+
+تم توسيع البحث من الفرع الحالي إلى سجل commits التاريخي، مع فحص أشجار Git عند commits إنشاء الميزات:
+
+- `630836e72feb560a233b13eed977c936dc52ce00`: أضاف واجهة وإدارة الدروس الخاصة، وقارئ الدرس، وربطًا بجدول `private_student_lessons`. لكن شجرة هذا commit لا تحتوي على migration تأسيسي لهذا الجدول أو حاوية التخزين الخاصة.
+- `e2669fdfb522ff0602007f3d9bd133f3290dd0be`: أضاف رفع الصور الأصلية واستعمال signed URLs من الحاوية `private-lesson-assets`. التغيير يؤكد اعتماد الكود على الحاوية، لكنه لا يضيف migration لإنشائها أو سياساتها.
+- `7a5ea9e1fc9067f58ef07a460a5ebb8944c4a1bf`: أضاف واجهة تقييمات مختبر التطور التي تتعامل مع `lab_reviews` و`lab_review_helpful` و`lab_review_reports`. شجرة Git عند هذا commit لا تتضمن migration لهذه الجداول.
+- `45fa73d2a0147336b53a9f66be1ecd3e34253726`: عمّم عرض نظام التقييمات على المختبرات التفاعلية عبر `review-system.js`، لكنه لا يثبت مصدر إنشاء الجداول في قاعدة الإنتاج.
+- في المقابل، `teacher_review_sessions` لها مصدر تأسيسي ظاهر في `supabase/migrations/20261110000200_teacher_classroom.sql` على `main`؛ ويعرّف الجدول وسياسات القراءة والإدارة المرتبطة بعضوية الفصل.
+
+كما لم يُظهر بحث سجل commits عن الأسماء `create_private_student_lessons` و`private_lesson_image_assets` و`student_lab_reviews` و`harden_lab_review_updates` نتائج commits قابلة للاستعادة في المستودع.
+
+**الاستنتاج المحدّث:** استُعيد الآن تاريخ كود الواجهات الذي يفسر وجود بعض الميزات، لكن SQL التأسيسي للدروس الخاصة وملفاتها وتقييمات المختبر لا يزال غير موجود في الأشجار التاريخية التي فُحصت. لذلك لا يجوز توليد migrations تخمينية من استدعاءات JavaScript أو من وصف السياسات وحده. يلزم schema-only export من المشروع الرئيسي أو استعادة ملفات SQL من مصدر النسخ الاحتياطي/سجل النشر المخوّل. أما `teacher_review_sessions` فيمكن ربطها بالـ migration التاريخي المذكور بعد التحقق من محتواه مقابل مخطط الإنتاج.
