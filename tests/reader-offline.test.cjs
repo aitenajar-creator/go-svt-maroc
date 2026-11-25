@@ -19,7 +19,7 @@ test('objectives save only the current lesson row',async()=>{
   const rows=new Map();
   function fixture(id){
     let change;
-    const b=browser({savedObjectives:[],id,user:{id:'student'},status:node(),renderObjectiveProgress(){},list:{querySelectorAll:()=>[{checked:true},{checked:false}],addEventListener:(_,fn)=>change=fn},client:{from:table=>({upsert:async row=>{assert.equal(table,'student_lesson_objectives');rows.set(row.lesson_id,row);return {error:null};}})}});
+    const b=browser({savedObjectives:[],id,user:{id:'student'},lessonSessionIsCurrent:()=>true,status:node(),renderObjectiveProgress(){},list:{querySelectorAll:()=>[{checked:true},{checked:false}],addEventListener:(_,fn)=>change=fn},client:{from:table=>({upsert:async row=>{assert.equal(table,'student_lesson_objectives');rows.set(row.lesson_id,row);return {error:null};}})}});
     b.run(between(source('lesson-reader.js'),'  let objectiveSaveQueue=Promise.resolve();',"  $('lesson-frame-wrap').before(panel);")+'\nglobalThis.waitForSave=()=>objectiveSaveQueue;');
     return async()=>{change();await b.context.waitForSave();};
   }
@@ -30,7 +30,7 @@ test('objectives save only the current lesson row',async()=>{
 
 test('failed completion persistence shows an error instead of success',async()=>{
   const submit=node(),feedback=node();let output='';feedback.insertAdjacentHTML=(_,html)=>output+=html;
-  const b=browser({user:{id:'student'},id:'lesson',quiz:{querySelector:selector=>selector==='#gs-checkpoint-submit'?submit:feedback},form:{querySelector:()=>({value:'0'})},bank:[1,2,3].map(n=>({correct:0,why:'Fixture '+n})),client:{from:()=>({upsert:async()=>({error:new Error('Fixture save failure')})})}});
+  const b=browser({user:{id:'student'},id:'lesson',lessonSessionIsCurrent:()=>true,quiz:{querySelector:selector=>selector==='#gs-checkpoint-submit'?submit:feedback},form:{querySelector:()=>({value:'0'})},bank:[1,2,3].map(n=>({correct:0,why:'Fixture '+n})),client:{from:()=>({upsert:async()=>({error:new Error('Fixture save failure')})})}});
   b.run(between(source('lesson-reader.js')," const submit=quiz.querySelector('#gs-checkpoint-submit');",'\n }\n\n}\nstart()'));
   await submit.handlers.click();assert(output.includes('تعذر حفظ'));
   assert(!output.includes('تم تسجيل إنجاز'));assert.equal(submit.disabled,false);
