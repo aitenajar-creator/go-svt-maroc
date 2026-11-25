@@ -1167,7 +1167,13 @@
         const lessonsViewed = lessonRecords.length;
         const completedLessons = lessonRecords.filter(item => item.completed === true).length;
         const exercisesDone = exerciseRecords.length;
-        const quizResults = getValidQuizResults(profileData);
+        // Only attempts carrying explicit pathway metadata belong in pathway-scoped
+        // guidance. Legacy attempts remain visible in global history/analytics, but
+        // must not steer recommendations for a different level or track.
+        const quizResults = getValidQuizResults(profileData).filter(result =>
+            String(result.level || '').trim().toUpperCase() === wantedLevel &&
+            String(result.track || '').replace(/\\s+/g, '').toUpperCase() === wantedTrack
+        );
         const testsTaken = quizResults.length;
 
         const totalScore = quizResults.reduce((sum, result) => sum + result.percentage, 0);
