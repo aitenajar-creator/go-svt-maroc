@@ -1,6 +1,6 @@
--- MAIN project only. Explicit, timestamp-ordered recreation after a deletion.
--- A stale device carries the original createdAt (at or before deleted_at) and is rejected.
--- A genuinely new item with a later createdAt may clear only its own tombstone.
+-- MAIN project only. A deleted item key is permanently retired.
+-- New notes and planner entries always receive fresh random IDs in the client.
+-- Never use client timestamps to decide whether a deleted key may be reused.
 create or replace function public.gosvt_upsert_student_collection_item(
   p_collection text,
   p_item_key text,
@@ -49,12 +49,11 @@ begin
     from public.student_collection_tombstones
     where student_id = v_student and collection = p_collection and item_key = p_item_key
     for update;
+  -- A tombstone is permanent for this item key. Client clocks and imported
+  -- backups are not trustworthy evidence that a deleted item is a new one.
+  -- The UI creates a fresh random ID for every genuinely new item.
   if v_deleted_at is not null then
-    if v_created_at <= v_deleted_at then
-      return false;
-    end if;
-    delete from public.student_collection_tombstones
-      where student_id = v_student and collection = p_collection and item_key = p_item_key;
+    return false;
   end if;
 
   if p_collection = 'notes' then
