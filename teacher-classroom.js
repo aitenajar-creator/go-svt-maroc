@@ -684,16 +684,19 @@
       } else if(action==='roster'){
         notice(tr('جارٍ تحميل قائمة التلاميذ ومؤشرات القسم...','Chargement de la liste des élèves et des indicateurs...'));
         const {data,error}=await client.rpc('gosvt_teacher_class_roster',{p_class_id:id});if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         const host=document.getElementById('gs-cl-roster');
         const students=data||[];
         window.__gosvtTeacherRoster=students;
         const assignmentsResult=await client.from('teacher_assignments').select('id,title,due_at').eq('class_id',id);
         if(assignmentsResult.error)throw assignmentsResult.error;
+        if(!actionSessionIsCurrent(user))return;
         const assignmentIds=(assignmentsResult.data||[]).map(a=>a.id);
         const submissionsResult=assignmentIds.length
           ? await client.from('teacher_assignment_submissions').select('assignment_id,student_id,submitted_at,score').in('assignment_id',assignmentIds)
           : {data:[],error:null};
         if(submissionsResult.error)throw submissionsResult.error;
+        if(!actionSessionIsCurrent(user))return;
         const submissions=submissionsResult.data||[];
         const submittedByStudent=new Map();
         const submittedPairs=new Set();
@@ -810,6 +813,7 @@
         if(notesResult.error)throw notesResult.error;
         if(plansResult.error)throw plansResult.error;
         if(trendResult.error)throw trendResult.error;
+        if(!actionSessionIsCurrent(user))return;
         const notes=notesResult.data||[],plans=plansResult.data||[],trend=trendResult.data||[];
         const categories=['understanding','results','attendance','progress','other'];
         const categoryCounts=categories.map(type=>({type,count:notes.filter(n=>(n.note_type||'other')===type).length})).filter(x=>x.count);
@@ -861,6 +865,7 @@
         if(!host)throw new Error(tr('تعذر فتح خطة الدعم.','Impossible d’ouvrir le plan de soutien.'));
         const {data:plans,error}=await client.from('teacher_student_support_plans').select('id,title,actions,success_criteria,due_at,status,created_at').eq('class_id',classId).eq('student_id',studentId).order('created_at',{ascending:false}).limit(20);
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         const statusLabel=status=>({planned:tr('مخططة','Planifiée'),in_progress:tr('قيد التنفيذ','En cours'),completed:tr('مكتملة','Terminée')}[status]||status);
         host.innerHTML='<div class="gs-cl-card" style="margin-top:.7rem"><strong>'+tr('خطة الدعم الفردية لـ ','Plan de soutien individuel pour ')+esc(button.dataset.name)+'</strong>'+(plans||[]).map(p=>'<article class="gs-cl-row"><strong>'+esc(p.title)+'</strong><p>'+esc(p.actions)+'</p>'+(p.success_criteria?'<p class="gs-cl-muted">'+tr('مؤشر النجاح: ','Critère de réussite : ')+esc(p.success_criteria)+'</p>':'')+'<small class="gs-cl-muted">'+tr('الحالة: ','Statut : ')+esc(statusLabel(p.status))+(p.due_at?' · '+tr('الأجل: ','Échéance : ')+esc(p.due_at):'')+'</small></article>').join('')+(plans.length?'':'<p class="gs-cl-muted">'+tr('لا توجد خطة دعم بعد.','Aucun plan de soutien pour le moment.')+'</p>')+'<label>'+tr('عنوان الخطة','Titre du plan')+'</label><input data-support-title="'+esc(studentId)+'" maxlength="160" placeholder="'+tr('مثلاً: دعم في فهم الوراثة','Ex. : soutien en génétique')+'"><label>'+tr('الإجراءات التربوية','Actions pédagogiques')+'</label><textarea data-support-actions="'+esc(studentId)+'" maxlength="5000" placeholder="'+tr('حدد الأنشطة والتمارين والمواكبة المقترحة','Décrivez les activités, exercices et l’accompagnement')+'"></textarea><label>'+tr('مؤشر النجاح','Critère de réussite')+'</label><input data-support-criteria="'+esc(studentId)+'" maxlength="500" placeholder="'+tr('كيف سنقيس التحسن؟','Comment mesurer les progrès ?')+'"><label>'+tr('تاريخ المراجعة','Date de révision')+'</label><input type="date" data-support-due="'+esc(studentId)+'"><label>'+tr('الحالة','Statut')+'</label><select data-support-status="'+esc(studentId)+'"><option value="planned">'+tr('مخططة','Planifiée')+'</option><option value="in_progress">'+tr('قيد التنفيذ','En cours')+'</option><option value="completed">'+tr('مكتملة','Terminée')+'</option></select><button type="button" data-action="save-support-plan" data-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حفظ خطة الدعم','Enregistrer le plan')+'</button></div>';
       } else if(action==='save-support-plan'){
@@ -882,7 +887,9 @@
         if(!notesHost)throw new Error(tr('تعذر فتح سجل الملاحظات.','Impossible d’ouvrir les notes.'));
         const {data:notes,error}=await client.from('teacher_student_notes').select('id,note,note_type,created_at,teacher_id').eq('class_id',classId).eq('student_id',studentId).order('created_at',{ascending:false}).limit(50);
         if(error)throw error;
+        if(!actionSessionIsCurrent(user))return;
         const noteActorProfile=await profileFor(user);
+        if(!actionSessionIsCurrent(user))return;
         notesHost.innerHTML='<div class="gs-cl-card" style="margin-top:.7rem"><strong>'+tr('ملاحظات الأستاذ الخاصة بـ ','Notes privées pour ')+esc(button.dataset.name)+'</strong><div class="gs-cl-list">'+(notes||[]).map(n=>{const canManage=profileForNotePermission(n,user,noteActorProfile);return '<article class="gs-cl-row" data-note-card="'+esc(n.id)+'" data-note-type="'+esc(n.note_type||'other')+'"><span class="gs-cl-pill">'+esc(noteTypeLabel(n.note_type))+'</span><p data-note-text="'+esc(n.id)+'">'+esc(n.note)+'</p><small class="gs-cl-muted">'+esc(new Date(n.created_at).toLocaleString(ar()?'ar-MA':'fr-FR'))+'</small>'+(canManage?'<div class="gs-cl-head" style="margin-top:.5rem"><button type="button" class="gs-cl-secondary" data-action="edit-student-note" data-id="'+esc(n.id)+'" data-student-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('تعديل','Modifier')+'</button><button type="button" class="gs-cl-secondary" data-action="delete-student-note" data-id="'+esc(n.id)+'" data-student-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حذف','Supprimer')+'</button></div>':'')+'</article>';}).join('')+(notes.length?'':'<p class="gs-cl-muted">'+tr('لا توجد ملاحظات مسجلة بعد.','Aucune note enregistrée.')+'</p>')+'</div><label>'+tr('تصنيف الملاحظة','Catégorie de la note')+'</label><select data-note-type-for="'+esc(studentId)+'"><option value="understanding">'+tr('صعوبات الفهم','Difficultés de compréhension')+'</option><option value="results">'+tr('ضعف النتائج','Résultats insuffisants')+'</option><option value="attendance">'+tr('المواظبة والمشاركة','Assiduité et participation')+'</option><option value="progress">'+tr('تقدم دراسي','Progrès scolaires')+'</option><option value="other">'+tr('ملاحظة عامة','Note générale')+'</option></select><label>'+tr('إضافة ملاحظة تربوية','Ajouter une note pédagogique')+'</label><textarea data-note-for="'+esc(studentId)+'" maxlength="5000"></textarea><button type="button" data-action="save-student-note" data-id="'+esc(studentId)+'" data-class-id="'+esc(classId)+'">'+tr('حفظ الملاحظة','Enregistrer la note')+'</button></div>';
       } else if(action==='edit-student-note'){
         const card=button.closest('[data-note-card]');
