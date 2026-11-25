@@ -83,8 +83,10 @@
     }
     const progress = data.progress && typeof data.progress === 'object' && !Array.isArray(data.progress)
       ? data.progress : {};
-    const currentProfile = window.StudentSpace && typeof window.StudentSpace.getCurrentProfile === 'function'
-      ? window.StudentSpace.getCurrentProfile() : null;
+    const currentProfile = window.StudentAccount && typeof window.StudentAccount.getProfile === 'function'
+      ? window.StudentAccount.getProfile()
+      : (window.StudentSpace && typeof window.StudentSpace.getCurrentProfile === 'function'
+        ? window.StudentSpace.getCurrentProfile() : null);
     const selectedLevel = String(currentProfile && currentProfile.study_level || '').toUpperCase();
     const selectedTrack = String(currentProfile && currentProfile.study_track || '').replace(/\\s+/g, '').toUpperCase();
     const inSelectedPathway = item => isProgressRecord(item) && item.level === selectedLevel && item.track === selectedTrack;
