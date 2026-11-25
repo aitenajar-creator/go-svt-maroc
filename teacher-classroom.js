@@ -290,6 +290,14 @@
     if(error) throw error;
     return data.user || null;
   }
+  function sessionIsCurrent(user,host) {
+    if(!user||(host&&host.isConnected===false))return false;
+    const account=window.StudentAccount;
+    if(!account)return true;
+    if(typeof account.isLoggedIn==='function'&&!account.isLoggedIn())return false;
+    const active=typeof account.getUser==='function'?account.getUser():null;
+    return !!active&&active.id===user.id;
+  }
   async function profileFor(user) {
     const {data,error}=await client.from('profiles').select('id,display_name,role').eq('id',user.id).single();
     if(error) throw error;
@@ -337,7 +345,7 @@
     const host=document.getElementById('gs-cl-content');
     if(!host)return;
     const user=await currentUser();
-    if(!user)return;
+    if(!sessionIsCurrent(user,host))return;
     if(profile.role==='teacher'||profile.role==='admin') await loadTeacher(host,user,profile);
     else await loadStudent(host,user);
   }
@@ -345,8 +353,10 @@
   async function loadStudent(host,user) {
     const {data:academic,error:academicError}=await client.from('student_academic_profiles').select('study_level,study_track').eq('student_id',user.id).maybeSingle();
     if(academicError)throw academicError;
+    if(!sessionIsCurrent(user,host))return;
     const {data:links,error}=await client.rpc('gosvt_student_classes');
     if(error) throw error;
+    if(!sessionIsCurrent(user,host))return;
     const classes=(links||[]).map(x=>({id:x.class_id,name:x.class_name,study_level:x.study_level,study_track:x.study_track}));
     const academicSetup=academic?'':`<div class="gs-cl-card" style="margin-bottom:1rem"><h3>${tr('🎓 تثبيت المستوى والمسلك الدراسي','🎓 Confirmer le niveau et la filière')}</h3><p class="gs-cl-muted">${tr('هذه البيانات مطلوبة للانضمام إلى الأقسام. يمكنك تثبيتها مرة واحدة فقط، ولا يمكن تغييرها من هذا النموذج لاحقاً.','Ces informations sont nécessaires pour rejoindre une classe. Vous ne pouvez les confirmer qu’une seule fois et elles ne pourront plus être modifiées depuis ce formulaire.')}</p><label for="gs-cl-academic-level">${tr('المستوى','Niveau')}</label><select id="gs-cl-academic-level"><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option></select><label for="gs-cl-academic-track">${tr('المسلك','Filière')}</label><select id="gs-cl-academic-track"></select><button type="button" data-action="save-academic-profile">${tr('تأكيد بياناتي الدراسية','Confirmer mes informations scolaires')}</button></div>`;
     host.innerHTML=`
@@ -364,6 +374,7 @@
     }
     const {data:questions,error:qerr}=await client.from('teacher_questions').select('id,subject,body,status,created_at,class_id').eq('student_id',user.id).order('created_at',{ascending:false}).limit(40);
     if(qerr) throw qerr;
+    if(!sessionIsCurrent(user,host))return;
     const qhost=document.getElementById('gs-cl-my-questions');
     if(qhost)qhost.innerHTML=(questions||[]).length?(questions||[]).map(q=>`<article class="gs-cl-row" data-inbox-question="true" data-search-text="${esc((q.subject||'')+' '+(q.body||''))}"><strong>${esc(q.subject)}</strong><p>${esc(q.body)}</p><p class="gs-cl-muted"><strong>${esc(questionStatusLabel(q.status))}</strong> · ${new Date(q.created_at).toLocaleString()}</p><button class="gs-cl-secondary" type="button" data-action="thread" data-id="${esc(q.id)}">${tr('فتح المحادثة','Ouvrir la discussion')}</button><div id="gs-cl-thread-${esc(q.id)}"></div></article>`).join(''):`<p class="gs-cl-muted">${tr('لم ترسل أي سؤال بعد.','Vous n’avez pas encore envoyé de question.')}</p>`;
     const work=document.createElement('div');work.id='gs-cl-student-work';work.innerHTML='<div class="gs-cl-card" style="margin-top:1rem"><h3>'+tr('📚 واجباتي','📚 Mes devoirs')+'</h3><div id="gs-cl-student-assignments" class="gs-cl-list"></div></div><div class="gs-cl-grid" style="margin-top:1rem"><div class="gs-cl-card"><h3>'+tr('📢 إعلانات الأقسام','📢 Annonces')+'</h3><div id="gs-cl-student-announcements" class="gs-cl-list"></div></div><div class="gs-cl-card"><h3>'+tr('🗓️ حصص المراجعة','🗓️ Séances de révision')+'</h3><div id="gs-cl-student-sessions" class="gs-cl-list"></div></div></div>';
@@ -376,6 +387,7 @@
     if(profile.role!=='admin')query=query.eq('teacher_id',user.id);
     const {data:classes,error}=await query;
     if(error)throw error;
+    if(!sessionIsCurrent(user,host))return;
     host.innerHTML=`
       <div class="gs-cl-grid">
         <div class="gs-cl-card"><h3>${tr('إنشاء قسم جديد','Créer une classe')}</h3><label for="gs-cl-name">${tr('اسم القسم','Nom de la classe')}</label><input id="gs-cl-name" maxlength="120" placeholder="${tr('مثلاً: الثانية باكالوريا SVT','Ex. : 2e Bac SVT')}"><label for="gs-cl-level">${tr('المستوى','Niveau')}</label><select id="gs-cl-level"><option value="TC">TC</option><option value="1BAC">1BAC</option><option value="2BAC">2BAC</option></select><label for="gs-cl-track">${tr('المسلك','Filière')}</label><select id="gs-cl-track"></select><button type="button" data-action="create-class">${tr('إنشاء القسم','Créer la classe')}</button></div>
@@ -400,6 +412,7 @@
       if(pendingQuestions.error)throw pendingQuestions.error;
       if(lateAssignments.error)throw lateAssignments.error;
       if(latePlans.error)throw latePlans.error;
+      if(!sessionIsCurrent(user,host))return;
       if(alertHost){
         const cards=[
           {n:pendingQuestions.count||0,t:tr('أسئلة تنتظر جوابك','Questions en attente'),d:tr('أسئلة التلاميذ التي لم تتم الإجابة عنها','Questions des élèves sans réponse')},
@@ -419,11 +432,13 @@
 
       const {data:questions,error:qerr}=await client.from('teacher_questions').select('id,class_id,student_id,subject,body,status,created_at').in('class_id',ids).order('created_at',{ascending:false}).limit(60);
       if(qerr)throw qerr;
+      if(!sessionIsCurrent(user,host))return;
       const questionIds=(questions||[]).map(q=>q.id);
       const latestActivity=new Map();
       if(questionIds.length){
         const {data:messages,error:messageError}=await client.from('teacher_question_messages').select('question_id,created_at').in('question_id',questionIds).order('created_at',{ascending:false});
         if(messageError)throw messageError;
+        if(!sessionIsCurrent(user,host))return;
         (messages||[]).forEach(message=>{
           if(!latestActivity.has(message.question_id))latestActivity.set(message.question_id,message.created_at);
         });
@@ -432,6 +447,7 @@
       let pinsReady=true;
       const {data:pins,error:pinsError}=await client.from('teacher_question_pins').select('question_id').eq('teacher_id',activeTeacher.id);
       if(pinsError)pinsReady=false;
+      if(!sessionIsCurrent(user,host))return;
       const pinnedIds=new Set((pins||[]).map(pin=>pin.question_id));
       const orderedQuestions=[...(questions||[])].sort((a,b)=>{
         const pinOrder=Number(pinnedIds.has(b.id))-Number(pinnedIds.has(a.id));
@@ -488,9 +504,11 @@
       client.from('teacher_review_sessions').select('id,class_id,title,description,starts_at,meeting_url').in('class_id',ids).order('starts_at',{ascending:true}).limit(40)
     ]);
     if(ar.error)throw ar.error;if(ann.error)throw ann.error;if(ses.error)throw ses.error;
+    if(!sessionIsCurrent(user,host))return;
     const assignments=ar.data||[];
     const sub=assignments.length?await client.from('teacher_assignment_submissions').select('id,assignment_id,answer,score,feedback,submitted_at,reviewed_at').eq('student_id',user.id).in('assignment_id',assignments.map(a=>a.id)): {data:[],error:null};
     if(sub.error)throw sub.error;
+    if(!sessionIsCurrent(user,host))return;
     const byId=new Map((sub.data||[]).map(x=>[x.assignment_id,x]));
     const aHost=document.getElementById('gs-cl-student-assignments');
     if(aHost)aHost.innerHTML=assignments.length?assignments.map(a=>{
