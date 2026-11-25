@@ -15,6 +15,7 @@ declare
   v_created_at timestamptz;
   v_updated_at timestamptz;
   v_deleted_at timestamptz;
+  v_date text;
 begin
   if v_student is null then
     raise exception 'authentication_required' using errcode = '42501';
@@ -66,7 +67,10 @@ begin
       set note = excluded.note, updated_at = excluded.updated_at
       where excluded.updated_at >= public.student_notes.updated_at;
   else
-    if coalesce(p_item->>'date','') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then
+    v_date := coalesce(p_item->>'date','');
+    if length(v_date) <> 10 or substring(v_date from 5 for 1) <> '-'
+       or substring(v_date from 8 for 1) <> '-'
+       or translate(v_date, '0123456789-', '') <> '' then
       raise exception 'invalid_study_plan_date' using errcode = '22023';
     end if;
     insert into public.student_study_plan(
