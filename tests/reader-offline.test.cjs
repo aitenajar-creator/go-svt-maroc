@@ -47,3 +47,21 @@ test('offline fallback prefers fresh runtime assets to initial shell assets',asy
   assert.equal(await request(),'fresh');context.fetch=async()=>{throw new Error('Offline fixture');};
   assert.equal(await request(),'fresh');
 });
+
+test('reader session guard invalidates stale account work but tolerates token refresh',()=>{
+  const b=browser();
+  let authListener;
+  b.context.client={auth:{onAuthStateChange:listener=>{
+    authListener=listener;
+    return {data:{subscription:{unsubscribe(){}}}};
+  }}};
+  b.run(between(source('lesson-reader.js'),'function watchLessonSession','let lessonSessionIsCurrent')+'\nglobalThis.watchLessonSession=watchLessonSession;');
+  const guard=b.context.watchLessonSession(b.context.client,'student-a');
+  assert.equal(guard.isCurrent(),true);
+  authListener('TOKEN_REFRESHED',{user:{id:'student-a'}});
+  assert.equal(guard.isCurrent(),true);
+  authListener('SIGNED_IN',{user:{id:'student-b'}});
+  assert.equal(guard.isCurrent(),false);
+  authListener('SIGNED_IN',{user:{id:'student-a'}});
+  assert.equal(guard.isCurrent(),false);
+});
