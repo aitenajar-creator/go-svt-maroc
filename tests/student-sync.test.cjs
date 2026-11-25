@@ -91,3 +91,16 @@ test('resource recommendations fall back to the language that has content',async
   b.load('student-learning-journey.js');await b.context.StudentLearningJourney.refresh();
   assert.equal(b.context.StudentLearningJourney.getNextStep({lessonsViewed:0}).subject,'francais');
 });
+
+test('Masahati runtime failure preserves the established student dashboard fallback',()=>{
+  const code=source('student-space.js');
+  const start=code.indexOf('// Optional Masahati experience');
+  const fallback=code.indexOf('syncCurrentProfile();',start);
+  assert(start>=0,'optional Masahati integration block exists');
+  assert(fallback>start,'standard dashboard fallback follows the optional integration');
+  const block=code.slice(start,fallback);
+  assert.match(block,/try\s*\{/,'Masahati mount is guarded');
+  assert.match(block,/window\.Masahati\.mount\(container\)/,'the optional mount is invoked');
+  assert.match(block,/catch\s*\(error\)/,'runtime mount failures are caught');
+  assert.match(block,/standard student dashboard/,'the fallback behavior is documented');
+});
