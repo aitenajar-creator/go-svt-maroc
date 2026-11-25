@@ -120,7 +120,10 @@ test('classroom mutations verify the session before writes and after responses',
     "client.from('teacher_assignment_submissions').insert(",
     "client.from('teacher_assignment_submissions').update(",
     "client.from('teacher_question_pins').delete(",
-    "client.from('teacher_question_pins').insert("
+    "client.from('teacher_question_pins').insert(",
+    "client.rpc('gosvt_set_student_academic_profile'",
+    "client.rpc('gosvt_join_teacher_class'",
+    "client.rpc('gosvt_send_teacher_reply'"
   ]){
     const request=block.indexOf(marker);
     const before=block.lastIndexOf('if(!actionSessionIsCurrent(user))return;',request);
