@@ -593,10 +593,15 @@
 
   async function renderThread(id) {
     const host=document.getElementById('gs-cl-thread-'+id);if(!host)return;
+    const account=window.StudentAccount;
+    const user=await currentUser();
+    if(!user||!host.isConnected)return;
     const {data:messages,error}=await client.from('teacher_question_messages').select('id,sender_id,body,created_at').eq('question_id',id).order('created_at',{ascending:true});
     if(error)throw error;
-    const user=await currentUser();
-    host.innerHTML=`<div class="gs-cl-thread">${(messages||[]).map(m=>`<div class="gs-cl-bubble"><small>${m.sender_id===user.id?tr('أنت','Vous'):tr('الطرف الآخر','Votre correspondant')} · ${new Date(m.created_at).toLocaleString()}</small>${esc(m.body)}</div>`).join('')}</div><label>${tr('اكتب رداً','Écrire une réponse')}</label><textarea data-reply-for="${esc(id)}" maxlength="8000"></textarea><button type="button" data-action="reply" data-id="${esc(id)}">${tr('إرسال الرد','Envoyer la réponse')}</button>`;
+    const latestUser=await currentUser();
+    const accountUser=account&&typeof account.getUser==='function'?account.getUser():null;
+    if(!host.isConnected||!latestUser||latestUser.id!==user.id||(account&&accountUser&&accountUser.id!==user.id))return;
+    host.innerHTML=`<div class="gs-cl-thread">${(messages||[]).map(m=>`<div class="gs-cl-bubble"><small>${m.sender_id===user.id?tr('أنت','Vous'):tr('الطرف الآخر','Votre correspondant')} · ${new Date(m.created_at).toLocaleString()}</small>${esc(m.body)}</div>`).join('')}</div><label>${tr('اكتب رداً','Écrire une réponse')}</label><textarea data-reply-for="${esc(id)}" maxlength="8000"></textarea><button type="button" data-action="reply" data-id="${esc(id)}">${tr('إرسال الرد','Envoyer une réponse')}</button>`;
   }
 
   function profileForNotePermission(note,user,profile){
