@@ -181,6 +181,15 @@ test('teacher community mutations revalidate the account around writes',()=>{
 });
 
 
+test('teacher community edit errors and cleanup do not repaint a newer account',()=>{
+  const block=between(source('teacher-community.js'),'  async function handleEditResource(e)','  async function findResource(id)');
+  const catchBlock=block.slice(block.indexOf('    } catch (err) {'),block.indexOf('    } finally {'));
+  const finallyBlock=block.slice(block.indexOf('    } finally {'));
+  assert(catchBlock.includes('if (communitySessionIsCurrent(session))'),'stale edit errors must not reach the new account UI');
+  assert(finallyBlock.includes('editInProgress = false;'),'the edit lock must always be released');
+  assert(finallyBlock.includes('if (communitySessionIsCurrent(session))'),'stale edit cleanup must not repaint new account controls');
+});
+ 
 test('teacher community preview, download, edit and sharing stop on stale sessions',()=>{
   const community=source('teacher-community.js');
   for(const [start,end,request] of [
