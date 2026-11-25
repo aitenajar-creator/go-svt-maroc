@@ -18,7 +18,7 @@ test('reply retries retain the same idempotency token and use one RPC',async()=>
   const field=node();field.value='A helpful reply';const requests=[];
   const b=browser({busy:false,CSS:{escape:s=>s},currentUser:async()=>({id:'teacher'}),actionSessionIsCurrent:()=>true,tr:(_,fr)=>fr,notice(){},renderThread:async()=>{},client:{rpc:async(name,payload)=>{requests.push({name,payload});return {error:requests.length===1?new Error('Temporary response failure'):null};}}});
   b.context.document.querySelector=()=>field;
-  b.run('function actionSessionIsCurrent(){return true;}\\n'+between(source('teacher-classroom.js'),'  async function act(button)','  async function refreshPanel'));
+  b.run('function actionSessionIsCurrent(){return true;}\n'+between(source('teacher-classroom.js'),'  async function act(button)','  async function refreshPanel'));
   const button={dataset:{action:'reply',id:'question'},isConnected:true};
   await b.context.act(button);await b.context.act(button);
   assert.equal(requests.length,2);assert(requests.every(x=>x.name==='gosvt_send_teacher_reply'));
