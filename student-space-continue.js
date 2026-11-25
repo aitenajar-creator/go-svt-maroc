@@ -83,10 +83,15 @@
     }
     const progress = data.progress && typeof data.progress === 'object' && !Array.isArray(data.progress)
       ? data.progress : {};
+    const currentProfile = window.StudentSpace && typeof window.StudentSpace.getCurrentProfile === 'function'
+      ? window.StudentSpace.getCurrentProfile() : null;
+    const selectedLevel = String(currentProfile && currentProfile.study_level || '').toUpperCase();
+    const selectedTrack = String(currentProfile && currentProfile.study_track || '').replace(/\\s+/g, '').toUpperCase();
+    const inSelectedPathway = item => isProgressRecord(item) && item.level === selectedLevel && item.track === selectedTrack;
     const lessons = Object.values(progress.lessons && typeof progress.lessons === 'object' && !Array.isArray(progress.lessons)
-      ? progress.lessons : {}).filter(isProgressRecord);
+      ? progress.lessons : {}).filter(inSelectedPathway);
     const exercises = Object.values(progress.exercises && typeof progress.exercises === 'object' && !Array.isArray(progress.exercises)
-      ? progress.exercises : {}).filter(isProgressRecord);
+      ? progress.exercises : {}).filter(inSelectedPathway);
     const recent = lessons.filter(function (item) {
       return item && item.path && /^cours\//.test(item.path);
     }).sort(function (a, b) {
