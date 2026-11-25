@@ -81,8 +81,8 @@ test('successful empty read hydrates and seeds local state only after the read',
   assert.deepEqual(Array.from(h.api.hydrated()),[JSON.stringify(['user-1','profile-1'])]);
   assert.equal(h.writes.length,1);
   assert.equal(h.writes[0].student_id,'user-1');
-  assert.equal(h.writes[0].profile_id,'profile-1');
-  assert.deepEqual(h.filters.slice(-2),[['student_id','user-1'],['profile_id','profile-1']]);
+  assert.equal(h.writes[0].profile_id,'account-default');
+  assert.deepEqual(h.filters.slice(-2),[['student_id','user-1'],['profile_id','account-default']]);
 });
 
 test('local edits made while the cloud read is pending are preserved and uploaded', async()=>{
@@ -109,21 +109,20 @@ test('oversized state is rejected before a cloud upsert', async()=>{
 });
 
 
-test('cloud state is isolated by profile even when profiles share one auth UID', async()=>{
-  const h=harness({readResult:{data:null,error:null}});
-  assert.equal(await h.api.pullRemote(),true);
-  assert.equal(h.reads(),1);
-  assert.equal(h.writes.length,1);
-  assert.equal(h.writes[0].profile_id,'profile-1');
+test('same authenticated account restores one stable cloud profile across independent browsers', async()=>{
+  const first = harness({readResult:{data:null,error:null}});
+  first.api.PS().cards.savedAcrossDevices = {answer:'preserved'};
+  first.api.PS().u = 100;
+  assert.equal(await first.api.pullRemote(),true);
+  assert.equal(first.writes.length,1);
+  assert.equal(first.writes[0].student_id,'user-1');
+  assert.equal(first.writes[0].profile_id,'account-default');
 
-  h.switchTo('profile-2','user-1');
-  assert.equal(await h.api.pullRemote(),true);
-  assert.equal(h.reads(),2,'a second profile must perform its own cloud read');
-  assert.equal(h.writes.length,2,'a second profile must seed a separate cloud row');
-  assert.equal(h.writes[1].student_id,'user-1');
-  assert.equal(h.writes[1].profile_id,'profile-2');
-  assert.deepEqual(Array.from(h.api.hydrated()).sort(),[
-    JSON.stringify(['user-1','profile-1']),
-    JSON.stringify(['user-1','profile-2'])
-  ].sort());
+  const second = harness({readResult:{data:{state:first.writes[0].state},error:null}});
+  second.switchTo('different-local-profile-id','user-1');
+  assert.equal(await second.api.pullRemote(),true);
+  assert.equal(second.reads(),1,'a fresh browser must read the account-level cloud row');
+  assert.equal(second.api.PS().cards.savedAcrossDevices.answer,'preserved');
+  assert.equal(second.writes.length,0,'a restored remote state must not be overwritten by an empty local cache');
+  assert.equal(second.filters.slice(-2)[1][1],'account-default');
 });
