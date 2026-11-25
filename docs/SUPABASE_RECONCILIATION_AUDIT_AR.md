@@ -193,3 +193,21 @@
 
 ### القرار
 تبقى مطابقة الـ baseline غير مكتملة حتى استعادة تعريفات SQL التأسيسية للدروس الخاصة وتقييمات المختبر وغيرها من البنى غير الممثلة في سجل Git. لا تطبق migrations على الإنتاج ولا تنفذ migration repair أو db push اعتمادًا على هذه اللقطة وحدها.
+
+## تدقيق بنى الإنتاج الحساسة – استكمال 25 نوفمبر 2026
+
+### التحقق من فروع Git التاريخية
+- جرى توسيع البحث من main وفرع PR إلى فروع Git التاريخية ذات الصلة، ومنها feature/private-student-lessons وfeature/private-lessons-catalog-enhancements وfeature/private-lesson-source-images وfeature/private-lesson-objectives.
+- لم يظهر في أشجار هذه الفروع ملف migration يؤسس public.private_student_lessons أو حاوية private-lesson-assets أو جداول lab_reviews وlab_review_helpful وlab_review_reports. الموجود من migrations في هذه الأشجار يتعلق ببنى أخرى مثل ملاحظات الأستاذ الخاصة وإدارة محتوى الموقع.
+- لذلك لا يمكن اعتماد أي من هذه الفروع كمصدر SQL تأسيسي موثوق للبنى المذكورة، ولا ينبغي إعادة إنشائها تخمينًا.
+
+### توصيف البنى الحساسة في الإنتاج (catalog فقط)
+- public.private_student_lessons: الجدول موجود ومفعّل عليه RLS، وله سياسات منفصلة لإدارة مدير الموقع وقراءة الطالب للدرس المنشور فقط. فحص الأعمدة والقيود يبين أنه يحتوي محتوى HTML وبيانات المستوى والمسلك واللغة والنشر والمالك، دون استخراج محتوى الصفوف.
+- public.lab_reviews وpublic.lab_review_helpful وpublic.lab_review_reports: الجداول الثلاثة موجودة ومفعّل عليها RLS. سياسات القراءة تسمح بالتقييمات المنشورة أو لصاحب التقييم أو المدير؛ إدراج التقييم يفرض هوية المستخدم وحالة pending؛ التعديل يمر عبر trigger يمنع تغيير الهوية والعداد ويعيد التقييم إلى pending. البلاغات والتصويتات مرتبطة بالمستخدم وتخضع لسياسات خاصة.
+- وظائف triggers الخاصة بالتقييمات موجودة في schema private: bump_lab_review_helpful وset_lab_review_author بدور SECURITY DEFINER وبـ search_path ثابت، وguard_lab_review_update دون SECURITY DEFINER مع حماية حقول الهوية والعداد. لم تُجرَ أي تغييرات على هذه الوظائف.
+- public.teacher_review_sessions له سياسات RLS تقيد القراءة بصلاحية الوصول للفصل، والإنشاء/التعديل بصلاحية إدارة الفصل وبهوية المنشئ.
+- private-lesson-assets تبقى حاوية خاصة كما وثّق التدقيق السابق؛ لا تغيير في إعداداتها أو سياساتها.
+
+### حدود العمل والقرار
+- هذه النتائج توصيف للـ catalog والسياسات والـ triggers الحالية، وليست schema-only dump قابلًا لإعادة البناء تلقائيًا؛ ما زال يلزم الحصول على SQL تأسيسي موثوق أو تصدير schema-only معتمد يشمل الجداول والقيود والفهارس والدوال والـ triggers والسياسات وStorage.
+- لم تُقرأ محتويات دروس خاصة أو تقييمات أو ملفات أو صفوف مستخدمين. لم ينفذ أي DDL أو migration أو تعديل على Supabase.
