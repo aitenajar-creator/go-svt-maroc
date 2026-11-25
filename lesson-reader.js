@@ -320,7 +320,7 @@ async function start(){
    if(!lessonSessionIsCurrent())return;
    feedback.insertAdjacentHTML('beforeend','<p role="alert">تعذر حفظ إنجاز الدرس. نتيجتك ظاهرة أعلاه؛ اضغط التصحيح مجدداً لإعادة محاولة الحفظ.</p>');
    console.warn('[GoSVT reader] Completion save failed:',error);
-  }finally{submit.disabled=false;}
+  }finally{if(lessonSessionIsCurrent())submit.disabled=false;}
  });
  }
 
