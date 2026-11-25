@@ -202,7 +202,7 @@ test('teacher community read failures and cleanup cannot repaint a newer session
     const block=between(community,'  '+start,'  '+end);
     assert(block.includes('communitySessionIsCurrent(session)'),'read flow must validate session before updating UI: '+start);
     assert(block.includes('finally {'),'read flow must release its loading lock: '+start);
-    assert(block.includes('if (communitySessionIsCurrent(session))'),'read cleanup must be session-scoped: '+start);
+    assert(/if\\s*\\(\\s*communitySessionIsCurrent\\(session\\)(?:\\s*&&|\\s*\\))/.test(block),'read cleanup must be session-scoped: '+start);
   }
 });
  
