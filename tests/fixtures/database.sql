@@ -14,7 +14,7 @@ create table public.private_student_lessons(id uuid primary key, title text, is_
 grant select on public.private_student_lessons to authenticated;
 grant select on public.private_student_lessons to authenticated;
 create table public.student_notes(student_id uuid references auth.users(id) on delete cascade, content_key text, note text, updated_at timestamptz not null default now(), primary key(student_id,content_key));
-create table public.student_study_plan(student_id uuid references auth.users(id) on delete cascade, item_key text, title text, updated_at timestamptz not null default now(), primary key(student_id,item_key));
+create table public.student_study_plan(student_id uuid references auth.users(id) on delete cascade, item_key text, title text, scheduled_date date, duration_minutes integer default 30, completed boolean default false, created_at timestamptz not null default now(), updated_at timestamptz not null default now(), primary key(student_id,item_key));
 alter table public.student_notes enable row level security;
 alter table public.student_study_plan enable row level security;
 create policy notes_owner_all on public.student_notes for all to authenticated using(student_id=auth.uid()) with check(student_id=auth.uid());
