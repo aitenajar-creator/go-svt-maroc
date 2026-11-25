@@ -15,10 +15,34 @@ create index student_lesson_objectives_lesson_idx on public.student_lesson_objec
 alter table public.student_lesson_objectives enable row level security;
 revoke all on public.student_lesson_objectives from public, anon, authenticated;
 grant select, insert, update on public.student_lesson_objectives to authenticated;
+-- Only the owning student may track a lesson that is actually published
+-- to students. A guessed UUID must not create progress for an unpublished lesson.
 create policy student_lesson_objectives_owner_all
   on public.student_lesson_objectives for all to authenticated
-  using (student_id = (select auth.uid()))
-  with check (student_id = (select auth.uid()));
+  using (
+    student_id = (select auth.uid())
+    and exists (
+      select 1 from public.profiles p
+      where p.id = (select auth.uid()) and p.role = 'student'
+    )
+    and exists (
+      select 1 from public.private_student_lessons lesson
+      where lesson.id = student_lesson_objectives.lesson_id
+        and lesson.is_published = true
+    )
+  )
+  with check (
+    student_id = (select auth.uid())
+    and exists (
+      select 1 from public.profiles p
+      where p.id = (select auth.uid()) and p.role = 'student'
+    )
+    and exists (
+      select 1 from public.private_student_lessons lesson
+      where lesson.id = student_lesson_objectives.lesson_id
+        and lesson.is_published = true
+    )
+  );
 
 insert into public.student_lesson_objectives(student_id, lesson_id, checked_indices)
 select state.student_id, lesson.id,
