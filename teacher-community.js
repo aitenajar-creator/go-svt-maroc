@@ -514,6 +514,7 @@
   async function handleEditResource(e) {
     e.preventDefault();
     if (editInProgress || !editingResourceId) return;
+    const session = captureCommunitySession();
     const title = $('tc-edit-title').value.trim();
     const description = $('tc-edit-description').value.trim();
     if (title.length < 2 || title.length > 180) return message('tc-edit-message','يجب أن يتراوح العنوان بين حرفين و180 حرفاً.');
@@ -530,6 +531,7 @@
         title, description, category, is_shared: $('tc-edit-share').checked,
         updated_at: new Date().toISOString()
       }).eq('id', editingResourceId).select('id').maybeSingle();
+      if (!communitySessionIsCurrent(session)) return;
       if (updated.error) throw updated.error;
       if (!updated.data) throw new Error('لم تُحفظ التعديلات. تحقق من صلاحية إدارة الوثيقة ثم أعد المحاولة.');
       $('tc-edit-dialog').close();
@@ -549,10 +551,12 @@
   }
   // Hide metadata before removing the private object. If storage or metadata
   // deletion fails, the resource stays hidden and can be retried by its owner/admin.
-  async function safelyDeleteResource(r) {
+  async function safelyDeleteResource(r, session = captureCommunitySession()) {
+    if (!communitySessionIsCurrent(session)) return;
     const hidden = await client.from('teacher_community_resources')
       .update({status:'hidden',updated_at:new Date().toISOString()})
       .eq('id',r.id).select('id').maybeSingle();
+    if (!communitySessionIsCurrent(session)) return;
     if (hidden.error) throw new Error('تعذر إخفاء الوثيقة قبل حذفها: ' + hidden.error.message);
     if (!hidden.data) throw new Error('لم تعد الوثيقة متاحة للحذف أو لا تملك صلاحية إدارتها.');
 
@@ -560,12 +564,16 @@
     // if the subsequent Storage deletion needs to be retried.
     await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdmin() : Promise.resolve()]);
 
+    if (!communitySessionIsCurrent(session)) return;
     const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
+    if (!communitySessionIsCurrent(session)) return;
     if (removed.error) {
       throw new Error('أُخفيت الوثيقة لحمايتها، لكن تعذر حذف الملف من التخزين. أعد المحاولة لاحقاً. ' + removed.error.message);
     }
 
+    if (!communitySessionIsCurrent(session)) return;
     const deleted = await client.from('teacher_community_resources').delete().eq('id',r.id).select('id').maybeSingle();
+    if (!communitySessionIsCurrent(session)) return;
     if (deleted.error) {
       throw new Error('حُذف الملف من التخزين، لكن تعذر حذف بياناته. بقي السجل مخفياً ويمكن إعادة محاولة الحذف. ' + deleted.error.message);
     }
@@ -574,7 +582,9 @@
     }
   }
   async function deleteResource(id) {
-    const r = await findResource(id); if (!r) return;
+    const session = captureCommunitySession();
+    const r = await findResource(id);
+    if (!communitySessionIsCurrent(session) || !r) return;
     if (r.owner_id !== user.id && !isAdmin) throw new Error('لا يمكنك حذف ملف أستاذ آخر.');
     if (!window.confirm('هل تريد حذف هذه الوثيقة نهائياً؟')) return;
 
@@ -583,15 +593,17 @@
       // this also invalidates any previously issued signed download URL.
       // Keep the metadata row until Storage confirms deletion so the owner can retry.
       const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
+      if (!communitySessionIsCurrent(session)) return;
       if (removed.error) {
         throw new Error('تعذر حذف الملف من التخزين؛ لم نحذف بيانات الوثيقة حتى تتمكن من إعادة المحاولة. ' + removed.error.message);
       }
       const deleted = await client.from('teacher_community_resources')
         .delete().eq('id',r.id).select('id').maybeSingle();
+      if (!communitySessionIsCurrent(session)) return;
       if (deleted.error) throw new Error('حُذف الملف من التخزين، لكن تعذر حذف بيانات الوثيقة. أبلغ الإدارة لتنظيف السجل المتبقي.');
       if (!deleted.data) throw new Error('حُذف الملف من التخزين، لكن تعذر العثور على سجل الوثيقة لإزالته. أبلغ الإدارة.');
     } else {
-      await safelyDeleteResource(r);
+      await safelyDeleteResource(r, session);
     }
     await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdmin() : Promise.resolve()]);
   }
@@ -1056,16 +1068,19 @@
     const submit = $('tc-upload-submit'); submit.disabled = true; submit.textContent = 'جارٍ رفع الملف...';
     const closeButton = $('tc-upload-dialog').querySelector('.tc-dialog-close');
     if (closeButton) closeButton.disabled = true;
+    const session = captureCommunitySession();
     try {
       // Keep path generation inside the guarded upload flow so any runtime error
       // still reaches finally and releases the dialog and submit-button locks.
       const path = user.id + '/' + crypto.randomUUID() + '.' + ext;
       const upload = await client.storage.from('teacher-community').upload(path,file,{contentType:mimeType,upsert:false});
+      if (!communitySessionIsCurrent(session)) return;
       if (upload.error) throw upload.error;
       const row = {owner_id:user.id,title,description:$('tc-file-description').value.trim(),category:$('tc-file-category').value,
         file_name:file.name,mime_type:mimeType,size_bytes:file.size,storage_path:path,
         is_shared:$('tc-file-share').checked,status:'published'};
       const saved = await client.from('teacher_community_resources').insert(row);
+      if (!communitySessionIsCurrent(session)) return;
       if (saved.error) {
         const cleanup = await client.storage.from('teacher-community').remove([path]);
         if (cleanup.error) {
@@ -1086,8 +1101,10 @@
   }
   async function handleAdminAction(e) {
     const b=e.target.closest('button'); if(!b || !isAdmin || b.disabled) return;
+    const session = captureCommunitySession();
     b.disabled = true;
     try {
+      if (!communitySessionIsCurrent(session)) return;
       if (b.dataset.retryAdminMembers) {
         await loadAdmin(true,'members');
       } else if (b.dataset.retryAdminResources) {
@@ -1096,20 +1113,23 @@
         const id=b.dataset.approveMember || b.dataset.suspendMember, status=b.dataset.approveMember?'approved':'suspended';
         const updated=await client.from('teacher_community_members').update({status,updated_at:new Date().toISOString()})
           .eq('user_id',id).select('user_id').maybeSingle();
+        if (!communitySessionIsCurrent(session)) return;
         if(updated.error) throw updated.error;
         if(!updated.data) throw new Error('لم يتغير وضع العضوية؛ لم يتم العثور على السجل أو لا تملك صلاحية تعديله.');
         await loadAdmin();
       } else if (b.dataset.hideResource) {
         const id=b.dataset.hideResource, r=await findResource(id);
         if(!r) throw new Error('لم تعد الوثيقة موجودة. حدّث القائمة.');
+        if (!communitySessionIsCurrent(session)) return;
         const updated=await client.from('teacher_community_resources').update({status:r.status==='hidden'?'published':'hidden',updated_at:new Date().toISOString()})
           .eq('id',id).select('id').maybeSingle();
+        if (!communitySessionIsCurrent(session)) return;
         if(updated.error) throw updated.error;
         if(!updated.data) throw new Error('لم تتغير حالة الوثيقة؛ تحقق من صلاحيات الإدارة ثم أعد تحميل القائمة.');
         await Promise.all([loadAdmin(),loadLibrary(),loadAdminActivity(true)]);
       } else if (b.dataset.adminDelete) {
         const id=b.dataset.adminDelete, r=await findResource(id);
-        if (!r) return;
+        if (!communitySessionIsCurrent(session) || !r) return;
         if (!window.confirm('هل تريد حذف هذه الوثيقة من المجتمع نهائياً؟')) return;
         await safelyDeleteResource(r);
         await Promise.all([loadAdmin(),loadLibrary(),loadMyResources(),loadAdminActivity(true)]);
