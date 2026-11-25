@@ -42,6 +42,7 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
       );
       await db.exec('reset role; set role anon;');
       await assert.rejects(db.query('select * from public.student_platform_state'),/permission denied/);
+      await db.exec('reset role;');
     });
     await t.test('legacy objective backfill keeps valid indices without altering the old JSON',async()=>{
       const rows=(await db.query('select checked_indices from public.student_lesson_objectives order by lesson_id')).rows;
