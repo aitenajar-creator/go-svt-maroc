@@ -109,6 +109,26 @@ test('teacher actions stop before work when the active account changes',()=>{
   assert(pinRead>=0&&pinGuard>pinRead&&pinWrite>pinGuard,'pin changes must revalidate the session after the lookup and before writing');
 });
 
+test('classroom mutations verify the session before writes and after responses',()=>{
+  const block=between(source('teacher-classroom.js'),'  async function act(button)','  async function refreshPanel');
+  for(const marker of [
+    "client.from('teacher_student_support_plans').insert(",
+    "client.from('teacher_student_notes').insert(",
+    "client.from('teacher_student_notes').update(",
+    "client.from('teacher_student_notes').delete(",
+    "client.from('teacher_assignments').insert(",
+    "client.from('teacher_assignment_submissions').insert(",
+    "client.from('teacher_assignment_submissions').update(",
+    "client.from('teacher_question_pins').delete(",
+    "client.from('teacher_question_pins').insert("
+  ]){
+    const request=block.indexOf(marker);
+    const before=block.lastIndexOf('if(!actionSessionIsCurrent(user))return;',request);
+    const after=block.indexOf('if(!actionSessionIsCurrent(user))return;',request);
+    assert(request>=0&&before>=0&&after>request,'session must be checked before and after '+marker);
+  }
+});
+
 test('classroom roster and student reports discard stale account responses',()=>{
   const block=between(source('teacher-classroom.js'),'  async function act(button)','  async function refreshPanel');
   for(const marker of [
