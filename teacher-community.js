@@ -303,15 +303,15 @@
       $('tc-library-more').hidden = !libraryHasMore;
       renderLibrary();
     } catch (err) {
-      if (requestId === libraryRequest) {
+      if (requestId === libraryRequest && communitySessionIsCurrent(session)) {
         $('tc-library-state').hidden = false;
         $('tc-library-state').textContent = 'تعذر الاتصال بالمكتبة. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
         if (reset) $('tc-library-more').hidden = true;
       }
     } finally {
       libraryLoading = false;
-      if (moreButton) moreButton.disabled = false;
-      if (libraryRefreshPending && user) {
+      if (communitySessionIsCurrent(session) && moreButton) moreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && libraryRefreshPending && user) {
         libraryRefreshPending = false;
         void loadLibrary(true);
       }
@@ -359,8 +359,10 @@
       });
       $('tc-my-stats-status').textContent = 'تم تحديث ملخص ملفاتك.';
     } catch (error) {
-      ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '—'; });
-      $('tc-my-stats-status').textContent = 'تعذر تحديث ملخص ملفاتك. يمكنك إعادة تحميل الصفحة.';
+      if (communitySessionIsCurrent(session)) {
+        ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '—'; });
+        $('tc-my-stats-status').textContent = 'تعذر تحديث ملخص ملفاتك. يمكنك إعادة تحميل الصفحة.';
+      }
       console.warn('[Teacher community stats]', error);
     }
   }
@@ -415,14 +417,16 @@
         $('tc-my-resources').innerHTML = '<div class="tc-state">' + emptyText + '</div>'; $('tc-my-resources-status').textContent = emptyText;
       }
     } catch (err) {
-      $('tc-my-resources-status').textContent = 'تعذر الاتصال بملفاتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
+      if (communitySessionIsCurrent(session)) {
+        $('tc-my-resources-status').textContent = 'تعذر الاتصال بملفاتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
       if (reset) $('tc-my-resources').innerHTML = retry;
       else $('tc-my-resources').insertAdjacentHTML('beforeend', retry);
-      if (reset) $('tc-my-resources-more').hidden = true;
+        if (reset) $('tc-my-resources-more').hidden = true;
+      }
     } finally {
       myLoading = false;
-      if (moreButton) moreButton.disabled = false;
-      if (myRefreshPending && user) {
+      if (communitySessionIsCurrent(session) && moreButton) moreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && myRefreshPending && user) {
         myRefreshPending = false;
         void loadMyResources(true);
       }
@@ -735,18 +739,18 @@
       $('tc-admin-resources-more').hidden = !adminResourcesMore;
     }
     } catch (err) {
-      if (loadMembers) {
+      if (communitySessionIsCurrent(session) && loadMembers) {
         $('tc-admin-members').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بطلبات العضوية. <button type="button" data-retry-admin-members>إعادة المحاولة</button></div>');
       }
-      if (loadResources) {
+      if (communitySessionIsCurrent(session) && loadResources) {
         $('tc-admin-resources').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بموارد المجتمع. <button type="button" data-retry-admin-resources>إعادة المحاولة</button></div>');
       }
     } finally {
       if (loadMembers) adminMembersLoading = false;
       if (loadResources) adminResourcesLoading = false;
-      if (loadMembers && memberMoreButton) memberMoreButton.disabled = false;
-      if (loadResources && resourceMoreButton) resourceMoreButton.disabled = false;
-      if (loadResources && adminResourcesRefreshPending) {
+      if (communitySessionIsCurrent(session) && loadMembers && memberMoreButton) memberMoreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && loadResources && resourceMoreButton) resourceMoreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && loadResources && adminResourcesRefreshPending) {
         adminResourcesRefreshPending = false;
         void loadAdmin(true, 'resources');
       }
@@ -893,15 +897,17 @@
       }
       moreButton.hidden = !adminActivityMore;
     } catch (error) {
-      console.error('[Teacher community activity]',error);
-      const dateError = error && typeof error.message === 'string' && error.message.startsWith('تاريخ');
+      if (communitySessionIsCurrent(session)) {
+        console.error('[Teacher community activity]',error);
+        const dateError = error && typeof error.message === 'string' && error.message.startsWith('تاريخ');
       const feedback = dateError ? error.message : 'تعذر تحميل سجل النشاط. تأكد من تطبيق ترحيل سجل التدقيق في قاعدة البيانات ثم أعد المحاولة.';
-      panel.innerHTML = '<div class="tc-state" role="alert">' + escapeHtml(feedback) + '</div>';
-      moreButton.hidden = true;
+        panel.innerHTML = '<div class="tc-state" role="alert">' + escapeHtml(feedback) + '</div>';
+        moreButton.hidden = true;
+      }
     } finally {
       adminActivityLoading = false;
-      if (moreButton) moreButton.disabled = false;
-      if (adminActivityRefreshPending) {
+      if (communitySessionIsCurrent(session) && moreButton) moreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && adminActivityRefreshPending) {
         adminActivityRefreshPending = false;
         void loadAdminActivity(true);
       }
