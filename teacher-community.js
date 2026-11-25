@@ -548,11 +548,16 @@
       editingResourceId = null;
       await Promise.all([loadLibrary(), loadMyResources(), isAdmin ? loadAdmin() : Promise.resolve(), isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
     } catch (err) {
-      message('tc-edit-message', err.message || 'تعذر حفظ التعديلات.');
+      if (communitySessionIsCurrent(session)) {
+        message('tc-edit-message', err.message || 'تعذر حفظ التعديلات.');
+      }
     } finally {
       editInProgress = false;
-      submit.disabled = false; submit.textContent = 'حفظ التعديلات';
-      if (closeButton) closeButton.disabled = false;
+      // An older edit must never repaint controls after the account changes.
+      if (communitySessionIsCurrent(session)) {
+        submit.disabled = false; submit.textContent = 'حفظ التعديلات';
+        if (closeButton) closeButton.disabled = false;
+      }
     }
   }
   async function findResource(id) {
