@@ -41,7 +41,7 @@ test('completion cleanup does not update controls after the lesson session becom
   const submit=node(),feedback=node();let current=true;
   feedback.insertAdjacentHTML=()=>{};
   const b=browser({user:{id:'student'},id:'lesson',lessonSessionIsCurrent:()=>current,quiz:{querySelector:selector=>selector==='#gs-checkpoint-submit'?submit:feedback},form:{querySelector:()=>({value:'0'})},bank:[1,2,3].map(n=>({correct:0,why:'Fixture '+n})),client:{from:()=>({upsert:async()=>{current=false;return {error:null};}})}});
-  b.run(between(source('lesson-reader.js')," const submit=quiz.querySelector('#gs-checkpoint-submit');",'\\n }\\n\\n}\\nstart()'));
+  b.run(between(source('lesson-reader.js')," const submit=quiz.querySelector('#gs-checkpoint-submit');",'\n }\n\n}\nstart()'));
   await submit.handlers.click();
   assert.equal(submit.disabled,true,'stale completion cleanup must not re-enable the old session control');
 });
