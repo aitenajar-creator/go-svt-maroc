@@ -183,3 +183,19 @@ test('a stale catalog failure cannot overwrite a newer successful retry',async({
   await expect(page.locator('.sp-dialog')).toContainText('متصلة');
   await expect(page.locator('.sp-dialog')).not.toContainText('بعض الخدمات غير متاحة');
 });
+
+
+test('server exam retries the latest unsynced answer when the connection returns',async({page})=>{
+  await preview(page);
+  const calls=await page.evaluate(async()=>{
+    let active={id:'fixture-attempt',mode:'server',owner:'preview-user',questions:[{id:'q1',prompt:'سؤال',options:['أ','ب']}],answers:{q1:1},sequence:4,deadline:Date.now()+60000};
+    const saved=[];
+    const store={state:{profile:{id:'preview-user'}},current:()=>true,activeExam(value){if(arguments.length)active=value;return active;},saveAnswers:async(id,answers,sequence)=>{saved.push({id,answers,sequence});return {accepted:true};}};
+    const exam=window.GoSVTPlatformExams.create(store,{toast(){},intent(){return 'test';}});
+    window.dispatchEvent(new Event('online'));
+    await new Promise(resolve=>setTimeout(resolve,0));
+    exam.dispose();
+    return saved;
+  });
+  expect(calls).toEqual([{id:'fixture-attempt',answers:{q1:1},sequence:4}]);
+});
