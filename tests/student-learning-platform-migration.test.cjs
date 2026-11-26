@@ -38,12 +38,12 @@ test('published assessment data is constrained and student access is audience-sc
 
 
 test('privileged RPCs pin search_path and authenticate the calling account',()=>{
- const definitions=[...migration.matchAll(/create or replace function public\\.([a-z0-9_]+)\\([\\s\\S]*?\\$\\$;/gi)];
+ const definitions=[...migration.matchAll(/create or replace function public\.([a-z0-9_]+)\([\s\S]*?\$\$;/gi)];
  const privileged=definitions.filter(match=>/security definer/i.test(match[0]));
  assert.ok(privileged.length>=5,'expected the platform privileged RPC set');
  for(const fn of privileged){
-  assert.match(fn[0],/set search_path\\s*=\\s*pg_catalog\\s*,\\s*public/i,fn[1]+' pins search_path');
-  assert.match(fn[0],/auth\\.uid\\(\\)/i,fn[1]+' checks authenticated identity');
+  assert.match(fn[0],/set search_path\s*=\s*pg_catalog\s*,\s*public/i,fn[1]+' pins search_path');
+  assert.match(fn[0],/auth\.uid\(\)/i,fn[1]+' checks authenticated identity');
  }
 });
 
