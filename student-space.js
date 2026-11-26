@@ -638,7 +638,7 @@
         const previous = values.id ? list.find(item => item.id === values.id) : null;
         if (values.id && !previous) throw new Error('هذا العنصر لم يعد موجودًا. حدّث المساحة قبل تعديله.');
         const title = String(values.title || '').trim();
-        if (!title || title.length > 180) throw new Error('اكتب عنوانًا من 1 إلى 180 حرفًا.');
+        if (!title || title.length > 120) throw new Error('اكتب عنوانًا من 1 إلى 120 حرفًا.');
         const now = Date.now();
         const item = { ...(previous || {}), id: previous ? previous.id : crypto.randomUUID(), title,
             createdAt: previous ? previous.createdAt : now, updatedAt: now };
