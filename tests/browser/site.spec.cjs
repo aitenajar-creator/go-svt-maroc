@@ -88,7 +88,7 @@ test('admin logout clears the learning authoring session and disables result exp
   await page.locator('#signout-btn').click();
   await expect(page.locator('#dashboard')).toBeHidden();
   await expect(page.locator('#login-panel')).toBeVisible();
-  await expect(page.locator('#learning-admin-status')).toContainText('تم إيقاف أدوات الإدارة ومسح بيانات الجلسة');
+  await expect(page.locator('#learning-admin-status')).toContainText('تُحمّل هذه الأدوات بعد التحقق من صلاحية المدير.');
   await expect(page.locator('#learning-resource-title')).toHaveValue('');
   await expect(page.locator('#learning-results-export')).toBeDisabled();
 });
