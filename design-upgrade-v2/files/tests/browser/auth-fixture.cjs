@@ -3,6 +3,7 @@ module.exports = function installFixture(options = {}) {
   const listeners = [];
   const state = window.__authFixture = {
     user: options.signedIn ? person : null,
+    role: state.role || 'student',
     failTable: options.failTable || '',
     emit(event) { listeners.forEach(fn => fn(event, this.user ? { user: this.user } : null)); }
   };
