@@ -59,6 +59,18 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
       assert.deepEqual(saved.cards,{deckA:{seen:1},deckB:{seen:2}});
       assert.deepEqual(saved.lab,{experimentA:{done:true},experimentB:{done:false}});
       assert.equal(saved.act['2026-11-26'],2);
+      const activity=Object.fromEntries(Array.from({length:121},(_,i)=>{
+        const day=new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10);
+        return [day,i];
+      }));
+      await merge({act:activity});
+      const bounded=(await db.query(
+        "select state->'act' as act from public.student_platform_state where student_id=$1 and profile_id='account-default'",
+        [student]
+      )).rows[0].act;
+      assert.equal(Object.keys(bounded).length,120);
+      assert.equal(Object.hasOwn(bounded,'2025-01-01'),false);
+      assert.equal(bounded['2026-11-26'],2);
       await merge({cards:{},lab:{},atlas:{},cardsTotal:0,_resetAt:20,u:20});
       await merge({cards:{staleDeck:{seen:true}},lab:{staleExperiment:{done:true}},u:19});
       const afterStale=(await db.query(
