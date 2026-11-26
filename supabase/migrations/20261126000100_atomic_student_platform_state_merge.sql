@@ -42,9 +42,31 @@ begin
       v_result := jsonb_set(v_result, array[v_key], v_value, true);
     end if;
   end loop;
+  -- Keep the activity history bounded to the same 120-day window used by
+  -- the client. Merge first so independent days from other devices survive.
+  if v_result ? 'act' and jsonb_typeof(v_result -> 'act') = 'object' then
+    v_result := jsonb_set(
+      v_result,
+      array['act'],
+      coalesce(
+        (
+          select jsonb_object_agg(day_key, day_value)
+          from (
+            select key as day_key, value as day_value
+            from jsonb_each(v_result -> 'act')
+            order by key desc
+            limit 120
+          ) recent_days
+        ),
+        '{}'::jsonb
+      ),
+      true
+    );
+  end if;
+
   return v_result;
 end;
-$$;
+$;
 
 revoke all on function public.gosvt_jsonb_deep_merge(jsonb,jsonb) from public, anon, authenticated;
 
