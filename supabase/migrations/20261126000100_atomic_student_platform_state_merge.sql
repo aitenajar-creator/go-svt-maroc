@@ -12,7 +12,6 @@ declare
   v_value jsonb;
   v_left_reset bigint := 0;
   v_right_reset bigint := 0;
-  v_right_updated bigint := 0;
 begin
   if jsonb_typeof(p_left) <> 'object' or jsonb_typeof(p_right) <> 'object' then
     return p_right;
@@ -238,11 +237,11 @@ grant execute on function public.gosvt_merge_student_platform_state(uuid,text,js
     v_right_updated := (p_right ->> 'u')::bigint;
   end if;
 
-  -- A deliberate reset replaces the old snapshot. Older offline devices are
-  -- prevented from resurrecting pre-reset collections until they rehydrate.
+  -- A deliberate reset replaces the old snapshot. Any device that has not
+  -- rehydrated that reset is ignored, preventing stale data resurrection.
   if v_right_reset > v_left_reset then
     return p_right;
-  elsif v_left_reset > v_right_reset and v_right_updated <= v_left_reset then
+  elsif v_left_reset > v_right_reset then
     return p_left;
   end if;
 
