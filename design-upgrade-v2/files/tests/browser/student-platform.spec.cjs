@@ -111,3 +111,34 @@ test('a missing new-platform table is reported as partial while the existing lea
   await expect(page.locator('.sp-course-card').first()).toBeVisible();
   await expect(errors).toEqual([]);
 });
+
+
+test('missing new-platform tables do not erase legacy progress, notes, or study plans',async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await localOnly(page,{signedIn:true,failTable:'learning_assessments'});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await page.evaluate(()=>{
+    const uid=StudentAccount.activeProfileId();
+    StudentSpace.updateProgress('lesson','legacy-unit-compatibility-key',{title:'درس محفوظ من المساحة السابقة'});
+    StudentSpace.markLessonComplete('legacy-unit-compatibility-key');
+    StudentSpace.saveWorkspaceRecord('note',{title:'ملاحظة قديمة محفوظة',body:'يجب أن تبقى هذه الملاحظة بعد تعذر خدمات المنصة الجديدة.'},uid);
+    StudentSpace.saveWorkspaceRecord('task',{title:'مهمة قديمة محفوظة',date:'2026-11-27',done:false},uid);
+  });
+  await nav(page,'notes').click();
+  await expect(page.locator('.sp-note-card')).toContainText('ملاحظة قديمة محفوظة');
+  await nav(page,'planner').click();
+  await expect(page.locator('.sp-task-row')).toContainText('مهمة قديمة محفوظة');
+  await page.reload();
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await nav(page,'notes').click();
+  await expect(page.locator('.sp-note-card')).toContainText('ملاحظة قديمة محفوظة');
+  await nav(page,'planner').click();
+  await expect(page.locator('.sp-task-row')).toContainText('مهمة قديمة محفوظة');
+  const legacy=await page.evaluate(()=>{
+    const d=StudentSpace.getProfileData(StudentAccount.activeProfileId());
+    return {completed:d.progress.lessons['legacy-unit-compatibility-key']?.completed,notes:d.notes.some(x=>x.title==='ملاحظة قديمة محفوظة'),tasks:d.studyPlan.some(x=>x.title==='مهمة قديمة محفوظة')};
+  });
+  expect(legacy).toEqual({completed:true,notes:true,tasks:true});
+  expect(errors).toEqual([]);
+});
