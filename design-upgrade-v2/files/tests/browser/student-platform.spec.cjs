@@ -199,3 +199,17 @@ test('server exam retries the latest unsynced answer when the connection returns
   });
   expect(calls).toEqual([{id:'fixture-attempt',answers:{q1:1},sequence:4}]);
 });
+
+
+test('a server assessment with invalid deadline timestamps is rejected instead of creating a stuck attempt',async({page})=>{
+  await preview(page);
+  const outcome=await page.evaluate(async()=>{
+    let active=null;const messages=[];
+    const store={state:{profile:{id:'preview-user'}},current:()=>true,activeExam(value){if(arguments.length)active=value;return active;},startAssessment:async()=>({id:'attempt-invalid-time',assessment_id:'assessment-fixture',server_time:'not-a-date',deadline_at:'also-not-a-date',last_sequence:0,questions:[{id:'q1',prompt:'سؤال',options:['أ','ب']}],answers:{}})};
+    const exam=window.GoSVTPlatformExams.create(store,{toast(message){messages.push(message);},intent(){return 'test';}});
+    await exam.startServer({id:'assessment-fixture'});
+    const result={active:exam.getActive(),messages};exam.dispose();return result;
+  });
+  expect(outcome.active).toBeNull();
+  expect(outcome.messages.join(' ')).toContain('توقيت');
+});
