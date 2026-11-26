@@ -101,10 +101,24 @@ async function pushRemote(snapshot, uid, localProfileId, cloudProfileId) {
   }
   if (!sameCloudContext(uid, localProfileId, cloudProfileId)) return false;
   try {
-    const result = await c.from('student_platform_state').upsert({
-      student_id: uid, profile_id: cloudProfileId, state, updated_at: new Date().toISOString()
-    }, { onConflict: 'student_id,profile_id' });
+    // The database RPC locks the account/profile row and recursively merges JSON.
+    // This preserves independent edits arriving from another browser during this write.
+    const result = await c.rpc('gosvt_merge_student_platform_state', {
+      p_student_id: uid, p_profile_id: cloudProfileId, p_state: state
+    });
     if (result && result.error) throw result.error;
+    const merged = result && result.data;
+    if (merged && typeof merged === 'object' && sameCloudContext(uid, localProfileId, cloudProfileId)) {
+      const latest = PS();
+      if (JSON.stringify(latest) !== JSON.stringify(state)) {
+        // A local edit landed while the RPC was in flight; submit it against the
+        // newly merged server state rather than replacing the newer local snapshot.
+        return pushRemote(latest, uid, localProfileId, cloudProfileId);
+      }
+      _ps = Object.assign({}, latest, merged);
+      _psPid = localProfileId;
+      try { localStorage.setItem(localProfileId + '_gosvt_masahati', JSON.stringify(_ps)); } catch (e) {}
+    }
     return true;
   } catch (e) {
     console.warn('[Masahati] Cloud save failed; local copy retained.', e && e.message);
