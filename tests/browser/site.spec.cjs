@@ -61,3 +61,22 @@ test('partial cloud failure retains quiz history and offers retry',async({page})
   await page.locator('[data-gs-sync-retry]').click();
   await expect.poll(()=>page.evaluate(()=>StudentAccount.getSyncStatus().phase)).toBe('ready');
 });
+
+
+test('site owner can open the new learning authoring tab while a student cannot',async({page})=>{
+  await isolate(page,{signedIn:true,role:'admin'});
+  await page.goto('/admin.html');
+  await expect(page.locator('#dashboard')).toBeVisible();
+  await page.locator('[data-admin-tab="learning-platform-admin-panel"]').click();
+  await expect(page.locator('#learning-platform-admin-panel')).toBeVisible();
+  await expect(page.locator('#learning-resources-list')).toContainText('لا توجد موارد بعد');
+  await page.locator('#signout-btn').click();
+  await expect(page.locator('#login-panel')).toBeVisible();
+
+  const studentPage=await page.context().newPage();
+  await isolate(studentPage,{signedIn:true,role:'student'});
+  await studentPage.goto('/admin.html');
+  await expect(studentPage.locator('#login-panel')).toBeVisible();
+  await expect(studentPage.locator('#dashboard')).toBeHidden();
+  await studentPage.close();
+});
