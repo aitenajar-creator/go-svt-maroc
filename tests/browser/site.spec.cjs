@@ -84,7 +84,7 @@ test('admin logout clears the learning authoring session and disables result exp
   await expect(page.locator('#dashboard')).toBeVisible();
   await page.locator('[data-admin-tab="learning-platform-admin-panel"]').click();
   await page.locator('#learning-resource-title').fill('Private draft must be cleared');
-  await page.locator('#learning-results-export').isDisabled();
+  await expect(page.locator('#learning-results-export')).toBeDisabled();
   await page.locator('#signout-btn').click();
   await expect(page.locator('#dashboard')).toBeHidden();
   await expect(page.locator('#login-panel')).toBeVisible();
