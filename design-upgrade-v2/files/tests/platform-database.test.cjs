@@ -62,15 +62,16 @@ test('learning platform: authentic grading and academic isolation on an isolated
       await assert.rejects(db.query('update public.learning_attempts set score=300'),/permission denied/);
     });
     await t.test('stale autosaves and stale final submissions cannot overwrite newer answers',async()=>{
-      const retryAttempt=(await db.query('select public.gosvt_platform_start_assessment($1,$2) value',[assessment,student])).rows[0].value;
+      await as(admin);const retryAssessment=(await db.query('select public.gosvt_platform_save_assessment(null,$1,null,$2) id',[JSON.stringify({...document,title:'Duplicate sequence regression fixture'}),admin])).rows[0].id;
+      await as(student);const retryAttempt=(await db.query('select public.gosvt_platform_start_assessment($1,$2) value',[retryAssessment,student])).rows[0].value;
       const answers={[retryAttempt.questions[0].id]:0};await as(student);
       await db.query('select public.gosvt_platform_save_answers($1,$2,2,$3)',[retryAttempt.id,JSON.stringify(answers),student]);
       const stale=(await db.query('select public.gosvt_platform_save_answers($1,$2,1,$3) value',[retryAttempt.id,JSON.stringify({[retryAttempt.questions[0].id]:1}),student])).rows[0].value;
       assert.equal(stale.accepted,false);
       await assert.rejects(db.query('select public.gosvt_platform_submit_assessment($1,$2,1,$3)',[retryAttempt.id,JSON.stringify(answers),student]),/updated_elsewhere/);
-      const changed={[attempt.questions[0].id]:1};
+      const changed={[retryAttempt.questions[0].id]:1};
       await assert.rejects(db.query('select public.gosvt_platform_submit_assessment($1,$2,2,$3)',[retryAttempt.id,JSON.stringify(changed),student]),/updated_elsewhere/);
-      const same=(await db.query('select public.gosvt_platform_submit_assessment($1,$2,2,$3) value',[attempt.id,JSON.stringify(answers),student])).rows[0].value;
+      const same=(await db.query('select public.gosvt_platform_submit_assessment($1,$2,2,$3) value',[retryAttempt.id,JSON.stringify(answers),student])).rows[0].value;
       assert.equal(same.server_graded,true);
     });
     await t.test('authoring changes do not change the answer snapshot of an ongoing attempt',async()=>{
