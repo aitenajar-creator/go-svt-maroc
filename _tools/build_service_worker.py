@@ -22,6 +22,15 @@ def build(root):
     root = Path(root)
     parser = ShellParser()
     parser.feed((root / "index.html").read_text())
+    # Include generated learning catalog and local platform media in the offline shell.
+    media_root = root / "assets" / "student-platform"
+    if media_root.is_dir():
+        for asset in media_root.rglob("*"):
+            if asset.is_file() and asset.suffix.lower() in {".webp", ".woff2", ".css", ".json"}:
+                parser.paths.add("/" + asset.relative_to(root).as_posix())
+    catalog = root / "student-platform-catalog.json"
+    if catalog.is_file():
+        parser.paths.add("/student-platform-catalog.json")
     worker = root / "sw.js"
     text = worker.read_text()
     canonical = re.sub(r"const RELEASE = '[^']+';", "const RELEASE = '<release>';", text)
