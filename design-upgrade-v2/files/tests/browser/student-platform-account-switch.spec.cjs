@@ -63,6 +63,6 @@ test('a signed-in account that changes to a non-student role cannot retain the s
   });
 
   await expect(page.locator('.gs-learning-platform')).toHaveCount(0);
-  await expect.poll(()=>document.body.classList.contains('sp-platform-active')).toBe(false);
+  await expect.poll(()=>page.evaluate(()=>document.body.classList.contains('sp-platform-active'))).toBe(false);
   expect(errors).toEqual([]);
 });
