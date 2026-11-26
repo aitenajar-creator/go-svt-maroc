@@ -18,7 +18,7 @@ test('workspace record bridge is exported without removing legacy student APIs',
   ]) {
     assert.match(source, new RegExp('\\b' + name + '\\b'));
   }
-  assert.match(source, /window\\.StudentSpace\\s*=\\s*\\{/);
+  assert.match(source, /window\.StudentSpace\s*=\s*\{/);
 });
 
 test('workspace writes are bound to the expected authenticated student profile', () => {
