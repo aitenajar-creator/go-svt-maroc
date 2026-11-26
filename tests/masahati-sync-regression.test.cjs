@@ -14,6 +14,9 @@ function harness({readResult={data:null,error:null},writeResult={error:null},sha
   let serverState=readResult&&readResult.data&&readResult.data.state?readResult.data.state:null;
   const localStorage = {getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};
   const merge=(left,right)=>{
+    const leftReset=Number(left&&left._resetAt)||0, rightReset=Number(right&&right._resetAt)||0;
+    if(rightReset>leftReset)return right;
+    if(leftReset>rightReset&&(Number(right&&right.u)||0)<=leftReset)return left;
     const out=Object.assign({},left||{});
     for(const [key,value] of Object.entries(right||{})) out[key]=value&&typeof value==='object'&&!Array.isArray(value)&&out[key]&&typeof out[key]==='object'&&!Array.isArray(out[key])?merge(out[key],value):value;
     return out;
@@ -143,6 +146,25 @@ test('independent device edits are merged instead of replacing each other',async
   assert.equal(await second.api.pushRemote(JSON.parse(JSON.stringify(second.api.PS())),'user-1','profile-1','account-default'),true);
   assert.deepEqual(JSON.parse(JSON.stringify(shared.state.cards)),{deckA:{seen:true}});
   assert.deepEqual(JSON.parse(JSON.stringify(shared.state.lab)),{experimentB:{done:true}});
+});
+
+test('a reset on one device blocks stale offline data from being restored',async()=>{
+  const shared={state:{u:10,cards:{oldDeck:{seen:true}},lab:{oldLab:{done:true}}}};
+  const read=()=>({data:{state:shared.state},error:null});
+  const current=harness({readResult:read,sharedState:shared});
+  const stale=harness({readResult:read,sharedState:shared});
+  await current.api.pullRemote();
+  await stale.api.pullRemote();
+  current.api.PS().cards={};
+  current.api.PS().lab={};
+  current.api.PS().atlas={};
+  current.api.PS()._resetAt=Date.now()+10;
+  current.api.PS().u=current.api.PS()._resetAt;
+  assert.equal(await current.api.pushRemote(JSON.parse(JSON.stringify(current.api.PS())),'user-1','profile-1','account-default'),true);
+  assert.equal(await stale.api.pushRemote(JSON.parse(JSON.stringify(stale.api.PS())),'user-1','profile-1','account-default'),true);
+  assert.deepEqual(JSON.parse(JSON.stringify(shared.state.cards)),{});
+  assert.deepEqual(JSON.parse(JSON.stringify(shared.state.lab)),{});
+  assert.ok(stale.api.PS()._resetAt>=current.api.PS()._resetAt);
 });
 
 test('same authenticated account restores one stable cloud profile across independent browsers', async()=>{
