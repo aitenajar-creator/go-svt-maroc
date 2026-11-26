@@ -40,14 +40,14 @@
     async function load(force=false){
       const version=++generation;state.loading=true;state.errors=[];
       try{const resources=await catalog(force);if(!current()||version!==generation)return;state.resources=resources.filter(r=>D.allowed(r,profile));state.ready=true;notify();}
-      catch(error){if(current()){state.errors.push('catalog');state.ready=true;state.loading=false;notify();}return;}
+      catch(error){if(current()&&version===generation){state.errors.push('catalog');state.cloud='partial';state.ready=true;state.loading=false;notify();}return;}
       if(!client){state.loading=false;notify();return;}
-      try{await ensureIdentity();}catch(_){state.cloud='partial';state.errors.push('session');state.loading=false;notify();return;}
+      try{await ensureIdentity();}catch(_){if(!current()||version!==generation)return;state.cloud='partial';state.errors.push('session');state.loading=false;notify();return;}
       const jobs=[
         ['resources',()=>client.from('learning_resources').select('id,title,description,source_url,resource_kind,study_level,study_tracks,language,is_published,position').eq('is_published',true).eq('study_level',profile.level).order('position',{ascending:true}).order('id',{ascending:true})],
         ['assessments',()=>client.from('learning_assessments').select('id,title,description,study_level,study_tracks,duration_minutes,question_count,revision').eq('is_published',true).eq('study_level',profile.level).order('updated_at',{ascending:false}).order('id',{ascending:false})],
         ['private',()=>client.from('private_student_lessons').select('id,title,description,study_level,study_track,language').eq('is_published',true).eq('study_level',profile.level).eq('study_track',profile.track).order('title')],
-        ['uploads',()=>client.from('site_content_items').select('id,title,category,language,study_level,study_track,file_name,storage_path,size_bytes').eq('is_deleted',false).eq('study_level',profile.level).order('created_at',{ascending:false}).order('id',{ascending:false})],
+        ['uploads',()=>client.from('site_content_items').select('id,title,category,language,study_level,study_track,file_name,storage_path,size_bytes').eq('study_level',profile.level).order('created_at',{ascending:false}).order('id',{ascending:false})],
         ['privateFavorites',()=>client.from('student_favorites').select('content_key').eq('student_id',profile.id).eq('content_type','lesson').order('content_key') ]
       ];
       const responses=await Promise.allSettled(jobs.map(async([name,make])=>{
