@@ -123,7 +123,8 @@ test('missing new-platform tables do not erase legacy progress, notes, or study 
     StudentSpace.updateProgress('lesson','legacy-unit-compatibility-key',{title:'درس محفوظ من المساحة السابقة'});
     StudentSpace.markLessonComplete('legacy-unit-compatibility-key');
     StudentSpace.saveWorkspaceRecord('note',{title:'ملاحظة قديمة محفوظة',body:'يجب أن تبقى هذه الملاحظة بعد تعذر خدمات المنصة الجديدة.'},uid);
-    StudentSpace.saveWorkspaceRecord('task',{title:'مهمة قديمة محفوظة',date:'2026-11-27',done:false},uid);
+    const now=new Date(),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+    StudentSpace.saveWorkspaceRecord('task',{title:'مهمة قديمة محفوظة',date:today,done:false},uid);
   });
   await nav(page,'notes').click();
   await expect(page.locator('.sp-note-card')).toContainText('ملاحظة قديمة محفوظة');
