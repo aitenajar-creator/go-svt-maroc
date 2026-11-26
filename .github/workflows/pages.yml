@@ -72,6 +72,9 @@ jobs:
         with:
           source: ./
           destination: ./_site
+      # The Pages Jekyll action omits this public root-level runtime config from _site.
+      - name: Include public Supabase browser configuration
+        run: sudo cp supabase-config.js _site/supabase-config.js
       - name: Dates des fichiers
         run: |
           python3 - <<'PYEOF'
