@@ -15,7 +15,7 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
   const send=(body,token,expected=teacher)=>db.query('select public.gosvt_send_teacher_reply($1,$2,$3,$4) as id',[question,body,token,expected]);
   try{
     await db.exec(source('tests/fixtures/database.sql'));
-    for(const file of ['20261116000000_student_learning_state.sql','20261121000100_student_lesson_objectives.sql','20261125000100_student_collection_deletions.sql','20261125000200_per_lesson_objectives.sql','20261125000300_atomic_teacher_question_replies.sql','20261125000400_recreate_student_collection_items.sql','20261125000500_student_platform_state_profile_scope.sql']){
+    for(const file of ['20261116000000_student_learning_state.sql','20261121000100_student_lesson_objectives.sql','20261125000100_student_collection_deletions.sql','20261125000200_per_lesson_objectives.sql','20261125000300_atomic_teacher_question_replies.sql','20261125000400_recreate_student_collection_items.sql','20261125000500_student_platform_state_profile_scope.sql','20261126000100_atomic_student_platform_state_merge.sql']){
       if(file==='20261125000200_per_lesson_objectives.sql'){
         await db.query('insert into public.student_learning_state(student_id,lesson_objectives) values($1,$2)',[student,JSON.stringify({['private-lesson:'+first]:[0,0,'invalid',999],['private-lesson:'+second]:[1]})]);
       }
@@ -43,6 +43,32 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
       await db.exec('reset role; set role anon;');
       await assert.rejects(db.query('select * from public.student_platform_state'),/permission denied/);
       await db.exec('reset role;');
+    });
+    await t.test('Masahati cloud state merges independent device edits atomically and enforces ownership',async()=>{
+      await as(student);
+      const merge=(state)=>db.query(
+        'select public.gosvt_merge_student_platform_state($1,$2,$3::jsonb) as state',
+        [student,'account-default',JSON.stringify(state)]
+      );
+      await merge({cards:{deckA:{seen:1}},lab:{experimentA:{done:true}},act:{'2026-11-26':1},u:10});
+      await merge({cards:{deckB:{seen:2}},lab:{experimentB:{done:false}},act:{'2026-11-26':2},u:11});
+      const saved=(await db.query(
+        "select state from public.student_platform_state where student_id=$1 and profile_id='account-default'",
+        [student]
+      )).rows[0].state;
+      assert.deepEqual(saved.cards,{deckA:{seen:1},deckB:{seen:2}});
+      assert.deepEqual(saved.lab,{experimentA:{done:true},experimentB:{done:false}});
+      assert.equal(saved.act['2026-11-26'],2);
+      await as(other);
+      await assert.rejects(
+        db.query('select public.gosvt_merge_student_platform_state($1,$2,$3::jsonb)',[student,'account-default','{}']),
+        /session_changed/
+      );
+      await db.exec('reset role; set role anon;');
+      await assert.rejects(
+        db.query('select public.gosvt_merge_student_platform_state($1,$2,$3::jsonb)',[student,'account-default','{}']),
+        /permission denied/
+      );
     });
     await t.test('legacy objective backfill keeps valid indices without altering the old JSON',async()=>{
       const rows=(await db.query('select checked_indices from public.student_lesson_objectives order by lesson_id')).rows;
