@@ -51,6 +51,11 @@ test('workspace record operations validate input and retain existing cloud delet
   ]) assert.ok(bridge.includes(check), 'missing workspace safeguard: ' + check);
 });
 
+test('study plan date validation uses a real ISO date pattern', () => {
+  assert.ok(source.includes("if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(item.date)"),
+    'date validation must match YYYY-MM-DD digits, not a literal backslash-d');
+});
+
 test('study plan completion uses the cloud field and the platform UI field consistently', () => {
   assert.ok(source.includes('item.completed = item.done;'), 'workspace saves must persist the cloud completion field');
   assert.ok(source.includes('done: typeof remote.done === \'boolean\' ? remote.done : remote.completed === true'), 'cloud hydration must expose the UI completion field');
