@@ -10,16 +10,34 @@ function harness({readResult={data:null,error:null},writeResult={error:null},sha
   const end = source.indexOf('\nfunction bump(kind)', start);
   assert(start >= 0 && end > start);
   let currentPid='profile-1', currentUid='user-1', timerId=0, timers=new Map(), reads=0, writes=[], filters=[];
-  const storage = new Map();\n  let serverState=readResult&&readResult.data&&readResult.data.state?readResult.data.state:null;
+  const storage = new Map();
+  let serverState=readResult&&readResult.data&&readResult.data.state?readResult.data.state:null;
   const localStorage = {getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};
-  const merge=(left,right)=>{\n    const out=Object.assign({},left||{});\n    for(const [key,value] of Object.entries(right||{})) out[key]=value&&typeof value==='object'&&!Array.isArray(value)&&out[key]&&typeof out[key]==='object'&&!Array.isArray(out[key])?merge(out[key],value):value;\n    return out;\n  };\n  const client = {\n    async rpc(name,args){\n      assert.equal(name,'gosvt_merge_student_platform_state');\n      if(typeof writeResult==='function'){const result=writeResult(args);if(result&&result.error)return result;}\n      else if(writeResult&&writeResult.error)return writeResult;\n      const base=sharedState ? (sharedState.state||{}) : (serverState||{});\n      const merged=merge(base,args.p_state);\n      if(sharedState) sharedState.state=merged; else serverState=merged;\n      writes.push({student_id:args.p_student_id,profile_id:args.p_profile_id,state:args.p_state});\n      return {data:merged,error:null};\n    },\n    from(table) {
-    assert.equal(table,'student_platform_state');
-    return {
-      select(){return this;}, eq(column,value){filters.push([column,value]);return this;},
-      async maybeSingle(){reads++;return typeof readResult==='function'?readResult(reads):readResult;},
-      async upsert(row){writes.push(row);return typeof writeResult==='function'?writeResult(row):writeResult;}
-    };
-  }};
+  const merge=(left,right)=>{
+    const out=Object.assign({},left||{});
+    for(const [key,value] of Object.entries(right||{})) out[key]=value&&typeof value==='object'&&!Array.isArray(value)&&out[key]&&typeof out[key]==='object'&&!Array.isArray(out[key])?merge(out[key],value):value;
+    return out;
+  };
+  const client = {
+    async rpc(name,args){
+      assert.equal(name,'gosvt_merge_student_platform_state');
+      if(typeof writeResult==='function'){const result=writeResult(args);if(result&&result.error)return result;}
+      else if(writeResult&&writeResult.error)return writeResult;
+      const base=sharedState ? (sharedState.state||{}) : (serverState||{});
+      const merged=merge(base,args.p_state);
+      if(sharedState) sharedState.state=merged; else serverState=merged;
+      writes.push({student_id:args.p_student_id,profile_id:args.p_profile_id,state:args.p_state});
+      return {data:merged,error:null};
+    },
+    from(table) {
+      assert.equal(table,'student_platform_state');
+      return {
+        select(){return this;}, eq(column,value){filters.push([column,value]);return this;},
+        async maybeSingle(){reads++;return typeof readResult==='function'?readResult(reads):readResult;},
+        async upsert(row){writes.push(row);return typeof writeResult==='function'?writeResult(row):writeResult;}
+      };
+    }
+  };
   const ctx = {
     window:{supabaseClient:client},
     localStorage,
