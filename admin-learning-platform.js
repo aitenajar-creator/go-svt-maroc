@@ -24,6 +24,7 @@ function resetAssessment(){
 }
 function clearSession(){
  generation++;activeUser=null;resources=[];assessments=[];results=[];
+ $('learning-results-export').disabled=true;
  ['learning-resources-list','learning-assessments-list','learning-results-list'].forEach(id=>{if($(id))$(id).textContent='سجّل الدخول بحساب المدير لتحميل البيانات.';});
  ['learning-resource-form','learning-assessment-form'].forEach(id=>{if($(id))$(id).reset();});
  msg('learning-admin-status','تم إيقاف أدوات الإدارة ومسح بيانات الجلسة.');
