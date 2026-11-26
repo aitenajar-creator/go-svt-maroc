@@ -29,13 +29,12 @@
 
       const profile = account.getProfile && account.getProfile();
       if (!profile || !platform.canRender(profile)) {
-        if (!account.isLoggedIn || !account.isLoggedIn()) {
-          dispose();
-          // dispose() releases platform state; also remove its stale shell so
-          // the signed-out legacy login view is visible after logout.
-          const staleShell = target.querySelector('.gs-learning-platform');
-          if (staleShell) staleShell.remove();
-        }
+        // An authenticated account may cease to be a student (for example,
+        // after an authorized role/profile change). Never leave the previous
+        // student's shell visible in that session.
+        dispose();
+        const staleShell = target.querySelector('.gs-learning-platform');
+        if (staleShell) staleShell.remove();
         return;
       }
 
