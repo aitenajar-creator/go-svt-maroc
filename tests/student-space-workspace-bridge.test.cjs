@@ -43,7 +43,7 @@ test('workspace record operations validate input and retain existing cloud delet
   const bridge = source.slice(start, end);
   for (const check of [
     "['note', 'task'].includes(kind)",
-    'title.length > 180',
+    'title.length > 120',
     'item.body.length > 5000',
     'Date.parse(item.date)',
     'saveProfileData(context.id, context.data)',
