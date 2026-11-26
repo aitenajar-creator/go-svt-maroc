@@ -47,6 +47,10 @@ test('login, token refresh and logout use the new learning platform',async({page
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   });
   await expect(page.locator('#sp-dialog #sp-record-body')).toHaveValue('Do not discard this text.');
+  // Close the modal before testing the sidebar logout control; the native dialog
+  // correctly blocks pointer events outside it while it is open.
+  await page.locator('#sp-dialog [data-sp-close]').click();
+  await expect(page.locator('#sp-dialog')).toBeHidden();
   await page.locator('#student-space-content .gs-learning-platform [data-sp-action="logout"]').click();
   await expect(page.locator('#gs-l-email')).toBeVisible();
   await expect(page.locator('#student-space-content .gs-learning-platform')).toHaveCount(0);
