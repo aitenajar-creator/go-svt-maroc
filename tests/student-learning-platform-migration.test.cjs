@@ -99,6 +99,6 @@ test('answer autosave sequence numbers reject stale writes and make retries idem
 });
 
 test('learning resource URLs require HTTPS externally and retain approved local content paths',()=>{
- assert.ok(migration.includes("source_url ~* '^(https://|/(cours|exercices|examens|fiches|resumes|lesson-reader\\\\.html))'"));
- assert.doesNotMatch(migration,/source_url[^\\n]*https\\?:\\/\\//i);
+ assert.ok(migration.includes("source_url ~* '^(https://|/(cours|exercices|examens|fiches|resumes|lesson-reader\\.html))'"));
+ assert.doesNotMatch(migration,/source_url[^\n]*https\?:\/\//i);
 });
