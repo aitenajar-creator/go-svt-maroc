@@ -29,7 +29,13 @@
 
       const profile = account.getProfile && account.getProfile();
       if (!profile || !platform.canRender(profile)) {
-        if (!account.isLoggedIn || !account.isLoggedIn()) dispose();
+        if (!account.isLoggedIn || !account.isLoggedIn()) {
+          dispose();
+          // dispose() releases platform state; also remove its stale shell so
+          // the signed-out legacy login view is visible after logout.
+          const staleShell = target.querySelector('.gs-learning-platform');
+          if (staleShell) staleShell.remove();
+        }
         return;
       }
 
