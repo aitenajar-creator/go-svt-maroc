@@ -28,7 +28,7 @@ test('the existing standalone audit suite passes in a real browser',async({page}
 
 test('login, token refresh with a draft, and logout use the real UI',async({page})=>{
   await isolate(page);
-  await page.goto('/index.html#student-space');
+  await page.goto('/index.html?space=classic#student-space');
   await page.locator('#gs-l-email').fill('student@example.invalid');
   await page.locator('#gs-l-pwd').fill('fixture-password');
   await page.locator('form[data-form="login"] button[type="submit"]').click();
@@ -45,7 +45,7 @@ test('login, token refresh with a draft, and logout use the real UI',async({page
 
 test('partial cloud failure retains quiz history and offers retry',async({page})=>{
   await isolate(page,{signedIn:true,failTable:'student_learning_state'});
-  await page.goto('/index.html#student-space');
+  await page.goto('/index.html?space=classic#student-space');
   await expect.poll(()=>page.evaluate(()=>window.StudentAccount?.getSyncStatus().phase)).toBe('partial');
   const count=await page.evaluate(()=>StudentSpace.getProfileData(StudentAccount.activeProfileId()).quizResults.length);
   expect(count).toBe(1);

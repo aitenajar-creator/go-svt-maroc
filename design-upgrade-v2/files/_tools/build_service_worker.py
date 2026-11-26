@@ -22,6 +22,11 @@ def build(root):
     root = Path(root)
     parser = ShellParser()
     parser.feed((root / "index.html").read_text())
+    for asset in (root / 'assets/student-platform').rglob('*'):
+        if asset.is_file() and asset.suffix.lower() in {'.webp', '.woff2', '.css', '.json'}:
+            parser.paths.add('/' + asset.relative_to(root).as_posix())
+    if (root / 'student-platform-catalog.json').is_file():
+        parser.paths.add('/student-platform-catalog.json')
     worker = root / "sw.js"
     text = worker.read_text()
     canonical = re.sub(r"const RELEASE = '[^']+';", "const RELEASE = '<release>';", text)

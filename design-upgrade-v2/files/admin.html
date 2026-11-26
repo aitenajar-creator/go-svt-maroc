@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="admin.css?v=20261122-roles2">
+  <link rel="stylesheet" href="student-platform-admin.css?v=20261125-platform1">
 </head>
 <body>
   <main class="admin-shell">
@@ -50,6 +51,7 @@
         <button type="button" class="admin-tab" data-admin-tab="site-content-manager" aria-selected="false">إضافة محتوى</button>
         <button type="button" class="admin-tab" data-admin-tab="published-library-panel" aria-selected="false">مكتبة المحتوى</button>
         <button type="button" class="admin-tab" data-admin-tab="private-lessons-panel" aria-selected="false">دروس مساحة التلميذ</button>
+        <button type="button" class="admin-tab" data-admin-tab="learning-platform-panel" aria-selected="false">منصة التعلّم والاختبارات</button>
         <button type="button" class="admin-tab" data-admin-tab="teacher-community-admin-panel" aria-selected="false">إدارة مجتمع الأساتذة</button>
       </nav>
       <section class="panel admin-tab-content" id="platform-overview">
@@ -176,6 +178,7 @@
         <div id="resource-statistics" class="resource-statistics" aria-live="polite"></div>
         <div id="resource-list" class="resource-list"><p class="muted">جاري تحميل المحتوى...</p></div>
       </section>
+<section class="panel admin-tab-content" id="learning-platform-panel" hidden><div id="platform-admin-root"><p role="status">تُحمّل إدارة المنصة بعد التحقق من صلاحية المدير.</p></div></section>
 <section class="panel admin-tab-content" id="private-lessons-panel" hidden>
  <div class="section-heading"><div><p class="eyebrow">PRIVATE STUDENT LESSONS</p><h2>الدروس الخاصة بمساحة التلميذ</h2></div><span class="heading-icon">📚</span></div>
  <p class="muted">تُحفظ هذه الدروس في قاعدة بيانات خاصة، ولا تظهر في الفهرس العام. يمكن للمدير نشرها أو إخفاؤها.</p>
@@ -235,5 +238,7 @@
   <script src="supabase-config.js?v=20261125-review1"></script>
   <script src="admin.js?v=20261125-review1"></script>
   <script src="admin-private-lessons.js?v=20261125-review1"></script>
+  <script src="student-platform-domain.js?v=20261125-platform1"></script>
+  <script src="student-platform-admin.js?v=20261125-platform1"></script>
 </body>
 </html>

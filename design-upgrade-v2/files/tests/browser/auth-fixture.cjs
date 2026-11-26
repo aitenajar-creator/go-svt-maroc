@@ -10,7 +10,11 @@ module.exports = function installFixture(options = {}) {
   function response(table, single, mutation) {
     if (state.failTable === table) return { data: null, error: { message: 'Fixture unavailable table' } };
     if (mutation) return { data: single ? { id: 'fixture-row' } : [], error: null };
-    if (table === 'profiles') return { data: single ? { id: person.id, display_name: 'Fixture Student', role: 'student' } : [], error: null };
+    if (table === 'profiles') return { data: single ? { id: person.id, display_name: 'Fixture Student', role: options.role || 'student' } : [], error: null };
+    if (table === 'learning_assessments') return {data:state.assessments||[],error:null};
+    if (table === 'learning_questions') return {data:state.questions||[],error:null};
+    if (table === 'learning_resources') return {data:state.resources||[],error:null};
+    if (table === 'learning_attempts') return {data:single?(state.attemptRows||[])[0]||null:state.attemptRows||[],count:(state.attemptRows||[]).length,error:null};
     if (table === 'student_academic_profiles') return { data: { study_level: 'TC', study_track: 'TCS' }, error: null };
     if (table === 'student_quiz_attempts') return { data: [{ attempt_id: 'fixture-attempt', quiz_id: '/quiz/fixture.json', score: 2, total_questions: 2, percentage: 100, mistakes: [], attempted_at: '2026-11-24T10:00:00Z' }], error: null };
     return { data: single ? null : [], error: null, count: 0 };
@@ -32,7 +36,21 @@ module.exports = function installFixture(options = {}) {
       q.then = (resolve, reject) => Promise.resolve(response(table, false, mutation)).then(resolve, reject);
       return q;
     },
-    rpc: async () => ({ data: [], error: null }),
+    rpc: async (name, params) => {
+      state.rpcCalls = state.rpcCalls || [];state.rpcCalls.push({name, params});
+      if (name === 'gosvt_platform_save_assessment') {
+        const id=params.p_id||'22222222-2222-4222-8222-222222222222';
+        state.assessments=[{...params.p_document,id,question_count:params.p_document.questions.length,revision:1,updated_at:new Date().toISOString()}];
+        state.questions=params.p_document.questions;
+        return {data:id,error:null};
+      }
+      if (name === 'gosvt_platform_save_resource') {
+        const id=params.p_id||'33333333-3333-4333-8333-333333333333';
+        state.resources=[{...params.p_document,id,updated_at:new Date().toISOString()}];
+        return {data:id,error:null};
+      }
+      return { data: [], error: null };
+    },
     storage: { from: () => ({ getPublicUrl: () => ({ data: { publicUrl: 'https://fixture.invalid/file.pdf' } }) }) }
   };
   window.supabase = { createClient: () => client };

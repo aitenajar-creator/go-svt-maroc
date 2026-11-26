@@ -1,6 +1,10 @@
 $ npm ci --ignore-scripts --no-audit --no-fund
 
-added 4 packages in 786ms
+added 4 packages in 866ms
+
+
+$ python3 -B _tools/build_student_catalog.py
+Catalog: 156 real resources; duplicates removed; shared skills explicitly labeled.
 
 
 $ npm test
@@ -12,217 +16,350 @@ TAP version 13
 # Subtest: service-worker release stamping is deterministic and includes assets and worker logic
 ok 1 - service-worker release stamping is deterministic and includes assets and worker logic
   ---
-  duration_ms: 159.355371
+  duration_ms: 194.029149
   type: 'test'
   ...
 # Subtest: submission filters and pagination are sent to the database
 ok 2 - submission filters and pagination are sent to the database
   ---
-  duration_ms: 36.551457
+  duration_ms: 25.623057
   type: 'test'
   ...
 # Subtest: reply retries retain the same idempotency token and use one RPC
 ok 3 - reply retries retain the same idempotency token and use one RPC
   ---
-  duration_ms: 4.288578
+  duration_ms: 4.63943
   type: 'test'
   ...
 # Subtest: community reset erases administrative lists and hides the admin panel
 ok 4 - community reset erases administrative lists and hides the admin panel
   ---
-  duration_ms: 1.767028
+  duration_ms: 1.817898
   type: 'test'
   ...
 # Subtest: admin reset clears cached identities, exports and visible lists
 ok 5 - admin reset clears cached identities, exports and visible lists
   ---
-  duration_ms: 1.358523
+  duration_ms: 1.49596
   type: 'test'
   ...
 # Subtest: role-request CSV has a real UTF-8 BOM and CRLF records
 ok 6 - role-request CSV has a real UTF-8 BOM and CRLF records
   ---
-  duration_ms: 1.258496
+  duration_ms: 1.214825
   type: 'test'
   ...
 # Subtest: the CI load-order guard checks cache-busted script URLs
 ok 7 - the CI load-order guard checks cache-busted script URLs
   ---
-  duration_ms: 121.792451
+  duration_ms: 150.665638
   type: 'test'
   ...
 # Subtest: new MAIN migrations run against an isolated PostgreSQL fixture
     # Subtest: legacy objective backfill keeps valid indices without altering the old JSON
     ok 1 - legacy objective backfill keeps valid indices without altering the old JSON
       ---
-      duration_ms: 5.090968
+      duration_ms: 8.448569
       type: 'test'
       ...
     # Subtest: deletion is idempotent and a stale upsert cannot resurrect a note
     ok 2 - deletion is idempotent and a stale upsert cannot resurrect a note
       ---
-      duration_ms: 22.278105
+      duration_ms: 27.589241
       type: 'test'
       ...
     # Subtest: a deletion before first upload blocks a delayed planner upload
     ok 3 - a deletion before first upload blocks a delayed planner upload
       ---
-      duration_ms: 3.801813
+      duration_ms: 4.978606
       type: 'test'
       ...
     # Subtest: a queued deletion is rejected when the expected identity has changed
     ok 4 - a queued deletion is rejected when the expected identity has changed
       ---
-      duration_ms: 3.546468
+      duration_ms: 4.563068
       type: 'test'
       ...
     # Subtest: RLS keeps deletion markers and objective rows owner-scoped
     ok 5 - RLS keeps deletion markers and objective rows owner-scoped
       ---
-      duration_ms: 3.90762
+      duration_ms: 5.601945
       type: 'test'
       ...
     # Subtest: saving a second lesson preserves the first lesson objectives
     ok 6 - saving a second lesson preserves the first lesson objectives
       ---
-      duration_ms: 11.737533
+      duration_ms: 4.156407
       type: 'test'
       ...
     # Subtest: reply retries save one message and do not replay an old status
     ok 7 - reply retries save one message and do not replay an old status
       ---
-      duration_ms: 10.598816
+      duration_ms: 13.830906
       type: 'test'
       ...
     # Subtest: a status-update failure rolls back the inserted reply
     ok 8 - a status-update failure rolls back the inserted reply
       ---
-      duration_ms: 5.830873
+      duration_ms: 14.263022
       type: 'test'
       ...
     # Subtest: reply RPC checks both the current identity and question authorization
     ok 9 - reply RPC checks both the current identity and question authorization
       ---
-      duration_ms: 3.260967
+      duration_ms: 6.232144
       type: 'test'
       ...
     # Subtest: anonymous callers do not receive RPC execution rights
     ok 10 - anonymous callers do not receive RPC execution rights
       ---
-      duration_ms: 4.262639
+      duration_ms: 1.526608
       type: 'test'
       ...
     # Subtest: account deletion cascades without recreating a tombstone for a removed user
     ok 11 - account deletion cascades without recreating a tombstone for a removed user
       ---
-      duration_ms: 4.480245
+      duration_ms: 8.410925
       type: 'test'
       ...
     1..11
 ok 8 - new MAIN migrations run against an isolated PostgreSQL fixture
   ---
-  duration_ms: 2495.444745
+  duration_ms: 2831.055653
+  type: 'test'
+  ...
+# Subtest: learning platform: authentic grading and academic isolation on an isolated PostgreSQL engine
+    # Subtest: only a verified administrator can create or revise assessments
+    ok 1 - only a verified administrator can create or revise assessments
+      ---
+      duration_ms: 36.254161
+      type: 'test'
+      ...
+    # Subtest: drafts can be saved empty but publication requires a reviewed complete bank
+    ok 2 - drafts can be saved empty but publication requires a reviewed complete bank
+      ---
+      duration_ms: 5.683455
+      type: 'test'
+      ...
+    # Subtest: curated resources require admin authority and preserve optimistic edit boundaries
+    ok 3 - curated resources require admin authority and preserve optimistic edit boundaries
+      ---
+      duration_ms: 20.592846
+      type: 'test'
+      ...
+    # Subtest: unmatched academic profiles cannot see or start the assessment
+    ok 4 - unmatched academic profiles cannot see or start the assessment
+      ---
+      duration_ms: 13.690371
+      type: 'test'
+      ...
+    # Subtest: start is resumable and exposes no answer keys or explanations
+    ok 5 - start is resumable and exposes no answer keys or explanations
+      ---
+      duration_ms: 9.793106
+      type: 'test'
+      ...
+    # Subtest: stale autosaves and stale final submissions cannot overwrite newer answers
+    ok 6 - stale autosaves and stale final submissions cannot overwrite newer answers
+      ---
+      duration_ms: 6.642472
+      type: 'test'
+      ...
+    # Subtest: authoring changes do not change the answer snapshot of an ongoing attempt
+    ok 7 - authoring changes do not change the answer snapshot of an ongoing attempt
+      ---
+      duration_ms: 11.928639
+      type: 'test'
+      ...
+    # Subtest: expired attempts use saved answers, never a late replacement payload
+    ok 8 - expired attempts use saved answers, never a late replacement payload
+      ---
+      duration_ms: 29.474145
+      type: 'test'
+      ...
+    # Subtest: attempt identity and result history stay account-scoped
+    ok 9 - attempt identity and result history stay account-scoped
+      ---
+      duration_ms: 4.392705
+      type: 'test'
+      ...
+    # Subtest: activity is owner-only and duplicate delivery is idempotent
+    ok 10 - activity is owner-only and duplicate delivery is idempotent
+      ---
+      duration_ms: 6.55127
+      type: 'test'
+      ...
+    # Subtest: anonymous access to question banks and grading RPCs is denied
+    ok 11 - anonymous access to question banks and grading RPCs is denied
+      ---
+      duration_ms: 8.336966
+      type: 'test'
+      ...
+    1..11
+ok 9 - learning platform: authentic grading and academic isolation on an isolated PostgreSQL engine
+  ---
+  duration_ms: 2798.959089
+  type: 'test'
+  ...
+# Subtest: student profiles require a valid authoritative level/track pair
+ok 10 - student profiles require a valid authoritative level/track pair
+  ---
+  duration_ms: 1.142394
+  type: 'test'
+  ...
+# Subtest: each academic profile receives only its own resources plus explicitly shared skills
+ok 11 - each academic profile receives only its own resources plus explicitly shared skills
+  ---
+  duration_ms: 0.802631
+  type: 'test'
+  ...
+# Subtest: the catalog references existing documents rather than made-up resource URLs
+ok 12 - the catalog references existing documents rather than made-up resource URLs
+  ---
+  duration_ms: 5.396199
+  type: 'test'
+  ...
+# Subtest: all published repository training banks have valid, one-based source answers
+ok 13 - all published repository training banks have valid, one-based source answers
+  ---
+  duration_ms: 2.914993
+  type: 'test'
+  ...
+# Subtest: practice grading treats missing responses as unanswered, not answer zero
+ok 14 - practice grading treats missing responses as unanswered, not answer zero
+  ---
+  duration_ms: 0.422663
+  type: 'test'
+  ...
+# Subtest: Mendelian crosses calculate all genotype and phenotype proportions correctly
+ok 15 - Mendelian crosses calculate all genotype and phenotype proportions correctly
+  ---
+  duration_ms: 1.223784
+  type: 'test'
+  ...
+# Subtest: illustrative science models obey their declared boundary conditions
+ok 16 - illustrative science models obey their declared boundary conditions
+  ---
+  duration_ms: 0.361879
+  type: 'test'
+  ...
+# Subtest: unsafe link schemes and embedded credentials are not made into resource links
+ok 17 - unsafe link schemes and embedded credentials are not made into resource links
+  ---
+  duration_ms: 0.486097
+  type: 'test'
+  ...
+# Subtest: course ordering uses unit/chapter sequence rather than incidental filenames
+ok 18 - course ordering uses unit/chapter sequence rather than incidental filenames
+  ---
+  duration_ms: 1.746533
+  type: 'test'
+  ...
+# Subtest: the new library preserves legacy cloud uploads, canonical tracking keys and private favorites
+ok 19 - the new library preserves legacy cloud uploads, canonical tracking keys and private favorites
+  ---
+  duration_ms: 27.896198
   type: 'test'
   ...
 # Subtest: late quiz responses cannot replace a more recent selection
-ok 9 - late quiz responses cannot replace a more recent selection
+ok 20 - late quiz responses cannot replace a more recent selection
   ---
-  duration_ms: 22.632714
+  duration_ms: 25.955156
   type: 'test'
   ...
 # Subtest: closing a loading quiz invalidates its pending response
-ok 10 - closing a loading quiz invalidates its pending response
+ok 21 - closing a loading quiz invalidates its pending response
   ---
-  duration_ms: 1.142983
+  duration_ms: 1.282132
   type: 'test'
   ...
 # Subtest: identity changes discard the active attempt and scores remain owner-scoped
-ok 11 - identity changes discard the active attempt and scores remain owner-scoped
+ok 22 - identity changes discard the active attempt and scores remain owner-scoped
   ---
-  duration_ms: 6.380862
+  duration_ms: 6.021182
   type: 'test'
   ...
 # Subtest: reader load and resize retain the saved resume position
-ok 12 - reader load and resize retain the saved resume position
+ok 23 - reader load and resize retain the saved resume position
   ---
-  duration_ms: 21.008969
+  duration_ms: 23.567637
   type: 'test'
   ...
 # Subtest: objectives save only the current lesson row
-ok 13 - objectives save only the current lesson row
+ok 24 - objectives save only the current lesson row
   ---
-  duration_ms: 2.786497
+  duration_ms: 3.330453
   type: 'test'
   ...
 # Subtest: failed completion persistence shows an error instead of success
-ok 14 - failed completion persistence shows an error instead of success
+ok 25 - failed completion persistence shows an error instead of success
   ---
-  duration_ms: 1.427404
+  duration_ms: 1.609559
   type: 'test'
   ...
 # Subtest: offline fallback prefers fresh runtime assets to initial shell assets
-ok 15 - offline fallback prefers fresh runtime assets to initial shell assets
+ok 26 - offline fallback prefers fresh runtime assets to initial shell assets
   ---
-  duration_ms: 6.773093
+  duration_ms: 7.347664
   type: 'test'
   ...
 # Subtest: remote deletion markers remove cached notes and reject stale hydration
-ok 16 - remote deletion markers remove cached notes and reject stale hydration
+ok 27 - remote deletion markers remove cached notes and reject stale hydration
   ---
-  duration_ms: 27.134513
+  duration_ms: 31.448128
   type: 'test'
   ...
 # Subtest: an unrelated progress save does not re-upload unchanged notes
-ok 17 - an unrelated progress save does not re-upload unchanged notes
+ok 28 - an unrelated progress save does not re-upload unchanged notes
   ---
-  duration_ms: 8.35305
+  duration_ms: 9.225155
   type: 'test'
   ...
 # Subtest: first account claims guest favorites without giving them to the next account
-ok 18 - first account claims guest favorites without giving them to the next account
+ok 29 - first account claims guest favorites without giving them to the next account
   ---
-  duration_ms: 1.66044
+  duration_ms: 2.079108
   type: 'test'
   ...
 # Subtest: a failed learning-state read does not discard four successful datasets
-ok 19 - a failed learning-state read does not discard four successful datasets
+ok 30 - a failed learning-state read does not discard four successful datasets
   ---
-  duration_ms: 5.148621
+  duration_ms: 5.889783
   type: 'test'
   ...
 # Subtest: a failed deletion-marker read blocks only deletable collections
-ok 20 - a failed deletion-marker read blocks only deletable collections
+ok 31 - a failed deletion-marker read blocks only deletable collections
   ---
-  duration_ms: 2.996565
+  duration_ms: 3.056818
   type: 'test'
   ...
 # Subtest: the account uses the server academic profile, not editable signup metadata
-ok 21 - the account uses the server academic profile, not editable signup metadata
+ok 32 - the account uses the server academic profile, not editable signup metadata
   ---
-  duration_ms: 3.640385
+  duration_ms: 5.657064
   type: 'test'
   ...
 # Subtest: same-account token refresh and repeated sign-in preserve the workspace
-ok 22 - same-account token refresh and repeated sign-in preserve the workspace
+ok 33 - same-account token refresh and repeated sign-in preserve the workspace
   ---
-  duration_ms: 3.379971
+  duration_ms: 3.872632
   type: 'test'
   ...
 # Subtest: resource recommendations fall back to the language that has content
-ok 23 - resource recommendations fall back to the language that has content
+ok 34 - resource recommendations fall back to the language that has content
   ---
-  duration_ms: 2.448498
+  duration_ms: 2.857715
   type: 'test'
   ...
-1..23
-# tests 34
+1..34
+# tests 56
 # suites 0
-# pass 34
+# pass 56
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 3314.32186
+# duration_ms 6854.017472
 
 
 $ npm run test:browser
@@ -231,14 +368,22 @@ $ npm run test:browser
 > playwright test
 
 
-Running 4 tests using 1 worker
+Running 12 tests using 1 worker
 
-  ✓  1 tests/browser/pagination.spec.cjs:4:1 › all 151 submissions remain reachable and pending filtering runs before paging (449ms)
-  ✓  2 tests/browser/site.spec.cjs:20:1 › the existing standalone audit suite passes in a real browser (150ms)
-  ✓  3 tests/browser/site.spec.cjs:29:1 › login, token refresh with a draft, and logout use the real UI (760ms)
-  ✓  4 tests/browser/site.spec.cjs:46:1 › partial cloud failure retains quiz history and offers retry (602ms)
+  ✓   1 tests/browser/managed-assessment.spec.cjs:6:1 › managed assessment never substitutes a local or malformed grade for server confirmation (2.3s)
+  ✓   2 tests/browser/pagination.spec.cjs:4:1 › all 151 submissions remain reachable and pending filtering runs before paging (532ms)
+  ✓   3 tests/browser/site.spec.cjs:20:1 › the existing standalone audit suite passes in a real browser (169ms)
+  ✓   4 tests/browser/site.spec.cjs:29:1 › login, token refresh with a draft, and logout use the real UI (1.0s)
+  ✓   5 tests/browser/site.spec.cjs:46:1 › partial cloud failure retains quiz history and offers retry (832ms)
+  ✓   6 tests/browser/student-platform.spec.cjs:23:1 › the real catalog is personalized and the preview is clearly labeled (399ms)
+  ✓   7 tests/browser/student-platform.spec.cjs:36:1 › planning and notes persist locally and do not move to another preview profile (1.1s)
+  ✓   8 tests/browser/student-platform.spec.cjs:49:1 › virtual experiments calculate real model outputs and export recorded trials only (894ms)
+  ✓   9 tests/browser/student-platform.spec.cjs:59:1 › practice preserves its deadline on reload and grades the actual bank correctly (3.2s)
+  ✓  10 tests/browser/student-platform.spec.cjs:72:1 › mobile navigation is usable without overflow or offscreen focus targets (569ms)
+  ✓  11 tests/browser/student-platform.spec.cjs:80:1 › the integrated authenticated workspace preserves an unsent draft on token refresh (1.0s)
+  ✓  12 tests/browser/student-platform.spec.cjs:89:1 › administrators can validate a bank and publish through the authorized RPC contract (1.6s)
 
-  4 passed (2.9s)
+  12 passed (14.9s)
 
 
 $ python3 -B scripts/check-site.py
@@ -246,7 +391,7 @@ Site JSON, JavaScript (including inline scripts), asset paths and script order p
 
 
 $ python3 -B scripts/check-migration-rls.py
-RLS migration coverage check passed for 23 public tables and student grading-column restrictions.
+RLS migration coverage check passed for 28 public tables and student grading-column restrictions.
 
 
 $ python3 -B scripts/check-teacher-community-security.py
@@ -258,11 +403,11 @@ SEO and private-page indexing checks passed.
 
 
 $ python3 -B scripts/check-basic-accessibility.py
-Basic accessibility checks passed across 13 HTML pages.
+Basic accessibility checks passed across 14 HTML pages.
 
 
 $ python3 -B scripts/migration-plan.py --check
-Each of 56 migrations is assigned to exactly one project. This does not validate the missing production baseline.
+Each of 57 migrations is assigned to exactly one project. This does not validate the missing production baseline.
 
 
 $ git diff --check

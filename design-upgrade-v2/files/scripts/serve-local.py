@@ -24,6 +24,11 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(data)
     def do_GET(self):
         path = unquote(urlsplit(self.path).path).lstrip("/")
+        if not path and getattr(self.server, 'student_preview', False):
+            self.send_response(302)
+            self.send_header('Location', '/student-preview.html')
+            self.end_headers()
+            return
         parts = Path(path).parts
         if any(part.startswith(".") or part in EXCLUDED or part == "supabase" for part in parts) or path in {"config.local.json", "package-lock.json"}:
             self.send_error(404)
@@ -47,6 +52,12 @@ class Handler(SimpleHTTPRequestHandler):
     def list_directory(self, path):
         self.send_error(404)
         return None
+    def handle(self):
+        try:
+            super().handle()
+        except (BrokenPipeError, ConnectionResetError):
+            # Browser navigation and cancelled PDF requests can close the connection.
+            pass
     def log_message(self, format, *args):
         if not getattr(self.server, 'quiet', False):
             super().log_message(format, *args)
@@ -56,8 +67,10 @@ if __name__ == "__main__":
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--student-preview", action="store_true", help="Open the explicitly labeled, local-only student preview at the root URL")
     args = parser.parse_args()
     print(f"Local preview: http://{args.host}:{args.port} (production authentication disabled by default)", flush=True)
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     server.quiet = args.quiet
+    server.student_preview = args.student_preview
     server.serve_forever()

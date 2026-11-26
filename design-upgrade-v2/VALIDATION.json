@@ -1,19 +1,39 @@
 {
   "repository": "https://github.com/aitenajar-creator/go-svt-maroc",
   "base_commit": "83ade7b4c7cfccbea96716dc46e58da30fe51342",
-  "original_review_commit": "fa933268f63ddb1fd67ceea4d5d5cce86954bc4e",
-  "created_at": "2026-11-25T00:39:52.571751+00:00",
-  "remote_status": "NOT_UPLOADED_NO_AUTHENTICATED_GITHUB_SESSION",
+  "created_at": "2026-11-25T19:57:54.136383+00:00",
+  "delivery": "cumulative source changes: previous review repairs plus advanced student platform",
+  "remote_github": "NOT_UPLOADED",
   "production_migrations": "NOT_EXECUTED",
-  "production_testing": "NOT_EXECUTED",
+  "production_auth_storage_tests": "NOT_EXECUTED",
   "full_jekyll_build": "NOT_EXECUTED_LOCALLY",
-  "unit_and_database_tests_passed": 34,
-  "browser_tests_passed": 4,
+  "local_preview": "Running separately with clearly labeled local-only profiles; no production data",
+  "unit_and_database_tests_passed": 56,
+  "browser_tests_passed": 12,
+  "catalog_resources": 156,
+  "catalog_by_type": {
+    "quiz": 22,
+    "cours": 17,
+    "examens": 83,
+    "exercices": 18,
+    "fiches": 5,
+    "resumes": 11
+  },
   "patch_apply_check": "PASSED_AND_BYTE_VERIFIED",
-  "open_requirement": "Review and supply the real MAIN database baseline; test migrations on staging before deploying the frontend.",
+  "hero_image_bytes": 57790,
+  "open_requirements": [
+    "Review the real MAIN database baseline",
+    "Apply reviewed migrations on staging before production",
+    "Publish editorially reviewed assessments and fill curriculum gaps",
+    "Validate real Auth/PostgREST/Storage configuration"
+  ],
   "checks": [
     {
       "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -B _tools/build_student_catalog.py",
       "exit_code": 0
     },
     {
@@ -56,7 +76,7 @@
   "files": [
     {
       "path": ".github/workflows/pages.yml",
-      "sha256": "672d5cb63990206420a86b7346ef8f6ca79294db7eaf14345bc670f21f1eba8b"
+      "sha256": "0ad156a328edb1b43a8390782e5cc4a7743d36e4132f9d478438122c88cae682"
     },
     {
       "path": ".github/workflows/validate-site.yml",
@@ -72,7 +92,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "b57140507a84ca33e669b6ed242dde170f0c1dbc3e850d79fab00d5f82a5c3f2"
+      "sha256": "1a0465061f96686dace6a2e33eb497b55cfca2bd0dbc68053177b864ee491280"
     },
     {
       "path": "SUPABASE_CONNECTION_AR.md",
@@ -88,11 +108,15 @@
     },
     {
       "path": "_config.yml",
-      "sha256": "762183c3016caa03121d12c32045189c0dbfe3d65de078e25deae207c13c8a67"
+      "sha256": "b09c2a86f42b71fe3659e0d7dbaf6615260739cf8518bc298c62a5c60e0c38ae"
     },
     {
       "path": "_tools/build_service_worker.py",
-      "sha256": "2e36a05d1ffcde87a887d382fc54f963625793b7ef76dd73561efae583ea9f57"
+      "sha256": "f9d53d3aae339b77916169a012493ba530b6291be92c89dc9fe44fdfeb995b29"
+    },
+    {
+      "path": "_tools/build_student_catalog.py",
+      "sha256": "fc63c1e6e977702f0d3702525b79dde0505021f4b77637e45289baf51524f7c9"
     },
     {
       "path": "admin-private-lessons.js",
@@ -100,11 +124,47 @@
     },
     {
       "path": "admin.html",
-      "sha256": "9be35b89fddfe490c4d40e20e7b89ac23e118f47351754ad5e0e8834820a402a"
+      "sha256": "73784697240740aed4f4f289d1dd919f103953f0ab9624f07c09fa2736aaf216"
     },
     {
       "path": "admin.js",
       "sha256": "4c6776c99acaa0b1ff9cb9808cf6ab34bc3360a7489d5b2f4e59b97708d2026a"
+    },
+    {
+      "path": "assets/student-platform/FONT-LICENSE.txt",
+      "sha256": "a4554e1799d42e1405924b61eb0e0722ae1623b1f1f07f995348f96c496362a9"
+    },
+    {
+      "path": "assets/student-platform/SOURCES.md",
+      "sha256": "1642a8e1c5393c9712b4644900ed63a9476d06af3dd8db4d3d6b7a502c84a8e1"
+    },
+    {
+      "path": "assets/student-platform/cairo-0.woff2",
+      "sha256": "748022f50c427456ad66031e855349be3448ee1f05a5f1eb59574ebe0c686749"
+    },
+    {
+      "path": "assets/student-platform/cairo-1.woff2",
+      "sha256": "da6ada83c3a87c2f0211325dc0a123702e1d4a940958b3e943ac4f37b31d5371"
+    },
+    {
+      "path": "assets/student-platform/cairo-2.woff2",
+      "sha256": "82c13cbd1352d76e97c3d335caa912ae68fecdc3949a43cf8d149eb892384c1b"
+    },
+    {
+      "path": "assets/student-platform/fonts.css",
+      "sha256": "17a4a85be226c07f760f90dc455bbe36b60d0eaab95c9a6625663fea90256f43"
+    },
+    {
+      "path": "assets/student-platform/learning-hero.png",
+      "sha256": "6714db61c12c7bc54b02a928797e75e8e2b4b8321294fcc20085a6846bc7e629"
+    },
+    {
+      "path": "assets/student-platform/learning-hero.webp",
+      "sha256": "36914c1c9abdcd29688bb1046a9cf3a46e0bb39083d922ab3296f3edff2e5522"
+    },
+    {
+      "path": "assets/student-platform/scientific-skills.json",
+      "sha256": "46711ac15d003abefb8dccff92172d5f67d8f62129d0cf9b849a537a1cca3edb"
     },
     {
       "path": "config.local.example.json",
@@ -112,15 +172,19 @@
     },
     {
       "path": "docs/DATABASE_DEPLOYMENT_AR.md",
-      "sha256": "2ecdf13dea9d5b36bcf6df93d097c3ebb42c6657d1ed7b4401766d772bffa0f6"
+      "sha256": "ef4d2503c97374f379d95fcc0dab5d55828453485885707a44189d9108f9677d"
     },
     {
       "path": "docs/REVIEW_IMPROVEMENTS_AR.md",
       "sha256": "8175c81dde5b07774e4868fd762a10b5c2b5dcc487a16e9902cc1324a8f9288c"
     },
     {
+      "path": "docs/STUDENT_PLATFORM_AR.md",
+      "sha256": "0de5d0e45e48eb040ee64980e81372d011c6c7a208620b96e765e561ebdccce3"
+    },
+    {
       "path": "index.html",
-      "sha256": "6a4edc2b93d86209df99e7d8a3e412c7971cd64660a3f3d5d8c7ad84dea26633"
+      "sha256": "047af3a3f689cb799b23b624131cf162e39572e340b7cd51b03792ff2e932c79"
     },
     {
       "path": "learn.js",
@@ -140,7 +204,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "2ae10a69eb8311da59538c65320f2b6134bf6a7fb8a372791f03e2d2abfbcba6"
+      "sha256": "5b49bd73f071b1cac1497453e9fa3a3cf2805982702af14f1b748f4025f911eb"
     },
     {
       "path": "playwright.config.cjs",
@@ -149,6 +213,18 @@
     {
       "path": "private-student-lessons.js",
       "sha256": "c0d4ab0da3348da0bae85ece665e29429c9a41c627e34d2958998edc17396254"
+    },
+    {
+      "path": "quiz/arabe/1BAC/1BACSE/plateforme-physiologie-vegetale.json",
+      "sha256": "14c5f69d2f20d06f4d9bd364d17f1ec104381c6cad3cf89656578bd5bc18b0eb"
+    },
+    {
+      "path": "quiz/arabe/2BAC/2BACSVT/plateforme-energie.json",
+      "sha256": "5bef133f0abee76b869c9b6a3eda040a476e9bb7df16e7547d75b40d286cf07c"
+    },
+    {
+      "path": "quiz/arabe/TC/TCS/plateforme-ecologie.json",
+      "sha256": "9226a0037e63fe186efa9ee5847060edcbd6ea7e36ba393a700ba24c30ec1d22"
     },
     {
       "path": "scripts/check-basic-accessibility.py",
@@ -164,7 +240,7 @@
     },
     {
       "path": "scripts/serve-local.py",
-      "sha256": "30523d1b25bca7f18f316fd6db226f0c4e685ac1eee497a7e7a4d4a2ddb51651"
+      "sha256": "01b0b97220273a9599f8114e1ea5e12bfe0c6944cdd13feb9c0292d0c765be0b"
     },
     {
       "path": "scripts/site_files.py",
@@ -179,8 +255,56 @@
       "sha256": "25bb8482ff5cc63a63cb4ea9e17b283540a00a920fa9072e507e1db148dbfdb1"
     },
     {
+      "path": "student-platform-admin.css",
+      "sha256": "af0cbcd83324ae9afc2b89597b25c6688d7af3a2b3ecf3e740ed1d625e3e9057"
+    },
+    {
+      "path": "student-platform-admin.js",
+      "sha256": "921ce0374b43a6a201018c323e61a7f6de580ddddbf3786ef0d9a70220a69269"
+    },
+    {
+      "path": "student-platform-art.js",
+      "sha256": "dc4d91db50f3378c1d05521c83e3a4c2a5899f38341a5867dea953a2cc3c4132"
+    },
+    {
+      "path": "student-platform-catalog.json",
+      "sha256": "4728a7984fe4c8c02b1714ac8d5d8f835c5e235f24a5e1c1139491ded0164279"
+    },
+    {
+      "path": "student-platform-domain.js",
+      "sha256": "20d5a8ec3e99032b6d8ad831f6e562459a295968b79ab097a4f082ebd150cf31"
+    },
+    {
+      "path": "student-platform-exams.js",
+      "sha256": "aecf3e75228c27b96aec4f963d8d0f000dc88f69f42209ae40bbbce61e168d64"
+    },
+    {
+      "path": "student-platform-labs.js",
+      "sha256": "6f93ebad61a568a7620c01b7b64d8a1d018f0158ea9fdbd569c5f5e17deb701e"
+    },
+    {
+      "path": "student-platform-preview.js",
+      "sha256": "3c0f25f1197e6711e4d120f7d56485dcd2880ec9100d766a73012a02d50e3005"
+    },
+    {
+      "path": "student-platform-store.js",
+      "sha256": "39414492273a91c7fe2ab3e9b670aaf3f38a70ac5304c1c3d7c10516a928454d"
+    },
+    {
+      "path": "student-platform.css",
+      "sha256": "c8360d382f1811183d5b42f4050e095ee7f03331fce22a7b3beb5fa833a11635"
+    },
+    {
+      "path": "student-platform.js",
+      "sha256": "6fdf87e99ab235ca3ab8204818ed0bf594592cb4a1eb2e7912801846557d392e"
+    },
+    {
+      "path": "student-preview.html",
+      "sha256": "8f5d6d7297eba4a79076051f329efdefae9e4fec204a6dd4ba6171af033e930a"
+    },
+    {
       "path": "student-space.js",
-      "sha256": "ca0b5f54cbfede40e78f37ba542cebf8c88313051b86a0793780f0c99d44caf9"
+      "sha256": "9d3225c2169fa55fd2739b3d5236c980f96f7b1d3241b080536a1709d399f373"
     },
     {
       "path": "study.js",
@@ -203,16 +327,20 @@
       "sha256": "6239643872c645c87e71ed005496b5037a183a2ee46c745248c42892525a3d07"
     },
     {
+      "path": "supabase/migrations/20261125000400_student_learning_platform.sql",
+      "sha256": "0641713fb4525fa42fda74f94d553e711756c6354642cbe455d40802798a7019"
+    },
+    {
       "path": "supabase/project-manifest.json",
-      "sha256": "0ad590061075cbc78ce44e36dde14a72db67a63aa06075b7b8c37cf646221b11"
+      "sha256": "bd0c68419722ab3d99428b3d2d3133dee2d27764db3a97975355c9ff971d4774"
     },
     {
       "path": "sw.js",
-      "sha256": "c990074aa6aede71050fc5622baf70d98b65d517719b9e03a8646e533777f0a0"
+      "sha256": "7abd32eba54d0dc6a17457a85ac0c752a46f97777f6c91844fbe4aeea95cdc0a"
     },
     {
       "path": "teacher-classroom.js",
-      "sha256": "301132fbe5a2890138a69a75244c8cb6064b4d70d41f47167e026c528f4ac3b3"
+      "sha256": "a2444e81afd7ec6e5d2d802085cb2a0f6a1662a2343f6d6e42c2399cd80a8f34"
     },
     {
       "path": "teacher-community-config.js",
@@ -228,7 +356,11 @@
     },
     {
       "path": "tests/browser/auth-fixture.cjs",
-      "sha256": "57a137d6ea1035784b023f8d12e47940622e6c011df005ad8f4aac4f17cd6761"
+      "sha256": "8dbc6275f5176ed840195268bf6cef5d777d17960779714b3869a24c110f1ef8"
+    },
+    {
+      "path": "tests/browser/managed-assessment.spec.cjs",
+      "sha256": "4148758bd5228e516cbb7151d23e2477195c14edb496c8caaa7e1ab276543988"
     },
     {
       "path": "tests/browser/pagination.spec.cjs",
@@ -236,7 +368,11 @@
     },
     {
       "path": "tests/browser/site.spec.cjs",
-      "sha256": "86182990b0d5996d1d1ddbf5bf5c92a3fd881788bb1092e17c3046e1ff95637f"
+      "sha256": "0aebc350543c06ab61aca1686e76950c602c7975e82d0519b9ef1437450c38f9"
+    },
+    {
+      "path": "tests/browser/student-platform.spec.cjs",
+      "sha256": "667819f25c964e5f1615f7a70973414167ce484baaee03d69dd102f88f21fa09"
     },
     {
       "path": "tests/build.test.cjs",
@@ -257,6 +393,18 @@
     {
       "path": "tests/helpers.cjs",
       "sha256": "3ec31334aefe108ba5dfb501c1d0803568067505aaafe4dab1d05f1cef152fd1"
+    },
+    {
+      "path": "tests/platform-database.test.cjs",
+      "sha256": "2250ca4b8812966522eb5ee8d1bdf006281ac7a11d1a262c46a4fa455013c454"
+    },
+    {
+      "path": "tests/platform-domain.test.cjs",
+      "sha256": "6150180618634b08a63a3ad19b3e303bb92c500a9591b5e409f6550f57d5746e"
+    },
+    {
+      "path": "tests/platform-store.test.cjs",
+      "sha256": "13e9ebe7e44e463af3c6b8ce319f62feaedb20b3fe0ad42ca3b9159858e236b3"
     },
     {
       "path": "tests/quiz.test.cjs",

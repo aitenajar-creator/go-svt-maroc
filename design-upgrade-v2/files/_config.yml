@@ -3,6 +3,9 @@ exclude:
   - node_modules
   - tests
   - test-runner.html
+  - student-preview.html
+  - student-platform-preview.js
+  - assets/student-platform/learning-hero.png
   - AUDIT_TEST_SUITE.js
   - test-results
   - playwright-report

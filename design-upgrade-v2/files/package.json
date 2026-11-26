@@ -5,6 +5,8 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "dev": "python3 scripts/serve-local.py",
+    "dev:student": "python3 scripts/serve-local.py --student-preview",
+    "build:catalog": "python3 _tools/build_student_catalog.py",
     "test": "node --test tests/*.test.cjs",
     "test:browser": "playwright test",
     "check:built": "python3 scripts/check-site.py _site --built"

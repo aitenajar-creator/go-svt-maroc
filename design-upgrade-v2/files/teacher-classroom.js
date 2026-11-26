@@ -328,7 +328,10 @@
     const p=account.getProfile();
     if(!p||!['student','teacher','admin'].includes(p.role)) return;
     if(root.querySelector('#gs-classroom')) return;
-    root.insertAdjacentHTML('beforeend',panelShell(p.role));
+    const platform=root.querySelector('.gs-learning-platform');
+    const target=platform?root.querySelector('[data-platform-classroom]'):root;
+    if(!target)return;
+    target.insertAdjacentHTML('beforeend',panelShell(p.role));
     styles();
     load(p).catch(err=>{const el=document.getElementById('gs-cl-content');if(el)el.innerHTML=`<p class="gs-cl-msg">${esc(err.message||tr('تعذر تحميل القسم.','Impossible de charger la classe.'))}</p>`;});
   }
@@ -1066,5 +1069,5 @@
   const observer=new MutationObserver(()=>mount());
   function start(){const root=document.getElementById(rootId);if(root)observer.observe(root,{childList:true});mount();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
-  window.GoSVTClassroom={refresh:refreshPanel};
+  window.GoSVTClassroom={refresh:refreshPanel,mount};
 })();
