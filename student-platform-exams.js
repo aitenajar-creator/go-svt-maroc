@@ -31,17 +31,17 @@
       if(!Number.isInteger(value)||value<0||value>=q.options.length)return;
       active.answers[q.id]=value;active.sequence=(active.sequence||0)+1;persist();
       const id=active.id,seq=active.sequence,snapshot={...active.answers};
-      if(active.mode==='server'){
-        status('جارٍ مزامنة الإجابة…');
-        saving=saving.catch(()=>{}).then(async()=>{
-          if(!same(id))return;
-          const result=await store.saveAnswers(id,snapshot,seq);
-          if(!result.accepted)throw new Error('المحاولة عُدلت في نافذة أخرى. أعد فتحها قبل المتابعة.');
-          if(same(id)&&active.sequence===seq)status('تمت مزامنة الإجابات مع الخادم.');
-        }).catch(error=>{if(same(id))status(error.message||'الإجابة محفوظة على الجهاز، ولم تتم مزامنتها بعد.',true);});
-      }else status('حُفظت الإجابة على هذا الجهاز.');
+      if(active.mode==='server')queueServerSave(id,snapshot,seq);else status('حُفظت الإجابة على هذا الجهاز.');
       const nav=body?.querySelector('[data-question="'+active.index+'"]');if(nav)nav.classList.add('is-answered');
       const progress=body?.querySelector('.sp-progress-track i');if(progress)progress.style.width=Math.round(Object.keys(active.answers).length/active.questions.length*100)+'%';
+    }
+    function queueServerSave(id,snapshot,seq){
+      saving=saving.catch(()=>{}).then(async()=>{
+        if(!same(id)||active.sequence!==seq)return;
+        const result=await store.saveAnswers(id,snapshot,seq);
+        if(!result.accepted)throw new Error('المحاولة عُدلت في نافذة أخرى. أعد فتحها قبل المتابعة.');
+        if(same(id)&&active.sequence===seq)status('تمت مزامنة الإجابات مع الخادم.');
+      }).catch(error=>{if(same(id)&&active.sequence===seq)status(error.message||'الإجابة محفوظة على الجهاز، ولم تتم مزامنتها بعد.',true);});
     }
     function click(event){
       if(!active)return;
@@ -150,7 +150,7 @@
       if(active&&!remaining()&&!active.finishing&&!active.autoFailed)finish(true);
       document.querySelectorAll('[data-active-exam-time]').forEach(el=>{el.textContent=active?D.formatDuration(remaining()):'';});
     },1000);
-    function online(){if(active?.autoFailed){active.autoFailed=false;finish(true);}}
+    function online(){if(!active||!store.current())return;if(active.autoFailed){active.autoFailed=false;finish(true);return;}if(active.mode==='server'&&remaining()>0)queueServerSave(active.id,{...active.answers},active.sequence);}
     window.addEventListener('online',online);
     return {startPractice,startServer,resume,showResult,getActive:()=>active,dispose(){disposed=true;requestId++;clearInterval(timer);window.removeEventListener('online',online);body=null;}};
   }
