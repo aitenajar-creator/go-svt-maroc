@@ -4,8 +4,8 @@ create or replace function public.gosvt_jsonb_deep_merge(p_left jsonb, p_right j
 returns jsonb
 language plpgsql
 immutable
-set search_path = ''
-as $$
+set search_path = pg_catalog, public
+as $function$
 declare
   v_result jsonb;
   v_key text;
@@ -116,7 +116,7 @@ begin
 
   return v_merged;
 end;
-$$;
+$function$;
 
 revoke all on function public.gosvt_merge_student_platform_state(uuid,text,jsonb) from public, anon;
 grant execute on function public.gosvt_merge_student_platform_state(uuid,text,jsonb) to authenticated;
