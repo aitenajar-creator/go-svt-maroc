@@ -50,6 +50,7 @@
         <button type="button" class="admin-tab" data-admin-tab="site-content-manager" aria-selected="false">إضافة محتوى</button>
         <button type="button" class="admin-tab" data-admin-tab="published-library-panel" aria-selected="false">مكتبة المحتوى</button>
         <button type="button" class="admin-tab" data-admin-tab="private-lessons-panel" aria-selected="false">دروس مساحة التلميذ</button>
+        <button type="button" class="admin-tab" data-admin-tab="learning-platform-admin-panel" aria-selected="false">إدارة التعلم والاختبارات</button>
         <button type="button" class="admin-tab" data-admin-tab="teacher-community-admin-panel" aria-selected="false">إدارة مجتمع الأساتذة</button>
       </nav>
       <section class="panel admin-tab-content" id="platform-overview">
@@ -204,6 +205,69 @@
   <div class="field wide"><button id="private-asset-upload" class="primary-btn" type="submit">رفع الصور إلى التخزين الخاص وإضافتها إلى الدرس</button></div>
  </form><p id="private-asset-message" class="message" role="status"></p>
 </section>
+
+<section class="panel admin-tab-content" id="learning-platform-admin-panel" hidden>
+  <div class="section-heading"><div><p class="eyebrow">STUDENT LEARNING PLATFORM</p><h2>إدارة الموارد والاختبارات</h2><p class="muted">إنشاء الموارد والاختبارات ومراجعتها ونشرها للتلاميذ حسب المستوى والشعبة.</p></div><span class="heading-icon">🧪</span></div>
+  <p class="message muted" id="learning-admin-status" role="status">تُحمّل هذه الأدوات بعد التحقق من صلاحية المدير.</p>
+  <div class="learning-admin-grid">
+    <section class="learning-admin-card">
+      <h3>مورد تعليمي</h3>
+      <form id="learning-resource-form" class="upload-grid">
+        <input type="hidden" id="learning-resource-id">
+        <input type="hidden" id="learning-resource-updated">
+        <div class="field wide"><label for="learning-resource-title">عنوان المورد</label><input id="learning-resource-title" maxlength="180" required minlength="3"></div>
+        <div class="field wide"><label for="learning-resource-description">وصف مختصر</label><textarea id="learning-resource-description" maxlength="2000" rows="2"></textarea></div>
+        <div class="field wide"><label for="learning-resource-url">رابط الملف أو المورد</label><input id="learning-resource-url" maxlength="2048" required placeholder="/cours/... أو https://..."></div>
+        <div class="field"><label for="learning-resource-kind">نوع المورد</label><select id="learning-resource-kind"><option value="cours">درس</option><option value="exercices">تمارين</option><option value="resumes">ملخص</option><option value="fiches">جذاذة</option><option value="examens">امتحان</option><option value="link">رابط تعليمي</option></select></div>
+        <div class="field"><label for="learning-resource-level">المستوى</label><select id="learning-resource-level"><option>TC</option><option>1BAC</option><option>2BAC</option></select></div>
+        <div class="field"><label for="learning-resource-language">اللغة</label><select id="learning-resource-language"><option value="arabe">العربية</option><option value="francais">Français</option></select></div>
+        <div class="field"><label for="learning-resource-position">ترتيب العرض</label><input id="learning-resource-position" type="number" min="0" max="9999" value="0"></div>
+        <fieldset class="field wide"><legend>الشعب والمسالك المستهدفة</legend><div id="learning-resource-tracks" class="learning-track-options"></div></fieldset>
+        <label class="field wide"><span><input id="learning-resource-published" type="checkbox"> نشر المورد للتلاميذ</span></label>
+        <div class="field wide learning-admin-actions"><button class="primary-btn" type="submit">حفظ المورد</button><button class="quiet-btn" id="learning-resource-reset" type="button">إفراغ النموذج</button></div>
+      </form>
+      <p id="learning-resource-message" class="message" role="status"></p>
+      <div class="section-heading"><h3>الموارد المسجلة</h3><button id="learning-resources-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+      <div id="learning-resources-list" class="resource-list" aria-live="polite">لم يتم التحميل بعد.</div>
+    </section>
+    <section class="learning-admin-card">
+      <h3>اختبار / فرض إلكتروني</h3>
+      <form id="learning-assessment-form" class="upload-grid">
+        <input type="hidden" id="learning-assessment-id">
+        <input type="hidden" id="learning-assessment-revision">
+        <div class="field wide"><label for="learning-assessment-title">عنوان الاختبار</label><input id="learning-assessment-title" maxlength="180" minlength="3" required></div>
+        <div class="field wide"><label for="learning-assessment-description">وصف الاختبار</label><textarea id="learning-assessment-description" maxlength="2000" rows="2"></textarea></div>
+        <div class="field"><label for="learning-assessment-level">المستوى</label><select id="learning-assessment-level"><option>TC</option><option>1BAC</option><option>2BAC</option></select></div>
+        <div class="field"><label for="learning-assessment-duration">المدة بالدقائق</label><input id="learning-assessment-duration" type="number" min="5" max="180" value="30" required></div>
+        <fieldset class="field wide"><legend>الشعب والمسالك المستهدفة</legend><div id="learning-assessment-tracks" class="learning-track-options"></div></fieldset>
+        <div class="field wide"><label for="learning-assessment-json">الأسئلة بصيغة JSON</label><textarea id="learning-assessment-json" rows="15" required spellcheck="false" dir="ltr" placeholder='[{"prompt":"...","options":["...","..."],"answer":0,"explanation":"...","points":1}]'></textarea><small>من 0 إلى 60 سؤالاً للمسودة، ومن 3 إلى 60 سؤالاً للنشر. لكل سؤال اختياران إلى ستة اختيارات.</small></div>
+        <label class="field wide"><span><input id="learning-assessment-reviewed" type="checkbox"> أؤكد أنني راجعت الأسئلة والإجابات والتفسيرات تربوياً</span></label>
+        <div class="field wide learning-admin-actions"><button class="primary-btn" type="submit" data-assessment-publish="false">حفظ كمسودة</button><button class="quiet-btn" type="submit" data-assessment-publish="true">مراجعة ونشر</button><button class="quiet-btn" id="learning-assessment-reset" type="button">اختبار جديد</button></div>
+      </form>
+      <p id="learning-assessment-message" class="message" role="status"></p>
+      <div class="section-heading"><h3>الاختبارات المسجلة</h3><button id="learning-assessments-refresh" class="quiet-btn" type="button">تحديث ↻</button></div>
+      <div id="learning-assessments-list" class="resource-list" aria-live="polite">لم يتم التحميل بعد.</div>
+    </section>
+  </div>
+  <section class="learning-admin-card learning-results-card">
+    <div class="section-heading"><div><h3>نتائج محاولات التلاميذ</h3><p class="muted">تعرض هذه القائمة ملخص النتائج فقط، دون مفاتيح الإجابة.</p></div><div class="report-actions"><button id="learning-results-export" class="quiet-btn" type="button" disabled>تصدير CSV ↓</button><button id="learning-results-refresh" class="quiet-btn" type="button">تحديث ↻</button></div></div>
+    <div id="learning-results-list" class="resource-list" aria-live="polite">لم يتم التحميل بعد.</div>
+  </section>
+</section>
+<style>
+#learning-platform-admin-panel .learning-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+#learning-platform-admin-panel .learning-admin-card{min-width:0;border:1px solid #e1eae3;border-radius:14px;padding:1rem;margin:.8rem 0;background:#fbfdfb}
+#learning-platform-admin-panel .learning-track-options{display:flex;flex-wrap:wrap;gap:.65rem}
+#learning-platform-admin-panel .learning-track-options label{display:inline-flex;gap:.35rem;align-items:center}
+#learning-platform-admin-panel .learning-admin-actions{display:flex;flex-wrap:wrap;gap:.5rem}
+#learning-platform-admin-panel .learning-admin-item{padding:.75rem 0;border-bottom:1px solid #e5ece6}
+#learning-platform-admin-panel .learning-admin-item p{margin:.25rem 0}
+#learning-platform-admin-panel .learning-admin-item small{color:#66786b}
+#learning-platform-admin-panel .learning-admin-item button{margin:.3rem .25rem 0 0}
+#learning-platform-admin-panel .learning-results-card{margin-top:1rem}
+@media(max-width:850px){#learning-platform-admin-panel .learning-admin-grid{grid-template-columns:1fr}}
+</style>
+
 <section class="panel admin-tab-content" id="teacher-community-admin-panel" hidden>
   <div class="section-heading">
     <div><p class="eyebrow">TEACHER COMMUNITY CONTROL</p><h2>إدارة مجتمع الأساتذة</h2><p class="muted">لوحة مستقلة لإدارة الموارد المشتركة ومتابعة نشاط مجتمع الأساتذة.</p></div>
@@ -235,5 +299,6 @@
   <script src="supabase-config.js?v=20261125-review1"></script>
   <script src="admin.js?v=20261125-review1"></script>
   <script src="admin-private-lessons.js?v=20261125-review1"></script>
+  <script src="admin-learning-platform.js?v=20261126-1"></script>
 </body>
 </html>
