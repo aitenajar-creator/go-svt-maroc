@@ -327,7 +327,7 @@
       "sha256": "6239643872c645c87e71ed005496b5037a183a2ee46c745248c42892525a3d07"
     },
     {
-      "path": "supabase/migrations/20261125000400_student_learning_platform.sql",
+      "path": "supabase/migrations/20261126000100_student_learning_platform.sql",
       "sha256": "0641713fb4525fa42fda74f94d553e711756c6354642cbe455d40802798a7019"
     },
     {
