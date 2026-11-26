@@ -38,15 +38,15 @@ test('login, token refresh and logout use the new learning platform',async({page
   await expect(page.locator('#student-space-content .gs-learning-platform')).toBeVisible();
   await page.locator('#student-space-content .sp-nav [data-sp-route="notes"]').click();
   await page.locator('#student-space-content [data-sp-action="note"]').first().click();
-  const noteForm=page.locator('#student-space-content #sp-record-form');
+  const noteForm=page.locator('#sp-dialog #sp-record-form');
   await expect(noteForm).toBeVisible();
-  await page.locator('#sp-record-title').fill('Unsent draft');
-  await page.locator('#sp-record-body').fill('Do not discard this text.');
+  await page.locator('#sp-dialog #sp-record-title').fill('Unsent draft');
+  await page.locator('#sp-dialog #sp-record-body').fill('Do not discard this text.');
   await page.evaluate(async()=>{
     window.__authFixture.emit('TOKEN_REFRESHED');
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   });
-  await expect(page.locator('#sp-record-body')).toHaveValue('Do not discard this text.');
+  await expect(page.locator('#sp-dialog #sp-record-body')).toHaveValue('Do not discard this text.');
   await page.locator('.gs-acc-logout').click();
   await expect(page.locator('#gs-l-email')).toBeVisible();
   await expect(page.locator('#student-space-content .gs-learning-platform')).toHaveCount(0);
