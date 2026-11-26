@@ -49,3 +49,20 @@ test('switching authenticated users isolates private notes and restores each own
 });
 
 function navNotes(page){return page.locator('.sp-nav [data-sp-route="notes"]').click();}
+
+test('a signed-in account that changes to a non-student role cannot retain the student platform shell',async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await localOnly(page);
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await expect(page.locator('.gs-learning-platform')).toHaveCount(1);
+
+  await page.evaluate(()=>{
+    window.__authFixture.role='teacher';
+    window.__authFixture.emit('SIGNED_IN');
+  });
+
+  await expect(page.locator('.gs-learning-platform')).toHaveCount(0);
+  await expect.poll(()=>document.body.classList.contains('sp-platform-active')).toBe(false);
+  expect(errors).toEqual([]);
+});
