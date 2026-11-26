@@ -52,7 +52,7 @@
         "20261125000100_student_collection_deletions.sql",
         "20261125000200_per_lesson_objectives.sql",
         "20261125000300_atomic_teacher_question_replies.sql",
-        "20261125000400_student_learning_platform.sql"
+        "20261126000100_student_learning_platform.sql"
       ]
     },
     "teacher-community": {
