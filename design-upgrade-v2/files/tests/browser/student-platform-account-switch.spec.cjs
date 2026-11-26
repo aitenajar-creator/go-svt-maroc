@@ -57,9 +57,9 @@ test('a signed-in account that changes to a non-student role cannot retain the s
   await expect(page.locator('.sp-hero')).toBeVisible();
   await expect(page.locator('.gs-learning-platform')).toHaveCount(1);
 
-  await page.evaluate(()=>{
+  await page.evaluate(async()=>{
     window.__authFixture.role='teacher';
-    window.__authFixture.emit('SIGNED_IN');
+    await window.StudentAccount.refreshProfile();
   });
 
   await expect(page.locator('.gs-learning-platform')).toHaveCount(0);
