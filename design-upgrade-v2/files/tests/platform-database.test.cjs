@@ -14,7 +14,14 @@ test('learning platform: authentic grading and academic isolation on an isolated
     await db.exec("create table public.student_academic_profiles(student_id uuid primary key,study_level text,study_track text);alter table public.student_academic_profiles enable row level security;grant select on public.student_academic_profiles to authenticated;create policy academic_self on public.student_academic_profiles for select to authenticated using(student_id=auth.uid())");
     await db.query('insert into public.student_academic_profiles values($1,$2,$3),($4,$5,$6)',[student,'2BAC','2BACSVT',other,'TC','TCS']);
     await db.query('insert into auth.users(id) values($1)',[admin]);await db.query('insert into public.profiles(id,role) values($1,$2)',[admin,'admin']);
-    await db.exec(source('supabase/migrations/20261126000200_student_learning_platform.sql'));
+    const migration=source('supabase/migrations/20261126000200_student_learning_platform.sql');
+    try {
+      await db.exec(migration);
+    } catch (error) {
+      const position=Number(error.position||0);
+      const excerpt=position ? migration.slice(Math.max(0,position-180),position+180) : 'SQL position unavailable';
+      throw new Error('Student platform migration failed at SQL position '+position+': '+excerpt+'; '+error.message,{cause:error});
+    }
     const document={title:'تقييم تعلم تجريبي',description:'Fixture, not production content.',study_level:'2BAC',study_tracks:['2BACSVT'],duration_minutes:5,is_published:true,reviewed:true,questions:Array.from({length:3},(_,i)=>({prompt:'Fixture question number '+i,options:['Correct fixture option','Other fixture option'],answer:0,explanation:'Fixture explanation for isolated tests.',points:1}))};
     let assessment,attempt;
     await t.test('only a verified administrator can create or revise assessments',async()=>{
