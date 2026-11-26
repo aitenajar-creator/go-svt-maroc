@@ -151,7 +151,7 @@ begin
       or jsonb_typeof(q->'options') is distinct from 'array'
       or exists(select 1 from jsonb_array_elements(q->'options') option where jsonb_typeof(option) is distinct from 'string')
       or jsonb_typeof(q->'answer') is distinct from 'number'
-      or (q->>'answer') !~ '^[0-9]+
+      or (q->>'answer') !~ '^[0-9]+$' then raise exception 'invalid_question'; end if;
     select array_agg(value) into v_options from jsonb_array_elements_text(q->'options');
     if exists(select 1 from unnest(v_options) option where char_length(trim(option)) not between 1 and 2000) or (q->>'answer') !~ '^[0-9]+$' then raise exception 'invalid_options'; end if;
     insert into public.learning_questions(assessment_id,position,prompt,options,answer,explanation,points)
