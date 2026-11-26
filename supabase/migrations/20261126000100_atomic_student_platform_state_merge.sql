@@ -66,7 +66,7 @@ begin
 
   return v_result;
 end;
-$;
+$function$;
 
 revoke all on function public.gosvt_jsonb_deep_merge(jsonb,jsonb) from public, anon, authenticated;
 
@@ -78,8 +78,8 @@ create or replace function public.gosvt_merge_student_platform_state(
 returns jsonb
 language plpgsql
 security definer
-set search_path = ''
-as $$
+set search_path = pg_catalog, public
+as $function$
 declare
   v_existing jsonb;
   v_merged jsonb;
