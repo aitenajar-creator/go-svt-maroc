@@ -82,8 +82,13 @@
       if(!result||typeof result.id!=='string'||!result.id||typeof result.assessment_id!=='string'||!result.assessment_id||!Number.isFinite(serverTime)||!Number.isFinite(deadlineAt)||!Array.isArray(result.questions)||!result.questions.length||!result.questions.every(q=>q.id&&typeof q.prompt==='string'&&Array.isArray(q.options)&&q.options.length>=2))throw new Error('بيانات المحاولة أو توقيتها غير صالحة.');
       const left=deadlineAt-serverTime,sequence=Number(result.last_sequence);
       if(!Number.isSafeInteger(sequence)||sequence<0)throw new Error('تسلسل إجابات المحاولة غير صالح.');
-      const answers=result.answers&&typeof result.answers==='object'&&!Array.isArray(result.answers)?result.answers:{};
-      active={id:result.id,assessmentId:result.assessment_id,owner:store.state.profile.id,mode:'server',title:result.title,questions:result.questions.map(q=>({id:q.id,prompt:q.prompt,options:q.options,points:q.points})),answers,sequence,index:0,deadline:Date.now()+Math.max(0,left),startedAt:Date.now()};
+      const questions=result.questions.map(q=>({id:q.id,prompt:q.prompt,options:q.options,points:q.points}));
+      const rawAnswers=result.answers==null?{}:result.answers;
+      if(!rawAnswers||typeof rawAnswers!=='object'||Array.isArray(rawAnswers))throw new Error('إجابات المحاولة المسترجعة غير صالحة.');
+      const optionCounts=new Map(questions.map(q=>[q.id,q.options.length]));
+      if(Object.entries(rawAnswers).some(([id,value])=>!optionCounts.has(id)||!Number.isInteger(value)||value<0||value>=optionCounts.get(id)))throw new Error('تحتوي المحاولة المسترجعة على إجابات غير صالحة.');
+      const answers={...rawAnswers};
+      active={id:result.id,assessmentId:result.assessment_id,owner:store.state.profile.id,mode:'server',title:result.title,questions,answers,sequence,index:0,deadline:Date.now()+Math.max(0,left),startedAt:Date.now()};
       persist();
     }
     async function resume(){
