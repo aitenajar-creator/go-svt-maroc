@@ -64,7 +64,8 @@ class AccessibilityParser(HTMLParser):
                 )
 
 errors = []
-pages = sorted(Path(".").rglob("*.html"))
+from site_files import site_files
+pages = sorted(site_files(Path('.'), '.html'))
 for page in pages:
     parser = AccessibilityParser(page.as_posix())
     parser.feed(page.read_text(encoding="utf-8"))

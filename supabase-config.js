@@ -3,8 +3,13 @@
  */
 (function () {
   'use strict';
-  const SUPABASE_URL = 'https://faztvkeyrxvmjzzfuyiu.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_qtKVH-L5ewYNd-0je_7YtA_yMOdgrKb';
+  const runtime = window.GoSVTRuntimeConfig;
+  const SUPABASE_URL = runtime ? runtime.supabaseUrl : 'https://faztvkeyrxvmjzzfuyiu.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = runtime ? runtime.supabasePublishableKey : 'sb_publishable_qtKVH-L5ewYNd-0je_7YtA_yMOdgrKb';
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+    window.GoSVTAuthConfigError = 'المعاينة المحلية غير متصلة بقاعدة بيانات. اضبط config.local.json لمشروع اختبار مستقل.';
+    return;
+  }
   if (!window.supabase || typeof window.supabase.createClient !== 'function') {
     console.error('[GoSVT] Supabase JS library did not load.');
     window.GoSVTAuthConfigError = 'تعذر تحميل مكتبة الاتصال بـ Supabase.';
@@ -32,6 +37,16 @@
 
   const learningStateSyncQueues = new Map();
 
+  async function readAllRows(makeQuery) {
+    const rows = [], pageSize = 500;
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await makeQuery().range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      rows.push(...(data || []));
+      if (!data || data.length < pageSize) return rows;
+    }
+  }
+
   function parseNoteRow(row) {
     let value = {};
     try { value = JSON.parse(row.note); } catch (_) { value = { body: row.note }; }
@@ -58,15 +73,24 @@
   }
 
   window.GoSVTCloud = {
+    async loadCollectionDeletions(expectedStudentId) {
+      const studentId = await authenticatedStudentId(expectedStudentId);
+      if (!studentId) return null;
+      const rows = await readAllRows(() => client.from('student_collection_tombstones')
+        .select('collection,item_key').eq('student_id', studentId)
+        .order('collection').order('item_key'));
+      const deleted = { notes: [], studyPlan: [] };
+      rows.forEach(row => { if (deleted[row.collection]) deleted[row.collection].push(String(row.item_key)); });
+      return deleted;
+    },
+
     async loadQuizAttempts(expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
-      const { data, error } = await client.from('student_quiz_attempts')
+      const data = await readAllRows(() => client.from('student_quiz_attempts')
         .select('attempt_id,quiz_id,score,total_questions,percentage,mistakes,attempted_at')
-        .eq('student_id', studentId)
-        .order('attempted_at', { ascending: true });
-      if (error) throw error;
-      return (data || []).map(row => ({
+        .eq('student_id', studentId).order('attempted_at', { ascending: true }).order('attempt_id'));
+      return data.map(row => ({
         attemptId: String(row.attempt_id),
         quizId: String(row.quiz_id),
         score: Number(row.score),
@@ -300,46 +324,41 @@
     async loadNotes(expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
-      const { data, error } = await client.from('student_notes')
-        .select('content_key,note,updated_at').eq('student_id', studentId);
-      if (error) throw error;
-      return (data || []).map(parseNoteRow);
+      const data = await readAllRows(() => client.from('student_notes')
+        .select('content_key,note,updated_at').eq('student_id', studentId).order('content_key'));
+      return data.map(parseNoteRow);
     },
 
     async syncNotes(notes, expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !Array.isArray(notes) || !notes.length) return;
       const rows = notes.filter(n => n && typeof n === 'object' && n.id)
-        .map(n => {
-          const payload = {
-            id: String(n.id),
-            title: String(n.title || '').slice(0, 120),
-            body: String(n.body || '').slice(0, 5000),
-            createdAt: Number(n.createdAt) || Date.now(),
-            updatedAt: Number(n.updatedAt) || Date.now()
-          };
-          return {
-            student_id: studentId,
-            content_key: payload.id.slice(0, 500),
-            note: JSON.stringify(payload),
-            updated_at: new Date(payload.updatedAt).toISOString()
-          };
-        });
+        .map(n => ({
+          id: String(n.id).slice(0, 500),
+          title: String(n.title || '').slice(0, 120),
+          body: String(n.body || '').slice(0, 5000),
+          createdAt: Number(n.createdAt) || Date.now(),
+          updatedAt: Number(n.updatedAt) || Date.now()
+        }));
       if (!rows.length) return;
-      rows.forEach(row => {
-        if (row.note.length > 10000) throw new Error('الملاحظة تتجاوز الحد المسموح للتخزين السحابي.');
-      });
-      const { error } = await client.from('student_notes').upsert(rows, {
-        onConflict: 'student_id,content_key'
-      });
-      if (error) throw error;
+      let rejectedRestores = 0;
+      for (const item of rows) {
+        if (JSON.stringify(item).length > 10000) throw new Error('الملاحظة تتجاوز الحد المسموح للتخزين السحابي.');
+        const { data, error } = await client.rpc('gosvt_upsert_student_collection_item', {
+          p_collection: 'notes', p_item_key: item.id, p_expected_student_id: studentId, p_item: item
+        });
+        if (error) throw error;
+        if (data === false) rejectedRestores++;
+      }
+      if (rejectedRestores) throw new Error('تم حفظ بقية الملاحظات، لكن رُفضت استعادة ' + rejectedRestores + ' ملاحظة محذوفة سابقاً من نسخة قديمة.');
     },
 
     async deleteNote(noteId, expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !noteId) return;
-      const { error } = await client.from('student_notes').delete()
-        .eq('student_id', studentId).eq('content_key', String(noteId));
+      const { error } = await client.rpc('gosvt_delete_student_collection_item', {
+        p_collection: 'notes', p_item_key: String(noteId), p_expected_student_id: studentId
+      });
       if (error) throw error;
       return true;
     },
@@ -381,11 +400,10 @@
     async loadStudyPlan(expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId) return null;
-      const { data, error } = await client.from('student_study_plan')
+      const data = await readAllRows(() => client.from('student_study_plan')
         .select('item_key,title,scheduled_date,duration_minutes,completed,created_at,updated_at')
-        .eq('student_id', studentId);
-      if (error) throw error;
-      return (data || []).map(parsePlanRow);
+        .eq('student_id', studentId).order('item_key'));
+      return data.map(parsePlanRow);
     },
 
     async syncStudyPlan(items, expectedStudentId) {
@@ -393,27 +411,32 @@
       if (!studentId || !Array.isArray(items) || !items.length) return;
       const rows = items.filter(item => item && typeof item === 'object' && item.id && item.date)
         .map(item => ({
-          student_id: studentId,
-          item_key: String(item.id).slice(0, 500),
+          id: String(item.id).slice(0, 500),
           title: String(item.title || '').trim().slice(0, 120),
-          scheduled_date: String(item.date),
-          duration_minutes: Math.min(600, Math.max(5, Number(item.duration) || 30)),
+          date: String(item.date),
+          duration: Math.min(600, Math.max(5, Number(item.duration) || 30)),
           completed: item.completed === true,
-          created_at: new Date(Number(item.createdAt) || Date.now()).toISOString(),
-          updated_at: new Date(Number(item.updatedAt) || Date.now()).toISOString()
+          createdAt: Number(item.createdAt) || Date.now(),
+          updatedAt: Number(item.updatedAt) || Date.now()
         }));
       if (!rows.length) return;
-      const { error } = await client.from('student_study_plan').upsert(rows, {
-        onConflict: 'student_id,item_key'
-      });
-      if (error) throw error;
+      let rejectedRestores = 0;
+      for (const item of rows) {
+        const { data, error } = await client.rpc('gosvt_upsert_student_collection_item', {
+          p_collection: 'studyPlan', p_item_key: item.id, p_expected_student_id: studentId, p_item: item
+        });
+        if (error) throw error;
+        if (data === false) rejectedRestores++;
+      }
+      if (rejectedRestores) throw new Error('تم حفظ بقية عناصر خطة الدراسة، لكن رُفضت استعادة ' + rejectedRestores + ' عناصر محذوفة سابقاً من نسخة قديمة.');
     },
 
     async deleteStudyPlanItem(itemId, expectedStudentId) {
       const studentId = await authenticatedStudentId(expectedStudentId);
       if (!studentId || !itemId) return;
-      const { error } = await client.from('student_study_plan').delete()
-        .eq('student_id', studentId).eq('item_key', String(itemId));
+      const { error } = await client.rpc('gosvt_delete_student_collection_item', {
+        p_collection: 'studyPlan', p_item_key: String(itemId), p_expected_student_id: studentId
+      });
       if (error) throw error;
       return true;
     },

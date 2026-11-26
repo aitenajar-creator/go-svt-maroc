@@ -140,7 +140,7 @@
           mistake.selected.trim() !== mistake.correct.trim();
       });
       const samePathway = String(item.level || '').trim().toUpperCase() === selectedLevel &&
-        String(item.track || '').replace(/\\s+/g, '').toUpperCase() === selectedTrack;
+        String(item.track || '').replace(/\s+/g, '').toUpperCase() === selectedTrack;
       return samePathway && quizId.length > 0 && quizId.length <= 200 &&
         Number.isFinite(percentage) && percentage >= 0 && percentage <= 100 &&
         Number.isFinite(date) && date > 0 && hasReviewableMistake;

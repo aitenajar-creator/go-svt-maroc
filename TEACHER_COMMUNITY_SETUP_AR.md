@@ -23,7 +23,7 @@
 3. ينشئ السكربت جدول المشرفين والأعضاء والموارد، وسياسات RLS، وbucket خاصاً باسم `teacher-community`.
 4. لا تنفّذ هذا الملف في مشروع Supabase الحالي الخاص بالتلاميذ.
 5. بعد تنفيذ ملف الإنشاء الأساسي (مرة واحدة)، نفّذ ملف التقوية الأمنية `supabase/migrations/20261111000200_teacher_community_storage_read_hardening.sql` في SQL Editor للمشروع الجديد نفسه. هذا الملف يحدّث سياسة قراءة Storage حتى لا يتمكن من تنزيل الملفات إلا صاحبها أو المدير أو عضو مقبول عندما يكون الملف منشوراً ومشتركاً.
-6. نفّذ بعد ذلك ملف `supabase/migrations/20261117000100_restrict_suspended_teacher_community_updates.sql` لتقييد تعديل بيانات الموارد وملفات Storage للأعضاء المقبولين فقط، مع إبقاء صلاحيات المدير. هذا التحديث مخصص لمشروع مجتمع الأساتذة الجديد.
+6. القائمة أعلاه لا تغني عن بقية تحديثات الصلاحيات والتدقيق. اعرض القائمة الكاملة المرتبة بواسطة `python3 scripts/migration-plan.py --project teacher-community`، وراجع كل الملفات المخصصة لهذا المشروع في `supabase/project-manifest.json`. لا تنفّذ مجلد migrations المختلط كله. راجع `docs/DATABASE_DEPLOYMENT_AR.md` قبل تطبيق أي تغييرات على بيئة قائمة.
 
 ## 4. تعيين حسابك مديراً لمجتمع الأساتذة
 1. افتح صفحة `https://gosvtmaroc.com/teacher-community.html`.

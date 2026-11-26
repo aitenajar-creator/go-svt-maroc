@@ -18,6 +18,25 @@
   ]);
   const categoryLabels = {cours:'الدروس',exercices:'التمارين',examens:'الامتحانات',fiches:'الجذاذات',resumes:'الملخصات',documents:'الوثائق',ressources:'الموارد',divers:'متفرقات'};
   let currentUser = null;
+  let adminSessionGeneration = 0;
+  let entering = null;
+
+  function clearAdminSession() {
+    adminSessionGeneration++;
+    currentUser = null;
+    dashboard.hidden = true;
+    loginPanel.hidden = false;
+    resourceCache = []; roleRequestCache = []; accountCache = []; activityCache = [];
+    pedagogicalReportRows = null;
+    ['resource-list','accounts-list','accounts-table-body','role-requests-list','activity-list',
+      'private-lessons-list','private-lessons-summary','platform-health-list',
+      'pedagogical-reports-body','pedagogical-tracks-body','trends-table-body'].forEach(id => {
+      const node = $(id); if (node) node.replaceChildren();
+    });
+    $('admin-identity').textContent = '';
+    $('admin-password').value = '';
+    document.dispatchEvent(new CustomEvent('gosvt:admin-session', { detail: { userId: null } }));
+  }
   let resourceCache = [];
   let roleRequestCache = [];
   let roleRequestsHasMore = false;
@@ -46,9 +65,7 @@
     const { data, error } = await client.from('profiles').select('role,display_name').eq('id', user.id).maybeSingle();
     if (error) throw error;
     if (!data || data.role !== 'admin') return false;
-    currentUser = user;
-    $('admin-identity').textContent = data.display_name || user.email || '';
-    return true;
+    return data;
   }
   function showDenied() {
     dashboard.hidden = true;
@@ -116,14 +133,27 @@
   }
 
   async function enter(user) {
-    if (!await verifyAdmin(user)) { showDenied(); return; }
-    loginPanel.hidden = true;
-    dashboard.hidden = false;
-    initAdminTabs();
-    await Promise.all([
-      loadResources(), loadFounderProfile(), loadPlatformOverview(),
-      loadAccounts(), loadRoleRequests(), loadPlatformHealth(), loadActivity(), loadPlatformTrends(), loadPedagogicalReports()
-    ]);
+    if (!user) { clearAdminSession(); return; }
+    if (entering && entering.uid === user.id) return entering.promise;
+    if (currentUser && currentUser.id === user.id) return;
+    const generation = ++adminSessionGeneration;
+    const promise = (async () => {
+      const admin = await verifyAdmin(user);
+      if (generation !== adminSessionGeneration) return;
+      if (!admin) { clearAdminSession(); showDenied(); return; }
+      currentUser = user;
+      $('admin-identity').textContent = admin.display_name || user.email || '';
+      loginPanel.hidden = true;
+      dashboard.hidden = false;
+      initAdminTabs();
+      document.dispatchEvent(new CustomEvent('gosvt:admin-session', { detail: { userId: user.id } }));
+      await Promise.allSettled([
+        loadResources(), loadFounderProfile(), loadPlatformOverview(),
+        loadAccounts(), loadRoleRequests(), loadPlatformHealth(), loadActivity(), loadPlatformTrends(), loadPedagogicalReports()
+      ]);
+    })();
+    entering = { uid: user.id, promise };
+    try { await promise; } finally { if (entering && entering.promise === promise) entering = null; }
   }
   async function loadPlatformTrends() {
     const days = Number($('trend-period').value) || 30;
@@ -972,7 +1002,7 @@
         item.reviewed_at ? new Date(item.reviewed_at).toLocaleString('ar-MA') : ''
       ])
     ];
-    const csv = '\\uFEFF' + output.map(row => row.map(cell).join(',')).join('\\r\\n');
+    const csv = String.fromCodePoint(0xfeff) + output.map(row => row.map(cell).join(',')).join('\r\n');
     const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -994,11 +1024,22 @@
   $('accounts-search').addEventListener('input', renderAccounts);
   $('accounts-role-filter').addEventListener('change', renderAccounts);
   $('signout-btn').addEventListener('click', async () => {
-    await client.auth.signOut();
-    currentUser = null; dashboard.hidden = true; loginPanel.hidden = false;
-    $('admin-password').value = '';
+    const { error } = await client.auth.signOut();
+    if (error) { message(loginMessage, error.message, 'error'); return; }
+    clearAdminSession();
   });
   if (!client) { message(loginMessage, window.GoSVTAuthConfigError || 'تعذر تحميل Supabase.', 'error'); return; }
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT' || (currentUser && session && currentUser.id !== session.user.id) || event === 'USER_UPDATED') {
+      // A new document also discards all pending requests and closures from the old identity.
+      clearAdminSession();
+      window.location.reload();
+      return;
+    }
+    if (event === 'SIGNED_IN' && session) setTimeout(() => enter(session.user).catch(error => {
+      clearAdminSession(); message(loginMessage, error.message, 'error');
+    }), 0);
+  });
   client.auth.getSession().then(({ data, error }) => {
     if (error) throw error;
     if (data.session) return enter(data.session.user);

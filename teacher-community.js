@@ -14,6 +14,34 @@
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
   let uploadInProgress = false;
+  let sessionGeneration = 0;
+  let authorizationKey = null;
+
+  function captureCommunitySession() {
+    return { user, generation: sessionGeneration };
+  }
+  function communitySessionIsCurrent(snapshot) {
+    return !!(snapshot && snapshot.user && user && snapshot.user.id === user.id && snapshot.generation === sessionGeneration);
+  }
+  function clearCommunityView() {
+    resources = [];
+    ['tc-resource-grid','tc-my-resources','tc-admin-members','tc-admin-resources','tc-admin-activity'].forEach(id => {
+      const node = $(id); if (node) node.replaceChildren();
+    });
+    ['tc-admin-panel','tc-admin-tab','tc-dashboard'].forEach(id => { if ($(id)) $(id).hidden = true; });
+    document.querySelectorAll('.tc-dashboard-tabs [data-panel]').forEach(tab => {
+      const active = tab.dataset.panel === 'mine';
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      const panel = $('tc-' + tab.dataset.panel + '-panel');
+      if (panel) { panel.hidden = !active; panel.setAttribute('aria-hidden', String(!active)); }
+    });
+    ['tc-edit-dialog','tc-upload-dialog','tc-auth-dialog'].forEach(id => { const dialog = $(id); if (dialog && dialog.open) dialog.close(); });
+    ['tc-edit-form','tc-upload-form'].forEach(id => { const form = $(id); if (form) form.reset(); });
+    if ($('tc-password')) $('tc-password').value = '';
+    if ($('tc-member-label')) $('tc-member-label').textContent = '';
+  }
   const PAGE_SIZE = 50;
   let adminActivitySearchTimer = null;
   let libraryOffset = 0, libraryHasMore = false, libraryRequest = 0, libraryLoading = false, libraryRefreshPending = false, librarySearchTimer = null, mySearchTimer = null, myOffset = 0, myHasMore = false, myLoading = false, myRefreshPending = false, adminMembersLoading = false, adminResourcesLoading = false, adminMembersOffset = 0, adminResourcesOffset = 0, adminMembersMore = false, adminResourcesMore = false, adminResourcesRefreshPending = false, adminResourceSearchTimer = null, adminActivityOffset = 0, adminActivityMore = false, adminActivityLoading = false, adminActivityRefreshPending = false;
@@ -86,7 +114,16 @@
     }
     $('tc-member-label').textContent = (member && member.display_name) || user.email || '';
     $('tc-admin-tab').hidden = !isAdmin;
-    $('tc-pending-panel').hidden = false;
+    if (!isAdmin) {
+      $('tc-admin-panel').hidden = true;
+      $('tc-admin-panel').setAttribute('aria-hidden', 'true');
+      ['tc-admin-members','tc-admin-resources','tc-admin-activity'].forEach(id => $(id).replaceChildren());
+      if ($('tc-admin-tab').classList.contains('active')) {
+        $('tc-admin-tab').classList.remove('active');
+        $('tc-admin-tab').setAttribute('aria-selected', 'false');
+        $('tc-tab-mine').click();
+      }
+    }
     $('tc-membership-status').textContent = isAdmin
       ? 'أنت مدير المنصة. يمكنك إدارة طلبات الانضمام والموارد المشتركة.'
       : member && member.status === 'approved'
@@ -103,7 +140,8 @@
     loadMyResources();
     if (isAdmin) { loadAdmin(); loadAdminActivity(true); }
   }
-  async function ensureMember() {
+  async function ensureMember(requestUser = user) {
+    const user = requestUser;
     if (!user) return null;
     const { data, error } = await client.from('teacher_community_members')
       .select('user_id,display_name,professional_title,school_name,status,created_at')
@@ -134,18 +172,30 @@
   }
   async function refreshSession() {
     if (!client) return;
+    const generation = ++sessionGeneration;
     const { data, error } = await client.auth.getUser();
+    if (generation !== sessionGeneration) return;
     if (error && error.name !== 'AuthSessionMissingError') throw error;
-    user = data && data.user || null; member = null; isAdmin = false;
-    if (user) {
+    const sessionUser = data && data.user || null;
+    let nextAdmin = false, nextMember = null;
+    if (sessionUser) {
       const adminCheck = await client.rpc('gosvt_teacher_community_is_admin');
+      if (generation !== sessionGeneration) return;
       if (adminCheck.error) throw adminCheck.error;
-      isAdmin = adminCheck.data === true;
-      if (!isAdmin) member = await ensureMember();
-      else {
-        member = { display_name: user.user_metadata?.teacher_display_name || user.email, status: 'approved' };
-      }
+      nextAdmin = adminCheck.data === true;
+      nextMember = nextAdmin
+        ? { display_name: sessionUser.user_metadata?.teacher_display_name || sessionUser.email, status: 'approved' }
+        : await ensureMember(sessionUser);
     }
+    if (generation !== sessionGeneration) return;
+    const nextKey = sessionUser ? sessionUser.id + ':' + (nextAdmin ? 'admin' : nextMember && nextMember.status) : 'guest';
+    if (authorizationKey && authorizationKey !== nextKey) {
+      clearCommunityView();
+      window.location.reload();
+      return;
+    }
+    authorizationKey = nextKey;
+    user = sessionUser; member = nextMember; isAdmin = nextAdmin;
     setSignedInUI();
   }
   function fileExt(name) { return (String(name).split('.').pop() || '').toLowerCase(); }
@@ -191,6 +241,7 @@
   }
   async function loadLibrary(reset = true) {
     if (!user || !(isAdmin || (member && member.status === 'approved'))) return;
+    const session = captureCommunitySession();
     if (libraryLoading) {
       // Queue a fresh query when search/category changes during an active request.
       // Ignore duplicate pagination clicks so the same range is never appended twice.
@@ -238,7 +289,7 @@
       const { data, error } = await query
         .order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
-      if (requestId !== libraryRequest) return;
+      if (requestId !== libraryRequest || !communitySessionIsCurrent(session)) return;
       if (error) {
         $('tc-library-state').hidden = false;
         $('tc-library-state').textContent = 'تعذر تحميل المكتبة: ' + error.message;
@@ -252,15 +303,15 @@
       $('tc-library-more').hidden = !libraryHasMore;
       renderLibrary();
     } catch (err) {
-      if (requestId === libraryRequest) {
+      if (requestId === libraryRequest && communitySessionIsCurrent(session)) {
         $('tc-library-state').hidden = false;
         $('tc-library-state').textContent = 'تعذر الاتصال بالمكتبة. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
         if (reset) $('tc-library-more').hidden = true;
       }
     } finally {
       libraryLoading = false;
-      if (moreButton) moreButton.disabled = false;
-      if (libraryRefreshPending && user) {
+      if (communitySessionIsCurrent(session) && moreButton) moreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && libraryRefreshPending && user) {
         libraryRefreshPending = false;
         void loadLibrary(true);
       }
@@ -288,6 +339,7 @@
   }
   async function updateMyStats() {
     if (!user) return;
+    const session = captureCommunitySession();
     const ids = ['total','shared','private','hidden'];
     ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '…'; });
     try {
@@ -298,6 +350,7 @@
         base().eq('status','published').eq('is_shared',false),
         base().eq('status','hidden')
       ]);
+      if (!communitySessionIsCurrent(session)) return;
       const failed = results.find(result => result.error);
       if (failed) throw failed.error;
       results.forEach((result,index) => {
@@ -306,13 +359,16 @@
       });
       $('tc-my-stats-status').textContent = 'تم تحديث ملخص ملفاتك.';
     } catch (error) {
-      ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '—'; });
-      $('tc-my-stats-status').textContent = 'تعذر تحديث ملخص ملفاتك. يمكنك إعادة تحميل الصفحة.';
+      if (communitySessionIsCurrent(session)) {
+        ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '—'; });
+        $('tc-my-stats-status').textContent = 'تعذر تحديث ملخص ملفاتك. يمكنك إعادة تحميل الصفحة.';
+      }
       console.warn('[Teacher community stats]', error);
     }
   }
   async function loadMyResources(reset = true) {
     if (!user) return;
+    const session = captureCommunitySession();
     if (myLoading) {
       // A successful upload/delete may request a refresh while pagination is
       // still in flight. Queue that refresh instead of silently dropping it.
@@ -339,6 +395,7 @@
       const ascending = sort === 'oldest' || sort === 'title';
       const { data, error } = await query.order(primaryOrder,{ascending}).order('id',{ascending:sort === 'title' || sort === 'oldest'})
         .range(start, start + PAGE_SIZE - 1);
+      if (!communitySessionIsCurrent(session)) return;
       if (error) {
         $('tc-my-resources-status').textContent = 'تعذر تحميل ملفاتك. تحقق من الاتصال ثم أعد المحاولة.';
         if (reset) $('tc-my-resources').innerHTML = retry;
@@ -360,14 +417,16 @@
         $('tc-my-resources').innerHTML = '<div class="tc-state">' + emptyText + '</div>'; $('tc-my-resources-status').textContent = emptyText;
       }
     } catch (err) {
-      $('tc-my-resources-status').textContent = 'تعذر الاتصال بملفاتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
+      if (communitySessionIsCurrent(session)) {
+        $('tc-my-resources-status').textContent = 'تعذر الاتصال بملفاتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.';
       if (reset) $('tc-my-resources').innerHTML = retry;
       else $('tc-my-resources').insertAdjacentHTML('beforeend', retry);
-      if (reset) $('tc-my-resources-more').hidden = true;
+        if (reset) $('tc-my-resources-more').hidden = true;
+      }
     } finally {
       myLoading = false;
-      if (moreButton) moreButton.disabled = false;
-      if (myRefreshPending && user) {
+      if (communitySessionIsCurrent(session) && moreButton) moreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && myRefreshPending && user) {
         myRefreshPending = false;
         void loadMyResources(true);
       }
@@ -381,10 +440,13 @@
       try { downloadTab.opener = null; } catch (_) {}
       try { downloadTab.document.title = 'جارٍ تجهيز التنزيل…'; } catch (_) {}
     }
+    const session = captureCommunitySession();
     try {
       const r = resources.find(x => x.id === id) || await findResource(id);
+      if (!communitySessionIsCurrent(session)) { if (downloadTab && !downloadTab.closed) downloadTab.close(); return; }
       if (!r) throw new Error('لم يتم العثور على الملف.');
       const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90, { download: r.file_name });
+      if (!communitySessionIsCurrent(session)) { if (downloadTab && !downloadTab.closed) downloadTab.close(); return; }
       if (error) throw error;
       // Accept only a signed URL served by this community's configured Supabase project.
       // A malformed or unexpected redirect must never be opened as a download target.
@@ -413,14 +475,17 @@
       try { previewTab.opener = null; } catch (_) {}
       try { previewTab.document.title = 'جارٍ تجهيز المعاينة…'; } catch (_) {}
     }
+    const session = captureCommunitySession();
     try {
       const r = resources.find(x => x.id === id) || await findResource(id);
+      if (!communitySessionIsCurrent(session)) { if (previewTab && !previewTab.closed) previewTab.close(); return; }
       if (!r) throw new Error('لم يتم العثور على الملف.');
       const previewableTypes = ['application/pdf','image/jpeg','image/png','image/webp'];
       if (!previewableTypes.includes(r.mime_type)) {
         throw new Error('المعاينة متاحة حالياً لملفات PDF والصور فقط.');
       }
       const { data, error } = await client.storage.from('teacher-community').createSignedUrl(r.storage_path, 90);
+      if (!communitySessionIsCurrent(session)) { if (previewTab && !previewTab.closed) previewTab.close(); return; }
       if (error) throw error;
       let signedUrl;
       try {
@@ -443,7 +508,10 @@
   let editingResourceId = null, editInProgress = false;
   async function openEditResource(id) {
     if (!user) throw new Error('سجّل الدخول أولاً.');
+    const session = captureCommunitySession();
+    if (!communitySessionIsCurrent(session)) return;
     const r = resources.find(x => x.id === id) || await findResource(id);
+    if (!communitySessionIsCurrent(session)) return;
     if (!r) throw new Error('لم يتم العثور على الوثيقة.');
     const canEdit = isAdmin || (r.owner_id === user.id && member && member.status === 'approved');
     if (!canEdit) throw new Error('لا تملك صلاحية تعديل بيانات هذه الوثيقة.');
@@ -459,6 +527,7 @@
   async function handleEditResource(e) {
     e.preventDefault();
     if (editInProgress || !editingResourceId) return;
+    const session = captureCommunitySession();
     const title = $('tc-edit-title').value.trim();
     const description = $('tc-edit-description').value.trim();
     if (title.length < 2 || title.length > 180) return message('tc-edit-message','يجب أن يتراوح العنوان بين حرفين و180 حرفاً.');
@@ -471,21 +540,28 @@
     submit.disabled = true; submit.textContent = 'جارٍ حفظ التعديلات...';
     if (closeButton) closeButton.disabled = true;
     try {
+      if (!communitySessionIsCurrent(session)) return;
       const updated = await client.from('teacher_community_resources').update({
         title, description, category, is_shared: $('tc-edit-share').checked,
         updated_at: new Date().toISOString()
       }).eq('id', editingResourceId).select('id').maybeSingle();
+      if (!communitySessionIsCurrent(session)) return;
       if (updated.error) throw updated.error;
       if (!updated.data) throw new Error('لم تُحفظ التعديلات. تحقق من صلاحية إدارة الوثيقة ثم أعد المحاولة.');
       $('tc-edit-dialog').close();
       editingResourceId = null;
       await Promise.all([loadLibrary(), loadMyResources(), isAdmin ? loadAdmin() : Promise.resolve(), isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
     } catch (err) {
-      message('tc-edit-message', err.message || 'تعذر حفظ التعديلات.');
+      if (communitySessionIsCurrent(session)) {
+        message('tc-edit-message', err.message || 'تعذر حفظ التعديلات.');
+      }
     } finally {
       editInProgress = false;
-      submit.disabled = false; submit.textContent = 'حفظ التعديلات';
-      if (closeButton) closeButton.disabled = false;
+      // An older edit must never repaint controls after the account changes.
+      if (communitySessionIsCurrent(session)) {
+        submit.disabled = false; submit.textContent = 'حفظ التعديلات';
+        if (closeButton) closeButton.disabled = false;
+      }
     }
   }
   async function findResource(id) {
@@ -494,10 +570,12 @@
   }
   // Hide metadata before removing the private object. If storage or metadata
   // deletion fails, the resource stays hidden and can be retried by its owner/admin.
-  async function safelyDeleteResource(r) {
+  async function safelyDeleteResource(r, session = captureCommunitySession()) {
+    if (!communitySessionIsCurrent(session)) return;
     const hidden = await client.from('teacher_community_resources')
       .update({status:'hidden',updated_at:new Date().toISOString()})
       .eq('id',r.id).select('id').maybeSingle();
+    if (!communitySessionIsCurrent(session)) return;
     if (hidden.error) throw new Error('تعذر إخفاء الوثيقة قبل حذفها: ' + hidden.error.message);
     if (!hidden.data) throw new Error('لم تعد الوثيقة متاحة للحذف أو لا تملك صلاحية إدارتها.');
 
@@ -505,12 +583,16 @@
     // if the subsequent Storage deletion needs to be retried.
     await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdmin() : Promise.resolve()]);
 
+    if (!communitySessionIsCurrent(session)) return;
     const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
+    if (!communitySessionIsCurrent(session)) return;
     if (removed.error) {
       throw new Error('أُخفيت الوثيقة لحمايتها، لكن تعذر حذف الملف من التخزين. أعد المحاولة لاحقاً. ' + removed.error.message);
     }
 
+    if (!communitySessionIsCurrent(session)) return;
     const deleted = await client.from('teacher_community_resources').delete().eq('id',r.id).select('id').maybeSingle();
+    if (!communitySessionIsCurrent(session)) return;
     if (deleted.error) {
       throw new Error('حُذف الملف من التخزين، لكن تعذر حذف بياناته. بقي السجل مخفياً ويمكن إعادة محاولة الحذف. ' + deleted.error.message);
     }
@@ -519,7 +601,9 @@
     }
   }
   async function deleteResource(id) {
-    const r = await findResource(id); if (!r) return;
+    const session = captureCommunitySession();
+    const r = await findResource(id);
+    if (!communitySessionIsCurrent(session) || !r) return;
     if (r.owner_id !== user.id && !isAdmin) throw new Error('لا يمكنك حذف ملف أستاذ آخر.');
     if (!window.confirm('هل تريد حذف هذه الوثيقة نهائياً؟')) return;
 
@@ -528,23 +612,29 @@
       // this also invalidates any previously issued signed download URL.
       // Keep the metadata row until Storage confirms deletion so the owner can retry.
       const removed = await client.storage.from('teacher-community').remove([r.storage_path]);
+      if (!communitySessionIsCurrent(session)) return;
       if (removed.error) {
         throw new Error('تعذر حذف الملف من التخزين؛ لم نحذف بيانات الوثيقة حتى تتمكن من إعادة المحاولة. ' + removed.error.message);
       }
       const deleted = await client.from('teacher_community_resources')
         .delete().eq('id',r.id).select('id').maybeSingle();
+      if (!communitySessionIsCurrent(session)) return;
       if (deleted.error) throw new Error('حُذف الملف من التخزين، لكن تعذر حذف بيانات الوثيقة. أبلغ الإدارة لتنظيف السجل المتبقي.');
       if (!deleted.data) throw new Error('حُذف الملف من التخزين، لكن تعذر العثور على سجل الوثيقة لإزالته. أبلغ الإدارة.');
     } else {
-      await safelyDeleteResource(r);
+      await safelyDeleteResource(r, session);
     }
     await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdmin() : Promise.resolve()]);
   }
   async function toggleShare(id) {
-    const r = await findResource(id); if (!r) return;
+    const session = captureCommunitySession();
+    const r = await findResource(id);
+    if (!communitySessionIsCurrent(session) || !r) return;
     if (r.owner_id !== user.id && !isAdmin) throw new Error('لا يمكنك تعديل ملف أستاذ آخر.');
+    if (!communitySessionIsCurrent(session)) return;
     const updated = await client.from('teacher_community_resources').update({is_shared:!r.is_shared,updated_at:new Date().toISOString()})
       .eq('id',id).select('id').maybeSingle();
+    if (!communitySessionIsCurrent(session)) return;
     if (updated.error) throw updated.error;
     if (!updated.data) throw new Error('لم يتم تغيير حالة المشاركة؛ قد تكون العضوية معلقة أو لم تعد تملك صلاحية تعديل هذه الوثيقة.');
     await Promise.all([loadLibrary(),loadMyResources()]);
@@ -552,6 +642,7 @@
   async function loadAdmin(reset = true, only = 'both') {
     const loadMembers = only !== 'resources', loadResources = only !== 'members';
     if (!isAdmin) return;
+    const session = captureCommunitySession();
     if ((loadMembers && adminMembersLoading) || (loadResources && adminResourcesLoading)) {
       if (reset && loadResources) adminResourcesRefreshPending = true;
       return;
@@ -591,6 +682,7 @@
       only === 'members' ? Promise.resolve({data:[],error:null}) : adminResourceQuery.order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(adminResourcesOffset, adminResourcesOffset + PAGE_SIZE - 1)
     ]);
+    if (!communitySessionIsCurrent(session)) return;
     const memberPage = members.error ? [] : (members.data || []);
     const resourcePage = docs.error ? [] : (docs.data || []);
     let resourceOwners = {};
@@ -599,6 +691,7 @@
       const ownerResult = ownerIds.length
         ? await client.from('teacher_community_members').select('user_id,display_name,professional_title,school_name').in('user_id', ownerIds)
         : {data:[],error:null};
+      if (!communitySessionIsCurrent(session)) return;
       if (ownerResult.error) console.warn('[Teacher community admin resource owners]', ownerResult.error);
       else resourceOwners = Object.fromEntries((ownerResult.data || []).map(m => [m.user_id, m]));
     }
@@ -646,18 +739,18 @@
       $('tc-admin-resources-more').hidden = !adminResourcesMore;
     }
     } catch (err) {
-      if (loadMembers) {
+      if (communitySessionIsCurrent(session) && loadMembers) {
         $('tc-admin-members').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بطلبات العضوية. <button type="button" data-retry-admin-members>إعادة المحاولة</button></div>');
       }
-      if (loadResources) {
+      if (communitySessionIsCurrent(session) && loadResources) {
         $('tc-admin-resources').insertAdjacentHTML('beforeend', '<div class="tc-state" role="alert">تعذر الاتصال بموارد المجتمع. <button type="button" data-retry-admin-resources>إعادة المحاولة</button></div>');
       }
     } finally {
       if (loadMembers) adminMembersLoading = false;
       if (loadResources) adminResourcesLoading = false;
-      if (loadMembers && memberMoreButton) memberMoreButton.disabled = false;
-      if (loadResources && resourceMoreButton) resourceMoreButton.disabled = false;
-      if (loadResources && adminResourcesRefreshPending) {
+      if (communitySessionIsCurrent(session) && loadMembers && memberMoreButton) memberMoreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && loadResources && resourceMoreButton) resourceMoreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && loadResources && adminResourcesRefreshPending) {
         adminResourcesRefreshPending = false;
         void loadAdmin(true, 'resources');
       }
@@ -725,6 +818,7 @@
   }
   async function loadAdminActivity(reset = true) {
     if (!isAdmin) return;
+    const session = captureCommunitySession();
     if (adminActivityLoading) {
       if (reset) adminActivityRefreshPending = true;
       return;
@@ -752,6 +846,7 @@
       if (activitySearch) activityQuery = activityQuery.ilike('resource_title', '%' + activitySearch + '%');
       if (actorSearch) {
         const actorIds = await findActivityActorIds(actorSearch);
+        if (!communitySessionIsCurrent(session)) return;
         if (!actorIds.length) {
           adminActivityOffset = 0; adminActivityMore = false;
           panel.innerHTML = '<div class="tc-state">لا توجد عمليات باسم المنفذ يطابق البحث.</div>';
@@ -765,12 +860,14 @@
         .order('created_at',{ascending:false}).order('id',{ascending:false})
         .range(start,start + PAGE_SIZE - 1);
       if (error) throw error;
+      if (!communitySessionIsCurrent(session)) return;
       const page = data || [];
       const personIds = [...new Set(page.flatMap(row => [row.actor_id,row.owner_id]).filter(Boolean))];
       let people = {};
       if (personIds.length) {
         const peopleResult = await client.from('teacher_community_members')
           .select('user_id,display_name,professional_title,school_name').in('user_id',personIds);
+        if (!communitySessionIsCurrent(session)) return;
         if (peopleResult.error) console.warn('[Teacher community activity people]',peopleResult.error);
         else people = Object.fromEntries((peopleResult.data || []).map(person => [person.user_id,person]));
       }
@@ -800,15 +897,17 @@
       }
       moreButton.hidden = !adminActivityMore;
     } catch (error) {
-      console.error('[Teacher community activity]',error);
-      const dateError = error && typeof error.message === 'string' && error.message.startsWith('تاريخ');
+      if (communitySessionIsCurrent(session)) {
+        console.error('[Teacher community activity]',error);
+        const dateError = error && typeof error.message === 'string' && error.message.startsWith('تاريخ');
       const feedback = dateError ? error.message : 'تعذر تحميل سجل النشاط. تأكد من تطبيق ترحيل سجل التدقيق في قاعدة البيانات ثم أعد المحاولة.';
-      panel.innerHTML = '<div class="tc-state" role="alert">' + escapeHtml(feedback) + '</div>';
-      moreButton.hidden = true;
+        panel.innerHTML = '<div class="tc-state" role="alert">' + escapeHtml(feedback) + '</div>';
+        moreButton.hidden = true;
+      }
     } finally {
       adminActivityLoading = false;
-      if (moreButton) moreButton.disabled = false;
-      if (adminActivityRefreshPending) {
+      if (communitySessionIsCurrent(session) && moreButton) moreButton.disabled = false;
+      if (communitySessionIsCurrent(session) && adminActivityRefreshPending) {
         adminActivityRefreshPending = false;
         void loadAdminActivity(true);
       }
@@ -994,16 +1093,27 @@
     const submit = $('tc-upload-submit'); submit.disabled = true; submit.textContent = 'جارٍ رفع الملف...';
     const closeButton = $('tc-upload-dialog').querySelector('.tc-dialog-close');
     if (closeButton) closeButton.disabled = true;
+    const session = captureCommunitySession();
     try {
+      // Never start a storage mutation from a session that has already expired.
+      if (!communitySessionIsCurrent(session)) return;
       // Keep path generation inside the guarded upload flow so any runtime error
       // still reaches finally and releases the dialog and submit-button locks.
       const path = user.id + '/' + crypto.randomUUID() + '.' + ext;
       const upload = await client.storage.from('teacher-community').upload(path,file,{contentType:mimeType,upsert:false});
+      if (!communitySessionIsCurrent(session)) {
+        // The shared client may now carry another user's token. Do not attempt
+        // removal under that identity; the owner-scoped Storage policy must
+        // remain authoritative. Record the exact orphan path for admin cleanup.
+        if (!upload.error) console.warn('[Teacher community] Upload completed after its session expired; owner-scoped cleanup is required:', path);
+        return;
+      }
       if (upload.error) throw upload.error;
       const row = {owner_id:user.id,title,description:$('tc-file-description').value.trim(),category:$('tc-file-category').value,
         file_name:file.name,mime_type:mimeType,size_bytes:file.size,storage_path:path,
         is_shared:$('tc-file-share').checked,status:'published'};
       const saved = await client.from('teacher_community_resources').insert(row);
+      if (!communitySessionIsCurrent(session)) return;
       if (saved.error) {
         const cleanup = await client.storage.from('teacher-community').remove([path]);
         if (cleanup.error) {
@@ -1014,18 +1124,25 @@
       }
       $('tc-upload-form').reset(); updateSelectedFileHint(); $('tc-upload-dialog').close();
       await Promise.all([loadLibrary(),loadMyResources(),isAdmin ? loadAdminActivity(true) : Promise.resolve()]);
-    } catch(err) { message('tc-upload-message',err.message || 'فشل رفع الملف.'); }
+    } catch(err) {
+      if (communitySessionIsCurrent(session)) message('tc-upload-message',err.message || 'فشل رفع الملف.');
+    }
     finally {
       uploadInProgress = false;
-      submit.disabled=false;
-      submit.textContent='رفع وحفظ الوثيقة';
-      if (closeButton) closeButton.disabled = false;
+      // Do not let an old upload repaint controls belonging to a new account.
+      if (communitySessionIsCurrent(session)) {
+        submit.disabled=false;
+        submit.textContent='رفع وحفظ الوثيقة';
+        if (closeButton) closeButton.disabled = false;
+      }
     }
   }
   async function handleAdminAction(e) {
     const b=e.target.closest('button'); if(!b || !isAdmin || b.disabled) return;
+    const session = captureCommunitySession();
     b.disabled = true;
     try {
+      if (!communitySessionIsCurrent(session)) return;
       if (b.dataset.retryAdminMembers) {
         await loadAdmin(true,'members');
       } else if (b.dataset.retryAdminResources) {
@@ -1034,20 +1151,23 @@
         const id=b.dataset.approveMember || b.dataset.suspendMember, status=b.dataset.approveMember?'approved':'suspended';
         const updated=await client.from('teacher_community_members').update({status,updated_at:new Date().toISOString()})
           .eq('user_id',id).select('user_id').maybeSingle();
+        if (!communitySessionIsCurrent(session)) return;
         if(updated.error) throw updated.error;
         if(!updated.data) throw new Error('لم يتغير وضع العضوية؛ لم يتم العثور على السجل أو لا تملك صلاحية تعديله.');
         await loadAdmin();
       } else if (b.dataset.hideResource) {
         const id=b.dataset.hideResource, r=await findResource(id);
         if(!r) throw new Error('لم تعد الوثيقة موجودة. حدّث القائمة.');
+        if (!communitySessionIsCurrent(session)) return;
         const updated=await client.from('teacher_community_resources').update({status:r.status==='hidden'?'published':'hidden',updated_at:new Date().toISOString()})
           .eq('id',id).select('id').maybeSingle();
+        if (!communitySessionIsCurrent(session)) return;
         if(updated.error) throw updated.error;
         if(!updated.data) throw new Error('لم تتغير حالة الوثيقة؛ تحقق من صلاحيات الإدارة ثم أعد تحميل القائمة.');
         await Promise.all([loadAdmin(),loadLibrary(),loadAdminActivity(true)]);
       } else if (b.dataset.adminDelete) {
         const id=b.dataset.adminDelete, r=await findResource(id);
-        if (!r) return;
+        if (!communitySessionIsCurrent(session) || !r) return;
         if (!window.confirm('هل تريد حذف هذه الوثيقة من المجتمع نهائياً؟')) return;
         await safelyDeleteResource(r);
         await Promise.all([loadAdmin(),loadLibrary(),loadMyResources(),loadAdminActivity(true)]);
@@ -1243,7 +1363,7 @@
     }
     const categorySelect = $('tc-category');
     if (requestedCategory && categorySelect && Array.from(categorySelect.options).some(option => option.value === requestedCategory)) categorySelect.value = requestedCategory;
-    if (!config || !window.supabase || !window.supabase.createClient) {
+    if (!config || !config.url || !config.publishableKey || !window.supabase || !window.supabase.createClient) {
       $('tc-library-state').textContent='إعداد الاتصال غير متاح. تحقق من تحميل إعداد Supabase.';
       return;
     }
@@ -1253,7 +1373,13 @@
       storageKey:'gosvt_teacher_community_auth_v1',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true
     }});
     client.auth.onAuthStateChange((event,session)=>{
-      if(event==='SIGNED_OUT'){user=null;member=null;isAdmin=false;setSignedInUI();}
+      if(event==='SIGNED_OUT'){
+        sessionGeneration++;
+        user=null;member=null;isAdmin=false;authorizationKey=null;
+        clearCommunityView();setSignedInUI();
+        window.location.reload();
+        return;
+      }
       if(event==='SIGNED_IN' || event==='TOKEN_REFRESHED') setTimeout(()=>refreshSession().catch(err=>console.warn('[Teacher community]',err)),0);
     });
     try { await refreshSession(); } catch(err) { console.error('[Teacher community]',err); $('tc-library-state').textContent='تعذر التحقق من الحساب. أعد تحميل الصفحة.'; }

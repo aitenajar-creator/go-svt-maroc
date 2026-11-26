@@ -3,6 +3,6 @@
  * or secret key in this browser file.
  */
 window.GoSVTTeacherSupabaseConfig = Object.freeze({
-  url: 'https://gymofjissiuwpnaxsmcw.supabase.co',
-  publishableKey: 'sb_publishable_vJxbuhBYjb8wfdaNPzmj2A_wm5Ijksn'
+  url: window.GoSVTRuntimeConfig ? window.GoSVTRuntimeConfig.teacherSupabaseUrl : 'https://gymofjissiuwpnaxsmcw.supabase.co',
+  publishableKey: window.GoSVTRuntimeConfig ? window.GoSVTRuntimeConfig.teacherSupabasePublishableKey : 'sb_publishable_vJxbuhBYjb8wfdaNPzmj2A_wm5Ijksn'
 });

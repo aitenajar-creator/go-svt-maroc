@@ -34,13 +34,18 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
       - uses: actions/configure-pages@v5
 
       # 1) Quiz automatiques : un quiz est créé pour chaque nouveau cours PDF (ne bloque jamais le déploiement)
       - name: Générer les quiz des nouveaux cours (IA Gemini gratuit ou Claude)
+        if: github.ref == 'refs/heads/main'
         continue-on-error: true
         timeout-minutes: 60
         env:
@@ -55,21 +60,6 @@ jobs:
           QUIZ_FILTER: ${{ inputs.quiz_filter }}
           QUIZ_FORCE: ${{ inputs.quiz_force }}
         run: python3 _tools/generate_quiz.py
-      - name: Enregistrer les quiz générés dans le dépôt
-        continue-on-error: true
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add quiz quiz-map.json
-          if git diff --cached --quiet; then
-            echo "Aucun nouveau quiz à enregistrer"
-          else
-            git commit -m "Quiz générés automatiquement"
-            for i in 1 2 3; do
-              git pull --rebase origin main && git push origin HEAD:main && break || sleep 5
-            done
-          fi
-
       # 2) Pages SEO, sitemap, liens dans index.html
       - name: Générer les pages SEO (svt/, sitemap.xml, liens index.html)
         env:
@@ -99,9 +89,27 @@ jobs:
               json.dump(dates, f, ensure_ascii=False)
           PYEOF
           sudo cp dates.json _site/dates.json
+      - name: Stamp release-scoped offline caches
+        run: sudo python3 _tools/build_service_worker.py _site
+      - name: Validate the exact artifact before upload
+        run: python3 scripts/check-site.py _site --built
+      # Persist generated quizzes only AFTER validating the artifact. Never pull/rebase
+      # here: a concurrent update to main must not change the checkout being deployed.
+      - name: Enregistrer les quiz validés sans modifier la révision construite
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add quiz quiz-map.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Quiz générés automatiquement"
+            git push origin HEAD:main
+          fi
       - uses: actions/upload-pages-artifact@v3
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:
