@@ -67,10 +67,10 @@ test('learning platform: authentic grading and academic isolation on an isolated
       const stale=(await db.query('select public.gosvt_platform_save_answers($1,$2,1,$3) value',[attempt.id,JSON.stringify({[attempt.questions[0].id]:1}),student])).rows[0].value;
       assert.equal(stale.accepted,false);
       await assert.rejects(db.query('select public.gosvt_platform_submit_assessment($1,$2,1,$3)',[attempt.id,JSON.stringify(answers),student]),/updated_elsewhere/);
-      const same=(await db.query('select public.gosvt_platform_submit_assessment($1,$2,2,$3) value',[attempt.id,JSON.stringify(answers),student])).rows[0].value;
-      assert.equal(same.server_graded,true);
       const changed={[attempt.questions[0].id]:1};
       await assert.rejects(db.query('select public.gosvt_platform_submit_assessment($1,$2,2,$3)',[attempt.id,JSON.stringify(changed),student]),/updated_elsewhere/);
+      const same=(await db.query('select public.gosvt_platform_submit_assessment($1,$2,2,$3) value',[attempt.id,JSON.stringify(answers),student])).rows[0].value;
+      assert.equal(same.server_graded,true);
     });
     await t.test('authoring changes do not change the answer snapshot of an ongoing attempt',async()=>{
       await as(admin);const edited={...document,questions:document.questions.map(q=>({...q,answer:1}))};
