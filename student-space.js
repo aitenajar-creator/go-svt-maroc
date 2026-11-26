@@ -430,11 +430,16 @@
                 if (kind === 'plan' &&
                     (typeof remote.title !== 'string' || typeof remote.date !== 'string')) return;
 
-                const id = remote.id.trim();
+                // The platform UI uses "done"; the cloud schema uses "completed".
+                // Normalize cloud rows at the boundary so both views stay consistent.
+                const item = kind === 'plan'
+                    ? { ...remote, done: typeof remote.done === 'boolean' ? remote.done : remote.completed === true }
+                    : remote;
+                const id = item.id.trim();
                 const index = positions.get(id);
                 if (index === undefined) {
                     positions.set(id, merged.length);
-                    merged.push(remote);
+                    merged.push(item);
                     changed = true;
                     return;
                 }
@@ -442,11 +447,11 @@
                 const local = merged[index];
                 if (!local || typeof local !== 'object' || Array.isArray(local)) return;
                 const localTime = Number(local.updatedAt || local.createdAt);
-                const remoteTime = Number(remote.updatedAt || remote.createdAt);
+                const remoteTime = Number(item.updatedAt || item.createdAt);
                 const safeLocalTime = Number.isFinite(localTime) ? localTime : 0;
                 const safeRemoteTime = Number.isFinite(remoteTime) ? remoteTime : 0;
                 if (safeRemoteTime > safeLocalTime) {
-                    merged[index] = remote;
+                    merged[index] = item;
                     changed = true;
                 }
             });
@@ -644,7 +649,9 @@
                 Number.isNaN(Date.parse(item.date)) || new Date(item.date + 'T00:00:00Z').toISOString().slice(0, 10) !== item.date)) {
                 throw new Error('اختر تاريخًا صالحًا.');
             }
-            item.done = values.done === true;
+            item.done = values.done === true || values.completed === true;
+            // Keep the cloud adapter's canonical field in sync with the UI field.
+            item.completed = item.done;
         }
         context.data[field] = previous ? list.map(value => value.id === item.id ? item : value) : list.concat(item);
         saveProfileData(context.id, context.data);
