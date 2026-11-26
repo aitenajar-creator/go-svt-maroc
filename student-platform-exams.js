@@ -78,9 +78,12 @@
       finally{serverStarting=false;}
     }
     function adoptServer(result){
-      if(!Array.isArray(result.questions)||!result.questions.length||!result.questions.every(q=>q.id&&typeof q.prompt==='string'&&Array.isArray(q.options)&&q.options.length>=2))throw new Error('بيانات المحاولة غير صالحة.');
-      const left=Date.parse(result.deadline_at)-Date.parse(result.server_time);
-      active={id:result.id,assessmentId:result.assessment_id,owner:store.state.profile.id,mode:'server',title:result.title,questions:result.questions.map(q=>({id:q.id,prompt:q.prompt,options:q.options,points:q.points})),answers:result.answers||{},sequence:Number(result.last_sequence)||0,index:0,deadline:Date.now()+Math.max(0,left),startedAt:Date.now()};
+      const serverTime=Date.parse(result?.server_time),deadlineAt=Date.parse(result?.deadline_at);
+      if(!result||typeof result.id!=='string'||!result.id||typeof result.assessment_id!=='string'||!result.assessment_id||!Number.isFinite(serverTime)||!Number.isFinite(deadlineAt)||!Array.isArray(result.questions)||!result.questions.length||!result.questions.every(q=>q.id&&typeof q.prompt==='string'&&Array.isArray(q.options)&&q.options.length>=2))throw new Error('بيانات المحاولة أو توقيتها غير صالحة.');
+      const left=deadlineAt-serverTime,sequence=Number(result.last_sequence);
+      if(!Number.isSafeInteger(sequence)||sequence<0)throw new Error('تسلسل إجابات المحاولة غير صالح.');
+      const answers=result.answers&&typeof result.answers==='object'&&!Array.isArray(result.answers)?result.answers:{};
+      active={id:result.id,assessmentId:result.assessment_id,owner:store.state.profile.id,mode:'server',title:result.title,questions:result.questions.map(q=>({id:q.id,prompt:q.prompt,options:q.options,points:q.points})),answers,sequence,index:0,deadline:Date.now()+Math.max(0,left),startedAt:Date.now()};
       persist();
     }
     async function resume(){
