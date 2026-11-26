@@ -94,7 +94,7 @@ self.addEventListener('fetch', event => {
   const isNavigation = request.mode === 'navigate';
   const isAppAsset = url.pathname === '/' ||
     url.pathname === '/index.html' ||
-    /\.(html|css|js|json|webmanifest|png|svg|ico)$/i.test(url.pathname);
+    /\.(html|css|js|json|webmanifest|png|svg|ico|webp|woff2)$/i.test(url.pathname);
 
   if (!isNavigation && !isAppAsset) return;
 

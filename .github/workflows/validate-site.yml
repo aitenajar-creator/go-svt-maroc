@@ -66,6 +66,10 @@ jobs:
 
       - name: Build science media catalogue
         run: python3 _tools/build_science_media.py
+      - name: Build factual student learning catalog
+        run: python3 _tools/build_student_catalog.py
+      - name: Validate student catalog source files
+        run: python3 scripts/check-student-catalog.py
 
       - name: Build GitHub Pages artifact
         uses: actions/jekyll-build-pages@v1
@@ -108,3 +112,5 @@ jobs:
 
       - name: Validate the exact Pages artifact
         run: python3 scripts/check-site.py _site --built
+      - name: Validate student catalog in built Pages artifact
+        run: python3 scripts/check-student-catalog.py --root _site
