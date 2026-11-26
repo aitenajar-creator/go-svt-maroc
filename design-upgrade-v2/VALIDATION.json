@@ -328,7 +328,7 @@
     },
     {
       "path": "supabase/migrations/20261126000200_student_learning_platform.sql",
-      "sha256": "0641713fb4525fa42fda74f94d553e711756c6354642cbe455d40802798a7019"
+      "sha256": "0cb60482c3e61ec81f41d57a89babdee8a3f4726bc31ccdb96a4919983bb1e45"
     },
     {
       "path": "supabase/project-manifest.json",
