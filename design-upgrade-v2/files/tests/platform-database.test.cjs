@@ -29,6 +29,8 @@ test('learning platform: authentic grading and academic isolation on an isolated
       assert(id);
       await assert.rejects(db.query('select public.gosvt_platform_save_assessment($1,$2,1,$3)',[id,JSON.stringify({...draft,is_published:true,reviewed:true}),admin]),/3_to_60/);
       await assert.rejects(db.query('select public.gosvt_platform_save_assessment(null,$1,null,$2)',[JSON.stringify({...document,reviewed:false}),admin]),/editorial_review_required/);
+      const malformed={...document,questions:document.questions.map((q,i)=>i===0?{...q,options:[{unexpected:'object'},'Other fixture option']}:q)};
+      await assert.rejects(db.query('select public.gosvt_platform_save_assessment(null,$1,null,$2)',[JSON.stringify(malformed),admin]),/invalid_question/);
     });
     await t.test('curated resources require admin authority and preserve optimistic edit boundaries',async()=>{
       const resource={title:'Fixture resource',description:'Fixture only',source_url:'/cours/fixture.pdf',resource_kind:'cours',study_level:'2BAC',study_tracks:['2BACSVT'],language:'arabe',is_published:true,position:0};
