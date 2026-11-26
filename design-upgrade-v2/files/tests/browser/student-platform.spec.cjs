@@ -8,6 +8,7 @@ async function localOnly(page,options){
     const url=new URL(route.request().url());
     if(url.origin!==origin){if(options&&url.hostname==='cdn.jsdelivr.net'&&url.pathname.includes('supabase-js'))return route.fulfill({contentType:'application/javascript',body:''});return route.abort();}
     if(options&&options.failCatalog&&url.pathname==='/student-platform-catalog.json')return route.fulfill({status:503,contentType:'application/json',body:'{}'});
+    if(options&&options.delayFirstCatalog&&url.pathname==='/student-platform-catalog.json'){options.catalogRequests=(options.catalogRequests||0)+1;if(options.catalogRequests===1){await new Promise(resolve=>setTimeout(resolve,900));return route.fulfill({status:503,contentType:'application/json',body:'{}'});}}
     if(options&&url.pathname==='/supabase-config.js')return route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'supabase-config.js'),'utf8')});
     return route.continue();
   });
@@ -167,4 +168,18 @@ test('a failed catalog request is shown as a partial service state, not an endle
   await expect(page.locator('.sp-dialog')).toContainText('بعض الخدمات غير متاحة');
   await expect(page.locator('.sp-dialog')).not.toContainText('جارٍ التحقق');
   await expect(page.locator('#sp-main .sp-notice')).toContainText('تعذر تحميل الفهرس');
+});
+
+
+test('a stale catalog failure cannot overwrite a newer successful retry',async({page})=>{
+  await localOnly(page,{signedIn:true,delayFirstCatalog:true});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await page.locator('[data-sp-action="cloud"]').click();
+  await page.locator('.sp-dialog [data-sp-action="refresh"]').click();
+  await expect(page.locator('.sp-notice')).not.toContainText('تعذر تحميل الفهرس');
+  await page.waitForTimeout(1100);
+  await page.locator('[data-sp-action="cloud"]').click();
+  await expect(page.locator('.sp-dialog')).toContainText('متصلة');
+  await expect(page.locator('.sp-dialog')).not.toContainText('بعض الخدمات غير متاحة');
 });
