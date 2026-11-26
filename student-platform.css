@@ -1,4 +1,4 @@
-@import url('assets/student-platform/fonts.css');
+/* Font asset is intentionally omitted in root integration until binary font files are included; system fallback remains. */
 
 body.sp-platform-active{background:#f5f7f3;margin:0}
 body.sp-platform-active>.header,body.sp-platform-active>.footer,body.sp-platform-active #student-space>.container>.section-title,body.sp-platform-active #student-space>.container>.evo-entry{display:none!important}
