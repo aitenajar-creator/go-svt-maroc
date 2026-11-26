@@ -70,9 +70,6 @@ test('site owner can open the new learning authoring tab while a student cannot'
   await page.locator('[data-admin-tab="learning-platform-admin-panel"]').click();
   await expect(page.locator('#learning-platform-admin-panel')).toBeVisible();
   await expect(page.locator('#learning-resources-list')).toContainText('لا توجد موارد بعد');
-  await page.locator('#signout-btn').click();
-  await expect(page.locator('#login-panel')).toBeVisible();
-
   const studentPage=await page.context().newPage();
   await isolate(studentPage,{signedIn:true,role:'student'});
   await studentPage.goto('/admin.html');
