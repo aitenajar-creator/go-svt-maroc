@@ -54,7 +54,8 @@
         "20261125000300_atomic_teacher_question_replies.sql",
         "20261125000400_recreate_student_collection_items.sql",
         "20261125000500_student_platform_state_profile_scope.sql",
-        "20261126000100_atomic_student_platform_state_merge.sql"
+        "20261126000100_atomic_student_platform_state_merge.sql",
+        "20261126000200_student_learning_platform.sql"
       ]
     },
     "teacher-community": {
