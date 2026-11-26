@@ -39,6 +39,10 @@ test('assessment publication requires explicit review and at least three questio
  assert.match(script,/reviewed:\$\('learning-assessment-reviewed'\)\.checked/);
 });
 
+test('clearing the admin session disables results export',()=>{
+ assert.match(script,/function clearSession\(\)\{[\s\S]*?\$\('learning-results-export'\)\.disabled=true/);
+});
+
 test('results view and export do not select or export answer snapshots or keys',()=>{
  assert.match(script,/select\('id,student_id,assessment_id,title_snapshot,started_at,deadline_at,submitted_at,score,max_score'\)/);
  assert.doesNotMatch(script,/question_snapshot/);
