@@ -97,3 +97,17 @@ test('administrators can validate a bank and publish through the authorized RPC 
   expect(request.params.p_document.questions).toHaveLength(3);expect(request.params.p_document.reviewed).toBe(true);expect(request.params.p_document.is_published).toBe(true);
   expect(request.params.p_document.questions[0].answer).toBe(1);
 });
+
+test('a missing new-platform table is reported as partial while the existing learning library remains usable',async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await localOnly(page,{signedIn:true,failTable:'learning_assessments'});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>document.querySelector('.gs-learning-platform')?.dataset.platformUser||'')).toBe('00000000-0000-0000-0000-000000000001');
+  await page.locator('[data-sp-action="cloud"]').click();
+  await expect(page.locator('.sp-dialog')).toContainText('بعض الخدمات غير متاحة');
+  await page.locator('[data-sp-close]').click();
+  await nav(page,'library').click();
+  await expect(page.locator('.sp-course-card').first()).toBeVisible();
+  await expect(errors).toEqual([]);
+});
