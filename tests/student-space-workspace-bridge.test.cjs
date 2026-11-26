@@ -5,6 +5,7 @@ const path = require('node:path');
 const { root } = require('./helpers.cjs');
 
 const source = fs.readFileSync(path.join(root, 'student-space.js'), 'utf8');
+const cloudSource = fs.readFileSync(path.join(root, 'supabase-config.js'), 'utf8');
 
 test('workspace record bridge is exported without removing legacy student APIs', () => {
   for (const name of [
@@ -53,5 +54,5 @@ test('workspace record operations validate input and retain existing cloud delet
 test('study plan completion uses the cloud field and the platform UI field consistently', () => {
   assert.ok(source.includes('item.completed = item.done;'), 'workspace saves must persist the cloud completion field');
   assert.ok(source.includes('done: typeof remote.done === \'boolean\' ? remote.done : remote.completed === true'), 'cloud hydration must expose the UI completion field');
-  assert.ok(source.includes('completed: item.completed === true'), 'cloud adapter must receive the canonical completion field');
+  assert.ok(cloudSource.includes('completed: item.completed === true'), 'cloud adapter must receive the canonical completion field');
 });
