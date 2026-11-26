@@ -298,17 +298,6 @@ grant execute on function public.gosvt_platform_save_resource(uuid,jsonb,uuid) t
 revoke insert,update on public.learning_resources from authenticated;
 revoke insert(title,description,source_url,resource_kind,study_level,study_tracks,language,is_published,position) on public.learning_resources from authenticated;
 revoke update(title,description,source_url,resource_kind,study_level,study_tracks,language,is_published,position,updated_at) on public.learning_resources from authenticated;
- then raise exception 'invalid_question'; end if;
-    select array_agg(value) into v_options from jsonb_array_elements_text(q->'options');
-    if exists(select 1 from unnest(v_options) opt where char_length(trim(opt)) not between 1 and 2000) or (q->>'answer') !~ '^[0-9]+$' then raise exception 'invalid_options'; end if;
-    insert into public.learning_questions(assessment_id,position,prompt,options,answer,explanation,points)
-      values(v_id,v_position,trim(q->>'prompt'),v_options,(q->>'answer')::integer,trim(q->>'explanation'),coalesce((q->>'points')::integer,1));
-    v_position:=v_position+1;
-  end loop;
-  return v_id;
-end $$;
-revoke all on function public.gosvt_platform_save_assessment(uuid,jsonb,integer,uuid) from public,anon;
-grant execute on function public.gosvt_platform_save_assessment(uuid,jsonb,integer,uuid) to authenticated;
 
 create or replace function public.gosvt_platform_clean_answers(p_snapshot jsonb,p_answers jsonb)
 returns jsonb language plpgsql set search_path=pg_catalog,public as $$
