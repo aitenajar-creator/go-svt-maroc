@@ -145,7 +145,7 @@ $('learning-assessments-list').addEventListener('click',async e=>{
 $('learning-results-export').addEventListener('click',()=>{
  if(!activeUser||!results.length)return;
  const cols=['title_snapshot','student_id','score','max_score','started_at','submitted_at'];
- const cell=value=>{let text=String(value??'');if(/^[=+@\\-\\t\\r]/.test(text))text="'"+text;return '"'+text.replace(/"/g,'""')+'"';};
+ const cell=value=>{let text=String(value??'');if(/^[=+@\-\t\r]/.test(text))text="'"+text;return '"'+text.replace(/"/g,'""')+'"';};
  const csv=[cols.join(','),...results.map(r=>cols.map(k=>cell(r[k])).join(','))].join('\r\n');
  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download='go-svt-learning-results.csv';a.click();URL.revokeObjectURL(url);
