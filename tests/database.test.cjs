@@ -59,6 +59,20 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
       assert.deepEqual(saved.cards,{deckA:{seen:1},deckB:{seen:2}});
       assert.deepEqual(saved.lab,{experimentA:{done:true},experimentB:{done:false}});
       assert.equal(saved.act['2026-11-26'],2);
+      await merge({cards:{},lab:{},atlas:{},cardsTotal:0,_resetAt:20,u:20});
+      await merge({cards:{staleDeck:{seen:true}},lab:{staleExperiment:{done:true}},u:19});
+      const afterStale=(await db.query(
+        "select state from public.student_platform_state where student_id=$1 and profile_id='account-default'",
+        [student]
+      )).rows[0].state;
+      assert.deepEqual(afterStale.cards,{});
+      assert.deepEqual(afterStale.lab,{});
+      await merge({cards:{freshDeck:{seen:true}},_resetAt:20,u:21});
+      const afterFresh=(await db.query(
+        "select state from public.student_platform_state where student_id=$1 and profile_id='account-default'",
+        [student]
+      )).rows[0].state;
+      assert.deepEqual(afterFresh.cards,{freshDeck:{seen:true}});
       await as(other);
       await assert.rejects(
         db.query('select public.gosvt_merge_student_platform_state($1,$2,$3::jsonb)',[student,'account-default','{}']),
