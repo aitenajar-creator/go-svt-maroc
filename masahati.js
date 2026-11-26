@@ -610,7 +610,7 @@ const ACT = {
   ptog: e => { const d = data(), p = d.studyPlan.find(x => x.id === e.dataset.id); if (p) { p.completed = !p.completed; p.updatedAt = Date.now(); SS().saveProfileData(pid(), d); if (p.completed) { bump(); afterAction(); } } render(); },
   pdel: e => { const d = data(); d.studyPlan = d.studyPlan.filter(p => p.id !== e.dataset.id); SS().saveProfileData(pid(), d); cloudDel('deleteStudyPlanItem', e.dataset.id); render(); },
   export: () => { try { const b = new Blob([SS().exportProfileData(pid())], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'gosvt-mes-donnees.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); } catch (x) { toast(T('تعذّر التصدير', 'Export impossible')); } },
-  reset: () => { if (!confirm(T('سيتم مسح بطاقات المراجعة وسجل التجارب. متابعة؟', 'Effacer cartes et expériences ?'))) return; const ps = PS(); ps.cards = {}; ps.lab = {}; ps.atlas = {}; ps.cardsTotal = 0; savePS(); render(); },
+  reset: () => { if (!confirm(T('سيتم مسح بطاقات المراجعة وسجل التجارب. متابعة؟', 'Effacer cartes et expériences ?'))) return; const ps = PS(); ps.cards = {}; ps.lab = {}; ps.atlas = {}; ps.cardsTotal = 0; ps._resetAt = Date.now(); savePS(); render(); },
   legacy: () => { if (confirm(T('العودة للواجهة القديمة؟ يمكنك العودة للجديدة بتنظيف بيانات الموقع.', 'Revenir à l’ancienne interface ?'))) { localStorage.setItem('gosvt_legacy_space', '1'); location.reload(); } }
 };
 function cloudDel(m, id) { const u = cloudUid(); if (u && window.GoSVTCloud && GoSVTCloud[m]) Promise.resolve(GoSVTCloud[m](id, u)).catch(() => {}); }
