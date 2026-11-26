@@ -47,3 +47,14 @@ test('results view and export do not select or export answer snapshots or keys',
  assert.match(script,/select\('id,student_id,assessment_id,title_snapshot,started_at,deadline_at,submitted_at,score,max_score'\)/);
  assert.doesNotMatch(script,/question_snapshot/);
 });
+
+
+test('late assessment-question responses cannot repopulate the editor after logout or account change',()=>{
+ const handlerStart=script.indexOf("$('learning-assessments-list').addEventListener('click'");
+ const handlerEnd=script.indexOf("$('learning-results-export').addEventListener",handlerStart);
+ const handler=script.slice(handlerStart,handlerEnd);
+ assert.match(handler,/requestGeneration=generation,requestUser=activeUser/);
+ assert.ok(handler.indexOf('await client.from(\'learning_questions\')')<handler.indexOf('!current(requestGeneration)||activeUser!==requestUser'));
+ assert.match(handler,/if\(!current\(requestGeneration\)\|\|activeUser!==requestUser\)return/);
+ assert.match(handler,/catch\(err\)\{if\(current\(requestGeneration\)&&activeUser===requestUser\)/);
+});
