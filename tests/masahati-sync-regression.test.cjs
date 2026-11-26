@@ -4,15 +4,15 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 
-function harness({readResult={data:null,error:null},writeResult={error:null}}={}) {
+function harness({readResult={data:null,error:null},writeResult={error:null},sharedState=null}={}) {
   const source = fs.readFileSync(require('node:path').join(__dirname,'..','masahati.js'),'utf8');
   const start = source.indexOf('let _ps = null, _psPid = null, _saveT = null;');
   const end = source.indexOf('\nfunction bump(kind)', start);
   assert(start >= 0 && end > start);
   let currentPid='profile-1', currentUid='user-1', timerId=0, timers=new Map(), reads=0, writes=[], filters=[];
-  const storage = new Map();
+  const storage = new Map();\n  let serverState=readResult&&readResult.data&&readResult.data.state?readResult.data.state:null;
   const localStorage = {getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};
-  const client = {from(table) {
+  const merge=(left,right)=>{\n    const out=Object.assign({},left||{});\n    for(const [key,value] of Object.entries(right||{})) out[key]=value&&typeof value==='object'&&!Array.isArray(value)&&out[key]&&typeof out[key]==='object'&&!Array.isArray(out[key])?merge(out[key],value):value;\n    return out;\n  };\n  const client = {\n    async rpc(name,args){\n      assert.equal(name,'gosvt_merge_student_platform_state');\n      if(typeof writeResult==='function'){const result=writeResult(args);if(result&&result.error)return result;}\n      else if(writeResult&&writeResult.error)return writeResult;\n      const base=sharedState ? (sharedState.state||{}) : (serverState||{});\n      const merged=merge(base,args.p_state);\n      if(sharedState) sharedState.state=merged; else serverState=merged;\n      writes.push({student_id:args.p_student_id,profile_id:args.p_profile_id,state:args.p_state});\n      return {data:merged,error:null};\n    },\n    from(table) {
     assert.equal(table,'student_platform_state');
     return {
       select(){return this;}, eq(column,value){filters.push([column,value]);return this;},
@@ -68,7 +68,7 @@ test('failed remote read is not marked hydrated and can be retried',async()=>{
   assert.equal(h.reads(),2);
 });
 
-test('Supabase upsert errors are detected and reported as failure',async()=>{
+test('Supabase atomic merge RPC errors are detected and reported as failure',async()=>{
   const h=harness({readResult:{data:{state:{u:0}},error:null},writeResult:{error:{message:'RLS denied'}}});
   assert.equal(await h.api.pullRemote(),true);
   // Explicitly exercise the writer after hydration.
@@ -109,6 +109,23 @@ test('oversized state is rejected before a cloud upsert', async()=>{
   assert.equal(h.writes.length,0);
 });
 
+
+test('independent device edits are merged instead of replacing each other',async()=>{
+  const shared={state:{u:1,cards:{},lab:{}}};
+  const read=()=>({data:{state:shared.state},error:null});
+  const first=harness({readResult:read,sharedState:shared});
+  const second=harness({readResult:read,sharedState:shared});
+  assert.equal(await first.api.pullRemote(),true);
+  assert.equal(await second.api.pullRemote(),true);
+  first.api.PS().cards.deckA={seen:true};
+  first.api.PS().u=Date.now()+1;
+  second.api.PS().lab.experimentB={done:true};
+  second.api.PS().u=Date.now()+2;
+  assert.equal(await first.api.pushRemote(JSON.parse(JSON.stringify(first.api.PS())),'user-1','profile-1','account-default'),true);
+  assert.equal(await second.api.pushRemote(JSON.parse(JSON.stringify(second.api.PS())),'user-1','profile-1','account-default'),true);
+  assert.deepEqual(JSON.parse(JSON.stringify(shared.state.cards)),{deckA:{seen:true}});
+  assert.deepEqual(JSON.parse(JSON.stringify(shared.state.lab)),{experimentB:{done:true}});
+});
 
 test('same authenticated account restores one stable cloud profile across independent browsers', async()=>{
   const first = harness({readResult:{data:null,error:null}});
