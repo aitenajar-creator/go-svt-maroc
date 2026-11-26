@@ -16,7 +16,7 @@ function harness({readResult={data:null,error:null},writeResult={error:null},sha
   const merge=(left,right)=>{
     const leftReset=Number(left&&left._resetAt)||0, rightReset=Number(right&&right._resetAt)||0;
     if(rightReset>leftReset)return right;
-    if(leftReset>rightReset&&(Number(right&&right.u)||0)<=leftReset)return left;
+    if(leftReset>rightReset)return left;
     const out=Object.assign({},left||{});
     for(const [key,value] of Object.entries(right||{})) out[key]=value&&typeof value==='object'&&!Array.isArray(value)&&out[key]&&typeof out[key]==='object'&&!Array.isArray(out[key])?merge(out[key],value):value;
     return out;
