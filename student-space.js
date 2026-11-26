@@ -647,7 +647,7 @@
             if (!item.body || item.body.length > 5000) throw new Error('اكتب ملاحظة من 1 إلى 5000 حرف.');
         } else {
             item.date = String(values.date || '');
-            if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(item.date) ||
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) ||
                 Number.isNaN(Date.parse(item.date)) || new Date(item.date + 'T00:00:00Z').toISOString().slice(0, 10) !== item.date) {
                 throw new Error('اختر تاريخًا صالحًا.');
             }
