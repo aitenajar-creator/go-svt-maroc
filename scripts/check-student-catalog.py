@@ -60,11 +60,23 @@ def main():
         if public_path in paths:
             fail(f"{label}: duplicate path {public_path}")
         paths.add(public_path)
-        target = resolve(root, public_path, label)
-        counts[kind] += 1
-
         if kind not in KINDS:
             fail(f"{label}: unsupported type {kind}")
+        target = resolve(root, public_path, label)
+        counts[kind] += 1
+        if not isinstance(item.get("title"), str) or not item["title"].strip():
+            fail(f"{label}: missing display title")
+        if item.get("bytes") is not None and item["bytes"] != target.stat().st_size:
+            fail(f"{label}: file size metadata mismatch for {public_path}")
+        if kind == "quiz":
+            try:
+                bank = json.loads(target.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as error:
+                fail(f"{label}: quiz bank is not valid JSON: {error}")
+            if not isinstance(bank, dict) or not isinstance(bank.get("questions"), list) or not bank["questions"]:
+                fail(f"{label}: quiz bank must contain a non-empty questions array")
+            if item.get("questions") != len(bank["questions"]):
+                fail(f"{label}: question count metadata mismatch")
         if item.get("scope") != "shared-skill":
             level = item.get("level")
             if level not in TRACKS:
@@ -79,7 +91,13 @@ def main():
             if actual != item["sha256"]:
                 fail(f"{label}: content hash mismatch for {public_path}")
         if item.get("quiz_path"):
-            resolve(root, item["quiz_path"], label + ".quiz_path")
+            quiz_path = resolve(root, item["quiz_path"], label + ".quiz_path")
+            try:
+                linked_bank = json.loads(quiz_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as error:
+                fail(f"{label}: linked quiz is not valid JSON: {error}")
+            if not isinstance(linked_bank, dict) or not isinstance(linked_bank.get("questions"), list) or not linked_bank["questions"]:
+                fail(f"{label}: linked quiz must contain a non-empty questions array")
         if item.get("correction_path"):
             resolve(root, item["correction_path"], label + ".correction_path")
 
