@@ -76,7 +76,7 @@ async function loadResults(version=generation){
 }
 function validSourceUrl(value){
  try{if(value.startsWith('/'))return /^\/(cours|exercices|examens|fiches|resumes|lesson-reader\.html)(\/|$)/.test(value);
- const u=new URL(value);return u.protocol==='https:'||u.protocol==='http:';}catch(_){return false;}
+ const u=new URL(value);return u.protocol==='https:';}catch(_){return false;}
 }
 $('learning-resource-level').addEventListener('change',()=>setTracks('learning-resource-tracks',$('learning-resource-level').value));
 $('learning-assessment-level').addEventListener('change',()=>setTracks('learning-assessment-tracks',$('learning-assessment-level').value));
