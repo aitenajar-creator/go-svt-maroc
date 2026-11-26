@@ -22,7 +22,7 @@ test('service-worker release stamping is deterministic and includes assets and w
     const worker=fs.readFileSync(path.join(dir,'sw.js'),'utf8');
     assert(worker.includes('/assets/student-platform/learning-hero.webp'),'generated shell must precache WebP illustrations');
     assert(worker.includes('/assets/student-platform/cairo.woff2'),'generated shell must precache WOFF2 fonts');
-    assert(/webmanifest\|png\|svg\|ico\|webp\|woff2/.test(worker),'fetch handler must serve cached WebP and WOFF2 assets offline');
+    assert(worker.includes('webmanifest|png|svg|ico|webp|woff2'),'fetch handler must serve cached WebP and WOFF2 assets offline');
     fs.writeFileSync(path.join(dir,'app.js'),'void 1;');const changed=build();assert.notEqual(changed,initial);assert.equal(build(),changed);
     fs.appendFileSync(path.join(dir,'sw.js'),'\n// revised worker logic\n');assert.notEqual(build(),changed);
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
