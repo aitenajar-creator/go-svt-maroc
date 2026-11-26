@@ -201,6 +201,20 @@ test('server exam retries the latest unsynced answer when the connection returns
 });
 
 
+test('a server assessment with malformed restored answers is rejected instead of resuming corrupted state',async({page})=>{
+  await preview(page);
+  const outcome=await page.evaluate(async()=>{
+    let active=null;const messages=[];
+    const now=Date.now();
+    const store={state:{profile:{id:'preview-user'}},current:()=>true,activeExam(value){if(arguments.length)active=value;return active;},startAssessment:async()=>({id:'attempt-invalid-answers',assessment_id:'assessment-fixture',server_time:new Date(now).toISOString(),deadline_at:new Date(now+60000).toISOString(),last_sequence:1,questions:[{id:'q1',prompt:'سؤال',options:['أ','ب']}],answers:{q1:7}})};
+    const exam=window.GoSVTPlatformExams.create(store,{toast(message){messages.push(message);},intent(){return 'test';}});
+    await exam.startServer({id:'assessment-fixture'});
+    const result={active:exam.getActive(),messages};exam.dispose();return result;
+  });
+  expect(outcome.active).toBeNull();
+  expect(outcome.messages.join(' ')).toContain('إجابات غير صالحة');
+});
+
 test('a server assessment with invalid deadline timestamps is rejected instead of creating a stuck attempt',async({page})=>{
   await preview(page);
   const outcome=await page.evaluate(async()=>{
