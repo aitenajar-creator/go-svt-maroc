@@ -66,6 +66,8 @@ jobs:
 
       - name: Build science media catalogue
         run: python3 _tools/build_science_media.py
+      - name: Build factual student learning catalog
+        run: python3 _tools/build_student_catalog.py
 
       - name: Build GitHub Pages artifact
         uses: actions/jekyll-build-pages@v1
