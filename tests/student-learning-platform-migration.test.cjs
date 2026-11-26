@@ -35,3 +35,28 @@ test('published assessment data is constrained and student access is audience-sc
  assert.ok(migration.includes('learning_resources_read'));
  assert.ok(migration.includes('is_published and exists(select 1 from public.student_academic_profiles'));
 });
+
+
+test('privileged RPCs pin search_path and authenticate the calling account',()=>{
+ const definitions=[...migration.matchAll(/create or replace function public\\.([a-z0-9_]+)\\([\\s\\S]*?\\$\\$;/gi)];
+ const privileged=definitions.filter(match=>/security definer/i.test(match[0]));
+ assert.ok(privileged.length>=5,'expected the platform privileged RPC set');
+ for(const fn of privileged){
+  assert.match(fn[0],/set search_path\\s*=\\s*pg_catalog\\s*,\\s*public/i,fn[1]+' pins search_path');
+  assert.match(fn[0],/auth\\.uid\\(\\)/i,fn[1]+' checks authenticated identity');
+ }
+});
+
+test('student-facing RPCs are callable only by authenticated users and resources cannot be written directly',()=>{
+ for(const signature of [
+  'gosvt_platform_start_assessment(uuid,uuid)',
+  'gosvt_platform_save_answers(uuid,jsonb,integer,uuid)',
+  'gosvt_platform_submit_assessment(uuid,jsonb,integer,uuid)'
+ ]){
+  assert.ok(migration.includes('revoke all on function public.'+signature+' from public,anon'));
+  assert.ok(migration.includes('grant execute on function public.'+signature+' to authenticated'));
+ }
+ assert.ok(migration.includes('revoke insert,update on public.learning_resources from authenticated'));
+ assert.ok(migration.includes('revoke insert(title,description,source_url,resource_kind,study_level,study_tracks,language,is_published,position) on public.learning_resources from authenticated'));
+ assert.ok(migration.includes('revoke update(title,description,source_url,resource_kind,study_level,study_tracks,language,is_published,position,updated_at) on public.learning_resources from authenticated'));
+});
