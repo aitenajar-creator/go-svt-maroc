@@ -60,3 +60,40 @@ test('student-facing RPCs are callable only by authenticated users and resources
  assert.ok(migration.includes('revoke insert(title,description,source_url,resource_kind,study_level,study_tracks,language,is_published,position) on public.learning_resources from authenticated'));
  assert.ok(migration.includes('revoke update(title,description,source_url,resource_kind,study_level,study_tracks,language,is_published,position,updated_at) on public.learning_resources from authenticated'));
 });
+
+
+test('resource and assessment edits reject stale revisions instead of overwriting newer work',()=>{
+ const resourceStart=migration.indexOf('create or replace function public.gosvt_platform_save_resource');
+ const resourceBody=migration.slice(resourceStart,migration.indexOf('$$;',resourceStart));
+ assert.match(resourceBody,/where id=p_id and updated_at=\(p_document->>'expected_updated_at'\)::timestamptz returning id/);
+ assert.match(resourceBody,/raise exception 'resource_updated_elsewhere'/);
+ const assessmentStart=migration.indexOf('create or replace function public.gosvt_platform_save_assessment');
+ const assessmentBody=migration.slice(assessmentStart,migration.indexOf('$$;',assessmentStart));
+ assert.match(assessmentBody,/where id=p_id and revision=p_expected_revision returning id/);
+ assert.match(assessmentBody,/revision=revision\+1/);
+ assert.match(assessmentBody,/raise exception 'assessment_updated_elsewhere'/);
+});
+
+test('attempt grading uses its immutable question snapshot and timeout ignores late client answers',()=>{
+ const start=migration.indexOf('create or replace function public.gosvt_platform_start_assessment');
+ const startBody=migration.slice(start,migration.indexOf('$$;',start));
+ assert.match(startBody,/question_snapshot,deadline_at,max_score/);
+ const saveStart=migration.indexOf('create or replace function public.gosvt_platform_save_answers');
+ const saveBody=migration.slice(saveStart,migration.indexOf('$$;',saveStart));
+ assert.match(saveBody,/gosvt_platform_clean_answers\(attempt\.question_snapshot,p_answers\)/);
+ assert.match(saveBody,/attempt\.submitted_at is not null or now\(\)>attempt\.deadline_at/);
+ const submitStart=migration.indexOf('create or replace function public.gosvt_platform_submit_assessment');
+ const submitBody=migration.slice(submitStart,migration.indexOf('$$;',submitStart));
+ assert.match(submitBody,/if now\(\)<=attempt\.deadline_at then/);
+ assert.match(submitBody,/clean:=attempt\.answers/);
+ assert.match(submitBody,/jsonb_array_elements\(attempt\.question_snapshot\)/);
+ assert.match(submitBody,/submitted_at=now\(\)/);
+});
+
+test('answer autosave sequence numbers reject stale writes and make retries idempotent',()=>{
+ const start=migration.indexOf('create or replace function public.gosvt_platform_save_answers');
+ const body=migration.slice(start,migration.indexOf('$$;',start));
+ assert.match(body,/p_sequence<=attempt\.last_sequence/);
+ assert.match(body,/clean=attempt\.answers/);
+ assert.match(body,/answers=clean,last_sequence=p_sequence/);
+});
