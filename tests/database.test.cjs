@@ -83,6 +83,7 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
         db.query('select public.gosvt_merge_student_platform_state($1,$2,$3::jsonb)',[student,'account-default','{}']),
         /permission denied/
       );
+      await db.exec('reset role;');
     });
     await t.test('legacy objective backfill keeps valid indices without altering the old JSON',async()=>{
       const rows=(await db.query('select checked_indices from public.student_lesson_objectives order by lesson_id')).rows;
