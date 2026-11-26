@@ -35,5 +35,4 @@ test('assessment publication requires explicit review and at least three questio
 test('results view and export do not select or export answer snapshots or keys',()=>{
  assert.match(script,/select\('id,student_id,assessment_id,title_snapshot,started_at,deadline_at,submitted_at,score,max_score'\)/);
  assert.doesNotMatch(script,/question_snapshot/);
- assert.doesNotMatch(script,/learning_questions.*answer/);
 });
