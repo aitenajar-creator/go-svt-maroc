@@ -630,9 +630,11 @@
 
     function saveWorkspaceRecord(kind, values, expectedUid) {
         if (!['note', 'task'].includes(kind)) throw new Error('نوع سجل غير صالح.');
+        if (!values || typeof values !== 'object' || Array.isArray(values)) throw new Error('بيانات السجل غير صالحة.');
         const context = workspaceContext(expectedUid);
         const field = kind === 'note' ? 'notes' : 'studyPlan';
         const list = Array.isArray(context.data[field]) ? context.data[field] : [];
+        if (values.id != null && (typeof values.id !== 'string' || !values.id.trim())) throw new Error('معرّف السجل غير صالح.');
         const previous = values.id ? list.find(item => item.id === values.id) : null;
         if (values.id && !previous) throw new Error('هذا العنصر لم يعد موجودًا. حدّث المساحة قبل تعديله.');
         const title = String(values.title || '').trim();
@@ -645,8 +647,8 @@
             if (!item.body || item.body.length > 5000) throw new Error('اكتب ملاحظة من 1 إلى 5000 حرف.');
         } else {
             item.date = String(values.date || '');
-            if (item.date && (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) ||
-                Number.isNaN(Date.parse(item.date)) || new Date(item.date + 'T00:00:00Z').toISOString().slice(0, 10) !== item.date)) {
+            if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(item.date) ||
+                Number.isNaN(Date.parse(item.date)) || new Date(item.date + 'T00:00:00Z').toISOString().slice(0, 10) !== item.date) {
                 throw new Error('اختر تاريخًا صالحًا.');
             }
             item.done = values.done === true || values.completed === true;
@@ -661,9 +663,12 @@
 
     function deleteWorkspaceRecord(kind, id, expectedUid) {
         if (!['note', 'task'].includes(kind)) return Promise.reject(new Error('نوع سجل غير صالح.'));
+        if (typeof id !== 'string' || !id.trim()) return Promise.reject(new Error('معرّف السجل غير صالح.'));
         const context = workspaceContext(expectedUid);
         const field = kind === 'note' ? 'notes' : 'studyPlan';
-        context.data[field] = (context.data[field] || []).filter(item => item.id !== id);
+        const list = Array.isArray(context.data[field]) ? context.data[field] : [];
+        if (!list.some(item => item && item.id === id)) return Promise.reject(new Error('هذا العنصر لم يعد موجودًا.'));
+        context.data[field] = list.filter(item => item.id !== id);
         saveProfileData(context.id, context.data);
         document.dispatchEvent(new CustomEvent('gosvt:workspace-records', { detail: { userId: context.uid } }));
         return queueCloudDeletion(kind === 'note' ? 'notes' : 'studyPlan', id, context.uid);
