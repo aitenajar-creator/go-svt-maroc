@@ -10,7 +10,7 @@ module.exports = function installFixture(options = {}) {
   function response(table, single, mutation) {
     if (state.failTable === table) return { data: null, error: { message: 'Fixture unavailable table' } };
     if (mutation) return { data: single ? { id: 'fixture-row' } : [], error: null };
-    if (table === 'profiles') return { data: single ? { id: person.id, display_name: 'Fixture Student', role: options.role || 'student' } : [], error: null };
+    if (table === 'profiles') return { data: single ? { id: state.user?.id || person.id, display_name: state.user?.user_metadata?.display_name || 'Fixture Student', role: options.role || 'student' } : [], error: null };
     if (table === 'learning_assessments') return {data:state.assessments||[],error:null};
     if (table === 'learning_questions') return {data:state.questions||[],error:null};
     if (table === 'learning_resources') return {data:state.resources||[],error:null};
