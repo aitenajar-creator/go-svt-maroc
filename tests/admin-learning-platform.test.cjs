@@ -26,6 +26,12 @@ test('protected resources and assessments are written only through guarded RPCs'
  assert.doesNotMatch(script,/from\(['"]learning_(?:resources|assessments|questions)['"]\)\.(?:insert|update|upsert|delete)\(/);
 });
 
+test('external learning resources require HTTPS while approved local content paths remain supported',()=>{
+ assert.match(script,/u\.protocol==='https:'/);
+ assert.doesNotMatch(script,/u\.protocol==='https:'\|\|u\.protocol==='http:'/);
+ assert.match(script,/^\\\\\/(cours\\\\|exercices\\\\|examens\\\\|fiches\\\\|resumes\\\\|lesson-reader\\\\\.html)/m);
+});
+
 test('assessment publication requires explicit review and at least three questions',()=>{
  assert.match(script,/questions\.length<3/);
  assert.match(script,/learning-assessment-reviewed/);
