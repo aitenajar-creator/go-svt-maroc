@@ -131,9 +131,12 @@ $('learning-resources-list').addEventListener('click',e=>{
 $('learning-assessments-list').addEventListener('click',async e=>{
  const b=e.target.closest('[data-assessment-edit]');if(!b||!activeUser)return;
  const a=assessments.find(x=>x.id===b.dataset.assessmentEdit);if(!a)return;
+ const requestGeneration=generation,requestUser=activeUser;
  b.disabled=true;
  try{
   const {data:qs,error}=await client.from('learning_questions').select('prompt,options,answer,explanation,points,position').eq('assessment_id',a.id).order('position');
+  // A query may finish after logout or account replacement. Never repopulate a cleared editor.
+  if(!current(requestGeneration)||activeUser!==requestUser)return;
   if(error)throw error;
   $('learning-assessment-id').value=a.id;$('learning-assessment-revision').value=a.revision;
   $('learning-assessment-title').value=a.title;$('learning-assessment-description').value=a.description;$('learning-assessment-level').value=a.study_level;
@@ -141,7 +144,7 @@ $('learning-assessments-list').addEventListener('click',async e=>{
   setTracks('learning-assessment-tracks',a.study_level,a.study_tracks);
   $('learning-assessment-json').value=JSON.stringify((qs||[]).map(({prompt,options,answer,explanation,points})=>({prompt,options,answer,explanation,points})),null,2);
   $('learning-assessment-form').scrollIntoView({behavior:'smooth',block:'center'});
- }catch(err){msg('learning-assessment-message','تعذر فتح الاختبار: '+(err.message||String(err)),true);}finally{b.disabled=false;}
+  }catch(err){if(current(requestGeneration)&&activeUser===requestUser)msg('learning-assessment-message','تعذر فتح الاختبار: '+(err.message||String(err)),true);}finally{b.disabled=false;}
 });
 $('learning-results-export').addEventListener('click',()=>{
  if(!activeUser||!results.length)return;
