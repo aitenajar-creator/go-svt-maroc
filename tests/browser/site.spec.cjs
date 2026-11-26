@@ -77,3 +77,18 @@ test('site owner can open the new learning authoring tab while a student cannot'
   await expect(studentPage.locator('#dashboard')).toBeHidden();
   await studentPage.close();
 });
+
+test('admin logout clears the learning authoring session and disables result export',async({page})=>{
+  await isolate(page,{signedIn:true,role:'admin'});
+  await page.goto('/admin.html');
+  await expect(page.locator('#dashboard')).toBeVisible();
+  await page.locator('[data-admin-tab="learning-platform-admin-panel"]').click();
+  await page.locator('#learning-resource-title').fill('Private draft must be cleared');
+  await page.locator('#learning-results-export').isDisabled();
+  await page.locator('#signout-btn').click();
+  await expect(page.locator('#dashboard')).toBeHidden();
+  await expect(page.locator('#login-panel')).toBeVisible();
+  await expect(page.locator('#learning-admin-status')).toContainText('تم إيقاف أدوات الإدارة ومسح بيانات الجلسة');
+  await expect(page.locator('#learning-resource-title')).toHaveValue('');
+  await expect(page.locator('#learning-results-export')).toBeDisabled();
+});
