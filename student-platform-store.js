@@ -40,7 +40,7 @@
     async function load(force=false){
       const version=++generation;state.loading=true;state.errors=[];
       try{const resources=await catalog(force);if(!current()||version!==generation)return;state.resources=resources.filter(r=>D.allowed(r,profile));state.ready=true;notify();}
-      catch(error){if(current()){state.errors.push('catalog');state.ready=true;state.loading=false;notify();}return;}
+      catch(error){if(current()){state.errors.push('catalog');state.cloud='partial';state.ready=true;state.loading=false;notify();}return;}
       if(!client){state.loading=false;notify();return;}
       try{await ensureIdentity();}catch(_){state.cloud='partial';state.errors.push('session');state.loading=false;notify();return;}
       const jobs=[
