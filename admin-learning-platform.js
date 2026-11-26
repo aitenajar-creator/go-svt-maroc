@@ -32,7 +32,8 @@ async function verifyAdmin(expectedUser){
  const {data:{user},error}=await client.auth.getUser();
  if(error||!user||user.id!==expectedUser)return false;
  const {data,error:profileError}=await client.from('profiles').select('role').eq('id',user.id).maybeSingle();
- return !profileError&&profileError===null&&data?.role==='admin';
+ if(profileError)return false;
+ return data?.role==='admin';
 }
 async function boot(userId){
  const version=++generation;activeUser=null;
@@ -89,7 +90,7 @@ $('learning-resource-form').addEventListener('submit',async e=>{
  const btn=e.submitter||e.currentTarget.querySelector('[type=submit]');btn.disabled=true;
  try{
   const title=$('learning-resource-title').value.trim(),url=$('learning-resource-url').value.trim(),level=$('learning-resource-level').value,selected=selectedTracks('learning-resource-tracks');
-  if(title.length<3||!validSourceUrl(url)||!selected.length||selected.some(t=>!tracks[level].includes(t)))throw new Error('تحقق من العنوان والرابط والمستوى والشعب المحددة.');
+  if(title.length<3||title.length>180||$('learning-resource-description').value.trim().length>2000||!validSourceUrl(url)||!selected.length||selected.some(t=>!tracks[level].includes(t)))throw new Error('تحقق من العنوان والرابط والمستوى والشعب المحددة.');
   const id=$('learning-resource-id').value||null;
   const document={title,description:$('learning-resource-description').value.trim(),source_url:url,resource_kind:$('learning-resource-kind').value,study_level:level,study_tracks:selected,language:$('learning-resource-language').value,is_published:$('learning-resource-published').checked,position:Number($('learning-resource-position').value)||0};
   if(id)document.expected_updated_at=$('learning-resource-updated').value;
@@ -105,10 +106,10 @@ $('learning-assessment-form').addEventListener('submit',async e=>{
   let questions;try{questions=JSON.parse($('learning-assessment-json').value);}catch(_){throw new Error('صيغة JSON غير صحيحة.');}
   if(!Array.isArray(questions)||questions.length>60)throw new Error('يجب أن تكون الأسئلة مصفوفة لا تتجاوز 60 سؤالاً.');
   questions.forEach((q,i)=>{
-   if(!q||typeof q!=='object'||typeof q.prompt!=='string'||q.prompt.trim().length<5||typeof q.explanation!=='string'||q.explanation.trim().length<5||!Array.isArray(q.options)||q.options.length<2||q.options.length>6||!Number.isInteger(q.answer)||q.answer<0||q.answer>=q.options.length||q.options.some(o=>typeof o!=='string'||!o.trim()||o.length>2000)||!Number.isInteger(q.points??1)||(q.points??1)<1||(q.points??1)>5)throw new Error('تحقق من السؤال رقم '+(i+1)+': نص وتفسير واختيارات وإجابة ونقاط صالحة.');
+   if(!q||typeof q!=='object'||typeof q.prompt!=='string'||q.prompt.trim().length<5||q.prompt.length>4000||typeof q.explanation!=='string'||q.explanation.trim().length<5||q.explanation.length>3000||!Array.isArray(q.options)||q.options.length<2||q.options.length>6||!Number.isInteger(q.answer)||q.answer<0||q.answer>=q.options.length||q.options.some(o=>typeof o!=='string'||!o.trim()||o.length>2000)||!Number.isInteger(q.points??1)||(q.points??1)<1||(q.points??1)>5)throw new Error('تحقق من السؤال رقم '+(i+1)+': نص وتفسير واختيارات وإجابة ونقاط صالحة.');
   });
   const title=$('learning-assessment-title').value.trim(),level=$('learning-assessment-level').value,selected=selectedTracks('learning-assessment-tracks'),duration=Number($('learning-assessment-duration').value);
-  if(title.length<3||!selected.length||selected.some(t=>!tracks[level].includes(t))||duration<5||duration>180)throw new Error('تحقق من العنوان والمستوى والشعب والمدة.');
+  if(title.length<3||title.length>180||$('learning-assessment-description').value.trim().length>2000||!selected.length||selected.some(t=>!tracks[level].includes(t))||duration<5||duration>180)throw new Error('تحقق من العنوان والمستوى والشعب والمدة.');
   if(publish&&(questions.length<3||!$('learning-assessment-reviewed').checked))throw new Error('يلزم ثلاثة أسئلة على الأقل وتأكيد المراجعة التربوية قبل النشر.');
   const id=$('learning-assessment-id').value||null;
   const document={title,description:$('learning-assessment-description').value.trim(),study_level:level,study_tracks:selected,duration_minutes:duration,questions,is_published:publish,reviewed:$('learning-assessment-reviewed').checked};
@@ -144,7 +145,8 @@ $('learning-assessments-list').addEventListener('click',async e=>{
 $('learning-results-export').addEventListener('click',()=>{
  if(!activeUser||!results.length)return;
  const cols=['title_snapshot','student_id','score','max_score','started_at','submitted_at'];
- const csv=[cols.join(','),...results.map(r=>cols.map(k=>'"'+String(r[k]??'').replace(/"/g,'""')+'"').join(','))].join('\r\n');
+ const cell=value=>{let text=String(value??'');if(/^[=+@\\-\\t\\r]/.test(text))text="'"+text;return '"'+text.replace(/"/g,'""')+'"';};
+ const csv=[cols.join(','),...results.map(r=>cols.map(k=>cell(r[k])).join(','))].join('\r\n');
  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download='go-svt-learning-results.csv';a.click();URL.revokeObjectURL(url);
 });
