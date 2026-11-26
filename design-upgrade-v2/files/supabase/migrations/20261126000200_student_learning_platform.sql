@@ -160,7 +160,29 @@ begin
     if jsonb_typeof(q->'answer') is distinct from 'number' then
       raise exception 'invalid_question';
     end if;
-    if coalesce(q->>'answer','') !~ '^[0-9]+
+    if (q->>'answer')::numeric <> trunc((q->>'answer')::numeric) then
+      raise exception 'invalid_question';
+    end if;
+    if exists (
+      select 1
+      from jsonb_array_elements(q->'options') as option_item(value)
+      where jsonb_typeof(option_item.value) is distinct from 'string'
+    ) then
+      raise exception 'invalid_question';
+    end if;
+    select array_agg(value) into v_options from jsonb_array_elements_text(q->'options');
+    if cardinality(v_options) not between 2 and 6 then
+      raise exception 'invalid_options';
+    end if;
+    if exists (
+      select 1 from unnest(v_options) as option_item(value)
+      where char_length(trim(option_item.value)) not between 1 and 2000
+    ) then
+      raise exception 'invalid_options';
+    end if;
+    if (q->>'answer')::integer < 0 or (q->>'answer')::integer >= cardinality(v_options) then
+      raise exception 'invalid_options';
+    end if;
     insert into public.learning_questions(assessment_id,position,prompt,options,answer,explanation,points)
       values(v_id,v_position,trim(q->>'prompt'),v_options,(q->>'answer')::integer,trim(q->>'explanation'),coalesce((q->>'points')::integer,1));
     v_position:=v_position+1;
