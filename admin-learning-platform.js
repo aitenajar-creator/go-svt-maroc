@@ -154,5 +154,12 @@ document.addEventListener('gosvt:admin-session',event=>{
  const userId=event.detail?.userId;
  if(userId)boot(userId);else clearSession();
 });
+// admin.js may finish its initial session check before this later script is parsed.
+// Reconcile an already-visible, authenticated dashboard as well as listening for future events.
+if(!$('dashboard').hidden){
+ client.auth.getUser().then(({data,error})=>{
+  if(!error&&data?.user)boot(data.user.id);
+ }).catch(()=>{});
+}
 resetResource();resetAssessment();
 })();
