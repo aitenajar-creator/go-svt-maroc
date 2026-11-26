@@ -149,11 +149,11 @@ begin
       or jsonb_typeof(q->'prompt') is distinct from 'string'
       or jsonb_typeof(q->'explanation') is distinct from 'string'
       or jsonb_typeof(q->'options') is distinct from 'array'
-      or exists(select 1 from jsonb_array_elements(q->'options') option where jsonb_typeof(option) is distinct from 'string')
+      or exists(select 1 from jsonb_array_elements(q->'options') opt where jsonb_typeof(opt) is distinct from 'string')
       or jsonb_typeof(q->'answer') is distinct from 'number'
       or (q->>'answer') !~ '^[0-9]+$' then raise exception 'invalid_question'; end if;
     select array_agg(value) into v_options from jsonb_array_elements_text(q->'options');
-    if exists(select 1 from unnest(v_options) option where char_length(trim(option)) not between 1 and 2000) or (q->>'answer') !~ '^[0-9]+$' then raise exception 'invalid_options'; end if;
+    if exists(select 1 from unnest(v_options) opt where char_length(trim(opt)) not between 1 and 2000) or (q->>'answer') !~ '^[0-9]+$' then raise exception 'invalid_options'; end if;
     insert into public.learning_questions(assessment_id,position,prompt,options,answer,explanation,points)
       values(v_id,v_position,trim(q->>'prompt'),v_options,(q->>'answer')::integer,trim(q->>'explanation'),coalesce((q->>'points')::integer,1));
     v_position:=v_position+1;
@@ -271,7 +271,7 @@ revoke insert(title,description,source_url,resource_kind,study_level,study_track
 revoke update(title,description,source_url,resource_kind,study_level,study_tracks,language,is_published,position,updated_at) on public.learning_resources from authenticated;
  then raise exception 'invalid_question'; end if;
     select array_agg(value) into v_options from jsonb_array_elements_text(q->'options');
-    if exists(select 1 from unnest(v_options) option where char_length(trim(option)) not between 1 and 2000) or (q->>'answer') !~ '^[0-9]+$' then raise exception 'invalid_options'; end if;
+    if exists(select 1 from unnest(v_options) opt where char_length(trim(opt)) not between 1 and 2000) or (q->>'answer') !~ '^[0-9]+$' then raise exception 'invalid_options'; end if;
     insert into public.learning_questions(assessment_id,position,prompt,options,answer,explanation,points)
       values(v_id,v_position,trim(q->>'prompt'),v_options,(q->>'answer')::integer,trim(q->>'explanation'),coalesce((q->>'points')::integer,1));
     v_position:=v_position+1;
