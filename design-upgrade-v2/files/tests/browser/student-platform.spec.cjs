@@ -143,3 +143,16 @@ test('missing new-platform tables do not erase legacy progress, notes, or study 
   expect(legacy).toEqual({completed:true,notes:true,tasks:true});
   expect(errors).toEqual([]);
 });
+
+
+test('signing out removes the authenticated platform shell and restores the legacy sign-in view',async({page})=>{
+  await localOnly(page,{signedIn:true});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/sp-platform-active/);
+  await page.evaluate(()=>StudentAccount.logout());
+  await expect.poll(()=>page.evaluate(()=>StudentAccount.isLoggedIn())).toBe(false);
+  await expect(page.locator('#student-space-content .gs-learning-platform')).toHaveCount(0);
+  await expect(page.locator('body')).not.toHaveClass(/sp-platform-active/);
+  await expect(page.locator('#student-space-content')).toContainText(/تسجيل الدخول|Se connecter/);
+});
