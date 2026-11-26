@@ -158,6 +158,20 @@ test('new MAIN migrations run against an isolated PostgreSQL fixture',async t=>{
       assert.equal((await db.query("select count(*)::int as n from public.teacher_question_messages where client_message_id='rollback-token'")).rows[0].n,0);
       await db.exec('drop trigger fixture_status_failure on public.teacher_questions;');
     });
+    await t.test('reusing a reply token with a different payload is rejected',async()=>{
+      await as(teacher);
+      await send('Original payload','payload-bound-token');
+      await assert.rejects(send('Changed payload','payload-bound-token'),/reply_token_already_used/);
+      await db.exec('reset role;');
+      assert.equal((await db.query("select count(*)::int as n from public.teacher_question_messages where client_message_id='payload-bound-token'")).rows[0].n,1);
+    });
+    await t.test('a student reply reopens the question status',async()=>{
+      await db.exec("reset role; update public.teacher_questions set status='answered';");
+      await as(student);
+      await db.query('select public.gosvt_send_teacher_reply($1,$2,$3,$4)',[question,'Student follow-up','student-followup-token',student]);
+      await db.exec('reset role;');
+      assert.equal((await db.query('select status from public.teacher_questions')).rows[0].status,'new');
+    });
     await t.test('reply RPC checks both the current identity and question authorization',async()=>{
       await as(teacher);await assert.rejects(send('Fixture','stale-session',student),/session_changed/);
       await as(other);await assert.rejects(send('Fixture','unrelated-token',other),/not_authorized/);
