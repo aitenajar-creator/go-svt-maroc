@@ -71,6 +71,39 @@ jobs:
         run: python3 _tools/build_student_catalog.py
       - name: Validate student catalog source files
         run: python3 scripts/check-student-catalog.py
+      - name: Build current content manifest for this Pages artifact
+        run: |
+          python3 - <<'PYEOF'
+          import datetime, json, os
+
+          content_dirs = ["cours", "exercices", "examens", "fiches", "documents", "ressources", "divers"]
+          skipped = {"readme.md", "thumbs.db", "desktop.ini"}
+          tree = {}
+
+          for base in content_dirs:
+              if not os.path.isdir(base):
+                  continue
+              for root, dirs, files in os.walk(base):
+                  dirs[:] = sorted(name for name in dirs if not name.startswith("."))
+                  clean = sorted(
+                      name for name in files
+                      if not name.startswith(".") and name.lower() not in skipped
+                  )
+                  if not clean:
+                      continue
+                  node = tree
+                  for part in root.replace(os.sep, "/").split("/"):
+                      node = node.setdefault(part, {})
+                  node["__files"] = clean
+
+          manifest = {
+              "generated": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "tree": tree,
+          }
+          with open("manifest.json", "w", encoding="utf-8") as output:
+              json.dump(manifest, output, ensure_ascii=False, indent=2)
+          print("manifest.json generated from the exact Pages checkout")
+          PYEOF
       - name: Build Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
