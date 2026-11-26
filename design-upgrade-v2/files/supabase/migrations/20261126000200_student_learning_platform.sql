@@ -24,7 +24,7 @@ create table public.learning_resources (
   id uuid primary key default gen_random_uuid(),
   title text not null check (char_length(title) between 3 and 180),
   description text not null default '' check (char_length(description) <= 2000),
-  source_url text not null check (char_length(source_url) <= 2048 and source_url ~* '^(https?://|/(cours|exercices|examens|fiches|resumes|lesson-reader\.html))'),
+  source_url text not null check (char_length(source_url) <= 2048 and source_url ~* '^(https://|/(cours|exercices|examens|fiches|resumes|lesson-reader\.html))'),
   resource_kind text not null check (resource_kind in ('cours','exercices','resumes','fiches','examens','link')),
   study_level text not null,
   study_tracks text[] not null,
