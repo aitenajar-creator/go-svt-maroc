@@ -49,3 +49,9 @@ test('workspace record operations validate input and retain existing cloud delet
     "queueCloudDeletion(kind === 'note' ? 'notes' : 'studyPlan', id, context.uid)"
   ]) assert.ok(bridge.includes(check), 'missing workspace safeguard: ' + check);
 });
+
+test('study plan completion uses the cloud field and the platform UI field consistently', () => {
+  assert.ok(source.includes('item.completed = item.done;'), 'workspace saves must persist the cloud completion field');
+  assert.ok(source.includes('done: typeof remote.done === \'boolean\' ? remote.done : remote.completed === true'), 'cloud hydration must expose the UI completion field');
+  assert.ok(source.includes('completed: item.completed === true'), 'cloud adapter must receive the canonical completion field');
+});
