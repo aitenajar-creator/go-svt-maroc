@@ -612,6 +612,57 @@
     }
 
     // ============================================
+    function workspaceContext(expectedUid) {
+        syncCurrentProfile();
+        const account = window.StudentAccount;
+        const user = account && account.getUser && account.getUser();
+        if (!account || !account.isReady() || !account.isLoggedIn() || !user || user.id !== expectedUid ||
+            account.activeProfileId() !== currentProfileId || account.getProfile()?.role !== 'student') {
+            throw new Error('تغير الحساب أو لم يكتمل تحميل الملف الدراسي.');
+        }
+        return { uid: user.id, id: currentProfileId, data: getProfileData(currentProfileId) };
+    }
+
+    function saveWorkspaceRecord(kind, values, expectedUid) {
+        if (!['note', 'task'].includes(kind)) throw new Error('نوع سجل غير صالح.');
+        const context = workspaceContext(expectedUid);
+        const field = kind === 'note' ? 'notes' : 'studyPlan';
+        const list = Array.isArray(context.data[field]) ? context.data[field] : [];
+        const previous = values.id ? list.find(item => item.id === values.id) : null;
+        if (values.id && !previous) throw new Error('هذا العنصر لم يعد موجودًا. حدّث المساحة قبل تعديله.');
+        const title = String(values.title || '').trim();
+        if (!title || title.length > 180) throw new Error('اكتب عنوانًا من 1 إلى 180 حرفًا.');
+        const now = Date.now();
+        const item = { ...(previous || {}), id: previous ? previous.id : crypto.randomUUID(), title,
+            createdAt: previous ? previous.createdAt : now, updatedAt: now };
+        if (kind === 'note') {
+            item.body = String(values.body || '').trim();
+            if (!item.body || item.body.length > 5000) throw new Error('اكتب ملاحظة من 1 إلى 5000 حرف.');
+        } else {
+            item.date = String(values.date || '');
+            if (item.date && (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) ||
+                Number.isNaN(Date.parse(item.date)) || new Date(item.date + 'T00:00:00Z').toISOString().slice(0, 10) !== item.date)) {
+                throw new Error('اختر تاريخًا صالحًا.');
+            }
+            item.done = values.done === true;
+        }
+        context.data[field] = previous ? list.map(value => value.id === item.id ? item : value) : list.concat(item);
+        saveProfileData(context.id, context.data);
+        document.dispatchEvent(new CustomEvent('gosvt:workspace-records', { detail: { userId: context.uid } }));
+        return item;
+    }
+
+    function deleteWorkspaceRecord(kind, id, expectedUid) {
+        if (!['note', 'task'].includes(kind)) return Promise.reject(new Error('نوع سجل غير صالح.'));
+        const context = workspaceContext(expectedUid);
+        const field = kind === 'note' ? 'notes' : 'studyPlan';
+        context.data[field] = (context.data[field] || []).filter(item => item.id !== id);
+        saveProfileData(context.id, context.data);
+        document.dispatchEvent(new CustomEvent('gosvt:workspace-records', { detail: { userId: context.uid } }));
+        return queueCloudDeletion(kind === 'note' ? 'notes' : 'studyPlan', id, context.uid);
+    }
+
+
     // 2. LANGUAGE SYSTEM (نظام اللغة)
     // ============================================
     function lang() {
@@ -4062,6 +4113,8 @@ function openScientificPhotoPreview(card){
         getCurrentProfile,
         getProfiles,
         getProfileData,
+        saveWorkspaceRecord,
+        deleteWorkspaceRecord,
         saveProfileData,
         mergeCloudProgress,
         mergeCloudLearningState,
