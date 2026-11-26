@@ -7,6 +7,7 @@ async function localOnly(page,options){
   await page.route('**/*',route=>{
     const url=new URL(route.request().url());
     if(url.origin!==origin){if(options&&url.hostname==='cdn.jsdelivr.net'&&url.pathname.includes('supabase-js'))return route.fulfill({contentType:'application/javascript',body:''});return route.abort();}
+    if(options&&options.failCatalog&&url.pathname==='/student-platform-catalog.json')return route.fulfill({status:503,contentType:'application/json',body:'{}'});
     if(options&&url.pathname==='/supabase-config.js')return route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'supabase-config.js'),'utf8')});
     return route.continue();
   });
@@ -155,4 +156,15 @@ test('signing out removes the authenticated platform shell and restores the lega
   await expect(page.locator('#student-space-content .gs-learning-platform')).toHaveCount(0);
   await expect(page.locator('body')).not.toHaveClass(/sp-platform-active/);
   await expect(page.locator('#student-space-content')).toContainText(/تسجيل الدخول|Se connecter/);
+});
+
+
+test('a failed catalog request is shown as a partial service state, not an endless loading state',async({page})=>{
+  await localOnly(page,{signedIn:true,failCatalog:true});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await page.locator('[data-sp-action="cloud"]').click();
+  await expect(page.locator('.sp-dialog')).toContainText('بعض الخدمات غير متاحة');
+  await expect(page.locator('.sp-dialog')).not.toContainText('جارٍ التحقق');
+  await expect(page.locator('#sp-main .sp-notice')).toContainText('تعذر تحميل الفهرس');
 });
