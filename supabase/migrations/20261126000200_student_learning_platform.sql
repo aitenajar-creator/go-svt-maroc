@@ -258,6 +258,9 @@ begin
     if now()<=attempt.deadline_at then
       if p_sequence is null or p_sequence<attempt.last_sequence then raise exception 'attempt_updated_elsewhere'; end if;
       clean:=public.gosvt_platform_clean_answers(attempt.question_snapshot,p_answers);
+      if p_sequence=attempt.last_sequence and clean is distinct from attempt.answers then
+        raise exception 'attempt_updated_elsewhere';
+      end if;
     else
       -- Once time expires, late payloads cannot replace the answers previously saved on the server.
       clean:=attempt.answers;
