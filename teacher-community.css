@@ -293,3 +293,24 @@ button:disabled {
 .tc-dashboard-tabs button.active{background:linear-gradient(115deg,#103d32,#2d7259);color:#fff;border-color:#b8d6c2;box-shadow:0 10px 24px rgba(17,74,57,.24)}
 @media(max-width:560px){.tc-dashboard-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.tc-dashboard-tabs button{min-height:70px;padding:11px 8px;font-size:12px}}
 @media(max-width:360px){.tc-dashboard-tabs{grid-template-columns:1fr}}
+
+/* Professional teacher profile — additive community module. */
+.tc-profile-form{max-width:900px;margin:0 auto;padding:clamp(18px,4vw,34px);border:1px solid var(--tc-line);border-radius:22px;background:#fff;box-shadow:var(--tc-shadow)}
+.tc-profile-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;padding-bottom:17px;border-bottom:1px solid var(--tc-line)}
+.tc-profile-intro h3{margin:7px 0;color:var(--tc-ink);font-size:21px}
+.tc-profile-intro p{margin:0;color:var(--tc-muted);font-size:12px;line-height:1.9}
+.tc-profile-lock{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:15px;background:var(--tc-soft);font-size:22px}
+.tc-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.tc-profile-form label{display:block;margin:10px 0;color:#405e53;font-size:12px;font-weight:700}
+.tc-profile-form label small{color:var(--tc-muted);font-size:10px;font-weight:400}
+.tc-profile-form input:not([type=checkbox]),.tc-profile-form textarea{display:block;width:100%;margin-top:6px;padding:11px 12px;border:1px solid var(--tc-line);border-radius:10px;background:#fff;color:var(--tc-ink);font:12px Cairo,Arial,sans-serif}
+.tc-profile-form textarea{resize:vertical;line-height:1.8}
+.tc-profile-form :is(input,textarea,button):focus-visible{outline:3px solid #48a78266;outline-offset:2px}
+.tc-profile-wide{grid-column:1/-1}
+.tc-profile-form fieldset{min-width:0;margin:12px 0;padding:13px 15px;border:1px solid var(--tc-line);border-radius:13px}
+.tc-profile-form legend{padding:0 7px;color:#405e53;font-size:12px;font-weight:800}
+.tc-profile-checks{display:flex;flex-wrap:wrap;gap:8px 18px}
+.tc-profile-checks label{display:flex;align-items:center;gap:7px;margin:2px 0;font-size:11px;font-weight:600}
+.tc-profile-checks input{accent-color:var(--tc-green)}
+.tc-profile-form .tc-primary{min-width:190px}
+@media(max-width:560px){.tc-profile-grid{grid-template-columns:1fr}.tc-profile-wide{grid-column:auto}.tc-profile-form .tc-primary{width:100%}.tc-profile-intro h3{font-size:18px}}
