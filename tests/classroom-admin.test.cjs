@@ -26,7 +26,7 @@ test('reply retries retain the same idempotency token and use one RPC',async()=>
 });
 
 test('community reset erases administrative lists and hides the admin panel',()=>{
-  const b=browser({resources:[{title:'Private fixture'}]}),c=b.context;
+  const b=browser({resources:[{title:'Private fixture'}],favoriteResourceIds:new Set(['old-favorite']),favoriteOffset:25,favoriteHasMore:true,favoriteLoadRequest:1,favoriteLoading:true,favoriteRefreshPending:true}),c=b.context;
   const tabs=['mine','profile','pending','admin'].map(name=>{const tab=node();tab.dataset.panel=name;return tab;});
   c.document.querySelectorAll=()=>tabs;
   c.$=id=>{if(!b.nodes.has(id))b.nodes.set(id,node());return b.nodes.get(id);};
