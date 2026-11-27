@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   const text = (id, value) => { const el = $(id); if (el) el.textContent = value; };
   const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const memberProfileColumns = 'user_id,display_name,professional_title,school_name,status,created_at,updated_at,bio,city,region,teaching_levels,streams,interests,skills';
+  const memberProfileColumns = 'user_id,display_name,professional_title,school_name,status,created_at,updated_at,bio,city,region,teaching_levels,streams,interests,skills,is_profile_public';
   const categories = {
     curriculum:'المناهج والتوجيهات', lesson:'الدروس والجذاذات', presentation:'العروض التقديمية',
     assessment:'الفروض والتقويم', exam:'الامتحانات', correction:'التصحيح',
@@ -147,6 +147,7 @@
   function fillProfileForm() {
     if (!member || !$('tc-profile-form')) return;
     $('tc-profile-name').value = member.display_name || '';
+    if ($('tc-profile-public')) $('tc-profile-public').checked = member.is_profile_public === true;
     $('tc-profile-title').value = member.professional_title || '';
     $('tc-profile-school').value = member.school_name || '';
     $('tc-profile-city').value = member.city || '';
@@ -200,6 +201,7 @@
       const result = await client.from('teacher_community_members').update({
         display_name:displayName, professional_title:title, school_name:school,
         city, region, bio, teaching_levels:teachingLevels, streams, interests, skills,
+        is_profile_public: $('tc-profile-public').checked,
         updated_at:new Date().toISOString()
       }).eq('user_id',user.id).select(memberProfileColumns).maybeSingle();
       if (!communitySessionIsCurrent(session)) return;
@@ -318,6 +320,60 @@
       ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
       '</div></article>';
   }
+
+  let teacherDirectoryRows = [];
+  function renderTeacherDirectory(rows) {
+    teacherDirectoryRows = rows || [];
+    const grid = $('tc-directory-grid');
+    const empty = $('tc-directory-empty');
+    if (!grid || !empty) return;
+    const q = ($('tc-directory-search')?.value || '').trim().toLocaleLowerCase();
+    const filtered = teacherDirectoryRows.filter(row => !q || [
+      row.display_name,row.professional_title,row.bio,row.region,
+      ...(row.teaching_levels || []),...(row.streams || []),
+      ...(row.interests || []),...(row.skills || [])
+    ].join(' ').toLocaleLowerCase().includes(q));
+    grid.innerHTML = filtered.map(row => {
+      const tags = [...(row.teaching_levels || []),...(row.streams || [])].map(v => escapeHtml(v)).join(' · ');
+      const chips = [...(row.interests || []),...(row.skills || [])].slice(0,8)
+        .map(v => '<span class="tc-directory-chip">' + escapeHtml(v) + '</span>').join('');
+      return '<article class="tc-directory-card"><div class="tc-directory-avatar" aria-hidden="true">👩‍🏫</div>' +
+        '<h3>' + escapeHtml(row.display_name || 'أستاذ(ة)') + '</h3>' +
+        '<p class="tc-directory-title">' + escapeHtml(row.professional_title || 'عضو في مجتمع الأساتذة') + '</p>' +
+        (row.region ? '<p class="tc-directory-region">📍 ' + escapeHtml(row.region) + '</p>' : '') +
+        (row.bio ? '<p class="tc-directory-bio">' + escapeHtml(row.bio) + '</p>' : '') +
+        (tags ? '<p class="tc-directory-levels">' + tags + '</p>' : '') +
+        (chips ? '<div class="tc-directory-chips">' + chips + '</div>' : '') +
+        '</article>';
+    }).join('');
+    empty.hidden = filtered.length > 0;
+    empty.textContent = q && !filtered.length ? 'لا توجد ملفات مهنية تطابق بحثك.' : 'لا توجد ملفات مهنية منشورة بعد. يمكنك تفعيل ظهور ملفك من تبويب «ملفي المهني».';
+  }
+  async function loadTeacherDirectory() {
+    const state = $('tc-directory-state');
+    if (!user || !(isAdmin || (member && member.status === 'approved'))) {
+      if (state) state.textContent = 'دليل الأساتذة متاح للأعضاء المقبولين بعد تسجيل الدخول.';
+      return;
+    }
+    const session = captureCommunitySession();
+    if (state) state.textContent = 'جارٍ تحميل الملفات المهنية المنشورة...';
+    try {
+      const result = await client.from('teacher_community_public_profiles')
+        .select('display_name,professional_title,bio,region,teaching_levels,streams,interests,skills')
+        .order('display_name',{ascending:true}).limit(200);
+      if (!communitySessionIsCurrent(session)) return;
+      if (result.error) throw result.error;
+      renderTeacherDirectory(result.data || []);
+      if (state) state.textContent = (result.data || []).length
+        ? 'الملفات الظاهرة هنا نُشرت بموافقة أصحابها فقط. لا تُعرض عناوين البريد أو أسماء المؤسسات.'
+        : 'لا توجد ملفات مهنية منشورة حالياً.';
+    } catch (error) {
+      if (!communitySessionIsCurrent(session)) return;
+      console.warn('[Teacher directory]',error);
+      if (state) state.textContent = 'تعذر تحميل دليل الأساتذة. تحقق من الاتصال ثم أعد المحاولة.';
+    }
+  }
+
   async function loadLibrary(reset = true) {
     if (!user || !(isAdmin || (member && member.status === 'approved'))) return;
     const session = captureCommunitySession();
@@ -1293,6 +1349,7 @@
     $('tc-hero-join').addEventListener('click',()=>user?$('tc-dashboard').scrollIntoView({behavior:'smooth'}):openAuth('register'));
     $('tc-auth-form').addEventListener('submit',handleAuth);
     $('tc-profile-form').addEventListener('submit',handleProfileSave);
+    $('tc-directory-search').addEventListener('input',()=>renderTeacherDirectory(teacherDirectoryRows));
     document.querySelectorAll('[data-auth-view]').forEach(b=>b.addEventListener('click',()=>{authView=b.dataset.authView;openAuth(authView);}));
     $('tc-upload-open').addEventListener('click',()=>{if(!user)openAuth('login');else if(isAdmin || member?.status==='approved')$('tc-upload-dialog').showModal();else alert('طلب عضويتك قيد المراجعة.');});
     $('tc-upload-form').addEventListener('submit',handleUpload);
@@ -1335,7 +1392,7 @@
         button.setAttribute('aria-selected', String(selected));
         button.tabIndex = selected ? 0 : -1;
       });
-      ['mine','profile','pending','admin'].forEach(panelName => {
+      ['mine','profile','directory','pending','admin'].forEach(panelName => {
         const panel = $('tc-' + panelName + '-panel');
         const selected = panelName === tab.dataset.panel;
         panel.hidden = !selected;
@@ -1346,6 +1403,7 @@
     communityTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         activateCommunityTab(tab, false);
+        if (tab.dataset.panel === 'directory') loadTeacherDirectory();
         if (tab.dataset.panel === 'admin' && isAdmin) { loadAdmin(); loadAdminActivity(true); }
       });
       tab.addEventListener('keydown', event => {
