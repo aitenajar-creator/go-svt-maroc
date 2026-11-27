@@ -204,3 +204,11 @@ body.sp-platform-active #student-space{background:#f5f7f3;min-height:100vh}
 .sp-hero p{color:#65735d;font-size:12px}.sp-preview-bar{color:#526345}.sp-hero-visual img{display:block}.sp-feedback .sp-correct{color:#426d35}.sp-feedback .sp-wrong{color:#8e5c38}.sp-notice{color:#806638}
 @media(prefers-reduced-motion:reduce){.gs-learning-platform *,.sp-dialog *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 @media print{.sp-sidebar,.sp-topbar,.sp-preview-bar,.sp-button{display:none!important}.gs-learning-platform{display:block}.sp-content{padding:0}.sp-panel{break-inside:avoid}}
+
+
+/* Always-visible account exit in the learning workspace header. */
+.sp-topbar-logout{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:7px 12px;border:1px solid #ead8d2;border-radius:10px;background:#fff;color:#985047;font:700 10px 'Cairo',Tahoma,Arial,sans-serif;white-space:nowrap;cursor:pointer;transition:background .18s,border-color .18s}
+.sp-topbar-logout:hover{background:#fff6f3;border-color:#dcbab0}
+.sp-topbar-logout .sp-icon{width:16px;height:16px}
+@media(max-width:720px){.sp-topbar-logout{min-height:34px;padding:5px 8px;gap:4px;font-size:9px}.sp-topbar-search{min-width:0}}
+@media(max-width:390px){.sp-topbar-logout{padding:4px 6px;font-size:8px}}
