@@ -61,3 +61,75 @@ test('partial cloud failure retains quiz history and offers retry',async({page})
   await page.locator('[data-gs-sync-retry]').click();
   await expect.poll(()=>page.evaluate(()=>StudentAccount.getSyncStatus().phase)).toBe('ready');
 });
+
+
+test('site owner can open the new learning authoring tab while a student cannot',async({page})=>{
+  await isolate(page,{signedIn:true,role:'admin'});
+  await page.goto('/admin.html');
+  await expect(page.locator('#dashboard')).toBeVisible();
+  await page.locator('[data-admin-tab="learning-platform-admin-panel"]').click();
+  await expect(page.locator('#learning-platform-admin-panel')).toBeVisible();
+  await expect(page.locator('#learning-resources-list')).toContainText('لا توجد موارد بعد');
+  const studentPage=await page.context().newPage();
+  await isolate(studentPage,{signedIn:true,role:'student'});
+  await studentPage.goto('/admin.html');
+  await expect(studentPage.locator('#login-panel')).toBeVisible();
+  await expect(studentPage.locator('#dashboard')).toBeHidden();
+  await studentPage.close();
+});
+
+test('admin logout clears the learning authoring session and disables result export',async({page})=>{
+  await isolate(page,{signedIn:true,role:'admin'});
+  await page.goto('/admin.html');
+  await expect(page.locator('#dashboard')).toBeVisible();
+  await page.locator('[data-admin-tab="learning-platform-admin-panel"]').click();
+  await page.locator('#learning-resource-title').fill('Private draft must be cleared');
+  await expect(page.locator('#learning-results-export')).toBeDisabled();
+  await page.locator('#signout-btn').click();
+  await expect(page.locator('#dashboard')).toBeHidden();
+  await expect(page.locator('#login-panel')).toBeVisible();
+  await expect(page.locator('#learning-admin-status')).toContainText('تُحمّل هذه الأدوات بعد التحقق من صلاحية المدير.');
+  await expect(page.locator('#learning-resource-title')).toHaveValue('');
+  await expect(page.locator('#learning-results-export')).toBeDisabled();
+});
+
+
+test('late resource-save RPC response is ignored after the admin session ends',async({page})=>{
+  await isolate(page,{signedIn:true,role:'admin',deferRpc:'gosvt_platform_save_resource'});
+  await page.goto('/admin.html');
+  await expect(page.locator('#dashboard')).toBeVisible();
+  await page.locator('[data-admin-tab="learning-platform-admin-panel"]').click();
+  await page.locator('#learning-resource-title').fill('Delayed resource draft');
+  await page.locator('#learning-resource-url').fill('/cours/francais/TC/TCS/test.pdf');
+  await page.locator('#learning-resource-form button[type="submit"]').click();
+  await expect.poll(()=>page.evaluate(()=>!!window.__authFixture.pendingRpc)).toBe(true);
+  await page.evaluate(()=>{
+    document.dispatchEvent(new CustomEvent('gosvt:admin-session',{detail:{userId:null}}));
+    window.__authFixture.pendingRpc.resolve({data:'fixture-resource',error:null});
+    window.__authFixture.pendingRpc=null;
+  });
+  await expect(page.locator('#learning-resource-title')).toHaveValue('');
+  await expect(page.locator('#learning-resource-message')).not.toContainText('تم حفظ المورد بنجاح');
+});
+
+test('late assessment-save RPC response is ignored after the admin session ends',async({page})=>{
+  await isolate(page,{signedIn:true,role:'admin',deferRpc:'gosvt_platform_save_assessment'});
+  await page.goto('/admin.html');
+  await expect(page.locator('#dashboard')).toBeVisible();
+  await page.locator('[data-admin-tab="learning-platform-admin-panel"]').click();
+  await page.locator('#learning-assessment-title').fill('Delayed assessment draft');
+  await page.locator('#learning-assessment-json').fill(JSON.stringify([
+    {prompt:'Question one prompt',options:['Option A','Option B'],answer:0,explanation:'Explanation one',points:1},
+    {prompt:'Question two prompt',options:['Option A','Option B'],answer:1,explanation:'Explanation two',points:1},
+    {prompt:'Question three prompt',options:['Option A','Option B'],answer:0,explanation:'Explanation three',points:1}
+  ]));
+  await page.locator('#learning-assessment-form button[data-assessment-publish="false"]').click();
+  await expect.poll(()=>page.evaluate(()=>!!window.__authFixture.pendingRpc)).toBe(true);
+  await page.evaluate(()=>{
+    document.dispatchEvent(new CustomEvent('gosvt:admin-session',{detail:{userId:null}}));
+    window.__authFixture.pendingRpc.resolve({data:'fixture-assessment',error:null});
+    window.__authFixture.pendingRpc=null;
+  });
+  await expect(page.locator('#learning-assessment-title')).toHaveValue('');
+  await expect(page.locator('#learning-assessment-message')).not.toContainText('تم حفظ الاختبار');
+});
