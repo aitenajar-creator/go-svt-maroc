@@ -343,3 +343,11 @@ button:disabled {
 .tc-directory-levels{margin:10px 0;color:#176b54;font-size:.85rem;font-weight:700}
 .tc-directory-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .tc-directory-chip{padding:5px 9px;border-radius:999px;background:#eff6f2;color:#426257;font-size:.78rem}
+
+
+/* Privacy-first opt-in profile visibility control. */
+.tc-profile-visibility{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid #b8d9ce;border-radius:14px;background:#f1faf6;margin:18px 0;cursor:pointer}
+.tc-profile-visibility input{width:20px;height:20px;flex:0 0 auto;margin-top:3px;accent-color:#176b54}
+.tc-profile-visibility span{display:grid;gap:5px}
+.tc-profile-visibility strong{color:#145a48}
+.tc-profile-visibility small{color:#52665f;line-height:1.7}
