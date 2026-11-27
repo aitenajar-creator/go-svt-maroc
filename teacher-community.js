@@ -5,6 +5,9 @@
   const text = (id, value) => { const el = $(id); if (el) el.textContent = value; };
   const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const memberProfileColumns = 'user_id,display_name,professional_title,school_name,status,created_at,updated_at,bio,city,region,teaching_levels,streams,interests,skills,is_profile_public';
+  const resourceLevelLabels = {tc:'الجذع المشترك','1bac':'الأولى باكالوريا','2bac':'الثانية باكالوريا'};
+  const resourceStreamLabels = {experimental:'العلوم التجريبية',svt:'علوم الحياة والأرض',physics:'العلوم الفيزيائية',math:'العلوم الرياضية',other:'مسالك أخرى'};
+  const resourceLanguageLabels = {fr:'الفرنسية',ar:'العربية'};
   const categories = {
     curriculum:'المناهج والتوجيهات', lesson:'الدروس والجذاذات', presentation:'العروض التقديمية',
     assessment:'الفروض والتقويم', exam:'الامتحانات', correction:'التصحيح',
@@ -14,6 +17,8 @@
   const allowed = new Set(['pdf','doc','docx','ppt','pptx','xls','xlsx','odt','odp','jpg','jpeg','png','webp','txt','zip']);
   const MAX_FILE = 50 * 1024 * 1024;
   let client = null, user = null, member = null, isAdmin = false, authView = 'login', resources = [];
+  let favoriteResourceIds = new Set(), favoriteOffset = 0, favoriteHasMore = false, favoriteLoading = false, favoriteRefreshPending = false, favoriteLoadRequest = 0;
+  const pendingFavoriteIds = new Set();
   let uploadInProgress = false;
   let sessionGeneration = 0;
   let authorizationKey = null;
@@ -26,7 +31,10 @@
   }
   function clearCommunityView() {
     resources = [];
-    ['tc-resource-grid','tc-my-resources','tc-admin-members','tc-admin-resources','tc-admin-activity'].forEach(id => {
+    favoriteResourceIds.clear();
+    favoriteOffset = 0; favoriteHasMore = false;
+    favoriteLoadRequest++; favoriteLoading = false; favoriteRefreshPending = false;
+    ['tc-resource-grid','tc-my-resources','tc-favorites-grid','tc-admin-members','tc-admin-resources','tc-admin-activity'].forEach(id => {
       const node = $(id); if (node) node.replaceChildren();
     });
     ['tc-admin-panel','tc-admin-tab','tc-dashboard'].forEach(id => { if ($(id)) $(id).hidden = true; });
@@ -302,17 +310,48 @@
     try { return new Intl.DateTimeFormat('ar-MA',{year:'numeric',month:'short',day:'numeric'}).format(new Date(value)); }
     catch (_) { return ''; }
   }
+  function resourceMetadata(prefix) {
+    const year = $('tc-' + prefix + '-school-year').value.trim();
+    if (year && !/^\d{4}-\d{4}$/.test(year)) throw new Error('اكتب السنة الدراسية بالصيغة 2026-2027.');
+    return {
+      school_level:$('tc-' + prefix + '-level').value || null,
+      school_stream:$('tc-' + prefix + '-stream').value || null,
+      language:$('tc-' + prefix + '-language').value || null,
+      school_year:year || null,
+      chapter:$('tc-' + prefix + '-chapter').value.trim() || null,
+      theme:$('tc-' + prefix + '-theme').value.trim() || null
+    };
+  }
+  function fillResourceMetadata(prefix, resource) {
+    $('tc-' + prefix + '-level').value = resource.school_level || '';
+    $('tc-' + prefix + '-stream').value = resource.school_stream || '';
+    $('tc-' + prefix + '-language').value = resource.language || '';
+    $('tc-' + prefix + '-school-year').value = resource.school_year || '';
+    $('tc-' + prefix + '-chapter').value = resource.chapter || '';
+    $('tc-' + prefix + '-theme').value = resource.theme || '';
+  }
+  function resourceMetadataLabel(resource) {
+    return [
+      resourceLevelLabels[resource.school_level], resourceStreamLabels[resource.school_stream],
+      resourceLanguageLabels[resource.language], resource.school_year,
+      resource.chapter, resource.theme
+    ].filter(Boolean).map(value => '<span class="tc-resource-facet">' + escapeHtml(value) + '</span>').join('');
+  }
   function resourceCard(r, own) {
     const owner = r.owner_id === (user && user.id) ? 'ملفي' : 'مساهمة من المجتمع';
     const adminOwn = isAdmin && r.owner_id === user.id ? 'إدارة المنصة' : owner;
     const statusLabel = r.status === 'hidden' ? 'مخفي عن المكتبة' : (r.is_shared ? 'منشور ومشترك' : 'منشور — خاص');
     const statusClass = r.status === 'hidden' ? 'tc-resource-status-hidden' : (r.is_shared ? 'tc-resource-status-shared' : 'tc-resource-status-private');
+    const canFavorite = !!(user && (isAdmin || (member && member.status === 'approved')) && r.status === 'published' && r.is_shared);
+    const favoriteOn = favoriteResourceIds.has(r.id);
     return '<article class="tc-resource-card" data-resource-id="' + escapeHtml(r.id) + '">' +
       '<div class="tc-resource-top"><span class="tc-file-icon">' + fileIcon(r.file_name) + '</span><span class="tc-pill">' + escapeHtml(categories[r.category] || categories.other) + '</span></div>' +
       '<h3>' + escapeHtml(r.title) + '</h3><p>' + escapeHtml(r.description || 'لا يوجد وصف إضافي لهذه الوثيقة.') + '</p>' +
       '<div class="tc-resource-meta"><span>' + escapeHtml(adminOwn) + '</span><span>· ' + escapeHtml(dateLabel(r.created_at)) + '</span><span>· ' + (r.size_bytes/1048576).toFixed(1) + ' MB</span></div>' +
       '<div class="tc-resource-meta"><span>' + escapeHtml(r.file_name) + '</span><span class="tc-resource-status ' + statusClass + '" role="status">' + statusLabel + '</span></div>' +
+      (resourceMetadataLabel(r) ? '<div class="tc-resource-facets">' + resourceMetadataLabel(r) + '</div>' : '') +
       '<div class="tc-resource-actions">' +
+      (canFavorite ? '<button type="button" class="tc-favorite-button ' + (favoriteOn ? 'is-active' : '') + '" data-favorite="' + escapeHtml(r.id) + '" aria-pressed="' + String(favoriteOn) + '">' + (favoriteOn ? '★ محفوظة' : '☆ أضف للمفضلة') + '</button>' : '') +
       (['application/pdf','image/jpeg','image/png','image/webp'].includes(r.mime_type) ? '<button type="button" data-preview="' + escapeHtml(r.id) + '">👁 معاينة</button>' : '') +
       '<button type="button" data-download="' + escapeHtml(r.id) + '">⬇ تحميل</button>' +
       ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-edit-resource="' + escapeHtml(r.id) + '">تعديل البيانات</button>' : '') +
@@ -320,7 +359,19 @@
       ((isAdmin || (own && member && member.status === 'approved')) ? '<button type="button" data-toggle-share="' + escapeHtml(r.id) + '">' + (r.is_shared ? 'إلغاء المشاركة' : 'مشاركة') + '</button>' : '') +
       '</div></article>';
   }
-
+  async function loadFavoriteIds(resourceIds, session = captureCommunitySession()) {
+    if (!user || !(isAdmin || (member && member.status === 'approved')) || !resourceIds.length) return;
+    try {
+      const result = await client.from('teacher_community_resource_favorites')
+        .select('resource_id').eq('user_id',user.id).in('resource_id',resourceIds);
+      if (!communitySessionIsCurrent(session)) return;
+      if (result.error) throw result.error;
+      resourceIds.forEach(id => favoriteResourceIds.delete(id));
+      (result.data || []).forEach(row => favoriteResourceIds.add(row.resource_id));
+    } catch (error) {
+      if (communitySessionIsCurrent(session)) console.warn('[Teacher community favorites]',error);
+    }
+  }
   let teacherDirectoryRows = [];
   function renderTeacherDirectory(rows) {
     teacherDirectoryRows = rows || [];
@@ -401,10 +452,21 @@
       const q = rawSearch.replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       const category = $('tc-category').value;
       const fileType = $('tc-file-type') ? $('tc-file-type').value : '';
+      const level = $('tc-level').value, stream = $('tc-stream').value, language = $('tc-language').value;
+      const schoolYear = $('tc-school-year-filter').value.trim();
+      if (schoolYear && !/^\d{4}-\d{4}$/.test(schoolYear)) {
+        $('tc-library-state').hidden = false;
+        $('tc-library-state').textContent = 'اكتب السنة الدراسية بالصيغة 2026-2027.';
+        return;
+      }
       const sort = $('tc-library-sort') ? $('tc-library-sort').value : 'newest';
       let query = client.from('teacher_community_resources')
         .select('*').eq('status','published').eq('is_shared',true);
       if (category) query = query.eq('category', category);
+      if (level) query = query.eq('school_level',level);
+      if (stream) query = query.eq('school_stream',stream);
+      if (language) query = query.eq('language',language);
+      if (schoolYear) query = query.eq('school_year',schoolYear);
       const fileMimeTypes = {
         pdf: ['application/pdf'],
         word: ['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.oasis.opendocument.text'],
@@ -416,7 +478,7 @@
       if (fileType && fileMimeTypes[fileType]) query = query.in('mime_type', fileMimeTypes[fileType]);
       if (q) {
         const pattern = '%' + q + '%';
-        query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
+        query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern + ',chapter.ilike.' + pattern + ',theme.ilike.' + pattern + ',school_year.ilike.' + pattern);
       }
       const start = reset ? 0 : libraryOffset;
       const primaryOrder = sort === 'title' ? 'title' : 'created_at';
@@ -431,6 +493,8 @@
         return;
       }
       const page = data || [];
+      await loadFavoriteIds(page.map(resource => resource.id),session);
+      if (!communitySessionIsCurrent(session)) return;
       if (reset) void updateMyStats();
       resources = reset ? page : resources.concat(page);
       libraryOffset = start + page.length;
@@ -454,7 +518,8 @@
   }
   function updateLibraryResetVisibility() {
     const active = Boolean(($('tc-search').value || '').trim() || $('tc-category').value ||
-      $('tc-file-type').value || $('tc-library-sort').value !== 'newest');
+      $('tc-file-type').value || $('tc-level').value || $('tc-stream').value || $('tc-language').value ||
+      ($('tc-school-year-filter').value || '').trim() || $('tc-library-sort').value !== 'newest');
     $('tc-library-reset').hidden = !active;
   }
   function updateMyResetVisibility() {
@@ -472,10 +537,122 @@
     }
     $('tc-resource-grid').innerHTML = resources.map(r => resourceCard(r, r.owner_id === user.id)).join('');
   }
+  function syncFavoriteButtons(resourceId) {
+    const active = favoriteResourceIds.has(resourceId);
+    document.querySelectorAll('[data-favorite]').forEach(button => {
+      if (button.dataset.favorite !== resourceId) return;
+      button.setAttribute('aria-pressed',String(active));
+      button.classList.toggle('is-active',active);
+      button.textContent = active ? '★ محفوظة' : '☆ أضف للمفضلة';
+    });
+  }
+  async function toggleFavorite(resourceId) {
+    if (!user || !(isAdmin || (member && member.status === 'approved'))) throw new Error('تتاح المفضلة للأعضاء المقبولين فقط.');
+    const session = captureCommunitySession();
+    const pendingKey = session.user.id + ':' + resourceId;
+    if (pendingFavoriteIds.has(pendingKey)) return;
+    pendingFavoriteIds.add(pendingKey);
+    const adding = !favoriteResourceIds.has(resourceId);
+    try {
+      if (!communitySessionIsCurrent(session)) return;
+      if (adding) {
+        const result = await client.from('teacher_community_resource_favorites')
+          .insert({user_id:user.id,resource_id:resourceId}).select('resource_id').maybeSingle();
+        if (!communitySessionIsCurrent(session)) return;
+        if (result.error && result.error.code !== '23505') throw result.error;
+        favoriteResourceIds.add(resourceId);
+      } else {
+        const result = await client.from('teacher_community_resource_favorites').delete()
+          .eq('user_id',user.id).eq('resource_id',resourceId).select('resource_id').maybeSingle();
+        if (!communitySessionIsCurrent(session)) return;
+        if (result.error) throw result.error;
+        favoriteResourceIds.delete(resourceId);
+      }
+      syncFavoriteButtons(resourceId);
+      await updateMyStats();
+      if ($('tc-tab-favorites').classList.contains('active')) await loadFavorites(true);
+    } finally {
+      pendingFavoriteIds.delete(pendingKey);
+      if (communitySessionIsCurrent(session)) syncFavoriteButtons(resourceId);
+    }
+  }
+  async function loadFavorites(reset = true) {
+    if (!user) return;
+    const panelState = $('tc-favorites-state');
+    if (!(isAdmin || (member && member.status === 'approved'))) {
+      panelState.hidden = false;
+      panelState.textContent = 'تتاح المفضلة للأعضاء المقبولين فقط.';
+      $('tc-favorites-grid').replaceChildren();
+      $('tc-favorites-more').hidden = true;
+      return;
+    }
+    const session = captureCommunitySession();
+    if (favoriteLoading) {
+      if (reset) favoriteRefreshPending = true;
+      return;
+    }
+    const requestId = ++favoriteLoadRequest;
+    favoriteLoading = true;
+    const moreButton = $('tc-favorites-more');
+    if (moreButton) moreButton.disabled = true;
+    if (reset) {
+      favoriteOffset = 0; favoriteHasMore = false;
+      $('tc-favorites-grid').replaceChildren();
+      panelState.hidden = false;
+      panelState.textContent = 'جارٍ تحميل مواردك المفضلة...';
+      moreButton.hidden = true;
+    }
+    try {
+      const start = reset ? 0 : favoriteOffset;
+      const favoritesResult = await client.from('teacher_community_resource_favorites')
+        .select('resource_id,created_at').eq('user_id',user.id)
+        .order('created_at',{ascending:false}).order('resource_id',{ascending:false})
+        .range(start,start + PAGE_SIZE - 1);
+      if (!communitySessionIsCurrent(session)) return;
+      if (favoritesResult.error) throw favoritesResult.error;
+      const favoriteRows = favoritesResult.data || [];
+      const ids = favoriteRows.map(row => row.resource_id);
+      let page = [];
+      if (ids.length) {
+        const resourcesResult = await client.from('teacher_community_resources').select('*')
+          .in('id',ids).eq('status','published').eq('is_shared',true);
+        if (!communitySessionIsCurrent(session)) return;
+        if (resourcesResult.error) throw resourcesResult.error;
+        const byId = new Map((resourcesResult.data || []).map(resource => [resource.id,resource]));
+        page = ids.map(id => byId.get(id)).filter(Boolean);
+        page.forEach(resource => favoriteResourceIds.add(resource.id));
+      }
+      favoriteOffset = start + favoriteRows.length;
+      favoriteHasMore = favoriteRows.length === PAGE_SIZE;
+      moreButton.hidden = !favoriteHasMore;
+      panelState.hidden = reset ? page.length > 0 : true;
+      panelState.textContent = favoriteRows.length && !page.length
+        ? 'الموارد المحفوظة لم تعد متاحة في المكتبة المشتركة.'
+        : 'لم تحفظ موارد بعد. اضغط «أضف للمفضلة» على أي مورد مشترك.';
+      $('tc-favorites-grid').insertAdjacentHTML('beforeend',page.map(resource => resourceCard(resource,resource.owner_id === user.id)).join(''));
+      if (reset && page.length) void updateMyStats();
+    } catch (error) {
+      if (communitySessionIsCurrent(session)) {
+        console.warn('[Teacher community favorites]',error);
+        panelState.hidden = false;
+        panelState.textContent = 'تعذر تحميل المفضلة. تحقق من الاتصال ثم أعد المحاولة.';
+        moreButton.hidden = true;
+      }
+    } finally {
+      if (requestId === favoriteLoadRequest) {
+        favoriteLoading = false;
+        if (communitySessionIsCurrent(session) && moreButton) moreButton.disabled = false;
+        if (communitySessionIsCurrent(session) && favoriteRefreshPending && user) {
+          favoriteRefreshPending = false;
+          void loadFavorites(true);
+        }
+      }
+    }
+  }
   async function updateMyStats() {
     if (!user) return;
     const session = captureCommunitySession();
-    const ids = ['total','shared','private','hidden'];
+    const ids = ['total','shared','private','hidden','favorites'];
     ids.forEach(id => { const node = $('tc-my-stat-' + id); if (node) node.textContent = '…'; });
     try {
       const base = () => client.from('teacher_community_resources').select('id', { count: 'exact', head: true }).eq('owner_id', user.id);
@@ -483,7 +660,8 @@
         base(),
         base().eq('status','published').eq('is_shared',true),
         base().eq('status','published').eq('is_shared',false),
-        base().eq('status','hidden')
+        base().eq('status','hidden'),
+        client.from('teacher_community_resource_favorites').select('resource_id',{count:'exact',head:true}).eq('user_id',user.id)
       ]);
       if (!communitySessionIsCurrent(session)) return;
       const failed = results.find(result => result.error);
@@ -522,7 +700,7 @@
       const rawSearch = $('tc-my-search') ? $('tc-my-search').value : '';
       const q = rawSearch.trim().replace(/[^\p{L}\p{N}\s_-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       let query = client.from('teacher_community_resources').select('*').eq('owner_id',user.id);
-      if (q) { const pattern = '%' + q + '%'; query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern); }
+      if (q) { const pattern = '%' + q + '%'; query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern + ',chapter.ilike.' + pattern + ',theme.ilike.' + pattern + ',school_year.ilike.' + pattern); }
       if (filter === 'shared') query = query.eq('status','published').eq('is_shared',true);
       if (filter === 'private') query = query.eq('status','published').eq('is_shared',false);
       if (filter === 'hidden') query = query.eq('status','hidden');
@@ -539,6 +717,8 @@
         return;
       }
       const page = data || [];
+      await loadFavoriteIds(page.map(resource => resource.id),session);
+      if (!communitySessionIsCurrent(session)) return;
       myOffset = start + page.length; myHasMore = page.length === PAGE_SIZE;
       $('tc-my-resources').insertAdjacentHTML('beforeend', page.map(r => resourceCard(r,true)).join(''));
       $('tc-my-resources-more').hidden = !myHasMore;
@@ -654,6 +834,7 @@
     $('tc-edit-title').value = r.title || '';
     $('tc-edit-description').value = r.description || '';
     $('tc-edit-category').value = r.category || 'other';
+    fillResourceMetadata('edit',r);
     $('tc-edit-share').checked = r.is_shared === true;
     message('tc-edit-message','');
     $('tc-edit-dialog').showModal();
@@ -669,6 +850,9 @@
     if (description.length > 3000) return message('tc-edit-message','الوصف أطول من الحد المسموح.');
     const category = $('tc-edit-category').value;
     if (!Object.prototype.hasOwnProperty.call(categories, category)) return message('tc-edit-message','اختر تصنيفاً صالحاً.');
+    let metadata;
+    try { metadata = resourceMetadata('edit'); }
+    catch (error) { return message('tc-edit-message',error.message); }
     editInProgress = true;
     const submit = $('tc-edit-submit');
     const closeButton = $('tc-edit-dialog').querySelector('.tc-dialog-close');
@@ -677,7 +861,7 @@
     try {
       if (!communitySessionIsCurrent(session)) return;
       const updated = await client.from('teacher_community_resources').update({
-        title, description, category, is_shared: $('tc-edit-share').checked,
+        title, description, category, ...metadata, is_shared: $('tc-edit-share').checked,
         updated_at: new Date().toISOString()
       }).eq('id', editingResourceId).select('id').maybeSingle();
       if (!communitySessionIsCurrent(session)) return;
@@ -805,7 +989,7 @@
     const adminCategory = $('tc-admin-resource-category')?.value || '';
     if (adminSearch) {
       const pattern = '%' + adminSearch + '%';
-      adminResourceQuery = adminResourceQuery.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
+      adminResourceQuery = adminResourceQuery.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern + ',chapter.ilike.' + pattern + ',theme.ilike.' + pattern + ',school_year.ilike.' + pattern);
     }
     if (adminCategory) adminResourceQuery = adminResourceQuery.eq('category', adminCategory);
     if (adminStatus === 'hidden') adminResourceQuery = adminResourceQuery.eq('status', 'hidden');
@@ -1078,7 +1262,7 @@
           .eq('owner_id', user.id);
         if (search) {
           const pattern = '%' + search + '%';
-          query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern);
+          query = query.or('title.ilike.' + pattern + ',description.ilike.' + pattern + ',file_name.ilike.' + pattern + ',chapter.ilike.' + pattern + ',theme.ilike.' + pattern + ',school_year.ilike.' + pattern);
         }
         if (filter === 'shared') query = query.eq('status','published').eq('is_shared',true);
         if (filter === 'private') query = query.eq('status','published').eq('is_shared',false);
@@ -1224,6 +1408,9 @@
     if (title.length < 2) return message('tc-upload-message','أدخل عنواناً واضحاً للوثيقة.');
     const mimeType = fileMime(file);
     if (!mimeType) return message('tc-upload-message','تعذر تحديد نوع الملف. أعد حفظه بصيغة مدعومة ثم حاول مجدداً.');
+    let metadata;
+    try { metadata = resourceMetadata('file'); }
+    catch (error) { return message('tc-upload-message',error.message); }
     uploadInProgress = true;
     const submit = $('tc-upload-submit'); submit.disabled = true; submit.textContent = 'جارٍ رفع الملف...';
     const closeButton = $('tc-upload-dialog').querySelector('.tc-dialog-close');
@@ -1244,7 +1431,7 @@
         return;
       }
       if (upload.error) throw upload.error;
-      const row = {owner_id:user.id,title,description:$('tc-file-description').value.trim(),category:$('tc-file-category').value,
+      const row = {owner_id:user.id,title,description:$('tc-file-description').value.trim(),category:$('tc-file-category').value,...metadata,
         file_name:file.name,mime_type:mimeType,size_bytes:file.size,storage_path:path,
         is_shared:$('tc-file-share').checked,status:'published'};
       const saved = await client.from('teacher_community_resources').insert(row);
@@ -1361,13 +1548,16 @@
     $('tc-search-clear').addEventListener('click',()=>{clearTimeout(librarySearchTimer);$('tc-search').value='';$('tc-search-clear').hidden=true;updateLibraryResetVisibility();loadLibrary(true);$('tc-search').focus();});
     $('tc-category').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-file-type').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
+    ['tc-level','tc-stream','tc-language'].forEach(id=>$(id).addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);}));
+    $('tc-school-year-filter').addEventListener('input',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);librarySearchTimer=setTimeout(()=>loadLibrary(true),350);});
     $('tc-library-sort').addEventListener('change',()=>{updateLibraryResetVisibility();clearTimeout(librarySearchTimer);loadLibrary(true);});
     $('tc-library-reset').addEventListener('click',()=>{
       clearTimeout(librarySearchTimer);
-      $('tc-search').value=''; $('tc-search-clear').hidden=true; $('tc-category').value=''; $('tc-file-type').value=''; $('tc-library-sort').value='newest';
+      $('tc-search').value=''; $('tc-search-clear').hidden=true; $('tc-category').value=''; $('tc-file-type').value='';
+      $('tc-level').value=''; $('tc-stream').value=''; $('tc-language').value=''; $('tc-school-year-filter').value=''; $('tc-library-sort').value='newest';
       updateLibraryResetVisibility(); loadLibrary(true);
     });
-    $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction);
+    $('tc-resource-grid').addEventListener('click',resourceAction); $('tc-my-resources').addEventListener('click',resourceAction); $('tc-favorites-grid').addEventListener('click',resourceAction);
     $('tc-admin-members').addEventListener('click',handleAdminAction); $('tc-admin-resources').addEventListener('click',handleAdminAction);
     $('tc-admin-resource-search').addEventListener('input',()=>{
       clearTimeout(adminResourceSearchTimer);
@@ -1392,7 +1582,7 @@
         button.setAttribute('aria-selected', String(selected));
         button.tabIndex = selected ? 0 : -1;
       });
-      ['mine','profile','directory','pending','admin'].forEach(panelName => {
+      ['mine','favorites','profile','directory','pending','admin'].forEach(panelName => {
         const panel = $('tc-' + panelName + '-panel');
         const selected = panelName === tab.dataset.panel;
         panel.hidden = !selected;
@@ -1405,6 +1595,7 @@
         activateCommunityTab(tab, false);
         if (tab.dataset.panel === 'directory') loadTeacherDirectory();
         if (tab.dataset.panel === 'admin' && isAdmin) { loadAdmin(); loadAdminActivity(true); }
+        if (tab.dataset.panel === 'favorites') loadFavorites(true);
       });
       tab.addEventListener('keydown', event => {
         const visibleTabs = communityTabs.filter(button => !button.hidden);
@@ -1423,6 +1614,7 @@
     });
 
     $('tc-admin-activity-more').addEventListener('click',()=>loadAdminActivity(false));
+    $('tc-favorites-more').addEventListener('click',()=>loadFavorites(false));
     $('tc-library-more').addEventListener('click',()=>loadLibrary(false));
     $('tc-my-resources-more').addEventListener('click',()=>loadMyResources(false));
     $('tc-my-filter').addEventListener('change',()=>{updateMyResetVisibility();loadMyResources(true);});
@@ -1456,7 +1648,7 @@
   }
   async function resourceAction(e) {
     const b=e.target.closest('button'); if(!b || b.disabled)return;
-    if (!b.dataset.preview && !b.dataset.download && !b.dataset.editResource && !b.dataset.delete && !b.dataset.toggleShare && !b.dataset.retryMyResources) return;
+    if (!b.dataset.preview && !b.dataset.download && !b.dataset.editResource && !b.dataset.delete && !b.dataset.toggleShare && !b.dataset.favorite && !b.dataset.retryMyResources) return;
     b.disabled = true;
     try {
       if(b.dataset.retryMyResources) await loadMyResources(true);
@@ -1465,6 +1657,7 @@
       if(b.dataset.download) await downloadResource(b.dataset.download);
       if(b.dataset.delete) await deleteResource(b.dataset.delete);
       if(b.dataset.toggleShare) await toggleShare(b.dataset.toggleShare);
+      if(b.dataset.favorite) await toggleFavorite(b.dataset.favorite);
       if(isAdmin && (b.dataset.editResource || b.dataset.delete || b.dataset.toggleShare)) await loadAdminActivity(true);
     } catch(err) { alert(err.message || 'تعذر تنفيذ العملية.'); }
     finally { if (b.isConnected) b.disabled = false; }
