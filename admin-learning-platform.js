@@ -88,6 +88,7 @@ $('learning-assessments-refresh').addEventListener('click',()=>loadAssessments()
 $('learning-results-refresh').addEventListener('click',()=>loadResults());
 $('learning-resource-form').addEventListener('submit',async e=>{
  e.preventDefault();if(!activeUser)return;
+ const requestGeneration=generation,requestUser=activeUser;
  const btn=e.submitter||e.currentTarget.querySelector('[type=submit]');btn.disabled=true;
  try{
   const title=$('learning-resource-title').value.trim(),url=$('learning-resource-url').value.trim(),level=$('learning-resource-level').value,selected=selectedTracks('learning-resource-tracks');
@@ -95,13 +96,15 @@ $('learning-resource-form').addEventListener('submit',async e=>{
   const id=$('learning-resource-id').value||null;
   const document={title,description:$('learning-resource-description').value.trim(),source_url:url,resource_kind:$('learning-resource-kind').value,study_level:level,study_tracks:selected,language:$('learning-resource-language').value,is_published:$('learning-resource-published').checked,position:Number($('learning-resource-position').value)||0};
   if(id)document.expected_updated_at=$('learning-resource-updated').value;
-  const {data,error}=await client.rpc('gosvt_platform_save_resource',{p_id:id,p_document:document,p_expected_user:activeUser});
+  const {data,error}=await client.rpc('gosvt_platform_save_resource',{p_id:id,p_document:document,p_expected_user:requestUser});
+  if(!current(requestGeneration)||activeUser!==requestUser)return;
   if(error)throw error;
-  msg('learning-resource-message','تم حفظ المورد بنجاح. المعرّف: '+data);resetResource();await loadResources();
- }catch(err){msg('learning-resource-message','تعذر الحفظ: '+(err.message||String(err)),true);}finally{btn.disabled=false;}
+  msg('learning-resource-message','تم حفظ المورد بنجاح. المعرّف: '+data);resetResource();await loadResources(requestGeneration);
+ }catch(err){if(current(requestGeneration)&&activeUser===requestUser)msg('learning-resource-message','تعذر الحفظ: '+(err.message||String(err)),true);}finally{if(current(requestGeneration)&&activeUser===requestUser)btn.disabled=false;}
 });
 $('learning-assessment-form').addEventListener('submit',async e=>{
  e.preventDefault();if(!activeUser)return;
+ const requestGeneration=generation,requestUser=activeUser;
  const publish=e.submitter?.dataset.assessmentPublish==='true',btn=e.submitter;if(btn)btn.disabled=true;
  try{
   let questions;try{questions=JSON.parse($('learning-assessment-json').value);}catch(_){throw new Error('صيغة JSON غير صحيحة.');}
@@ -114,10 +117,11 @@ $('learning-assessment-form').addEventListener('submit',async e=>{
   if(publish&&(questions.length<3||!$('learning-assessment-reviewed').checked))throw new Error('يلزم ثلاثة أسئلة على الأقل وتأكيد المراجعة التربوية قبل النشر.');
   const id=$('learning-assessment-id').value||null;
   const document={title,description:$('learning-assessment-description').value.trim(),study_level:level,study_tracks:selected,duration_minutes:duration,questions,is_published:publish,reviewed:$('learning-assessment-reviewed').checked};
-  const {data,error}=await client.rpc('gosvt_platform_save_assessment',{p_id:id,p_document:document,p_expected_revision:id?Number($('learning-assessment-revision').value):null,p_expected_user:activeUser});
+  const {data,error}=await client.rpc('gosvt_platform_save_assessment',{p_id:id,p_document:document,p_expected_revision:id?Number($('learning-assessment-revision').value):null,p_expected_user:requestUser});
+  if(!current(requestGeneration)||activeUser!==requestUser)return;
   if(error)throw error;
-  msg('learning-assessment-message',publish?'تم حفظ الاختبار ونشره.':'تم حفظ الاختبار كمسودة.');resetAssessment();await loadAssessments();
- }catch(err){msg('learning-assessment-message','تعذر الحفظ: '+(err.message||String(err)),true);}finally{if(btn)btn.disabled=false;}
+  msg('learning-assessment-message',publish?'تم حفظ الاختبار ونشره.':'تم حفظ الاختبار كمسودة.');resetAssessment();await loadAssessments(requestGeneration);
+ }catch(err){if(current(requestGeneration)&&activeUser===requestUser)msg('learning-assessment-message','تعذر الحفظ: '+(err.message||String(err)),true);}finally{if(btn&&current(requestGeneration)&&activeUser===requestUser)btn.disabled=false;}
 });
 $('learning-resources-list').addEventListener('click',e=>{
  const b=e.target.closest('[data-resource-edit]');if(!b)return;
