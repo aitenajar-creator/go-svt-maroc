@@ -58,3 +58,24 @@ test('late assessment-question responses cannot repopulate the editor after logo
  assert.match(handler,/if\(!current\(requestGeneration\)\|\|activeUser!==requestUser\)return/);
  assert.match(handler,/catch\(err\)\{if\(current\(requestGeneration\)&&activeUser===requestUser\)/);
 });
+
+
+test('late resource-save responses cannot show success or reset forms after logout or account change',()=>{
+ const start=script.indexOf("$('learning-resource-form').addEventListener('submit'");
+ const end=script.indexOf("$('learning-assessment-form').addEventListener('submit'",start);
+ const handler=script.slice(start,end);
+ assert.match(handler,/requestGeneration=generation,requestUser=activeUser/);
+ assert.ok(handler.indexOf('await client.rpc(\'gosvt_platform_save_resource\'')<handler.indexOf('!current(requestGeneration)||activeUser!==requestUser'));
+ assert.match(handler,/if\(!current\(requestGeneration\)\|\|activeUser!==requestUser\)return/);
+ assert.match(handler,/catch\(err\)\{if\(current\(requestGeneration\)&&activeUser===requestUser\)/);
+});
+
+test('late assessment-save responses cannot show success or reset forms after logout or account change',()=>{
+ const start=script.indexOf("$('learning-assessment-form').addEventListener('submit'");
+ const end=script.indexOf("$('learning-resources-list').addEventListener('click'",start);
+ const handler=script.slice(start,end);
+ assert.match(handler,/requestGeneration=generation,requestUser=activeUser/);
+ assert.ok(handler.indexOf('await client.rpc(\'gosvt_platform_save_assessment\'')<handler.indexOf('!current(requestGeneration)||activeUser!==requestUser'));
+ assert.match(handler,/if\(!current\(requestGeneration\)\|\|activeUser!==requestUser\)return/);
+ assert.match(handler,/catch\(err\)\{if\(current\(requestGeneration\)&&activeUser===requestUser\)/);
+});
