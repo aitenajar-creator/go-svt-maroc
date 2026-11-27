@@ -1,0 +1,19 @@
+Base commit: f6e1d65d3a534e647c189e07c088ce4fa3482e47
+Files included:
+  TEACHER_COMMUNITY_SETUP_AR.md
+  docs/AUDIT_COMMUNAUTE_ENSEIGNANTS_FR.md
+  docs/PHASE_2_TEACHER_PROFILE_AR.md
+  docs/PHASE_3_RESOURCE_LIBRARY_AR.md
+  supabase/migrations/20261127000100_teacher_community_professional_profiles.sql
+  supabase/migrations/20261127000200_teacher_community_resource_metadata_and_favorites.sql
+  supabase/project-manifest.json
+  teacher-community.css
+  teacher-community.html
+  teacher-community.js
+  tests/browser/community-library.spec.cjs
+  tests/browser/community-profile.spec.cjs
+  tests/classroom-admin.test.cjs
+  tests/teacher-community-library.test.cjs
+  tests/teacher-community-profile.test.cjs
+
+Archive contains full file overlays under go-svt-maroc/, not a deployment bundle.
