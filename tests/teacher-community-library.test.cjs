@@ -78,7 +78,7 @@ test('community resource facets and favorites migration enforce constraints, vis
       grant select,update on public.teacher_community_resources to authenticated;
     `);
     await db.exec(source('supabase/migrations/20261127000100_teacher_community_professional_profiles.sql'));
-    await db.exec(source('supabase/migrations/20261127000200_teacher_community_resource_metadata_and_favorites.sql'));
+    await db.exec(source('supabase/migrations/20261127000300_teacher_community_resource_metadata_and_favorites.sql'));
 
     await test('legacy resources remain valid and new facets accept Moroccan curriculum keys', async () => {
       const legacy = (await db.query('select school_level,school_stream,language,school_year from public.teacher_community_resources where id=$1', [publicResource])).rows[0];
