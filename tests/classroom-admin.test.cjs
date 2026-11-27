@@ -27,13 +27,15 @@ test('reply retries retain the same idempotency token and use one RPC',async()=>
 
 test('community reset erases administrative lists and hides the admin panel',()=>{
   const b=browser({resources:[{title:'Private fixture'}]}),c=b.context;
-  const tabs=['mine','pending','admin'].map(name=>{const tab=node();tab.dataset.panel=name;return tab;});
+  const tabs=['mine','profile','pending','admin'].map(name=>{const tab=node();tab.dataset.panel=name;return tab;});
   c.document.querySelectorAll=()=>tabs;
   c.$=id=>{if(!b.nodes.has(id))b.nodes.set(id,node());return b.nodes.get(id);};
   c.$('tc-admin-members').innerHTML='Private fixture';c.$('tc-admin-panel').hidden=false;
+  c.$('tc-profile-panel').hidden=false;c.$('tc-profile-form').value='private profile data';
   b.run(between(source('teacher-community.js'),'  function clearCommunityView()','  const PAGE_SIZE'));
   c.clearCommunityView();
   assert.equal(c.$('tc-admin-members').innerHTML,'');assert.equal(c.$('tc-admin-panel').hidden,true);
+  assert.equal(c.$('tc-profile-panel').hidden,true);assert.equal(c.$('tc-profile-form').value,'');
   assert.equal(c.resources.length,0);
 });
 
