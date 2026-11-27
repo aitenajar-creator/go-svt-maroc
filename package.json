@@ -5,7 +5,7 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "dev": "python3 scripts/serve-local.py",
-    "test": "node --test tests/*.test.cjs",
+    "test": "node --test tests/*.test.cjs design-upgrade-v2/files/tests/platform-database.test.cjs",
     "test:browser": "playwright test",
     "check:built": "python3 scripts/check-site.py _site --built"
   },

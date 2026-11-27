@@ -14,7 +14,14 @@ test('learning platform: authentic grading and academic isolation on an isolated
     await db.exec("create table public.student_academic_profiles(student_id uuid primary key,study_level text,study_track text);alter table public.student_academic_profiles enable row level security;grant select on public.student_academic_profiles to authenticated;create policy academic_self on public.student_academic_profiles for select to authenticated using(student_id=auth.uid())");
     await db.query('insert into public.student_academic_profiles values($1,$2,$3),($4,$5,$6)',[student,'2BAC','2BACSVT',other,'TC','TCS']);
     await db.query('insert into auth.users(id) values($1)',[admin]);await db.query('insert into public.profiles(id,role) values($1,$2)',[admin,'admin']);
-    await db.exec(source('supabase/migrations/20261125000400_student_learning_platform.sql'));
+    const migration=source('supabase/migrations/20261126000200_student_learning_platform.sql');
+    try {
+      await db.exec(migration);
+    } catch (error) {
+      const position=Number(error.position||0);
+      const excerpt=position ? migration.slice(Math.max(0,position-180),position+180) : 'SQL position unavailable';
+      throw new Error('Student platform migration failed at SQL position '+position+': '+excerpt+'; '+error.message,{cause:error});
+    }
     const document={title:'تقييم تعلم تجريبي',description:'Fixture, not production content.',study_level:'2BAC',study_tracks:['2BACSVT'],duration_minutes:5,is_published:true,reviewed:true,questions:Array.from({length:3},(_,i)=>({prompt:'Fixture question number '+i,options:['Correct fixture option','Other fixture option'],answer:0,explanation:'Fixture explanation for isolated tests.',points:1}))};
     let assessment,attempt;
     await t.test('only a verified administrator can create or revise assessments',async()=>{
@@ -29,6 +36,8 @@ test('learning platform: authentic grading and academic isolation on an isolated
       assert(id);
       await assert.rejects(db.query('select public.gosvt_platform_save_assessment($1,$2,1,$3)',[id,JSON.stringify({...draft,is_published:true,reviewed:true}),admin]),/3_to_60/);
       await assert.rejects(db.query('select public.gosvt_platform_save_assessment(null,$1,null,$2)',[JSON.stringify({...document,reviewed:false}),admin]),/editorial_review_required/);
+      const malformed={...document,questions:document.questions.map((q,i)=>i===0?{...q,options:[{unexpected:'object'},'Other fixture option']}:q)};
+      await assert.rejects(db.query('select public.gosvt_platform_save_assessment(null,$1,null,$2)',[JSON.stringify(malformed),admin]),/invalid_question/);
     });
     await t.test('curated resources require admin authority and preserve optimistic edit boundaries',async()=>{
       const resource={title:'Fixture resource',description:'Fixture only',source_url:'/cours/fixture.pdf',resource_kind:'cours',study_level:'2BAC',study_tracks:['2BACSVT'],language:'arabe',is_published:true,position:0};
@@ -53,11 +62,17 @@ test('learning platform: authentic grading and academic isolation on an isolated
       await assert.rejects(db.query('update public.learning_attempts set score=300'),/permission denied/);
     });
     await t.test('stale autosaves and stale final submissions cannot overwrite newer answers',async()=>{
-      const answers={[attempt.questions[0].id]:0};await as(student);
-      await db.query('select public.gosvt_platform_save_answers($1,$2,2,$3)',[attempt.id,JSON.stringify(answers),student]);
-      const stale=(await db.query('select public.gosvt_platform_save_answers($1,$2,1,$3) value',[attempt.id,JSON.stringify({[attempt.questions[0].id]:1}),student])).rows[0].value;
+      await as(admin);const retryAssessment=(await db.query('select public.gosvt_platform_save_assessment(null,$1,null,$2) id',[JSON.stringify({...document,title:'Duplicate sequence regression fixture'}),admin])).rows[0].id;
+      await as(student);const retryAttempt=(await db.query('select public.gosvt_platform_start_assessment($1,$2) value',[retryAssessment,student])).rows[0].value;
+      const answers={[retryAttempt.questions[0].id]:0};await as(student);
+      await db.query('select public.gosvt_platform_save_answers($1,$2,2,$3)',[retryAttempt.id,JSON.stringify(answers),student]);
+      const stale=(await db.query('select public.gosvt_platform_save_answers($1,$2,1,$3) value',[retryAttempt.id,JSON.stringify({[retryAttempt.questions[0].id]:1}),student])).rows[0].value;
       assert.equal(stale.accepted,false);
-      await assert.rejects(db.query('select public.gosvt_platform_submit_assessment($1,$2,1,$3)',[attempt.id,JSON.stringify(answers),student]),/updated_elsewhere/);
+      await assert.rejects(db.query('select public.gosvt_platform_submit_assessment($1,$2,1,$3)',[retryAttempt.id,JSON.stringify(answers),student]),/updated_elsewhere/);
+      const changed={[retryAttempt.questions[0].id]:1};
+      await assert.rejects(db.query('select public.gosvt_platform_submit_assessment($1,$2,2,$3)',[retryAttempt.id,JSON.stringify(changed),student]),/updated_elsewhere/);
+      const same=(await db.query('select public.gosvt_platform_submit_assessment($1,$2,2,$3) value',[retryAttempt.id,JSON.stringify(answers),student])).rows[0].value;
+      assert.equal(same.server_graded,true);
     });
     await t.test('authoring changes do not change the answer snapshot of an ongoing attempt',async()=>{
       await as(admin);const edited={...document,questions:document.questions.map(q=>({...q,answer:1}))};

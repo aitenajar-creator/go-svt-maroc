@@ -12,7 +12,7 @@ npm run build:catalog
 npm run dev:student
 ```
 
-المعاينة المحلية واضحة التسمية ولا تتصل بالإنتاج. تفعيل الإدارة والتقييم الخادمي يحتاج الترحيل `20261125000400_student_learning_platform.sql` على **المشروع الرئيسي** بعد تجهيز مخططه السابق واختبار staging. التفاصيل والحدود في [STUDENT_PLATFORM_AR.md](docs/STUDENT_PLATFORM_AR.md).
+المعاينة المحلية واضحة التسمية ولا تتصل بالإنتاج. تفعيل الإدارة والتقييم الخادمي يحتاج الترحيل `20261126000200_student_learning_platform.sql` على **المشروع الرئيسي** بعد تجهيز مخططه السابق واختبار staging. التفاصيل والحدود في [STUDENT_PLATFORM_AR.md](docs/STUDENT_PLATFORM_AR.md).
 
 ## البنية الحالية
 

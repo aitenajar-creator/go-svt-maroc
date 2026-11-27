@@ -45,7 +45,7 @@ npm run dev
 1. راجع [DATABASE_DEPLOYMENT_AR.md](DATABASE_DEPLOYMENT_AR.md)، وتأكد من هوية المشروع الرئيسي ومن اكتمال مخططه السابق. المخطط التأسيسي الناقص لم يُختلق.
 2. طبّق ترحيلات مراجعة الإصلاحات `20261125000100` و`20261125000200` و`20261125000300` إذا لم تكن مطبقة، بعد اختبار staging.
 3. راجع وطبّق على **المشروع الرئيسي فقط**:
-   `supabase/migrations/20261125000400_student_learning_platform.sql`.
+   `supabase/migrations/20261126000200_student_learning_platform.sql`.
 4. الترحيل يتحقق أولًا من وجود `profiles` و`student_academic_profiles`، ثم ينشئ:
    - `learning_resources`: إضافات تحريرية منشورة لجمهور محدد.
    - `learning_assessments`: بيانات البنوك وحالتها وإصدارها.
