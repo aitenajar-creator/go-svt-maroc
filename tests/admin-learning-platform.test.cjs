@@ -79,3 +79,12 @@ test('late assessment-save responses cannot show success or reset forms after lo
  assert.match(handler,/if\(!current\(requestGeneration\)\|\|activeUser!==requestUser\)return/);
  assert.match(handler,/catch\(err\)\{if\(current\(requestGeneration\)&&activeUser===requestUser\)/);
 });
+
+
+test('clearing an admin session restores form controls for the next verified session',()=>{
+ const start=script.indexOf('function clearSession(){');
+ const end=script.indexOf('async function verifyAdmin',start);
+ const handler=script.slice(start,end);
+ assert.match(handler,/querySelectorAll\('button'\)\.forEach\(button=>\{button\.disabled=false;\}\)/);
+ assert.match(handler,/learning-results-export'\)\.disabled=true/);
+});
