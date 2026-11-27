@@ -4,6 +4,7 @@ module.exports = function installFixture(options = {}) {
   const state = window.__authFixture = {
     user: options.signedIn && sessionStorage.getItem('gosvt-fixture-signed-out') !== '1' ? person : null,
     failTable: options.failTable || '',
+    pendingRpc: null,
     emit(event) { listeners.forEach(fn => fn(event, this.user ? { user: this.user } : null)); }
   };
   window.GoSVTRuntimeConfig = { supabaseUrl: 'https://fixture.invalid', supabasePublishableKey: 'fixture-public-key' };
@@ -32,7 +33,10 @@ module.exports = function installFixture(options = {}) {
       q.then = (resolve, reject) => Promise.resolve(response(table, false, mutation)).then(resolve, reject);
       return q;
     },
-    rpc: async () => ({ data: [], error: null }),
+    rpc: async (name, args) => {
+      if (options.deferRpc === name) return await new Promise(resolve => { state.pendingRpc = { name, args, resolve }; });
+      return { data: [], error: null };
+    },
     storage: { from: () => ({ getPublicUrl: () => ({ data: { publicUrl: 'https://fixture.invalid/file.pdf' } }) }) }
   };
   window.supabase = { createClient: () => client };
