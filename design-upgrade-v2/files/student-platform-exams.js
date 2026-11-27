@@ -31,17 +31,17 @@
       if(!Number.isInteger(value)||value<0||value>=q.options.length)return;
       active.answers[q.id]=value;active.sequence=(active.sequence||0)+1;persist();
       const id=active.id,seq=active.sequence,snapshot={...active.answers};
-      if(active.mode==='server'){
-        status('جارٍ مزامنة الإجابة…');
-        saving=saving.catch(()=>{}).then(async()=>{
-          if(!same(id))return;
-          const result=await store.saveAnswers(id,snapshot,seq);
-          if(!result.accepted)throw new Error('المحاولة عُدلت في نافذة أخرى. أعد فتحها قبل المتابعة.');
-          if(same(id)&&active.sequence===seq)status('تمت مزامنة الإجابات مع الخادم.');
-        }).catch(error=>{if(same(id))status(error.message||'الإجابة محفوظة على الجهاز، ولم تتم مزامنتها بعد.',true);});
-      }else status('حُفظت الإجابة على هذا الجهاز.');
+      if(active.mode==='server')queueServerSave(id,snapshot,seq);else status('حُفظت الإجابة على هذا الجهاز.');
       const nav=body?.querySelector('[data-question="'+active.index+'"]');if(nav)nav.classList.add('is-answered');
       const progress=body?.querySelector('.sp-progress-track i');if(progress)progress.style.width=Math.round(Object.keys(active.answers).length/active.questions.length*100)+'%';
+    }
+    function queueServerSave(id,snapshot,seq){
+      saving=saving.catch(()=>{}).then(async()=>{
+        if(!same(id)||active.sequence!==seq)return;
+        const result=await store.saveAnswers(id,snapshot,seq);
+        if(!result.accepted)throw new Error('المحاولة عُدلت في نافذة أخرى. أعد فتحها قبل المتابعة.');
+        if(same(id)&&active.sequence===seq)status('تمت مزامنة الإجابات مع الخادم.');
+      }).catch(error=>{if(same(id)&&active.sequence===seq)status(error.message||'الإجابة محفوظة على الجهاز، ولم تتم مزامنتها بعد.',true);});
     }
     function click(event){
       if(!active)return;
@@ -78,9 +78,17 @@
       finally{serverStarting=false;}
     }
     function adoptServer(result){
-      if(!Array.isArray(result.questions)||!result.questions.length||!result.questions.every(q=>q.id&&typeof q.prompt==='string'&&Array.isArray(q.options)&&q.options.length>=2))throw new Error('بيانات المحاولة غير صالحة.');
-      const left=Date.parse(result.deadline_at)-Date.parse(result.server_time);
-      active={id:result.id,assessmentId:result.assessment_id,owner:store.state.profile.id,mode:'server',title:result.title,questions:result.questions.map(q=>({id:q.id,prompt:q.prompt,options:q.options,points:q.points})),answers:result.answers||{},sequence:Number(result.last_sequence)||0,index:0,deadline:Date.now()+Math.max(0,left),startedAt:Date.now()};
+      const serverTime=Date.parse(result?.server_time),deadlineAt=Date.parse(result?.deadline_at);
+      if(!result||typeof result.id!=='string'||!result.id||typeof result.assessment_id!=='string'||!result.assessment_id||!Number.isFinite(serverTime)||!Number.isFinite(deadlineAt)||!Array.isArray(result.questions)||!result.questions.length||!result.questions.every(q=>q.id&&typeof q.prompt==='string'&&Array.isArray(q.options)&&q.options.length>=2))throw new Error('بيانات المحاولة أو توقيتها غير صالحة.');
+      const left=deadlineAt-serverTime,sequence=Number(result.last_sequence);
+      if(!Number.isSafeInteger(sequence)||sequence<0)throw new Error('تسلسل إجابات المحاولة غير صالح.');
+      const questions=result.questions.map(q=>({id:q.id,prompt:q.prompt,options:q.options,points:q.points}));
+      const rawAnswers=result.answers==null?{}:result.answers;
+      if(!rawAnswers||typeof rawAnswers!=='object'||Array.isArray(rawAnswers))throw new Error('إجابات المحاولة المسترجعة غير صالحة.');
+      const optionCounts=new Map(questions.map(q=>[q.id,q.options.length]));
+      if(Object.entries(rawAnswers).some(([id,value])=>!optionCounts.has(id)||!Number.isInteger(value)||value<0||value>=optionCounts.get(id)))throw new Error('تحتوي المحاولة المسترجعة على إجابات غير صالحة.');
+      const answers={...rawAnswers};
+      active={id:result.id,assessmentId:result.assessment_id,owner:store.state.profile.id,mode:'server',title:result.title,questions,answers,sequence,index:0,deadline:Date.now()+Math.max(0,left),startedAt:Date.now()};
       persist();
     }
     async function resume(){
@@ -150,7 +158,7 @@
       if(active&&!remaining()&&!active.finishing&&!active.autoFailed)finish(true);
       document.querySelectorAll('[data-active-exam-time]').forEach(el=>{el.textContent=active?D.formatDuration(remaining()):'';});
     },1000);
-    function online(){if(active?.autoFailed){active.autoFailed=false;finish(true);}}
+    function online(){if(!active||!store.current())return;if(active.autoFailed){active.autoFailed=false;finish(true);return;}if(active.mode==='server'&&remaining()>0)queueServerSave(active.id,{...active.answers},active.sequence);}
     window.addEventListener('online',online);
     return {startPractice,startServer,resume,showResult,getActive:()=>active,dispose(){disposed=true;requestId++;clearInterval(timer);window.removeEventListener('online',online);body=null;}};
   }

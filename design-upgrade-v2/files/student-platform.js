@@ -52,7 +52,8 @@
       exams=window.GoSVTPlatformExams.create(store,{open:openDialog,close:()=>{closeDialog();if(store?.current())navigate('learning');},toast,refresh:schedule,intent:()=>uiRevision});
       store.load();focusTimer=setInterval(tickFocus,1000);
     }else store.state.profile=p;
-    if(!container.querySelector('.gs-learning-platform')){shell();}else renderView();
+    const renderedShell=container.querySelector('.gs-learning-platform');
+    if(!renderedShell||renderedShell.getAttribute('data-platform-user')!==String(p.id)){shell();}else renderView();
     scopeLayout();return true;
   }
   function shell(){

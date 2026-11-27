@@ -7,6 +7,8 @@ async function localOnly(page,options){
   await page.route('**/*',route=>{
     const url=new URL(route.request().url());
     if(url.origin!==origin){if(options&&url.hostname==='cdn.jsdelivr.net'&&url.pathname.includes('supabase-js'))return route.fulfill({contentType:'application/javascript',body:''});return route.abort();}
+    if(options&&options.failCatalog&&url.pathname==='/student-platform-catalog.json')return route.fulfill({status:503,contentType:'application/json',body:'{}'});
+    if(options&&options.delayFirstCatalog&&url.pathname==='/student-platform-catalog.json'){options.catalogRequests=(options.catalogRequests||0)+1;if(options.catalogRequests===1){await new Promise(resolve=>setTimeout(resolve,900));return route.fulfill({status:503,contentType:'application/json',body:'{}'});}}
     if(options&&url.pathname==='/supabase-config.js')return route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'supabase-config.js'),'utf8')});
     return route.continue();
   });
@@ -96,4 +98,132 @@ test('administrators can validate a bank and publish through the authorized RPC 
   const request=await page.evaluate(()=>__authFixture.rpcCalls.find(x=>x.name==='gosvt_platform_save_assessment'));
   expect(request.params.p_document.questions).toHaveLength(3);expect(request.params.p_document.reviewed).toBe(true);expect(request.params.p_document.is_published).toBe(true);
   expect(request.params.p_document.questions[0].answer).toBe(1);
+});
+
+test('a missing new-platform table is reported as partial while the existing learning library remains usable',async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await localOnly(page,{signedIn:true,failTable:'learning_assessments'});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>document.querySelector('.gs-learning-platform')?.dataset.platformUser||'')).toBe('00000000-0000-0000-0000-000000000001');
+  await page.locator('[data-sp-action="cloud"]').click();
+  await expect(page.locator('.sp-dialog')).toContainText('بعض الخدمات غير متاحة');
+  await page.locator('[data-sp-close]').click();
+  await nav(page,'library').click();
+  await expect(page.locator('.sp-course-card').first()).toBeVisible();
+  await expect(errors).toEqual([]);
+});
+
+
+test('missing new-platform tables do not erase legacy progress, notes, or study plans',async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await localOnly(page,{signedIn:true,failTable:'learning_assessments'});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await page.evaluate(()=>{
+    const uid=StudentAccount.activeProfileId();
+    StudentSpace.updateProgress('lesson','legacy-unit-compatibility-key',{title:'درس محفوظ من المساحة السابقة'});
+    StudentSpace.markLessonComplete('legacy-unit-compatibility-key');
+    StudentSpace.saveWorkspaceRecord('note',{title:'ملاحظة قديمة محفوظة',body:'يجب أن تبقى هذه الملاحظة بعد تعذر خدمات المنصة الجديدة.'},uid);
+    const now=new Date(),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+    StudentSpace.saveWorkspaceRecord('task',{title:'مهمة قديمة محفوظة',date:today,done:false},uid);
+  });
+  await nav(page,'notes').click();
+  await expect(page.locator('.sp-note-card')).toContainText('ملاحظة قديمة محفوظة');
+  await nav(page,'planner').click();
+  await expect(page.locator('.sp-task-row')).toContainText('مهمة قديمة محفوظة');
+  await page.reload();
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await nav(page,'notes').click();
+  await expect(page.locator('.sp-note-card')).toContainText('ملاحظة قديمة محفوظة');
+  await nav(page,'planner').click();
+  await expect(page.locator('.sp-task-row')).toContainText('مهمة قديمة محفوظة');
+  const legacy=await page.evaluate(()=>{
+    const d=StudentSpace.getProfileData(StudentAccount.activeProfileId());
+    return {completed:d.progress.lessons['legacy-unit-compatibility-key']?.completed,notes:d.notes.some(x=>x.title==='ملاحظة قديمة محفوظة'),tasks:d.studyPlan.some(x=>x.title==='مهمة قديمة محفوظة')};
+  });
+  expect(legacy).toEqual({completed:true,notes:true,tasks:true});
+  expect(errors).toEqual([]);
+});
+
+
+test('signing out removes the authenticated platform shell and restores the legacy sign-in view',async({page})=>{
+  await localOnly(page,{signedIn:true});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/sp-platform-active/);
+  await page.evaluate(()=>StudentAccount.logout());
+  await expect.poll(()=>page.evaluate(()=>StudentAccount.isLoggedIn())).toBe(false);
+  await expect(page.locator('#student-space-content .gs-learning-platform')).toHaveCount(0);
+  await expect(page.locator('body')).not.toHaveClass(/sp-platform-active/);
+  await expect(page.locator('#student-space-content')).toContainText(/تسجيل الدخول|Se connecter/);
+});
+
+
+test('a failed catalog request is shown as a partial service state, not an endless loading state',async({page})=>{
+  await localOnly(page,{signedIn:true,failCatalog:true});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await page.locator('[data-sp-action="cloud"]').click();
+  await expect(page.locator('.sp-dialog')).toContainText('بعض الخدمات غير متاحة');
+  await expect(page.locator('.sp-dialog')).not.toContainText('جارٍ التحقق');
+  await expect(page.locator('#sp-main .sp-notice')).toContainText('تعذر تحميل الفهرس');
+});
+
+
+test('a stale catalog failure cannot overwrite a newer successful retry',async({page})=>{
+  await localOnly(page,{signedIn:true,delayFirstCatalog:true});
+  await page.goto('/index.html#student-space');
+  await expect(page.locator('.sp-hero')).toBeVisible();
+  await page.locator('[data-sp-action="cloud"]').click();
+  await page.locator('.sp-dialog [data-sp-action="refresh"]').click();
+  await expect(page.locator('.sp-notice')).not.toContainText('تعذر تحميل الفهرس');
+  await page.waitForTimeout(1100);
+  await page.locator('[data-sp-action="cloud"]').click();
+  await expect(page.locator('.sp-dialog')).toContainText('متصلة');
+  await expect(page.locator('.sp-dialog')).not.toContainText('بعض الخدمات غير متاحة');
+});
+
+
+test('server exam retries the latest unsynced answer when the connection returns',async({page})=>{
+  await preview(page);
+  const calls=await page.evaluate(async()=>{
+    let active={id:'fixture-attempt',mode:'server',owner:'preview-user',questions:[{id:'q1',prompt:'سؤال',options:['أ','ب']}],answers:{q1:1},sequence:4,deadline:Date.now()+60000};
+    const saved=[];
+    const store={state:{profile:{id:'preview-user'}},current:()=>true,activeExam(value){if(arguments.length)active=value;return active;},saveAnswers:async(id,answers,sequence)=>{saved.push({id,answers,sequence});return {accepted:true};}};
+    const exam=window.GoSVTPlatformExams.create(store,{toast(){},intent(){return 'test';}});
+    window.dispatchEvent(new Event('online'));
+    await new Promise(resolve=>setTimeout(resolve,0));
+    exam.dispose();
+    return saved;
+  });
+  expect(calls).toEqual([{id:'fixture-attempt',answers:{q1:1},sequence:4}]);
+});
+
+
+test('a server assessment with malformed restored answers is rejected instead of resuming corrupted state',async({page})=>{
+  await preview(page);
+  const outcome=await page.evaluate(async()=>{
+    let active=null;const messages=[];
+    const now=Date.now();
+    const store={state:{profile:{id:'preview-user'}},current:()=>true,activeExam(value){if(arguments.length)active=value;return active;},startAssessment:async()=>({id:'attempt-invalid-answers',assessment_id:'assessment-fixture',server_time:new Date(now).toISOString(),deadline_at:new Date(now+60000).toISOString(),last_sequence:1,questions:[{id:'q1',prompt:'سؤال',options:['أ','ب']}],answers:{q1:7}})};
+    const exam=window.GoSVTPlatformExams.create(store,{toast(message){messages.push(message);},intent(){return 'test';}});
+    await exam.startServer({id:'assessment-fixture'});
+    const result={active:exam.getActive(),messages};exam.dispose();return result;
+  });
+  expect(outcome.active).toBeNull();
+  expect(outcome.messages.join(' ')).toContain('إجابات غير صالحة');
+});
+
+test('a server assessment with invalid deadline timestamps is rejected instead of creating a stuck attempt',async({page})=>{
+  await preview(page);
+  const outcome=await page.evaluate(async()=>{
+    let active=null;const messages=[];
+    const store={state:{profile:{id:'preview-user'}},current:()=>true,activeExam(value){if(arguments.length)active=value;return active;},startAssessment:async()=>({id:'attempt-invalid-time',assessment_id:'assessment-fixture',server_time:'not-a-date',deadline_at:'also-not-a-date',last_sequence:0,questions:[{id:'q1',prompt:'سؤال',options:['أ','ب']}],answers:{}})};
+    const exam=window.GoSVTPlatformExams.create(store,{toast(message){messages.push(message);},intent(){return 'test';}});
+    await exam.startServer({id:'assessment-fixture'});
+    const result={active:exam.getActive(),messages};exam.dispose();return result;
+  });
+  expect(outcome.active).toBeNull();
+  expect(outcome.messages.join(' ')).toContain('توقيت');
 });
