@@ -69,7 +69,8 @@
         "20261123000100_harden_teacher_community_delete_and_table_grants.sql",
         "20261123000200_align_teacher_community_suspension_and_storage_update.sql",
         "20261127000100_teacher_community_professional_profiles.sql",
-        "20261127000200_teacher_community_public_directory.sql"
+        "20261127000200_teacher_community_public_directory.sql",
+        "20261127000300_teacher_community_resource_metadata_and_favorites.sql"
       ]
     }
   }
